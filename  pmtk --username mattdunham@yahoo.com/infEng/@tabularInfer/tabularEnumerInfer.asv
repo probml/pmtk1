@@ -1,0 +1,46 @@
+classdef tabularEnumerInfer 
+  % ifnerence by exhaustive enumeration in multidimensional tables 
+  
+  properties
+    Tfac;
+    visVars = [];
+    visValues = [];
+    evidenceEntered = false;
+  end
+ 
+  methods
+    function eng = tabularEnumerInfer(T)
+      if nargin == 0, T = []; end
+      eng.Tfac = tabularFactor(T, 1:ndims(T));
+    end
+    
+    function eng = setParams(eng, params)
+      T = params{1};
+      eng.Tfac = tabularFactor(T, 1:ndims(T));
+    end
+    
+     function [X, eng] = sample(eng, n)
+       % X(i,:) = sample for i=1:n
+       if ~eng.evidenceEntered
+         eng = enterEvidence(eng, [], []); % compute joint
+       end
+       T = eng.Tfac.T(:);
+       X = sampleDiscrete(T, n, 1);
+     end
+    
+    function [postQuery, eng] = marginal(eng, queryVars)
+      if ~eng.evidenceEntered
+        eng = enterEvidence(eng, [], []);  % compute joint
+      end
+    end
+
+
+   function eng = enterEvidence(eng, visVars, visValues)
+      eng.visVars = visVars; eng.visValues = visValues;
+      eng.evidenceEntered = true;
+   end
+   
+  
+  end % methods
+
+end

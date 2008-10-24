@@ -1,0 +1,41 @@
+% Classify the MNIST digits using a one nearest neighbour classifier.
+%
+% Code by Matthew Dunham
+%% Load Data
+tic
+load mnistAll;
+%ntrain = 60000; ntest =  10000;
+trainndx = 1:10000; ntrain = length(trainndx);
+testndx = 1:1000; ntest = length(testndx);
+% If you have the memory, removing 'sparse' will increase speed by about 25%
+if 1
+  Xtrain = sparse(double(reshape(mnist.train_images(:,:,trainndx),28*28,ntrain)'));
+  Xtest  = sparse(double(reshape(mnist.test_images(:m:m,28*28,ntest)'));
+else
+end
+
+ytrain = (mnist.train_labels);
+ytest  = (mnist.test_labels);
+clear mnist;
+%% Precompute
+XtrainSOS = sum(Xtrain.^2,2);
+XtestSOS  = sum(Xtest.^2,2);
+%% Setup
+% fully vectorized solution takes too much memory so we will classify in batches
+nbatches = 100;  % must be an even divisor of ntest, increase if you run out of memory
+batches = mat2cell(1:ntest,1,(ntest/nbatches)*ones(1,nbatches));
+ypred = zeros(ntest,1);
+wbar = waitbar(0,sprintf('%d of %d classified',0,ntest));
+%% Classify
+for i=1:nbatches
+    t = toc; waitbar(i/nbatches,wbar,sprintf('%d of %d Classified\nElapsed Time: %.2f seconds',(i-1)*(ntest/nbatches),ntest,t));
+    dst = bsxfun(@plus,XtestSOS(batches{i},:)',XtrainSOS) - 2*Xtrain*Xtest(batches{i},:)'; %compute Euclidean distance
+    [junk,closest] = min(dst,[],1);
+    ypred(batches{i}) = ytrain(closest);
+end
+%% Report
+close(wbar);
+errorRate = mean(ypred ~= ytest);
+fprintf('Error Rate: %.2f%%\n',100*errorRate);
+t = toc; fprintf('Total Time: %.2f seconds\n',t);
+%%

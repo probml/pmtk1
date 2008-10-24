@@ -1,0 +1,321 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Cross Validation Over a 2D Grid of Values</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-10-22">
+      <meta name="m-file" content="cv2Dexample"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>Cross Validation Over a 2D Grid of Values</h1>
+         <introduction>
+            <p>Here we demonstrate how to cross validate two values, lambda and sigma simultaneously using the crossValidation class. We
+               use the crabs data set and perform l2 logistic regression with an RBF expansion.
+            </p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#6">Create the Test Function</a></li>
+               <li><a href="#10">Use Anonymous Functions</a></li>
+               <li><a href="#20">Create the Loss Function</a></li>
+               <li><a href="#22">Perform the Cross Validation</a></li>
+               <li><a href="#24">Plot Results</a></li>
+               <li><a href="#26">Refit</a></li>
+            </ul>
+         </div>
+         <p>This model selection class requires that two key functions be specified: a loss function, such as zero-one loss, mean squared
+            error, nll, etc, and test function of the following form:
+         </p><pre>@(Xtrain,ytrain,Xtest,lambda,sigma)testFunction(Xtrain,ytrain,Xtest,lambda,sigma)</pre><p>If we were cross validating over a single value, we would omit the "sigma". We can cross validate over an n-dimensional grid
+            just as easily, e.g.
+         </p><pre>@(Xtrain,ytrain,Xtest,lambda,sigma)testFunction(Xtrain,ytrain,Xtest,lambda,sigma,eta,gamma)</pre><p>However, the problem soon becomes computationally intractable.</p>
+         <p>The test function will be evaluated at each fold for each combination of values and its output will be passed directly to
+            the loss function. In our example, we will use zero-one loss and thus our test function must the return predicted labels.
+         </p>
+         <h2>Create the Test Function<a name="6"></a></h2>
+         <p>Creating the test function will usually amount to composing fit and predict functions together. This is what we do here, however
+            because of the number of options available and the RBF preprocessing, this will be a more advanced example.
+         </p>
+         <p>One approach is to write a stand alone function with the right behavior. Here is an example.</p><pre>function yhat = testFunction(Xtrain,ytrain,Xtest,lambda,sigma)
+    T = chainTransformer({standardizeTransformer(false),kernelTransformer(sigma)});
+    m = multinomLogregDist('nclasses',2,'transformer',T);
+    m = fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
+    pred = predict(m,Xtest);
+    yhat = mode(pred);
+end</pre><p>We would then create the function handle as follows: tfunc = @testFunction;</p>
+         <h2>Use Anonymous Functions<a name="10"></a></h2>
+         <p>However, it is often convenient to create the test function on the fly using anonymous functions.</p>
+         <p>The test function is the composition m( p( f( c( t( s , k ) ) ) ) where</p>
+         <div>
+            <ul>
+               <li>m is mode()</li>
+               <li>p is fit()</li>
+               <li>c is the model constructor</li>
+               <li>t is the chain transformer constructor</li>
+               <li>s is the standardizeTransformer constructor</li>
+               <li>k is the kernalTransformer constructor</li>
+            </ul>
+         </div>
+         <p>Our five input variables are defined in these functions as follows:</p>
+         <div>
+            <ul>
+               <li>f(Xtrain,ytrain,lambda)</li>
+               <li>p(Xtest)</li>
+               <li>k(sigma)</li>
+            </ul>
+         </div>
+         <p>To make the composition clearer we will curry our functions, however, this is not strictly necessary.</p><pre class="codeinput">m = @mode;
+p = @(model,Xtest)predict(model,Xtest);
+f = @(model,Xtrain,ytrain,lambda)fit(model,<span class="string">'X'</span>,Xtrain,<span class="string">'y'</span>,ytrain,<span class="string">'lambda'</span>,lambda,<span class="string">'prior'</span>,<span class="string">'l2'</span>);
+c = @(trans)multinomLogregDist(<span class="string">'nclasses'</span>,2,<span class="string">'transformer'</span>,trans);
+t = @(a,b)chainTransformer({a(),b()});  <span class="comment">% Use () to force evaluation before passing on</span>
+s = @(x)standardizeTransformer(false);
+k = @(sigma)kernelTransformer(<span class="string">'rbf'</span>,sigma);
+</pre><p>Now let us compose c,t,s,k</p><pre class="codeinput">c = @(sigma)c(t(s(),k(sigma)));
+</pre><p>Finally we compose the remaining functions.</p><pre class="codeinput">testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)m(p(f(c(sigma),Xtrain,ytrain,lambda),Xtest));
+</pre><p>Of course we could have done this all in one step.</p><pre>testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
+mode(predict(fit(multinomLogregDist...
+'nclasses',2,'transformer',...
+chainTransformer(...
+{standardizeTransformer(false),kernelTransformer('rbf', sigma)})),...
+'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));</pre><h2>Create the Loss Function<a name="20"></a></h2>
+         <p>We are now ready to perform the cross validation. We pass in a cell array with test values for lambda and sigma and specify
+            a loss function. MSE and Zero-One are built in and can be used by specifying a string instead of a function handle, such as
+            'MSE', or 'ZeroOne'. Here we use zero one loss but use a function handle for demonstration purposes.
+         </p><pre class="codeinput">lossFunction = @(yhat,ytest)sum(reshape(yhat,size(ytest))~=ytest);
+</pre><h2>Perform the Cross Validation<a name="22"></a></h2><pre class="codeinput">load <span class="string">crabs</span>;
+</pre><p>Performing the actual cross validation simply amounts to instantiating the class with the right inputs.</p><pre class="codeinput">modelSelection = crossValidation(                     <span class="keyword">...</span>
+    <span class="string">'testFunction'</span> , testFunction                    ,<span class="keyword">...</span>
+    <span class="string">'CVvalues'</span>     , { logspace(-5,0,50) , 1:0.5:15 },<span class="keyword">...</span><span class="comment"> % every combination will be tested</span>
+    <span class="string">'lossFunction'</span> , lossFunction                    ,<span class="keyword">...</span>
+    <span class="string">'verbose'</span>      , false                           ,<span class="keyword">...</span><span class="comment"> % true by default - shows progress</span>
+    <span class="string">'Xdata'</span>        , Xtrain                          ,<span class="keyword">...</span>
+    <span class="string">'Ydata'</span>        , ytrain                          );
+
+bestVals = modelSelection.bestValue;
+bestLambda = bestVals(1)
+bestSigma  = bestVals(2)
+set(gca,<span class="string">'XScale'</span>,<span class="string">'log'</span>);
+</pre><pre class="codeoutput">bestLambda =
+  1.2649e-005
+bestSigma =
+    6.5000
+</pre><img vspace="5" hspace="5" src="cv2Dexample_01.png"> <h2>Plot Results<a name="24"></a></h2>
+         <p>By default, a figure of the cross validation curve is plotted, (at least in 2D and 3D). Here we transform the x-axis since
+            our lambda values were log-spaced.
+         </p><pre>set(gca,'XScale','log');</pre><h2>Refit<a name="26"></a></h2>
+         <p>Now lets retrain the model using the best lambda and sigma values</p><pre class="codeinput">T = chainTransformer({standardizeTransformer(false),kernelTransformer(<span class="string">'rbf'</span>,bestSigma)});
+m = multinomLogregDist(<span class="string">'nclasses'</span>,2,<span class="string">'transformer'</span>,T);
+m = fit(m,<span class="string">'X'</span>,Xtrain,<span class="string">'y'</span>,ytrain,<span class="string">'lambda'</span>,bestLambda,<span class="string">'prior'</span>,<span class="string">'l2'</span>);
+pred = predict(m,Xtest);
+yhat = mode(pred);
+errorRate = mean(yhat'~=ytest)
+</pre><pre class="codeoutput">errorRate =
+     0
+</pre><p>Notice that we correctly classify all of the examples.</p>
+         <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Cross Validation Over a 2D Grid of Values
+% Here we demonstrate how to cross validate two values, lambda and sigma
+% simultaneously using the crossValidation class. We use the crabs data set and
+% perform l2 logistic regression with an RBF expansion.
+%%
+% This model selection class requires that two key functions be specified: a loss
+% function, such as zero-one loss, mean squared error, nll, etc, and test function
+% of the following form:
+%%
+%  @(Xtrain,ytrain,Xtest,lambda,sigma)testFunction(Xtrain,ytrain,Xtest,lambda,sigma)
+%%
+% If we were cross validating over a single value, we would omit the "sigma". We
+% can cross validate over an n-dimensional grid just as easily, e.g.
+%%
+%  @(Xtrain,ytrain,Xtest,lambda,sigma)testFunction(Xtrain,ytrain,Xtest,lambda,sigma,eta,gamma)
+%%
+% However, the problem soon becomes computationally intractable.
+%
+% The test function will be evaluated at each fold for each combination of
+% values and its output will be passed directly to the loss function. In our
+% example, we will use zero-one loss and thus our test function must the return
+% predicted labels. 
+%% Create the Test Function
+% Creating the test function will usually amount to composing fit and predict
+% functions together. This is what we do here, however because of the number of
+% options available and the RBF preprocessing, this will be a more advanced
+% example. 
+% 
+%% 
+% One approach is to write a stand alone function with the right behavior. Here
+% is an example.
+%%
+%  function yhat = testFunction(Xtrain,ytrain,Xtest,lambda,sigma)
+%      T = chainTransformer({standardizeTransformer(false),kernelTransformer(sigma)});
+%      m = multinomLogregDist('nclasses',2,'transformer',T);
+%      m = fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
+%      pred = predict(m,Xtest);
+%      yhat = mode(pred);
+%  end
+%
+%%
+% We would then create the function handle as follows:
+% tfunc = @testFunction;
+%
+%% Use Anonymous Functions
+% However, it is often convenient to create the test function on the fly using
+% anonymous functions. 
+%
+% The test function is the composition m( p( f( c( t( s , k ) ) ) ) where
+%%
+% * m is mode()
+% * p is fit()
+% * c is the model constructor
+% * t is the chain transformer constructor
+% * s is the standardizeTransformer constructor
+% * k is the kernalTransformer constructor
+%%
+% Our five input variables are defined in these functions as follows:
+%%
+% * f(Xtrain,ytrain,lambda)
+% * p(Xtest)
+% * k(sigma)
+%%
+% To make the composition clearer we will curry our functions, however,
+% this is not strictly necessary.
+%
+%%
+m = @mode;
+p = @(model,Xtest)predict(model,Xtest);
+f = @(model,Xtrain,ytrain,lambda)fit(model,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
+c = @(trans)multinomLogregDist('nclasses',2,'transformer',trans);
+t = @(a,b)chainTransformer({a(),b()});  % Use () to force evaluation before passing on
+s = @(x)standardizeTransformer(false);
+k = @(sigma)kernelTransformer('rbf',sigma);
+%%
+% Now let us compose c,t,s,k
+c = @(sigma)c(t(s(),k(sigma)));
+%%
+% Finally we compose the remaining functions.
+testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)m(p(f(c(sigma),Xtrain,ytrain,lambda),Xtest));
+%%
+% Of course we could have done this all in one step.
+%%
+%  testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
+%  mode(predict(fit(multinomLogregDist...
+%  'nclasses',2,'transformer',...
+%  chainTransformer(...
+%  {standardizeTransformer(false),kernelTransformer('rbf', sigma)})),...
+%  'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));
+%
+%% Create the Loss Function
+% We are now ready to perform the cross validation. We pass in a cell
+% array with test values for lambda and sigma and specify a loss function.
+% MSE and Zero-One are built in and can be used by specifying a string
+% instead of a function handle, such as 'MSE', or 'ZeroOne'. Here we use
+% zero one loss but use a function handle for demonstration purposes.
+%
+%% 
+lossFunction = @(yhat,ytest)sum(reshape(yhat,size(ytest))~=ytest);
+%% Perform the Cross Validation
+load crabs;
+%% 
+% Performing the actual cross validation simply amounts to instantiating the
+% class with the right inputs.
+modelSelection = crossValidation(                     ...
+    'testFunction' , testFunction                    ,...    
+    'CVvalues'     , { logspace(-5,0,50) , 1:0.5:15 },... % every combination will be tested
+    'lossFunction' , lossFunction                    ,...    
+    'verbose'      , false                           ,... % true by default - shows progress
+    'Xdata'        , Xtrain                          ,...
+    'Ydata'        , ytrain                          );
+
+bestVals = modelSelection.bestValue;
+bestLambda = bestVals(1)
+bestSigma  = bestVals(2)
+set(gca,'XScale','log'); 
+%% Plot Results
+% By default, a figure of the cross validation curve is plotted, (at least in 2D
+% and 3D). Here we transform the x-axis since our lambda values were log-spaced.
+%%
+%  set(gca,'XScale','log'); 
+%% Refit
+% Now lets retrain the model using the best lambda and sigma values
+T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',bestSigma)});
+m = multinomLogregDist('nclasses',2,'transformer',T);
+m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda,'prior','l2');
+pred = predict(m,Xtest);
+yhat = mode(pred);
+errorRate = mean(yhat'~=ytest)
+%%
+% Notice that we correctly classify all of the examples. 
+
+
+##### SOURCE END #####
+-->
+   </body>
+</html>
