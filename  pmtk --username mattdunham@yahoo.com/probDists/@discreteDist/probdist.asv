@@ -1,0 +1,89 @@
+classdef probDist  
+  
+  properties
+    %names; % cell array
+  end
+  
+  
+%{
+  methods(Abstract = true)
+
+    %m = probdist(varargin);
+    d = ndims(obj); % num dimensions (variables)
+    h = plot(obj, varargin); % h is a figure handle (or cell array)
+    m = mean(obj); % [E[X1],...,E[Xd]] (constant vector), not the scalar RV 1/d sum_j X_j
+    m = mode(obj);
+    v = var(obj);
+    C = cov(obj);
+    X = sample(obj, n); % X(i,j) = sample from params(j), an nxd matrix
+    p = logprob(obj, D); % p(i,j) = log p(D(i) | params(j))
+    nll = negloglik(obj, D); % nll(j) = -sum_i log p(D(i) | params(j))
+    logZ = lognormconst(obj);
+    obj = fit(obj, D, optionalVecOfHyperParams);
+    obj = observe(obj, nodeNames, D);
+    pr = marginal(obj, nodeNames);
+    pr = predict(obj, D); % for models with a distinguished output variable
+
+  end
+%}
+
+  methods
+    function m = probdist(varargin)
+    end
+
+    function h=plot(obj, varargin)
+      % plot a density function in 1d or 2d
+      % handle = plot(pdf, 'name1', val1, 'name2', val2, ...)
+      % Arguments are
+      % xrange  - [xmin xmax] for 1d or [xmin xmax ymin ymax] for 2d
+      % useLog - true to plot log density, default false
+      % plotArgs - args to pass to the plotting routine, default {}
+      % useContour - for 2d: true to plot contour, false (default) to plot surface
+      %
+      % eg. plot(p,  'useLog', true, 'plotArgs', {'ro-', 'linewidth',2})
+      
+      [xrange, useLog, plotArgs, useContour] = process_options(...
+        varargin, 'xrange', plotRange(obj), 'useLog', false, ...
+        'plotArgs' ,{}, 'useContour', false);
+      if ~iscell(plotArgs), plotArgs = {plotArgs}; end
+      switch ndims(obj)
+        case 1
+          xs = linspace(xrange(1), xrange(2), 100);
+          p = logprob(obj, xs);
+          if ~useLog
+            p = exp(p);
+          end
+          h = plot(xs, p, plotArgs{:});
+        case 2
+          [X1,X2] = meshgrid(linspace(xrange(1), xrange(2), 50)',...
+                             linspace(xrange(3), xrange(4), 50)');
+          [nr nc] = size(X1,1);
+          X = [X1(:) X2(:)];
+          p = logprob(obj, X);
+          if ~useLog
+            p = exp(p);
+          end
+          p = reshape(p, 
+          if useContour
+            h = contour(X1, X2, p, plotArgs{:});
+          else
+            h = surf(X1,X2,reshape(p,n,n),plotArgs{:});
+          end
+        otherwise
+          error('cannot plot in more than 2d')
+      end
+    end
+    
+     function nll = negloglik(obj, X)
+       % Negative log likelihood of a data set
+       % For scalar dist: nll = -sum_i log p(X(i) | params)
+       % For vector distr: nll = -sum_i log p(X(i,:) | params)
+       % For matrix distr: nll = -sum_i log p(X(:,:,i) | params)
+       % For factorized scalar dist: nll(j) = -sum_i log p(X(i) | params(j))
+       nll = -sum(logprob(obj, X),1);
+     end
+     
+  end
+
+
+end

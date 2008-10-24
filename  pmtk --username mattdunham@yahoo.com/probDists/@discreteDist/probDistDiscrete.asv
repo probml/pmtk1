@@ -1,0 +1,50 @@
+classdef probDistDiscrete  < probDist
+
+  properties
+    probs;
+    support;
+  end
+
+
+  methods
+    function obj = probDistDiscrete(probs, support)
+      if nargin == 0, probs = []; end
+      if nargin < 2, support = 1:length(probs); end
+      obj.probs = probs(:)';
+      obj.support = support;
+    end
+
+    function obj = computeProbs(obj)
+        obj.probs = exp(logprob(obj, obj.support));
+    end
+    
+    function h=plot(obj, varargin)
+      % plot a probability mass function as a histogram
+      % handle = plot(pmf, 'name1', val1, 'name2', val2, ...)
+      % Arguments are
+      % plotArgs - args to pass to the plotting routine, default {}
+      %
+      % eg. plot(p,  'plotArgs', 'r')
+      [plotArgs] = process_options(...
+        varargin, 'plotArgs' ,{});
+      if ~iscell(plotArgs), plotArgs = {plotArgs}; end
+      if isempty(obj.probs), obj = computeProbs(obj); end
+      h=bar(obj.probs, plotArgs{:});
+      set(gca,'xti
+    end
+
+    function x = sample(obj, n)
+      % X(i) = an integer drawn from obj's support
+      % eg p=probDistDiscrete([0.3 0.2 0.5], [-1 0 1]);
+      %    X=sample(p,1000); hh=hist(X,[-1 0 1])
+      if nargin < 2, n = 1; end
+      if isempty(obj.probs), obj = computeProbs(obj); end
+      cdf = cumsum(obj.probs);
+      d = length(cdf);
+      x = sum( repmat(cdf, n, 1) < repmat(rand(n,1), 1, d), 2) + 1;
+      x = obj.support(x);
+    end
+
+  end
+
+end

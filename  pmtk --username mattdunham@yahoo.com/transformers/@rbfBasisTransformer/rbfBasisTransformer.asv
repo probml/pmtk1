@@ -1,0 +1,39 @@
+classdef rbfBasisTransformer
+  
+  properties
+    ncenters;
+    centers;
+    sigma;
+  end
+
+  %%  Main methods
+  methods
+    function obj = rbfBasisTransformer(ncenters, sigma, X)
+      if nargin == 0
+        ncenters = []; sigma = []; X = [];
+      end
+      obj.ncenters = ncenters;
+      obj.sigma = sigma;
+      if isvector(X)
+        x = x(:);
+        obj.centers = linspace(min(x), max(x), ncenters);
+      else
+        % dumb initialization - pick random subset
+        % could use clustering
+        [n d] = size(X);
+        perm = randperm(n);
+        obj.centers = X(perm(1:ncenters),:);
+      end
+    end
+    
+    function [K, obj] = train(obj, X)
+      K = rbfKernel(X, obj.centers, obj.sigma);
+    end
+    
+     function [Xnew] = test(obj, X)
+      Xnew = degexpand(X, obj.degree);
+     end
+    
+  end
+
+end

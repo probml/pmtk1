@@ -1,0 +1,40 @@
+
+function gaussVsToutlierDemo
+% Illustrate the robustness of the t-distribution compared to the Gaussian.
+% Written by Matthew Dunham
+
+n = 30;
+seed = 8; randn('state',seed);
+data = randn(n,1);
+outliers = [8 ; 8.75 ; 9.5];
+nn = length(outliers);
+nbins = 7;
+
+
+plotHist(data,nbins,n);
+plotPDFs(data,0);
+figure;
+plotHist(data,nbins,n+nn);
+plotHist(outliers,nn,n+nn);
+plotPDFs([data ; outliers],0);
+
+%%
+% Bucket the data into nbins, divide the size of each bin by norm and plot
+% the normalized histogram. 
+function plotHist(data,nbins,norm)
+    hold on;
+    [counts, locations] = hist(data,nbins);
+    sCounts = counts ./ norm;
+    bar(locations,sCounts);
+end
+%%
+function plotPDFs(data,useNormMLE)
+  pgauss = inferParams(mvnDist, data);
+  pstudent = inferParams(mvtDist, data);
+  h(1) = plot(pgauss, 'plotArgs', {'g:', 'linewidth', 2});
+  h(2) = plot(pstudent, 'plotArgs', {'r-', 'linewidth', 2});
+  legend(h, 'gaussian', 'student T')
+end
+
+
+end

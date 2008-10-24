@@ -1,0 +1,7 @@
+function out = cellfuncell(fun, C, varargin)
+% just like cellfun, except sets UniformOutput = false, so it returns a cell array
+% eg. a=cellfuncell(@(x) upper(x), {'foo','bananas','bar'})
+% returns a{1} = 'foo', 
+varargin{end+1} = 'UniformOutput';
+varargin{end+1} = false;
+out = cellfun(fun, C, varargin{:});

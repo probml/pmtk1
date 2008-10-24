@@ -1,0 +1,53 @@
+classdef invWishartDist < probDist
+  
+  properties
+    Sigma;
+    dof;
+  end
+  
+  methods
+    function m = invWishartDist(dof, Sigma)
+      % We require Sigma is posdef and dof > d-1
+      % (An alternative parameterization requires dof > 2d)
+      if nargin == 0
+        m.Sigma = [];
+        return;
+      end
+      m.dof = dof;
+      m.Sigma = Sigma; % scale maxtrix 
+    end
+    
+    function d = ndims(obj)
+      d = size(obj.Sigma,1);
+    end
+    
+    function lnZ = lognormconst(obj)
+      d = ndims(obj);
+      v = obj.dof;
+      S = obj.Sigma;
+      lnZ = (v*d/2)*log(2) + mvtGammaln(d,v/2) -(v/2)*logdet(S);
+    end
+    
+    function m = mean(obj)
+      m = obj.Sigma / (obj.dof - ndims(obj) - 1);
+    end
+    
+    function m = mode(obj)
+      m = obj.Sigma / (obj.dof - ndims(obj) - 1);
+    end
+    
+    
+    function X = sample(obj, n)
+      % X(:,:,i) is a random matrix drawn from HIW() for i=1:n
+      d = ndims(obj);
+      X  = zeros(d,d,n);
+      for i=1:n
+        X(:,:,i) = iwishrnd(obj.Sigma, obj.dof);
+      end
+    end
+    
+    
+  end
+    
+    
+end

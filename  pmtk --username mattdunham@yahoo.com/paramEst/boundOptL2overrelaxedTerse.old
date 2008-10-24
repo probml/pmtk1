@@ -1,0 +1,55 @@
+function [w, iter]  = boundOptL2(X, Y, lambda)
+% Based on code by Balaji Krishnapuram
+[N d]= size(X);
+[N M] = size(Y); % 1 of C encoding
+convergence_tol = 1e-3;
+
+% precompute
+B=kron(diag(repmat(0.5,M-1,1)) - repmat(1/(2*M),M-1,M-1),X'*X);
+BGinv=pinv(B+lambda*eye((M-1)*d));
+BGinv_times_B=BGinv*B;
+
+% initialize
+probabilities=(Y + (1/M))/2;
+gradient=reshape(X'*(Y(:,1:(M-1))-probabilities(:,1:(M-1))),(M-1)*d,1);
+epsilon=1e-6;
+w=(  (B+diag(epsilon*ones((M-1)*d,1))) \ gradient   );
+
+converged=0; iter=1; 
+eta=1; eta_increase_factor=1.1; delta=1e-3;
+
+while (~converged)
+  probabilities=(multiSigmoid(X,w)); % P->(MxN)
+  gradient=reshape(X'*(Y(:,1:(M-1))-probabilities(:,1:(M-1))),(M-1)*d,1);
+ 
+  % Newton step
+  w_new = BGinv_times_B*w + BGinv*gradient;
+  
+  P=(multiSigmoid(X,w_new)); % P->(MxN)
+  log_likelihood =  sum(sum(Y.*log(P)));
+  log_posterior = log_likelihood - lambda*sum(abs(w_new.^2));
+
+  w_overrelaxed= w + eta*(w_new-w);
+  P=(multiSigmoid(X,w_overrelaxed)); % P->(MxN)
+  log_likelihood_overrelaxed =  sum(sum(Y.*log(P)));
+  log_posterior_overrelaxed = log_likelihood_overrelaxed - lambda*sum(abs(w_overrelaxed.^2));
+
+  if ((log_posterior_overrelaxed-log_posterior)) < 0
+    eta=1;
+  else
+    eta=eta*eta_increase_factor;
+    w_new=w_overrelaxed;
+    log_posterior=log_posterior_overrelaxed;
+  end
+
+  if ((norm(w_new-w)/norm(w))<convergence_tol)
+    converged=1;
+  end
+
+  w=w_new;
+  iter=iter+1;
+end
+N = length(w);
+% M = num classes
+%w = reshape(w, N/(M-1), M-1);
+% w(d, c) c=1:M-1

@@ -1,0 +1,19 @@
+function d = myndims(M)
+% MYNDIMS Like the built-in ndims, except handles [] and vectors properly
+% 
+% 
+% The behavior is best explained by examples
+% - M = [],          myndims(M) = 0,    ndims(M) = 2
+% - M = rand(1,1),   mysize(M) = 1,      size(M) = [1 1]
+% - M = rand(2,1),   mysize(M) = 2,      size(M) = [2 1]
+% - M = rand(1,2),   mysize(M) = 2,      size(M) = [1 2]
+% - M = rand(2,2,1), mysize(M) = [2 2],  size(M) = [2 2]
+% - M = rand(1,2,1), mysize(M) = 2,      size(M) = [1 2]
+
+if isempty(M)
+  d = 0;
+elseif isvector(M)
+  d = length(M);
+else
+  d = ndims(M);
+end
