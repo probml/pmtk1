@@ -1,4 +1,4 @@
 Probabilistic Models Toolkit
-19 October 2008 version
+23 October 2008 version
 
 See http://www.cs.ubc.ca/~murphyk/pmtk/
