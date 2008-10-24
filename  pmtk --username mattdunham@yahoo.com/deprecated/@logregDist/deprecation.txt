@@ -1,0 +1,5 @@
+This is the 2 class version. Its functionality has been combined with the multiclass 
+version multinomLogregDist, which was renamed logregDist.
+
+October 24,2008
+Matt 

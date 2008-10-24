@@ -15,7 +15,7 @@ T = chainTransformer({standardizeTransformer(false)      ,...
                       kernelTransformer('rbf',sigma2)} );
 %% Create the Model
 % We create a new model by calling the constructor. 
-model = multinomLogregDist('nclasses',2, 'transformer', T);
+model = logregDist('nclasses',2, 'transformer', T);
 %% Fit the Model
 % This time we use an L1 sparsity promoting prior. 
 lambda = 0.001;                                              % L1 regularizer

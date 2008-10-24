@@ -25,7 +25,7 @@ T = chainTransformer({standardizeTransformer(false)      ,...
 %% Create the Model
 % We now create a new logistic regression model and pass it the transformer object
 % we just created.
-model = multinomLogregDist('nclasses',2, 'transformer', T);
+model = logregDist('nclasses',2, 'transformer', T);
 %% Fit the Model
 % To fit the model, we simply call the model's fit method and pass in the data.
 % Here we use an L2 regularizer, however, an L1 sparsity promoting regularizer

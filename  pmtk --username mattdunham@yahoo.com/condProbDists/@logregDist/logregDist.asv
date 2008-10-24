@@ -300,9 +300,15 @@ classdef logregDist < condProbDist
             Pmap   = predict(m,'X',Xtest,'method','plugin');
             Pmc    = predict(m,'X',Xtest,'method','mc');
             Pexact = predict(m,'X',Xtest,'method','integral');
-            nerrsMAP   = sum(mode(Pmap)' ~= ytest)
-            nerrsMC    = sum(mode(Pmc)' ~= ytest)
-            nerrsExact = sum(mode(Pexact)' ~= ytest)      
+            nerrsMAP   =  
+            nerrsMC    =  
+            nerrsExact = 
+            
+            
+            yhatMAP = mode(P); % 1 or 2
+            errs = find(yhat(:) ~= ytest(:));
+            nerrs = length(errs)
+            
         end
 
         function demoOptimizer()

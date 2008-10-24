@@ -44,7 +44,7 @@ results.crabs.SVM.sigma  = sigma;
 results.crabs.L2.sigma = sigma;
 if(runFull)
 T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',sigma)});
-m = multinomLogregDist('nclasses',2,'transformer',T);
+m = logregDist('nclasses',2,'transformer',T);
 testFunction = @(Xtrain,ytrain,Xtest,lambda)...
     mode(predict(fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));
 
@@ -67,7 +67,7 @@ results.crabs.L2.lambda = lambda;
 %% Assess L2 Performance
 % 
 T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',sigma)});
-m = multinomLogregDist('nclasses',2,'transformer',T);
+m = logregDist('nclasses',2,'transformer',T);
 m = fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
 yhat = mode(predict(m,Xtest));
 nerrors = sum(yhat' ~= ytest);
@@ -79,7 +79,7 @@ results.crabs.L2.nzeroW  = nnz(m.w);
 results.crabs.L1.sigma = sigma;
 if(runFull)
 T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',sigma)});
-m = multinomLogregDist('nclasses',2,'transformer',T);
+m = logregDist('nclasses',2,'transformer',T);
 testFunction = @(Xtrain,ytrain,Xtest,lambda)...
     mode(predict(fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l1'),Xtest));
 
@@ -102,7 +102,7 @@ results.crabs.L1.lambda = lambda;
 %% Assess L1 Performance
 % 
 T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',sigma)});
-m = multinomLogregDist('nclasses',2,'transformer',T);
+m = logregDist('nclasses',2,'transformer',T);
 m = fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l1');
 yhat = mode(predict(m,Xtest));
 nerrors = sum(yhat' ~= ytest);

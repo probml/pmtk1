@@ -1,5 +1,7 @@
 classdef logregDist < condProbDist
-  
+ % this is the deprecated 2-class version 
+    
+    
   properties
     w; 
     transformer;
@@ -27,7 +29,7 @@ classdef logregDist < condProbDist
        p(ndx0) = logp0(ndx0);
      end
      
-     function pred = predict(obj, X, w)
+     function pred = predict(obj, X, w,varargin)
        % X(i,:) is case i
        % p1(i) = Bernoulli(y|X(i,:))
        % yhat(i) = 0 or 1

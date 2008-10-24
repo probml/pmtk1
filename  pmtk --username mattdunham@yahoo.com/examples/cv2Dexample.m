@@ -32,7 +32,7 @@
 %%
 %  function yhat = testFunction(Xtrain,ytrain,Xtest,lambda,sigma)
 %      T = chainTransformer({standardizeTransformer(false),kernelTransformer(sigma)});
-%      m = multinomLogregDist('nclasses',2,'transformer',T);
+%      m = logregDist('nclasses',2,'transformer',T);
 %      m = fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
 %      pred = predict(m,Xtest);
 %      yhat = mode(pred);
@@ -68,7 +68,7 @@
 m = @mode;
 p = @(model,Xtest)predict(model,Xtest);
 f = @(model,Xtrain,ytrain,lambda)fit(model,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
-c = @(trans)multinomLogregDist('nclasses',2,'transformer',trans);
+c = @(trans)logregDist('nclasses',2,'transformer',trans);
 t = @(a,b)chainTransformer({a(),b()});  % Use () to force evaluation before passing on
 s = @(x)standardizeTransformer(false);
 k = @(sigma)kernelTransformer('rbf',sigma);
@@ -82,7 +82,7 @@ testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)m(p(f(c(sigma),Xtrain,ytrain,l
 % Of course we could have done this all in one step.
 %%
 %  testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
-%  mode(predict(fit(multinomLogregDist...
+%  mode(predict(fit(logregDist...
 %  'nclasses',2,'transformer',...
 %  chainTransformer(...
 %  {standardizeTransformer(false),kernelTransformer('rbf', sigma)})),...
@@ -122,7 +122,7 @@ set(gca,'XScale','log');
 %% Refit
 % Now lets retrain the model using the best lambda and sigma values
 T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',bestSigma)});
-m = multinomLogregDist('nclasses',2,'transformer',T);
+m = logregDist('nclasses',2,'transformer',T);
 m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda,'prior','l2');
 pred = predict(m,Xtest);
 yhat = mode(pred);

@@ -1,7 +1,7 @@
 load soy;
 
 T = chainTransformer({standardizeTransformer(false),addOnesTransformer});
-LR = multinomLogregDist('nclasses', 3, 'transformer', T);
+LR = logregDist('nclasses', 3, 'transformer', T);
 
 LRfit = @(Xtrain,ytrain,lambda)...
   fit(LR, 'X', Xtrain, 'y', ytrain, 'lambda',lambda,'prior','l2', 'method', 'lbfgs');
