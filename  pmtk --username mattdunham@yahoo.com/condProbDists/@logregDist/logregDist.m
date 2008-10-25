@@ -274,7 +274,7 @@ classdef logregDist < condProbDist
     methods(Static = true)
 
         function test()
-            % check functions are syntactically correct
+        % check functions are syntactically correct
             n = 10; d = 3; C = 2;
             X = randn(n,d );
             y = sampleDiscrete((1/C)*ones(1,C), n, 1);
@@ -291,6 +291,10 @@ classdef logregDist < condProbDist
         end
 
         function demoCrabs()
+        % Here we fit an L2 regularized logistic regression model to the crabs 
+        % data set and predict using three methods: MAP plugin approx, Monte
+        % Carlo approx, and using a closed form approximation to the posterior
+        % predictive. 
             [Xtrain, ytrain, Xtest, ytest] = makeCrabs;
             sigma2 = 32/5;
             T = chainTransformer({standardizeTransformer(false), kernelTransformer('rbf', sigma2)});
