@@ -32,7 +32,7 @@ classdef logregDist < condProbDist
             % Compute the map estimate of the weights, obj.w for the model given
             % the training data, the prior type and regularization value, and the
             % optimization method. If prior is set to 'L2', the laplace
-            % approximation to the posterior p(w|D) is also set: obj.posteriorW
+            % approximation to the posterior p(w|D) is also set.
             %
             % FORMAT:
             %           model = fit(model, 'name1', val1, 'name2', val2, ...)
@@ -193,7 +193,7 @@ classdef logregDist < condProbDist
 
         function obj = fitL1(obj,X,Y1,lambda,method,offsetAdded)
         % Fit using the specified L1 regularizer, lambda via the specified method.
-            [n,d] = size(X);
+            [n,d] = size(X);                                %#ok
             
             lambdaVec = lambda*ones(d,obj.nclasses-1);
             if(offsetAdded),lambdaVec(:,1) = 0;end
@@ -237,7 +237,7 @@ classdef logregDist < condProbDist
 
         function [obj,output] = fitL2(obj,X,Y1,lambda,method,offsetAdded)
         % Fit using the specified L1 regularizer, lambda via the specified method.
-           [n,d] = size(X);
+           [n,d] = size(X);                                                         %#ok
             switch lower(method)
                 case 'boundoptrelaxed'
                     if(offsetAdded),warning('logregDist:offset','currently penalizes offset weight'),end
@@ -254,11 +254,11 @@ classdef logregDist < condProbDist
                     options.Method = method;
                     options.Display = 0;
                     winit = zeros(d*(obj.nclasses-1),1);
-                    [obj.w, f, exitflag, output] = minFunc(@multinomLogregNLLGradHessL2, winit, options, X, Y1, lambda,offsetAdded);
+                    [obj.w, f, exitflag, output] = minFunc(@multinomLogregNLLGradHessL2, winit, options, X, Y1, lambda,offsetAdded); %#ok
             end
             try
                 wMAP = obj.w;
-                [nll, g, H] = multinomLogregNLLGradHessL2(wMAP, X, Y1, lambda); % H = hessian of neg log lik
+                [nll, g, H] = multinomLogregNLLGradHessL2(wMAP, X, Y1, lambda); %#ok  H = hessian of neg log lik    
                 C = inv(H);
                 obj.posteriorW = mvnDist(wMAP, C); %C  = inv Hessian(neg log lik)
             catch
@@ -280,15 +280,15 @@ classdef logregDist < condProbDist
             y = sampleDiscrete((1/C)*ones(1,C), n, 1);
             mL2 = logregDist('nclasses', C);
             mL2 = fit(mL2, 'X', X, 'y', y);
-            predMAPL2 = predict(mL2, 'X',X);
-            [predMCL2,samplesL2]  = predict(mL2,'X',X,'method','mc','nsamples',2000);
-            predExactL2 = predict(mL2,'X',X,'method','integral');
-            llL2 = logprob(mL1, X, y);
+            predMAPL2 = predict(mL2, 'X',X);                                                %#ok
+            [predMCL2,samplesL2]  = predict(mL2,'X',X,'method','mc','nsamples',2000);       %#ok
+            predExactL2 = predict(mL2,'X',X,'method','integral');                           %#ok
+            llL2 = logprob(mL2, X, y);                                                      %#ok
             %%
             mL1 = logregDist('nclasses',C);
             mL1 = fit(mL1,'X',X,'y',y,'prior','L1','lambda',0.1);
-            pred = predict(mL1,'X',X);
-        end
+            pred = predict(mL1,'X',X);                                                      %#ok
+        end %!
 
         function demoCrabs()
         % Here we fit an L2 regularized logistic regression model to the crabs 
@@ -307,7 +307,7 @@ classdef logregDist < condProbDist
             nerrsMAP   = sum(mode(Pmap)' ~= ytest)
             nerrsMC    = sum(mode(Pmc)' ~= ytest)
             nerrsExact = sum(mode(Pexact)' ~= ytest)      
-        end
+        end %!
 
         function demoOptimizer()
             setSeed(1);
@@ -316,7 +316,9 @@ classdef logregDist < condProbDist
             methods = {'bb',  'cg', 'lbfgs', 'newton'};
             lambda = 1e-3;
             figure; hold on;
+            
             [styles, colors, symbols] =  plotColors;
+            
             for mi=1:length(methods)
                 tic
                 [m, output{mi}] = fit(logregDist, 'X', X, 'y', Y, ...
@@ -329,52 +331,73 @@ classdef logregDist < condProbDist
                 legendstr{mi}  = sprintf('%s', methods{mi});
             end
             legend(legendstr)
-        end
+        end %!
 
 
         function demoVisualizePredictive()
-
-
-            n = 300; d = 2;
-            setSeed(0);
-            X = rand(n,d);
-            Y = ones(n,1);
-            Y(X(:,1) < (0.4+0.1*randn(n,1))) = 2;
-            Y(X(:,1) > (0.8 +0.05*randn(n,1))& X(:,2) > 0.8) = 2;
-            Y(X(:,1) > 0.7 & X(:,1) < 0.8 & X(:,2) < 0.1) = 2;
-
-
-            sigma2 = 1; lambda = 1e-3;
-            T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',sigma2)});
-            model = logregDist('nclasses',2, 'transformer', T);
-            model = fit(model,'prior','l2','lambda',lambda,'X',X,'y',Y,'method','lbfgs');
-
-
-            [X1grid, X2grid] = meshgrid(0:0.01:1,0:0.01:1);
-            [nrows,ncols] = size(X1grid);
-            testData = [X1grid(:),X2grid(:)];
-            pred = predict(model,testData);
-            probGrid = reshape(pred.probs(:,1),nrows,ncols);
-
-
-            figure;
-            plot(X(Y==1,1),X(Y==1,2),'.r','MarkerSize',20); hold on;
-            plot(X(Y==2,1),X(Y==2,2),'.b','MarkerSize',20);
-            set(gca,'XTick',0:0.5:1,'YTick',0:0.5:1);
-            title('Training Data');
-
-
-            figure;
-            surf(X1grid,X2grid,probGrid);
-            shading interp;
-            view([0 90]);
-            colorbar
-            set(gca,'XTick',0:0.5:1,'YTick',0:0.5:1);
-            title('Predictive Distribution');
-
-
-
-        end
+        %% Logistic Regression: Visualizing the Predictive Distribution
+        % Here we fit a logistic regression model to synthetic data and visualize the
+        % predictive distribution. We use an L2 regularizer and perform an RBF expansion
+        % of the data.
+        %% Load and Plot the Data
+        % Our synthetic data consists of 300 2D examples from two different classes, 1 and 2.
+        load synthetic2Ddata
+        figure;
+        plot(X(Y==1,1),X(Y==1,2),'.r','MarkerSize',20); hold on;
+        plot(X(Y==2,1),X(Y==2,2),'.b','MarkerSize',20);
+        set(gca,'XTick',0:0.5:1,'YTick',0:0.5:1);
+        title('Training Data');
+        legend({'Class1','Class2'},'Location','BestOutside');
+        %% Create the Data Transformer
+        % We will make use of PMTK's transformer objects to easily preprocess the data
+        % and perform the basis expansion. We chain three transformers together, which
+        % will be applied to the data in sequence. When we pass our chainTransformer to
+        % our model, (which we will create shortly), all of the details of the
+        % transformation are retained, and where appropriate, applied to future test data.
+        %
+        sigma2 = 1;          % kernel bandwidth
+        T = chainTransformer({standardizeTransformer(false)      ,...
+        kernelTransformer('rbf',sigma2)} );
+        %% Create the Model
+        % We now create a new logistic regression model and pass it the transformer object
+        % we just created.
+        model = logregDist('nclasses',2, 'transformer', T);
+        %% Fit the Model
+        % To fit the model, we simply call the model's fit method and pass in the data.
+        % Here we use an L2 regularizer, however, an L1 sparsity promoting regularizer
+        % could have been used just as easily by replacing the string 'l2' with 'l1'.
+        lambda = 1e-3;                                              % L2 regularizer
+        model = fit(model,'prior','l2','lambda',lambda,'X',X,'y',Y);
+        %%
+        % We can specify which optimization method we would like to use by passing in
+        % its name to the fit method as in the following. There are number of options
+        % but reasonable defaults exist.
+        %%
+        %  model = fit(model,'prior','l2','lambda',lambda,'X',X,'y',Y,'method','lbfgs');
+        %% Predict
+        % To visualize the predictive distribution we will first create grid of points
+        % in our original 2D feature space and evaluate the posterior probability that
+        % each point belongs to class 1.
+        %
+        [X1grid, X2grid] = meshgrid(0:0.01:1,0:0.01:1);
+        [nrows,ncols] = size(X1grid);
+        testData = [X1grid(:),X2grid(:)];
+        %%
+        % The output of the predict method is a discrete distribution over the class
+        % labels. We extract the probabilities of each test point belonging to class 1
+        % and reshape the vector for plotting purposes.
+        pred = predict(model,'X',testData);              % pred is an object - a discrete distribution
+        pclass1 = pred.probs(:,1);
+        probGrid = reshape(pclass1,nrows,ncols);
+        %% Plot the Predictive Distribution
+        % We can now make use of Matlab's excellent plotting capabilities and plot the
+        % surface of the distribution.
+        figure;
+        surf(X1grid,X2grid,probGrid);
+        shading interp; view([0 90]); colorbar;
+        set(gca,'XTick',0:0.5:1,'YTick',0:0.5:1);
+        title('Predictive Distribution');
+        end%!
 
         %{
 function demoMnist()
@@ -470,7 +493,7 @@ function demoMnist()
                 psi = ps.samples(s,:);
                 plot(X, psi, 'r-');
             end
-        end
+        end%!
 
         function demoLaplaceGirolami()
             % Based on code written by Mark Girolami
