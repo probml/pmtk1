@@ -608,10 +608,12 @@ classdef logregDist < condProbDist
         title('decision boundary for sampled w')
         subplot(2,2,3)
         plotPredictive(mean(pred));
-        title('MC approx of p(y=1|x)')
-        subplot(2,2,4)
-        plotPredictive(mean(postPredict(m, grid, 'method', 'integral')));
-        title('numerical approx of p(y=1|x)')
+            title('MC approx of p(y=1|x)')
+
+            subplot(2,2,4)
+            plotPredictive(mean(postPredict(m, grid, 'method', 'integral')));
+            title('numerical approx of p(y=1|x)')
+
             % subfunction
             function plotPredictive(pred)
                 contour(x1,x2,reshape(pred,[nx,nx]),30);
@@ -620,9 +622,6 @@ classdef logregDist < condProbDist
                 plot(X((y==0),1),X((y==0),2),'bo');
             end
         end
-
-%-------------------------------------------------------------------------------
-%-------------------------------------------------------------------------------
 
         function demoOptimizer2()
             logregDist.helperOptimizer('documents');

@@ -1,0 +1,296 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Binary Classification of SAT Data via Logistic Regression</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-10-26">
+      <meta name="m-file" content="demoSatPublished"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>Binary Classification of SAT Data via Logistic Regression</h1>
+         <introduction>
+            <p>In this example, we classify whether or not a student will pass a course based on their SAT score, using logistic regression.</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Load Data</a></li>
+               <li><a href="#6">Fit via MLE</a></li>
+               <li><a href="#7">Classify Training Examples</a></li>
+               <li><a href="#8">Plot MLE</a></li>
+               <li><a href="#9">Fit Using Laplace Approximation to the Posterior</a></li>
+               <li><a href="#10">Plot Posterior of w</a></li>
+               <li><a href="#11">Predict using Monte Carlo sampling of the Posterior Predictive</a></li>
+               <li><a href="#13">Plot Credible Intervals</a></li>
+               <li><a href="#14">Plot Posterior Predictive Samples</a></li>
+            </ul>
+         </div>
+         <h2>Load Data<a name="1"></a></h2><pre class="codeinput">setSeed(0);
+stat = load(<span class="string">'satData.txt'</span>);
+</pre><p>The data is from Johnson and Albert p77 table 3.1</p>
+         <p>Columns of stat:</p>
+         <div>
+            <ol>
+               <li>pass [0 | 1]</li>
+               <li>all ones</li>
+               <li>all ones</li>
+               <li>SAT score</li>
+               <li>prerequisite grade where A=5,B=4,C=3,D=2,F=1</li>
+            </ol>
+         </div>
+         <p>The data is in {0,1} 0 for fail, 1 for pass. We will convert to {1,2}</p><pre class="codeinput">y = stat(:,1);                      <span class="comment">% class labels</span>
+X = stat(:,4);                      <span class="comment">% SAT scores</span>
+[X,perm] = sort(X,<span class="string">'ascend'</span>);        <span class="comment">% sort for plotting purposes</span>
+y = y(perm) + 1;                    <span class="comment">% logregDist requires labels in {1:C}</span>
+</pre><h2>Fit via MLE<a name="6"></a></h2><pre class="codeinput">T = chainTransformer({standardizeTransformer(false),addOnesTransformer});
+m = logregDist(<span class="string">'nclasses'</span>,2,<span class="string">'transformer'</span>, T);
+m = fit(m, <span class="string">'X'</span>, X, <span class="string">'y'</span>, y);         <span class="comment">% MLE performed if no prior specified</span>
+</pre><h2>Classify Training Examples<a name="7"></a></h2><pre class="codeinput">pred = predict(m,<span class="string">'X'</span>, X);           <span class="comment">% predict on the training examples using MLE</span>
+yhat = mode(pred) -1;               <span class="comment">% most probable class labels (converted back to {0,1})</span>
+yprob = pred.probs(:,2);            <span class="comment">% probability of passing given SAT score and fitted weights</span>
+</pre><h2>Plot MLE<a name="8"></a></h2><pre class="codeinput">figure; hold <span class="string">on</span>
+plot(X, y-1 , <span class="string">'ko'</span>, <span class="string">'linewidth'</span>, 3, <span class="string">'markersize'</span>, 12);    <span class="comment">% y-1 to convert from {1,2} -&gt; {0,1}</span>
+plot(X, yhat, <span class="string">'b.'</span>,                 <span class="string">'markersize'</span>, 18);
+plot(X, yprob,<span class="string">'xr'</span>, <span class="string">'linewidth'</span>, 3, <span class="string">'markersize'</span>, 12);
+set(gca, <span class="string">'ylim'</span>         , [-0.2 1.6]                ,<span class="keyword">...</span>
+         <span class="string">'YTick'</span>        , [0,0.5,1]                 ,<span class="keyword">...</span>
+         <span class="string">'YTickLabel'</span>   , {<span class="string">'Fail  0'</span>,<span class="string">''</span>,<span class="string">'Pass  1'</span>}  ,<span class="keyword">...</span>
+         <span class="string">'FontSize'</span>     , 12                        ,<span class="keyword">...</span>
+         <span class="string">'YGrid'</span>        , <span class="string">'on'</span>                      ,<span class="keyword">...</span>
+         <span class="string">'box'</span>          , <span class="string">'on'</span>);
+xlabel(<span class="string">'SAT Score'</span>)
+legend({<span class="string">'Actual'</span>,<span class="string">'Predicted'</span>,<span class="string">'p( passing | SAT Score , w )'</span>},<span class="string">'Location'</span>,<span class="string">'NorthWest'</span>);
+title(<span class="string">'MLE'</span>);
+</pre><img vspace="5" hspace="5" src="demoSatPublished_01.png"> <h2>Fit Using Laplace Approximation to the Posterior<a name="9"></a></h2>
+         <p>Here we fit in much the same way but specify an L2 prior. The laplace approximation to the posterior, an mvnDist object, is
+            automatically assigned to the posteriorW property of our logregDist object.
+         </p><pre class="codeinput">T = chainTransformer({standardizeTransformer(false),addOnesTransformer});
+mBayes = logregDist(<span class="string">'nclasses'</span>,2,<span class="string">'transformer'</span>,T);
+mBayes = fit(mBayes,<span class="string">'X'</span>,X,<span class="string">'y'</span>,y,<span class="string">'prior'</span>,<span class="string">'l2'</span>,<span class="string">'lambda'</span>,1e-3);
+</pre><h2>Plot Posterior of w<a name="10"></a></h2><pre class="codeinput">figure; hold <span class="string">on</span>
+subplot2(2,2,1,1); plot(marginal(mBayes.posteriorW,1),<span class="string">'plotArgs'</span>, {<span class="string">'linewidth'</span>,2}); title(<span class="string">'w0'</span>)
+subplot2(2,2,1,2); plot(mBayes.posteriorW); xlabel(<span class="string">'w0'</span>); ylabel(<span class="string">'w1'</span>);
+subplot2(2,2,2,2); plot(marginal(mBayes.posteriorW,2),<span class="string">'plotArgs'</span>, {<span class="string">'linewidth'</span>,2}); title(<span class="string">'w1'</span>)
+</pre><img vspace="5" hspace="5" src="demoSatPublished_02.png"> <h2>Predict using Monte Carlo sampling of the Posterior Predictive<a name="11"></a></h2>
+         <p>When performing Monte Carlo sampling, the samples are automatically averaged and used to create the discreteDist object storing
+            distributions over class labels for every example. However, the original samples are also returned in a 3D matrix such that
+            samples(i,c,s) is the probability of example X(i,:) is in class c according to sample s.
+         </p><pre class="codeinput">[pred,samples] = predict(mBayes,<span class="string">'X'</span>,X,<span class="string">'method'</span>,<span class="string">'mc'</span>,<span class="string">'nsamples'</span>,100);
+</pre><p>We will create a sampling distribution object by passing in the samples corresponing to the probability of passing. The squeeze
+            function simply takes a matrix of size n-by-1-s and removes the superfluous middle dimension. Finally, samples are stored
+            row-wise and so we transpose.
+         </p><pre class="codeinput">ps = sampleDist(squeeze(samples(:,2,:))');
+</pre><h2>Plot Credible Intervals<a name="13"></a></h2>
+         <p>Here we obtain error bars on our predictions by looking at the credible intervals.</p><pre class="codeinput">figure; hold <span class="string">on</span>
+plot(X, y-1, <span class="string">'ko'</span>, <span class="string">'linewidth'</span>, 3, <span class="string">'markersize'</span>, 12);
+<span class="keyword">for</span> i=1:length(y)
+    psi = marginal(ps, i);
+    [Q5, Q95] = credibleInterval(psi);
+    line([X(i) X(i)], [Q5 Q95], <span class="string">'linewidth'</span>, 3);
+    plot(X(i), median(psi), <span class="string">'rx'</span>, <span class="string">'linewidth'</span>, 3, <span class="string">'markersize'</span>, 12);
+<span class="keyword">end</span>
+set(gca, <span class="string">'ylim'</span>         , [-0.1 1.6]                                    ,<span class="keyword">...</span>
+         <span class="string">'YTick'</span>        , 0:0.25:1                                      ,<span class="keyword">...</span>
+         <span class="string">'YTickLabel'</span>   , {<span class="string">'(Fail)  0'</span>,<span class="string">'0.25'</span>,<span class="string">'0.5'</span>,<span class="string">'0.75'</span>,<span class="string">'(Pass)  1'</span>} ,<span class="keyword">...</span>
+         <span class="string">'FontSize'</span>     , 12                                            ,<span class="keyword">...</span>
+         <span class="string">'YGrid'</span>        , <span class="string">'on'</span>                                          ,<span class="keyword">...</span>
+         <span class="string">'box'</span>          , <span class="string">'on'</span>);
+xlabel(<span class="string">'SAT Score'</span>)
+legend({<span class="string">'Actual'</span>,<span class="string">'95% credible interval'</span>,<span class="string">'p( passing | SAT Score , w )'</span>},<span class="string">'Location'</span>,<span class="string">'NorthWest'</span>);
+title(<span class="string">'Bayes'</span>);
+</pre><img vspace="5" hspace="5" src="demoSatPublished_03.png"> <h2>Plot Posterior Predictive Samples<a name="14"></a></h2><pre class="codeinput">figure; hold <span class="string">on</span>
+plot(X, y-1, <span class="string">'ko'</span>, <span class="string">'linewidth'</span>, 3, <span class="string">'markersize'</span>, 12);
+<span class="keyword">for</span> s=1:30
+    psi = ps.samples(s,:);
+    plot(X, psi, <span class="string">'r-'</span>);
+<span class="keyword">end</span>
+axis <span class="string">tight</span>
+set(gca, <span class="string">'ylim'</span>         , [-0.1 1.2]                                    ,<span class="keyword">...</span>
+          <span class="string">'YTick'</span>       , 0:0.25:1                                      ,<span class="keyword">...</span>
+          <span class="string">'YTickLabel'</span>  , {<span class="string">'(Fail)  0'</span>,<span class="string">'0.25'</span>,<span class="string">'0.5'</span>,<span class="string">'0.75'</span>,<span class="string">'(Pass)  1'</span>} ,<span class="keyword">...</span>
+          <span class="string">'FontSize'</span>    , 12                                            ,<span class="keyword">...</span>
+          <span class="string">'YGrid'</span>       , <span class="string">'on'</span>                                          ,<span class="keyword">...</span>
+          <span class="string">'box'</span>         , <span class="string">'on'</span>);
+xlabel(<span class="string">'SAT Score'</span>);
+title(<span class="string">'Posterior Predictive Samples'</span>);
+</pre><img vspace="5" hspace="5" src="demoSatPublished_04.png"> <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Binary Classification of SAT Data via Logistic Regression
+% In this example, we classify whether or not a student will pass a
+% course based on their SAT score, using logistic regression. 
+%% Load Data
+setSeed(0);
+stat = load('satData.txt'); 
+%%
+% The data is from Johnson and Albert p77 table 3.1
+%%
+% Columns of stat:
+%%
+% # pass [0 | 1]
+% # all ones
+% # all ones
+% # SAT score
+% # prerequisite grade where A=5,B=4,C=3,D=2,F=1
+%%
+% The data is in {0,1} 0 for fail, 1 for pass. We will convert to {1,2}
+y = stat(:,1);                      % class labels
+X = stat(:,4);                      % SAT scores
+[X,perm] = sort(X,'ascend');        % sort for plotting purposes
+y = y(perm) + 1;                    % logregDist requires labels in {1:C}
+%% Fit via MLE
+T = chainTransformer({standardizeTransformer(false),addOnesTransformer});
+m = logregDist('nclasses',2,'transformer', T);
+m = fit(m, 'X', X, 'y', y);         % MLE performed if no prior specified
+%% Classify Training Examples
+pred = predict(m,'X', X);           % predict on the training examples using MLE
+yhat = mode(pred) -1;               % most probable class labels (converted back to {0,1})                  
+yprob = pred.probs(:,2);            % probability of passing given SAT score and fitted weights
+%% Plot MLE
+figure; hold on
+plot(X, y-1 , 'ko', 'linewidth', 3, 'markersize', 12);    % y-1 to convert from {1,2} -> {0,1}
+plot(X, yhat, 'b.',                 'markersize', 18);
+plot(X, yprob,'xr', 'linewidth', 3, 'markersize', 12);
+set(gca, 'ylim'         , [-0.2 1.6]                ,...
+         'YTick'        , [0,0.5,1]                 ,...
+         'YTickLabel'   , {'Fail  0','','Pass  1'}  ,...
+         'FontSize'     , 12                        ,...
+         'YGrid'        , 'on'                      ,...
+         'box'          , 'on');
+xlabel('SAT Score')
+legend({'Actual','Predicted','p( passing | SAT Score , w )'},'Location','NorthWest');
+title('MLE');
+%%  Fit Using Laplace Approximation to the Posterior
+% Here we fit in much the same way but specify an L2 prior. The laplace 
+% approximation to the posterior, an mvnDist object, is automatically 
+% assigned to the posteriorW property of our logregDist object. 
+T = chainTransformer({standardizeTransformer(false),addOnesTransformer});
+mBayes = logregDist('nclasses',2,'transformer',T);
+mBayes = fit(mBayes,'X',X,'y',y,'prior','l2','lambda',1e-3); 
+%% Plot Posterior of w
+figure; hold on
+subplot2(2,2,1,1); plot(marginal(mBayes.posteriorW,1),'plotArgs', {'linewidth',2}); title('w0')
+subplot2(2,2,1,2); plot(mBayes.posteriorW); xlabel('w0'); ylabel('w1');
+subplot2(2,2,2,2); plot(marginal(mBayes.posteriorW,2),'plotArgs', {'linewidth',2}); title('w1')
+%% Predict using Monte Carlo sampling of the Posterior Predictive
+% When performing Monte Carlo sampling, the samples are automatically
+% averaged and used to create the discreteDist object storing
+% distributions over class labels for every example. However, the
+% original samples are also returned in a 3D matrix such that
+% samples(i,c,s) is the probability of example X(i,:) is in class c
+% according to sample s. 
+[pred,samples] = predict(mBayes,'X',X,'method','mc','nsamples',100);  
+%%
+% We will create a sampling distribution object by passing in the
+% samples corresponing to the probability of passing. The squeeze
+% function simply takes a matrix of size n-by-1-s and removes the
+% superfluous middle dimension. Finally, samples are stored row-wise
+% and so we transpose. 
+ps = sampleDist(squeeze(samples(:,2,:))');
+%% Plot Credible Intervals
+% Here we obtain error bars on our predictions by looking at the
+% credible intervals. 
+figure; hold on
+plot(X, y-1, 'ko', 'linewidth', 3, 'markersize', 12);
+for i=1:length(y)
+    psi = marginal(ps, i);
+    [Q5, Q95] = credibleInterval(psi);
+    line([X(i) X(i)], [Q5 Q95], 'linewidth', 3);
+    plot(X(i), median(psi), 'rx', 'linewidth', 3, 'markersize', 12);
+end
+set(gca, 'ylim'         , [-0.1 1.6]                                    ,...
+         'YTick'        , 0:0.25:1                                      ,...
+         'YTickLabel'   , {'(Fail)  0','0.25','0.5','0.75','(Pass)  1'} ,...
+         'FontSize'     , 12                                            ,...
+         'YGrid'        , 'on'                                          ,...
+         'box'          , 'on');
+xlabel('SAT Score')
+legend({'Actual','95% credible interval','p( passing | SAT Score , w )'},'Location','NorthWest');
+title('Bayes');  
+%% Plot Posterior Predictive Samples  
+figure; hold on
+plot(X, y-1, 'ko', 'linewidth', 3, 'markersize', 12);
+for s=1:30
+    psi = ps.samples(s,:);
+    plot(X, psi, 'r-');
+end
+axis tight
+set(gca, 'ylim'         , [-0.1 1.2]                                    ,...
+          'YTick'       , 0:0.25:1                                      ,...
+          'YTickLabel'  , {'(Fail)  0','0.25','0.5','0.75','(Pass)  1'} ,...
+          'FontSize'    , 12                                            ,...
+          'YGrid'       , 'on'                                          ,...
+          'box'         , 'on');
+xlabel('SAT Score');
+title('Posterior Predictive Samples');              
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

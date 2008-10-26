@@ -77,7 +77,7 @@ function publishMethod(mfile,methodName,evalCode)
     publish([methodName,'Published.m'],options);
 %% clean up and display     
     delete([methodName,'Published.m']);
-    web(fullfile('file:///',pwd,'html',[methodName,'Published.html']));
+    web(fullfile('file:///',pwd,[mfile,'Examples'],methodName,[methodName,'Published.html']));
     
     
 end
