@@ -101,13 +101,14 @@ classdef mvnDist < vecDist
     end
     
     
-    function samples = sample(obj,n)
-    % Sample n times from this distribution: samples is of size
-    % nsamples-by-ndimensions
-       A = chol(obj.Sigma,'lower');
-       Z = randn(length(obj.mu),n);
-       samples = bsxfun(@plus,obj.mu(:), A*Z)';
-    end
+%     function samples = sample(obj,n)
+%     % Sample n times from this distribution: samples is of size
+%     % nsamples-by-ndimensions
+%        if(nargin < 2), n = 1; end;
+%        A = chol(obj.Sigma,'lower');
+%        Z = randn(length(obj.mu),n);
+%        samples = bsxfun(@plus,obj.mu(:), A*Z)';
+%     end
     
     function obj = fit(obj, varargin)
       % Point estimate of parameters

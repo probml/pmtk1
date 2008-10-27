@@ -136,11 +136,16 @@ classdef logregDist < condProbDist
         % samples -  A 3D matrix such that samples(i,c,s) = probability that
         %            example i belongs to class c according to sample s. If
         %            method is not 'mc', s = 1 and samples = pred.probs
+            
+            if(nargin == 2 && ~ischar(varargin{1}))
+                varargin = [varargin,varargin{1}];
+                varargin{1} = 'X';
+            end
             [X,w,method,nsamples] = process_options(varargin,'X',[],'w',[],'method','plugin','nsamples',1000);
             if ~isempty(obj.transformer)
                 X = test(obj.transformer, X);
             end
-            
+               
             switch method
                 
                 case 'plugin'
@@ -161,6 +166,7 @@ classdef logregDist < condProbDist
                     if(obj.nclasses ~=2),error('This method is only available in the 2 class case');                    end
                     w = checkW(w);
                     p = sigmoidTimesGauss(X, w.mu(:), w.Sigma);
+                    p = p(:);
                     pred = discreteDist([p,1-p]);
                 otherwise
                     error('%s is an unsupported prediction method',method);
@@ -550,8 +556,10 @@ classdef logregDist < condProbDist
 
         % Plot data and plug-in predictive
         figure;
-        m = fit(logregDist, 'X', X, 'y', y);
-        plotPredictive(mean(predict(m,grid)));
+        m = fit(logregDist, 'X', X, 'y', y+1);
+        pred = predict(m,'X',grid);
+        plotPredictive(pred.probs(:,2));
+        
         title('p(y=1|x, wMLE)')
 
         % Plot prior and posterior
@@ -577,10 +585,10 @@ classdef logregDist < condProbDist
         plot(W(j,1),W(j,2),'.','MarkerSize',40);
         %Compute the Laplace Approximation
         tic
-        m = inferParams(logregDist, 'X', X, 'y', y, 'lambda', 1/alpha, 'method', 'laplace');
+        m  = fit(logregDist,'X',X,'y',y+1,'prior','l2','lambda',1/alpha);
         toc
-        wMAP = m.w.mu;
-        C = m.w.Sigma;
+        wMAP = m.posteriorW.mu;
+        C = m.posteriorW.Sigma;
         %[wMAP, C] = logregFitIRLS(t, X, 1/alpha);
         Log_Laplace_Posterior = log(mvnpdf(W, wMAP', C)+eps);
         subplot(J,K,4);
@@ -592,13 +600,16 @@ classdef logregDist < condProbDist
         % wMAP
         figure;
         subplot(2,2,1)
-        plotPredictive(mean(postPredict(m, grid, 'method', 'plugin')));
+        pred = predict(m,'X',grid,'method','plugin');
+        plotPredictive(pred.probs(:,2));
         title('p(y=1|x, wMAP)')
         subplot(2,2,2); hold on
         S = 100;
         plot(X((y==1),1),X((y==1),2),'r.');                                 
         plot(X((y==0),1),X((y==0),2),'bo');
-        pred = postPredict(m, grid, 'method', 'MC', 'nsamples', S);
+        [predDist,samples] = predict(m,'X',grid,'method','mc','nsamples',S);
+        pred = sampleDist(squeeze(samples(:,2,:))');
+        %pred = postPredict(m, grid, 'method', 'MC', 'nsamples', S);
         for s=1:min(S,20)
             p = pred.samples(s,:);
             contour(x1,x2,reshape(p,[nx,nx]),[0.5 0.5]);
@@ -610,7 +621,8 @@ classdef logregDist < condProbDist
         plotPredictive(mean(pred));
         title('MC approx of p(y=1|x)')
         subplot(2,2,4)
-        plotPredictive(mean(postPredict(m, grid, 'method', 'integral')));
+        pred = predict(m,'X',grid,'method','integral');
+        plotPredictive(pred.probs(:,2));
         title('numerical approx of p(y=1|x)')
             % subfunction
             function plotPredictive(pred)
@@ -625,8 +637,9 @@ classdef logregDist < condProbDist
 %-------------------------------------------------------------------------------
 
         function demoOptimizer2()
-            logregDist.helperOptimizer('documents');
-            logregDist.helperOptimizer('soy');
+            % slow
+            %logregDist.helperOptimizer('documents');
+            %logregDist.helperOptimizer('soy');
         end
 
         function helperOptimizer(dataset)
@@ -634,14 +647,14 @@ classdef logregDist < condProbDist
             switch dataset
                 case 'documents'
                     load docdata; % n=900, d=600, C=2in training set
-                    y = ytrain-1; % convert to 0,1
+                    y = ytrain; 
                     X = xtrain;
                     methods = {'bb',  'cg', 'lbfgs', 'newton'};
                 case 'soy'
                     load soy; % n=307, d = 35, C = 3;
                     y = Y; % turn into a binary classification problem by combining classes 1,2
-                    y(Y==1) = 0;
-                    y(Y==2) = 0;
+                    y(Y==1) = 2;
+                    y(Y==2) = 2;
                     y(Y==3) = 1;
                     methods = {'bb',  'cg', 'lbfgs', 'newton',  'boundoptRelaxed'};
             end
