@@ -113,12 +113,13 @@ classdef crossValidation
             
             if(obj.verbose),tic,end
             if(iscell(obj.CVvalues))
-                obj.CVvaluesReshaped = num2cell(gridSpace(obj.CVvalues{:}));
-            else
-                if(size(obj.CVvalues,1) < size(obj.CVvalues,2))
-                    obj.CVvalues = obj.CVvalues';
+                if(numel(obj.CVvalues) > 1)
+                    obj.CVvaluesReshaped = num2cell(gridSpace(obj.CVvalues{:}));
+                else
+                   error('Do not enclose CV values inside of a cell unless you are performing multidimensional CV');
                 end
-                obj.CVvaluesReshaped = num2cell(obj.CVvalues);
+            else
+                obj.CVvaluesReshaped = num2cell(obj.CVvalues(:));
             end
 
             if(ischar(obj.lossFunction))
@@ -248,7 +249,7 @@ classdef crossValidation
     methods(Static = true)
 
         
-        function demo()
+        function test()
             %% Cross Validation Over a 2D Grid of Values
             % Here we demonstrate how to cross validate two values, lambda and sigma
             % simultaneously using the crossValidation class. We use the crabs data set and
@@ -333,7 +334,7 @@ classdef crossValidation
             % Of course we could have done this all in one step.
             %%
             %  testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
-            %  mode(predict(fit(logregDist...
+            %  mode(predict(fit(logregDist(...
             %  'nclasses',2,'transformer',...
             %  chainTransformer(...
             %  {standardizeTransformer(false),kernelTransformer('rbf', sigma)})),...
@@ -355,9 +356,9 @@ classdef crossValidation
             % class with the right inputs.
             modelSelection = crossValidation(                     ...
                 'testFunction' , testFunction                    ,...
-                'CVvalues'     , { logspace(-5,0,50) , 1:0.5:15 },... % every combination will be tested
+                'CVvalues'     , { logspace(-5,0,20) , 1:0.5:15 },... % every combination will be tested
                 'lossFunction' , lossFunction                    ,...
-                'verbose'      , false                           ,... % true by default - shows progress
+                'verbose'      , true                           ,... % true by default - shows progress
                 'Xdata'        , Xtrain                          ,...
                 'Ydata'        , ytrain                          );
 

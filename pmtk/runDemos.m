@@ -45,18 +45,17 @@ clear all
 mvnMcmcInfer.demo();
 tabularFactor.demoSprinkler2();
 tabularFactor.demoSprinkler();
-crossValidation.demo();
 bernoulliDist.demoBayesianUpdatingDiscretePrior();
 bernoulliDist.demoSeqUpdate();
 betaBinomDist.demoEbCancer();
 betaDist.demoPlot();
 binomDist.demoPostPred();
 binomDist.demoPost();
+binomDist.demoPlot();
 pause(2)
 close all
 clear all
 
-binomDist.demoPlot();
 dirichletDist.demoPlotHisto();
 dirichletDist.demoPlot3d();
 gammaDist.demoRainfall();
@@ -66,11 +65,11 @@ gaussDist.demoHeightWeight();
 gaussDist.demoPlot();
 gaussMixDist.demoPlot();
 hiwDist.demo();
+invGammaDist.demoSample();
 pause(2)
 close all
 clear all
 
-invGammaDist.demoSample();
 invGammaDist.demoPlot();
 invWishartDist.demoPlot1d();
 invWishartDist.demoPlot2d();
@@ -80,11 +79,11 @@ mvnDist.demoImputation();
 mvnDist.demoHeightWeight();
 mvnDist.demoPlot2d();
 mvnDist.demoPlot2dMarginals();
+mvnDist.demoCondition2d();
 pause(2)
 close all
 clear all
 
-mvnDist.demoCondition2d();
 mvnDist.demoCondition();
 mvnDist.demoInferParamsMean1d();
 mvnDist.demoInferParamsMean2d();
@@ -94,11 +93,11 @@ mvnDist.demoSeqUpdateSigma1d();
 mvnDist.demoInferParamsMuSigma1dPriors();
 mvnDist.demoSeqUpdateMuSigma1d();
 mvnDist.demoSoftCondition();
+mvnInvWishartDist.demoPlot();
 pause(2)
 close all
 clear all
 
-mvnInvWishartDist.demoPlot();
 mvtDist.demoPlot2dStudentVsGaussian();
 poissonDist.demoPlot();
 sampleDist.demo();
@@ -108,10 +107,6 @@ tabularDist.demoSprinkler();
 wishartDist.demoPlot2d();
 chainTransformer.demo();
 demoChangeOfVars;
-pause(2)
-close all
-clear all
-
 pause(2)
 close all
 clear all
