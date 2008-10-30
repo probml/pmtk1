@@ -12,8 +12,7 @@ function varargout = compileAndRun(fname,varargin)
 %           to 'myfunction', which returns three outputs. 
 %
 % If you will call the compiled version multiple times with the same size,
-% type and number of inputs, use the compile() function instead, as this
-% function deletes the compiled version after execution. 
+% type and number of inputs, use the compileRunAndSave() function instead.
 %
 % Matthew Dunham
 % www.cs.ubc.ca/~mdunham

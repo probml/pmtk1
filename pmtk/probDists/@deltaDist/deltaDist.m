@@ -40,7 +40,7 @@ classdef deltaDist < probDist
     
     methods(Static = true)
         
-        function test()
+        function testClass()
            d = deltaDist(5*randn(10,1));
            d.mean
            d.mode

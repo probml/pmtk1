@@ -91,47 +91,8 @@ classdef gammaDist < scalarDist
           error(['unknown method ' method])
       end
     end
-
-
-
-  end
-
-  %% Demos
-  methods(Static = true)
-    function demoPlot(b)
-      %as = [1 1.5 2  1 1.5 2]; bs = [1 1 1 1.5 1.5 1.5];
-      as = [1 1.5 2];
-      if nargin < 1, b = 1; end
-      bs = b*ones(1,length(as));
-      figure;
-      [styles, colors, symbols] = plotColors;
-      for i=1:length(as)
-        a = as(i); b = bs(i);
-        plot(gammaDist(a,b), 'xrange', [0 7], 'plotArgs', {styles{i}, 'linewidth', 2});
-        hold on
-        legendStr{i} = sprintf('a=%2.1f,b=%2.1f', a, b);
-      end
-      legend(legendStr);
-      title('Gamma distributions')
-    end
-
-    function demoRainfall()
-      % Demo of fitting a Gamma distribution to the rainfall data used in Rice (1995) p383
-      X = dlmread('rainfallData.txt');
-      X = X'; X = X(:); % concatenate across rows, not columns
-      X = X(1:end-5); % removing trailing 0s
-      objMoM = inferParams(gammaDist, 'data', X, 'method', 'mom');
-      objMLE = inferParams(gammaDist, 'data', X, 'method', 'mle');
-      [v, binc] = hist(X);
-      h = binc(2)-binc(1);
-      N = length(X);
-      areaH = h*N;
-      figure(1);clf;bar(binc, v/areaH);hold on
-      xs = [0.05,  binc(end)];
-      h(1)=plot(objMoM, 'xrange', xs, 'plotArgs', {'r-', 'linewidth', 3});
-      h(2)=plot(objMLE, 'xrange', xs, 'plotArgs', {'k:', 'linewidth', 3});
-      legend(h, 'MoM', 'MLE')
-    end
+    
 
   end
+
 end

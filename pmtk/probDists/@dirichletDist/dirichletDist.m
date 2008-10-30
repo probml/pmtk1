@@ -53,27 +53,5 @@ classdef dirichletDist < vecDist
 
   end
 
-  %% Demos
-  methods(Static = true)
-
-    function demoPlot3d()
-      plotDirichlet3d([10 10 10]);
-      %plotDirichlet3d([0.1 0.1 0.1]); % very slow!
-    end
-
-    function demoPlotHisto(alpha, seed)
-      if nargin < 1, alpha = 0.1; end
-      if nargin < 2, seed = 1; end
-      rand('state', seed); randn('state', seed);
-      obj = dirichletDist(alpha*ones(1,5));
-      n = 5;
-      probs = sample(obj, n);
-      figure;
-      for i=1:n
-        subplot(n,1,i); bar(probs(i,:))
-        if i==1, title(sprintf('Samples from Dir %3.1f', alpha)); end
-      end
-    end
-  end
 
 end

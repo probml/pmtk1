@@ -46,10 +46,10 @@ classdef chainTransformer < transformer
   
   
   
-  %% Demos
+  %% Tests
   methods(Static = true)
     
-    function demo()
+    function testClass()
       T = chainTransformer({standardizeTransformer, addOnesTransformer});
       setSeed(0);
       Xtrain = rand(5,3);

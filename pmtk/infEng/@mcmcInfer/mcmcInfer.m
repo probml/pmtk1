@@ -162,25 +162,6 @@ classdef mcmcInfer < infEngine
    %% Static
   methods(Static = true)
     
-    
-    function demoConvDiagGmm()
-      m = gaussMixDist('K', 2, 'mu', [-50 50], 'Sigma', reshape([10^2 10^2], [1 1 2]), ...
-        'mixweights', [0.3 0.7]);
-      seeds = 1:3;
-      sigmas = [10 100 500];
-      N = 1000;
-      for s=1:length(sigmas)
-        eng = mcmcInfer('Nsamples', N, 'Nburnin', 0, 'method', 'metrop', 'seeds', seeds);
-        eng.targetFn = @(x) (logprob(m,x));
-        eng.proposalFn = @(x) (x + (sigmas(s) * randn(1,1)));
-        eng.xinitFn = @() (m.mu(2));
-        eng = enterEvidence(eng, [], []);
-        X = eng.samples;
-        mcmcInfer.plotConvDiagnostics(X, 1, sprintf('sigma prop %5.3f', sigmas(s)));
-      end
-    end
-    
-    
     function plotConvDiagnostics(X, dim, ttl)
       % Plot trace plot, smoothed trace plot, and ACF
       % X(samples, dimensions, chain/seed)
@@ -208,88 +189,6 @@ classdef mcmcInfer < infEngine
       figure;
       stem(acf(X(:,dim,1), 20));
       title(ttl)
-    end
-    
-    function demoGmmBurnin()
-      seeds = 1:3;
-      sigmas = [10 100 500];
-      %sigmas = [10];
-      N = 1000;
-      X = zeros(N,  length(seeds), length(sigmas));
-      for s=1:length(sigmas)
-        m = gaussMixDist('K', 2, 'mu', [-50 50], 'Sigma', reshape([10^2 10^2], [1 1 2]), ...
-          'mixweights', [0.3 0.7]);
-        eng = mcmcInfer('Nsamples', N, 'Nburnin', 0, 'method', 'metrop', 'seeds', seeds);
-        eng.targetFn = @(x) (logprob(m,x));
-        eng.proposalFn = @(x) (x + (sigmas(s) * randn(1,1)));
-        eng.xinitFn = @() (m.mu(2));
-        eng = enterEvidence(eng, [], []);
-        X(:,:,s) = eng.samples;
-      end
-      colors = {'r', 'g', 'b', 'k'};
-      % Trace plots
-      for s=1:length(sigmas)
-        figure; hold on;
-        for i=1:length(seeds)
-          plot(X(:,i,s), colors{i});
-        end
-        Rhat(s) = epsr(X(:,:,s));
-        title(sprintf('sigma prop = %5.3f, Rhat = %5.3f', sigmas(s), Rhat(s)))
-      end
-      % Smoothed trace plots
-      for s=1:length(sigmas)
-        figure; hold on
-        for i=1:length(seeds)
-          movavg = filter(repmat(1/50,50,1), 1, X(:,i,s));
-          plot(movavg,  colors{i});
-        end
-        title(sprintf('sigma prop = %5.3f, Rhat = %5.3f', sigmas(s), Rhat(s)))
-      end
-      % Plot auto correlation function for 1 chain
-      for s=1:length(sigmas)
-        figure;
-        stem(acf(X(:,1,s), 20));
-        title(sprintf('sigma prop = %5.3f', sigmas(s)))
-      end
-      
-    end
-    
-    
-    function demoProposalGmm()
-      sigmas = [10 100 500];
-      for i=1:length(sigmas)
-        mcmcInfer.helperProposalGmm(sigmas(i));
-      end
-    end
-    
-    function x=helperProposalGmm(sigma_prop)
-      % based on code by Christoph Andrieu
-      setSeed(0);
-      m = gaussMixDist('K', 2, 'mu', [-50 50], 'Sigma', reshape([10^2 10^2], [1 1 2]), ...
-        'mixweights', [0.3 0.7]);
-      eng = mcmcInfer('Nsamples', 1000, 'Nburnin', 0, 'method', 'metrop');
-      eng.targetFn = @(x) (logprob(m,x));
-      eng.proposalFn = @(x) (x + (sigma_prop * randn(1,1)));
-      eng.xinitFn = @() (m.mu(2));
-      eng = enterEvidence(eng, [], []);
-      x = eng.samples;
-     
-      figure;
-      nb_iter = eng.Nsamples;
-      x_real = linspace(-100, 100, nb_iter);
-      y_real = exp(logprob(m, x_real(:)));
-      Nbins = 100;
-      plot3(1:nb_iter, x, zeros(nb_iter, 1))
-      hold on
-      plot3(ones(nb_iter, 1), x_real, y_real)
-      [u,v] = hist(x, linspace(-100, 100, Nbins));
-      plot3(zeros(Nbins, 1), v, u/nb_iter*Nbins/200, 'r')
-      hold off
-      grid
-      view(60, 60)
-      xlabel('Iterations')
-      ylabel('Samples')
-      title(sprintf('MH with N(0,%5.3f^2) proposal', sigma_prop))
     end
     
   end

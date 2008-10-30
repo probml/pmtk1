@@ -75,14 +75,4 @@ classdef chordalGraph < undirectedGraph
  
   end % methods
   
-  %% demos
-  methods(Static = true)
-    
-    function demo()
-      chordalGraphDemo; % stored in private directory for brevity
-    end
-
-  end
-
-
 end

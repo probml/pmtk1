@@ -107,31 +107,10 @@ classdef studentDist < scalarDist
      
   end % methods
 
-  %% Demos
   methods(Static = true)
-    function demoPlotStudentVsGaussian(useLog)
-      if nargin < 1, useLog = true; end
-      dofs = [0.1 1 5];
-      xr = [-4 4];
-      figure;
-      [styles, colors, symbols] = plotColors; 
-      N = length(dofs);
-      for i=1:N
-        dof = dofs(i);
-        h = plot(studentDist(dof, 0, 1), 'useLog', useLog, ...
-          'xrange', xr, 'plotArgs', {styles{i},'linewidth',2});
-        %set(h,'color',colors(i)); set(h,'marker',symbols(i))
-        hold on
-        legendStr{i} = sprintf('t(%s=%2.1f)', '\nu', dof);
-      end
-      h = plot(gaussDist(0, 1), 'useLog', useLog, ...
-        'xrange', xr, 'plotArgs', {styles{N+1},'linewidth',2});
-      legendStr{end+1} = 'N(0,1)';
-      legend(legendStr)
-      if useLog, ylabel('log density'); else ylabel('density'); end
-    end
+    
 
-    function demoStudentVsGaussianRobustnessToOutliers()
+    function studentVsGaussianRobustnessToOutliersFigure()
       % Illustrate the robustness of the t-distribution compared to the Gaussian.
       % Written by Matthew Dunham
       gaussVsToutlierDemo;

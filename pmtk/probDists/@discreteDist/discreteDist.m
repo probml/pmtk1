@@ -58,7 +58,7 @@ classdef discreteDist  < probDist
 
   methods(Static = true)
     
-    function test()
+    function testClass()
       p=discreteDist([0.3 0.2 0.5], [-1 0 1]);
       X=sample(p,1000);
       hh=hist(X,[-1 0 1])

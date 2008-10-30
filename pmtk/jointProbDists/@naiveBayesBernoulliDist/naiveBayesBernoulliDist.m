@@ -101,7 +101,7 @@ classdef naiveBayesBernoulliDist < jointProbDist
 
     methods(Static = true)
 
-        function test()
+        function classTest()
             load votes;
             nb = naiveBayesBernoulliDist('nclasses',2);
             nb = fit(nb,'X',X,'Y',Y,'classPrior',dirichletDist([20,3]),'featurePrior',betaDist(15,10));

@@ -138,9 +138,7 @@ classdef dataTable
 
   end
   
-  methods(Static = true)
-    
-  end % methods
+ 
   
 end
   

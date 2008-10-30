@@ -97,64 +97,6 @@ classdef gaussDist < scalarDist
       end
     end
   end
-  
-  %% Demos
-  methods(Static = true)
-    function demoPlot()
-      xs = -3:0.01:3;
-      mu = 0; sigma2 = 1;
-      obj = gaussDist(mu, sigma2);
-      p = exp(logprob(obj,xs));
-      figure; plot(xs, p);
-      figure; plot(xs, normcdf(xs, mu, sqrt(sigma2)));
-    end
-    
-    function demoHeightWeight()
-      rawdata = dlmread('heightWeightData.txt'); % comma delimited file
-      data.Y = rawdata(:,1); % 1=male, 2=female
-      data.X = [rawdata(:,2) rawdata(:,3)]; % height, weight
-      maleNdx = find(data.Y == 1);
-      femaleNdx = find(data.Y == 2);
-      classNdx = {maleNdx, femaleNdx};
-      fnames = {'height','weight'};
-      classNames = {'male', 'female'};
-      figure(1);clf
-      for f=1:2
-        %xrange = [0.9*min(data.X(:,f)) 1.1*max(data.X(:,f)];
-        if f==1, xrange = [40 90]; else xrange = [50 300]; end
-        for c=1:2
-          X = data.X(classNdx{c}, f);
-          pgauss(f,c) = gaussDist;
-          pgauss(f,c) = fit(pgauss(f,c), 'data', X, 'method', 'mle');
-          subplot2(2,2,f,c);
-          plot(pgauss(f,c), 'xrange', xrange);
-          title(sprintf('%s, %s', fnames{f}, classNames{c}));
-          hold on
-          mu = pgauss(f,c).mu;
-          pmu = exp(logprob(pgauss(f,c), mu));
-          line([mu mu], [0 pmu], 'color','r', 'linewidth', 2);
-        end
-      end
-      drawnow
-    end
-    
-    function demoCV()
-      % estimate mu/sigma by cross validation over a small grid
-      mu = 0; sigma = 1;
-      mtrue = gaussDist(mu, sigma^2);
-      ntrain = 100;
-      Xtrain = sample(mtrue, ntrain);
-      mus = [-10 0 10];
-      sigmas = [1 1 1];
-      for i=1:length(sigmas)
-        models{i} = gaussDist(mus(i), sigmas(i)^2);
-        models{i}.clampedMu = true;
-        models{i}.clampedSigma = true;
-      end
-      [mestCV, cvMean, cvStdErr] = exhaustiveSearch(models, @(m) cvScore(m, Xtrain))
-      mestMLE = fit(mtrue, 'data', Xtrain)
-    end
-    
-  end
+ 
   
 end

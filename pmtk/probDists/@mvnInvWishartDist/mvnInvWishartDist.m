@@ -78,37 +78,5 @@ classdef mvnInvWishartDist < vecDist
 
   end
     
-  %% demos
-  methods(Static = true)
-    function demoPlot()
-      mvnInvWishartDist.helperPlot(false);
-      mvnInvWishartDist.helperPlot(true);
-    end
-    
-     function h = helperPlot(useContour)
-       if nargin < 1, useContour = false; end
-       figure;
-       nu = [1 1 5 5];
-       sigma2 = 2*[1 1 1 1];
-       %sigma2 = [1 1 1 0.5];
-       mu = [0 0 0 0];
-       k =[1 10 1 10];
-       %sigma2 = sigma2 .* nu;
-       N = length(nu);
-       [nr nc] = nsubplots(N);
-       for i=1:N
-         subplot(nr, nr, i);
-         p = mvnInvWishartDist('mu',mu(i), 'Sigma',sigma2(i), ...
-           'dof', nu(i), 'k', k(i));
-         plot(p, 'xrange', [-1 1 0.1 2], 'useContour', useContour);
-         hold on
-         str{i} = sprintf('NIW(%s=%3.1f, k=%3.1f, %s=%3.1f, %s=%3.1f)', ...
-           'm', mu(i), k(i), '\nu', nu(i), 'S', sigma2(i));
-         title(str{i})
-         xlabel(sprintf('%s', '\mu'))
-         ylabel(sprintf('%s', '\sigma^2'))
-       end
-     end
-  end
     
 end

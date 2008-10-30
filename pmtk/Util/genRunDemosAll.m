@@ -1,6 +1,7 @@
 function genRunDemosAll
 %Like genRunDemos but finds all methods whose names begin with 'demo'.
 
+error('Deprecated - use makeRunDemos() instead');
 
 filename = 'runDemosAll';    %The name of the generated m-file.
 

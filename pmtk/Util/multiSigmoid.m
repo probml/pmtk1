@@ -29,6 +29,8 @@ P = temp./(sum(temp, 2)*ones(1,M));
 
 % Ensure that log(P) is computable
 %P(P<realmin) = realmin;
+
+% Use non-vectorized check for EML compliance. 
 for i=1:numel(P(:))
    if(P(i) < realmin)
        P(i) = realmin;

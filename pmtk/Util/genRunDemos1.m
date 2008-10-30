@@ -24,6 +24,7 @@ function genRunDemos
 % top level BLT directory.
 %
 % Version 2
+error('Deprecated - use makeRunDemos() instead');
 
 filename = 'runDemos';    %The name of the generated m-file.
 rootdir  = '.';           %Start searching from the current directory.

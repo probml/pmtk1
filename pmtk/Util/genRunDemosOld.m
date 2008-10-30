@@ -22,6 +22,8 @@ function genRunDemos
 % This function will only work on windows systems. Run this script from the
 % top level BLT directory.
 
+error('Deprecated - use makeRunDemos() instead');
+
 filename = 'runDemos';    %The name of the generated m-file.
 checkstr = '#demo';       %The method comment search string. 
 

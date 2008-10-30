@@ -83,39 +83,7 @@ classdef invWishartDist < matrixDist
     
   end
   
-  %% Demos
-  methods(Static = true)
-     function h = demoPlot2d()
-      % plot some IW distributions
-      seed=1;randn('state',seed);rand('state',seed);
-      S=randpd(2);R=cov2cor(S)
-      p=invWishartDist(20,S);
-      mean(p)
-      figure(1);clf;plotSamples2d(p,9);
-      figure(2);clf;plotMarginals(p)
-    end
-    
-     function h = demoPlot1d()
-       % plot some invchi2 distributions
-       figure;
-       %nu = [1 1 1  5 5 5 ];
-       nu = [1 1 1 2 2 2];
-       sigma2 = [0.5 1 2  0.5 1 2];
-       %sigma2 = sigma2 .* nu;
-       N = length(nu);
-       [styles, colors, symbols] =  plotColors;
-       %colors = hsvrand(N);
-       xrange =[0.01 2];
-       for i=1:N
-         h = plot(invWishartDist(nu(i), sigma2(i)), 'plotArgs', styles{i}, 'xrange',xrange);
-         hold on
-         str{i} = sprintf('%s %3.1f, %s %3.1f', '\nu', nu(i), '\sigma^2', sigma2(i));
-       end
-       legend(str);
-       title(sprintf('IW(%s, %s)', '\nu', '\sigma^2'));
-     end
-
-  end
+ 
     
     
 end

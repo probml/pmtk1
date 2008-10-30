@@ -29,7 +29,7 @@ function genRunDemos(className)
 % top level BLT directory.
 %
 % Version 5
-
+    error('Deprecated - use makeRunDemos() instead');
     maxDemoCalls = 10;              % add the commands specified in addCommands after
                                     % every 10 demo calls. 
     function addCommands(fid)
