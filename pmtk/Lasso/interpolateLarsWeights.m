@@ -20,4 +20,4 @@ Winterp = interp1q(criticalPoints,Wfull,lambdas(~tooBig)');
 Wbig = [Winterp; zeros(sum(tooBig), size(Winterp,2))]; % since, if lambda > lambda_max, all weights 0.
 Wbig = Wbig(1:end-1,:);
 Wbig = [Wbig; Wfull(1,:)];
-end
+

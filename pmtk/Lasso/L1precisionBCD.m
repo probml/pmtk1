@@ -1,20 +1,26 @@
-function [X] = L1precisionBCD(sigma_emp,lambda,useQP)
+function [precMat, covMat] = L1precisionBCD(X, varargin)
+% written by Mark Schmidt
 
-if nargin < 3
-    useQP = 1;
-end
+[rho, useQP, verbose, junk] = process_options(...
+    varargin, 'regularizer', [], 'useQP', 0, 'verbose', 0);
 
-verbose = 1;
+[precMat] = helper(cov(X), rho, useQP, verbose);
+covMat = inv(precMat);
+
+%%%%%%% 
+
+function [X] = helper(sigma_emp,lambda,useQP,verbose)
+
 optTol = 0.00001;
 S = sigma_emp;
 p = size(S,1);
-row = lambda;
+rho = lambda;
 maxIter = 10;
 A = [eye(p-1,p-1);-eye(p-1,p-1)];
 f = zeros(p-1,1);
 
 % Initial W
-W = S + row*eye(p,p);
+W = S + rho*eye(p,p);
 
 % Check for qp mex file
 if exist('qpas') == 3
@@ -30,18 +36,19 @@ for iter = 1:maxIter
 
     % Check Primal-Dual gap
     X = W^-1; % W should be PD
-    gap = trace(S*X) + row*sum(sum(abs(X))) - p;
-    fprintf('Iter = %d, OptCond = %.5f\n',iter,gap);
+    gap = trace(S*X) + rho*sum(sum(abs(X))) - p;
+    if verbose, fprintf('Iter = %d, OptCond = %.5f\n',iter,gap); end
     if gap < optTol
-        fprintf('Solution Found\n');
+        if verbose, fprintf('Solution Found\n'); end
         break;
     end
 
     for i = 1:p
-
+      
+      noti = setdiff(1:p, i);
         if verbose
             X = W^-1; % W should be PD
-            gap = trace(S*X) + row*sum(sum(abs(X))) - p;
+            gap = trace(S*X) + rho*sum(sum(abs(X))) - p;
             fprintf('Column = %d, OptCond = %.5f\n',i,gap);
             if gap < optTol
                 fprintf('Solution Found\n');
@@ -50,24 +57,27 @@ for iter = 1:maxIter
         end
 
         % Compute Needed Partitions of W and S
-        s_12 = S(mysetdiff(1:p,i),i);
+        s_12 = S(noti,i);
         
         if useQP
             % Solve as QP
-            H = 2*W(mysetdiff(1:p,i),mysetdiff(1:p,i))^-1;
-            b = row*ones(2*(p-1),1) + [s_12;-s_12];
+            H = 2*W(noti,noti)^-1;
+            b = rho*ones(2*(p-1),1) + [s_12;-s_12];
             w = qpSolver((H+H')/2,f,A,b,qpArgs{:});
         else
             % Solve with Shooting
-            W_11 = W(mysetdiff(1:p,i),mysetdiff(1:p,i));
+            W_11 = W(noti,noti);
             Xsub = sqrtm(W_11);
             ysub = Xsub\s_12;
-            w = W_11*LassoShooting(Xsub,ysub,2*row,'verbose',0);
+	    % Xsub' * Xsub = W_11
+	    % Xsub' * ysub = Xsub' * Xsub^{-1} s_12 = s_12
+	    % We use 2*rho because the code has a factor of 2
+            w = W_11*LassoShooting(Xsub,ysub,2*rho,'verbose',0);
         end
 
         % Un-Permute
-        W(mysetdiff(1:p,i),i) = w;
-        W(i,mysetdiff(1:p,i)) = w';
+        W(noti,i) = w;
+        W(i,noti) = w';
     end
     %drawnow
 end
