@@ -208,6 +208,7 @@ classdef mvnDist < vecDist
       suffStat.XX = (Xc'*Xc)/n;
     end
  
+       
     function plot2dMarginalFigure()
       plotGauss2dMargCond;
     end
