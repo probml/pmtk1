@@ -268,6 +268,7 @@ function [selectedVars,Wlsq,varargout] = bolasso(X,y,varargin)
         'statusBar'             ,true);
     
     if(statusBar), wbar = waitbar(0,'Progress Bar: Initializing Variables...');end
+    if(isequal(nbootstraps,0)),plotResults = false; end
     
     [n d] = size(X);                               %n,d used throughout function 
     modelSelectionMethod = setModelSelectionMethod();
@@ -599,6 +600,11 @@ function [selectedVars,Wlsq,varargout] = bolasso(X,y,varargin)
     function h = visualize(selectedVarsPage,bootstraps,left,right,h)
     %Visualize the selected variables and optionally, the largest
     %consistent region.
+          if(nbootstraps == 0)
+             fprintf('Sorry, cannot visualize, when nbootstraps = 0\n');
+             h = 0;
+             return; 
+          end
           if(nargin == 5)
               figure(h);
           else
