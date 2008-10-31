@@ -20,21 +20,19 @@ function makeRunDemos()
     
     for i=1:numel(info)
        entry = info(i);
-       if(strfind(entry.path,'+'))
-           [base,pack] = fileparts(entry.path);
-           tl = '';
-           if(length(path) > 9 && strfind(pack,'Examples'))
-              tl = pack(2:end-8);  
-           end
-           if(~isempty(entry.m))
+       if(~isempty(entry.m))
+             [base,pack] = fileparts(entry.path);
+             tl = '';
+             if(length(path) > 8 && strfind(pack,'Examples'))
+                tl = pack(1:end-8);  
+             end
+           
              fprintf(fid,'%%%% %s\n',tl);
              for j=1:numel(entry.m)
                     mfile = entry.m{j};
-                    fprintf(fid,'%s.%s\n',pack(2:end),mfile(1:end-2));
+                    fprintf(fid,'%s\n',mfile(1:end-2));
              end
-             fprintf(fid,'pause(2); close(''all''); clear(''all'');\n\n');
-           end
-           
+             fprintf(fid,'pause(2); close(''all''); clear(''all'');\n\n');           
        end
         
     end

@@ -1,163 +1,163 @@
 %% Run Every Demo
 
 %% bernoulliDist
-bernoulliDistExamples.bayesianUpdatingDiscretePriorExample
-bernoulliDistExamples.sequentialUpdateExample
+bernoulliBayesianUpdatingDiscretePrior
+bernoulliSequentialUpdate
 pause(2); close('all'); clear('all');
 
 %% betaBinomDist
-betaBinomDistExamples.ebCancerExample
+ebCancerExample
 pause(2); close('all'); clear('all');
 
 %% betaDist
-betaDistExamples.plotExample
+betaPlotDemo
 pause(2); close('all'); clear('all');
 
 %% binomDist
-binomDistExamples.plotExample
-binomDistExamples.posteriorExample
-binomDistExamples.posteriorPredictiveExample
+binomialPlotDemo
+binomialPosteriorDemo
+binomPostPredDemo
 pause(2); close('all'); clear('all');
 
 %% chordalGraph
-chordalGraphExamples.chordalGraphDemo
+chordalGraphDemo
 pause(2); close('all'); clear('all');
 
 %% dirichletDist
-dirichletDistExamples.plotHisto
+dirichletHistPlotDemo
 pause(2); close('all'); clear('all');
 
 %% gammaDist
-gammaDistExamples.plotDemo
-gammaDistExamples.rainfallDemo
+gammaPlotDemo
+gammaRainfallDemo
 pause(2); close('all'); clear('all');
 
 %% gaussDist
-gaussDistExamples.cvfit
-gaussDistExamples.heightWeight
-gaussDistExamples.plotDemo
+gaussCVfitDemo
+gaussHeightWeight
+gaussPlotDemo
 pause(2); close('all'); clear('all');
 
 %% gaussMixDist
-gaussMixDistExamples.plotDemo
+gaussMixPlot
 pause(2); close('all'); clear('all');
 
 %% ggmDecomposable
-ggmDecomposableExamples.demoPostModelsExhaustive
+demoPostModelsExhaustive
 pause(2); close('all'); clear('all');
 
 %% ggm
-ggmExamples.bic
-ggmExamples.demo
-ggmExamples.infer
+ggmBICdemo
+ggmDemo
+ggmInferDemo
 pause(2); close('all'); clear('all');
 
 %% graph
-graphExamples.demo
+graphClassDemo
 pause(2); close('all'); clear('all');
 
 %% hiwDist
-hiwDistExamples.sampleDemo
+sampleHIWdemo
 pause(2); close('all'); clear('all');
 
 %% invGammaDist
-invGammaDistExamples.plotDemo
-invGammaDistExamples.sampleDemo
+invGammaPlotDemo
+invGammaSampleDemo
 pause(2); close('all'); clear('all');
 
 %% invWishartDist
-invWishartDistExamples.plot1d
-invWishartDistExamples.plot2d
+invWIplot1D
+invWIplot2D
 pause(2); close('all'); clear('all');
 
 %% laplaceDist
-laplaceDistExamples.plotDemo
+laplacePlotDemo
 pause(2); close('all'); clear('all');
 
 %% linregDist
-linregDistExamples.basis
-linregDistExamples.gaussVsNIG
-linregDistExamples.polyFitDegree
-linregDistExamples.polyFitErrorBars
-linregDistExamples.polyFitN
-linregDistExamples.polyFitNoErrorBars
-linregDistExamples.polyFitRidge
-linregDistExamples.polyFitRidgeBIC
-linregDistExamples.polyFitRidgeCV
-linregDistExamples.polyFitRidgeU
-linregDistExamples.rbf
+linregBasis
+linregGaussVsNIG
+linregPolyFitDegree
+linregPolyFitErrorBars
+linregPolyFitN
+linregPolyFitNoErrorBars
+linregPolyFitRidge
+linregPolyFitRidgeBIC
+linregPolyFitRidgeCV
+linregPolyFitRidgeU
+linregRbf
 pause(2); close('all'); clear('all');
 
 %% logregDist
-logregDistExamples.compareOptimizers
-logregDistExamples.compareOptimizers2
-logregDistExamples.fitCrabs
-logregDistExamples.laplaceGirolami
-logregDistExamples.sat
-logregDistExamples.visualizePredictive
+logregCompareOptimizers
+logregCompareOptimizers2
+logregFitCrabs
+logregLaplaceGirolami
+logregSAT
+logregVisualizePredictive
 pause(2); close('all'); clear('all');
 
 %% mcmcInfer
-mcmcInferExamples.convDiagGmm
-mcmcInferExamples.gmmBurnin
-mcmcInferExamples.gmmProposal
+mcmcConvDiagGmm
+mcmcGmmBurnin
+mcmcGmmProposal
 pause(2); close('all'); clear('all');
 
 %% multinomDist
-multinomDistExamples.plotDemo
+multinomPlotDemo
 pause(2); close('all'); clear('all');
 
 %% mvnDist
-mvnDistExamples.condition
-mvnDistExamples.condition2D
-mvnDistExamples.demoInferParamsSigma2d
-mvnDistExamples.heightWeight
-mvnDistExamples.imputationDemo
-mvnDistExamples.inferParamsMean1d
-mvnDistExamples.inferParamsMean2d
-mvnDistExamples.inferParamsMuSigma1dPriors
-mvnDistExamples.plot2D
-mvnDistExamples.sequentialUpdateMuSigma1D
-mvnDistExamples.seqUpdateMu1d
-mvnDistExamples.seqUpdateSigma1d
-mvnDistExamples.softCondition
+mvnCondition
+mvnCondition2D
+mvnDemoInferParamsSigma2d
+mvnHeightWeight
+mvnImputationDemo
+mvnInferParamsMean1d
+mvnInferParamsMean2d
+mvnInferParamsMuSigma1dPriors
+mvnPlot2Ddemo
+mvnSequentialUpdateMuSigma1D
+mvnSeqUpdateMu1d
+mvnSeqUpdateSigma1d
+mvnSoftCondition
 pause(2); close('all'); clear('all');
 
 %% mvnInvWishartDist
-mvnInvWishartDistExamples.plotDemo
+mvnInvWIplotDemo
 pause(2); close('all'); clear('all');
 
 %% mvnMcmcInfer
-mvnMcmcInferExamples.example1D
-mvnMcmcInferExamples.example2D
+mvnMCMCexample1D
+mvnMCMCexample2D
 pause(2); close('all'); clear('all');
 
 %% mvtDist
-mvtDistExamples.plotDemo
+mvtPlotDemo
 pause(2); close('all'); clear('all');
 
 %% poissonDist
-poissonDistExamples.plotDemo
+poissonPlotDemo
 pause(2); close('all'); clear('all');
 
 %% sampleDist
-sampleDistExamples.sampleExample
+sampleDistDemo
 pause(2); close('all'); clear('all');
 
 %% studentDist
-studentDistExamples.studentVSGauss
+studentVSGauss
 pause(2); close('all'); clear('all');
 
 %% tabularDist
-tabularDistExamples.sprinkler
+tabularSprinkler
 pause(2); close('all'); clear('all');
 
 %% tabularFactor
-tabularFactorExamples.sprinkler1
-tabularFactorExamples.sprinkler2
+tabFactSprinkler1
+tabFactSprinkler2
 pause(2); close('all'); clear('all');
 
 %% wishartDist
-wishartDistExamples.plotDemo
+WIplotDemo
 pause(2); close('all'); clear('all');
 
