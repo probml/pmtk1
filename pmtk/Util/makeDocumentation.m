@@ -1,42 +1,71 @@
-function errors = makeDocumentation(destination)
+function makeDocumentation(destination)
     % This function automatically generates documentation for the PMTK system.
-    
-    demodirectory = './examples';               
-    
-    
+
+    demodirectory = './examples';
+
     originalDirectory = pwd;                    % save current directory
     if(nargin == 0), destination = 'C:\PMTKdocs';  end
 
-    errors = {};
     cd(PMTKroot());
     demoDirInfo = dirinfo(demodirectory);
     destRoot = makeDestinationDirectory();
-    
+    rootHTMLfid = prepareRootHTMLfile();
+
+
     for i=1:numel(demoDirInfo)
         entry = demoDirInfo(i);
-        if(~isempty(strfind(entry.path,'+')) && isempty(strfind(entry.path,'.svn'))&& ~isempty(entry.m))
-            for j=1:numel(entry.m)
-                fileToPublish = fullfile(entry.path,entry.m{j});
-                [base,pack] = fileparts(entry.path);
-                outputDir = fullfile(destRoot,pack);
-                publishFile(fileToPublish,outputDir,true);
+        if(~isempty(entry.m))
+            [base,link] = fileparts(entry.path);
+            linkName = link;
+            if(~isempty(strfind(link,'Examples')))
+                linkName = linkName(1:end-8);
             end
+            fprintf(rootHTMLfid,'%%%%\n%% <html>\n%% <hr>\n%% </html>\n%%%%\n');
+            fprintf(rootHTMLfid,'\n%%%% %s\n',[linkName(1:end) ,' Demos']);
+            for j=1:numel(entry.m)
+                fileToPublish = entry.m{j};
+                fid = fopen(which(fileToPublish));
+                fulltext = textscan(fid,'%s','delimiter','\n','whitespace','');
+                fulltext = fulltext{:};
+                txt = fulltext{1};
+                [start,rest] = strtok(txt,' ');
+                if(strcmp(start,'%%'))
+                    txt = rest;
+                else
+                    txt = fileToPublish(1:end-2);
+                end
+                fclose(fid);
+                
+                writeHTMLlink(rootHTMLfid,['./',link,'/',fileToPublish(1:end-2),'.html'],txt);
+                
+              
+                fileToPublish = fileToPublish(1:end-2);
+                outputDir = fullfile(destination,destRoot,link);
+                cd(entry.path);
+                publishFile(fileToPublish,outputDir,true);
+                close all;
+            end
+            
         end
     end
+    fprintf(rootHTMLfid,'%%%%\n%% <html>\n%% <hr>\n%% </html>\n%%%%\n');
+    fclose(rootHTMLfid);
+    cd(fullfile(destination,destRoot));
+    publishFile('PMTKdocs.m','.',false);
+    delete('PMTKdocs.m');
+
 
     cd(originalDirectory);                     % restore current directory
+    cls;
 
 
     function publishFile(mfile,outputDir,evalCode)
-          options.evalCode = evalCode;
-          options.outputDir = outputDir;
-          options.format = 'html';
-          try
-            publish([methodName,'Published.m'],options);
-          catch ME
-            display(ME.message);
-            errors = {errors;mfile};
-          end
+        options.evalCode = evalCode;
+        options.outputDir = outputDir;
+        options.format = 'html';
+        options.createThumbnail = false;
+        publish(mfile,options);
+
     end
 
 
@@ -79,6 +108,25 @@ function errors = makeDocumentation(destination)
             end
         end
     end
+
+
+    function fid = prepareRootHTMLfile()
+        fid = fopen('PMTKdocs.m','w+');
+        fprintf(fid,'%%%% PMTK Documentation\n')
+        d = date;
+        fprintf(fid,'%% Revision Date: %s\n\n',d);
+
+    end
+
+    function writeHTMLlink(fid,link,name)
+        fprintf(fid,'%%%%\n');
+        fprintf(fid,'%% <html>\n');
+        fprintf(fid,'%% <A HREF="%s">%s</A><br>\n',link,name);
+        fprintf(fid,'%% </html>\n');
+        fprintf(fid,'%%%%\n');
+    end
+
+  
 
 
 end
