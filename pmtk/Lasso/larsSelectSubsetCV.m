@@ -1,10 +1,11 @@
 function [bestSelectedVars,w] = larsSelectSubsetCV(X,y,varargin)
 % Choose amongst the subsets on the LARS regularization path
 % using MLE on chosen subset and CV error
-% w size d+1 x 1 is the MLE for the chosen subset
+% w size d x 1 is the MLE for the chosen subset (offset ignored)
 
-lambdaRidge = 1e-5;
-CVnfolds = 5;
+[lambdaRidge, CVnfolds] = process_options(...
+  varargin, 'lambdaRidge', 1e-5, 'nfolds', 5);
+
 X = center(X);
 X = mkUnitVariance(X);
 y = center(y);
@@ -31,9 +32,9 @@ errMean = mean(errors,2);
 [val,best] = min(errMean); % break ties in favor of smallest set (earlier in order)
 bestSelectedVars = find(supports(best,:));
 
-in = [1,bestSelectedVars+1];
+in = [bestSelectedVars];
 %out = setdiff(1:d, in);
-w = zeros(d+1,1);
+w = zeros(d,1);
 %w(in) = X(:,in)\y;
 w(in) = ridgereg(X(:,in), y, lambdaRidge, 'ridgeqr', 0);
 end
