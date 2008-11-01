@@ -4,9 +4,9 @@ function [X, s] = mkUnitVariance(X, s)
 % If s is omitted, it computed from X and returned for use at test time
 
 if nargin < 2, s = []; end
-[n d] = size(X);
 if isempty(s)
   s = std(X);
-  s(find(s<eps))=1;
+  s((s<eps))=1;
 end
-X = X./repmat(s, [n 1]);
+%X = X./repmat(s, [n 1]);
+X = bsxfun(@rdivide,X,s);
