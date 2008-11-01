@@ -1,4 +1,4 @@
-function [Xdata,ydata,W,check] = synthesizeData(n,d,r,nDataSets,consistent)
+function [Xdata,ydata,W,check] = bolassoMakeData(n,d,r,nDataSets,requireConsistent,noise)
 %Generate synthetic data as per section 4.1 in 
 %Bolasso: Model Consistent Lasso Estimation throught the Bootstrap by
 %Fracis R. Bach, available at www.di.ens.fr/~fbach/icml_bolasso.pdf.
@@ -20,6 +20,9 @@ function [Xdata,ydata,W,check] = synthesizeData(n,d,r,nDataSets,consistent)
 %              www.di.ens.fr/~fbach/icml_bolasso.pdf
 %              ||(Q_{J^cJ})*(Q_{JJ}^-1)*sign(W_J)||_inf <= 1
 %
+% noise   -   standard deviation of noise added to y (default 0.1)
+%
+% OUTPUTS
 % Xdata      - A cell array of n-by-d random matrices whose only relevent 
 %              features are columns 1:r.  
 %
@@ -36,10 +39,14 @@ function [Xdata,ydata,W,check] = synthesizeData(n,d,r,nDataSets,consistent)
 %
 %Code by Matthew Dunham
 
+if nargin < 6, noise = 0.1; end
+
 Xdata = cell(1,nDataSets);
 ydata = cell(1,nDataSets);
 
 done = false;
+maxIter= 100;
+iter = 1;
 while(~done) %keep looping until we find a distribution that matches the consistency criteria
     mu = zeros(1,d);
     G = randn(d,d);                 
@@ -54,8 +61,16 @@ while(~done) %keep looping until we find a distribution that matches the consist
     
     %Check if sign consistency matches request
     % ||(Q_{J^cJ})*(Q_{JJ}^-1)*sign(W_J)||_inf <= 1
-    check = max(abs((Q(r+1:d,1:r)*inv(Q(1:r,1:r))*sign(W(1:r)))));
-    done = (consistent == (check <= 1)); 
+    m = max(abs((Q(r+1:d,1:r)*inv(Q(1:r,1:r))*sign(W(1:r)))));
+    isConsistent = m <= 1;
+    %done = (consistent == (check <= 1));
+    done = ~requireConsistent | (requireConsistent & isConsistent);
+    done = done | (iter > maxIter);
+    iter = iter + 1;
+end
+
+if iter > maxIter
+  fprintf('could not make sign consistent data\n')
 end
 
 i=0;
@@ -67,7 +82,7 @@ while i<nDataSets
     %check = max(abs((C(r+1:d,1:r)*inv(C(1:r,1:r))*sign(W(1:r)))));
     %if(consistent == (check < 1)); 
         y = X*W;                          %use only the relevant features to generate y
-        sigma = 0.1 * sqrt(mean(y.^2));   %noise std
+        sigma = noise * sqrt(mean(y.^2));   %noise std
         y = y + normrnd(0,sigma,n,1);     %add noise
         i = i+1;
         Xdata{i} = X; ydata{i} = y;  

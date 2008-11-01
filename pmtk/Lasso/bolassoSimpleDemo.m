@@ -6,7 +6,7 @@ r = 10;     %number of relevant dimensions, (first 8)
 ndataSets = 1;
 lassoSignConsistent = false;
 
-[X,y] = synthesizeData(n,d,r,ndataSets,lassoSignConsistent);
+[X,y] = bolassoMakeData(n,d,r,ndataSets,lassoSignConsistent);
 
 trueSupport = 1:r;
 
