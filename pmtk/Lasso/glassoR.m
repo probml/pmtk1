@@ -4,22 +4,15 @@ function [precMat, covMat] = glassoR(X, varargin)
 % For instructions on calling R from Matlab, see
 % http://www.cs.ubc.ca/~mdunham/tutorial/external.html#21
 
+
+
 [rho, useMBapprox, junk] = process_options(...
-    varargin, 'regularizer', [], 'useMB', 0);
-
-[precMat, covMat] = helper(cov(X), rho, useMBapprox);
-if ~useMBapprox
-  assert(isposdef(precMat))
-  assert(isposdef(covMat))
-end
-
-%%%%%%%%
-
-function [precMat, covMat] = helper(C, rho, useMBapprox)
-
+    varargin, 'regularizer', 0.1, 'useMB', 0);
+C = cov(X);
 
 if 0
   x <- matrix(rnorm(50*20),ncol=20)
+  x <- matrix(1:12,ncol=3)
   s <- var(x)
   a <- glasso(s, rho=0.1)
 end
@@ -27,6 +20,7 @@ end
 openR;
 evalR('C<-1') % must pre-declare variable before writing a matrix
 evalR('L<-1') 
+evalR('stuff<-1') 
 putRdata('C',C);
 putRdata('rho',rho);
 putRdata('useMBapprox', useMBapprox)
