@@ -39,7 +39,7 @@ assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat2))))
 assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat3))))
 
 % Timing
-d = 50;
+d = 100;
 G = mkSymmetric(rand(d,d)>0.8);
 G = setdiag(G,1);
 S = randpd(d);
