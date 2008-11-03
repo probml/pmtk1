@@ -6,13 +6,15 @@ G = zeros(3,3);
 G(1,2)=1; G(2,3)=1; G = mkSymmetric(G);
 precMat1 = covselPython(S, G)
 precMat2 = ggmIPF(S,G)
-precMat3 = covselFastPython(S, G);
+%precMat3 = covselFastPython(S, G);
+precMat3 = covselProj(S, G);
+covMat = inv(precMat2);
 precMatEdwards = [0.477 -0.351 0; -0.351 1.19 -0.703; 0 -0.703 1.426];
 assert(approxeq(precMat1, precMatEdwards))
 assert(approxeq(precMat2, precMatEdwards))
 assert(approxeq(precMat3, precMatEdwards))
 
-keyboard
+
 % Marks - Edwards p48
 G = zeros(5,5);
 me = 1; ve = 2; al= 3; an = 4; st = 5;
@@ -23,6 +25,7 @@ load marks; X = marks;
 S = cov(X);
 precMat1 = ggmIPF(S, G)
 precMat2 = covselPython(S, G)
+precMat3 = covselProj(S, G)
 
 pcorMatEdwards = eye(5,5);
 pcorMatEdwards(2,1) = 0.332;
@@ -33,16 +36,14 @@ pcorMatEdwards = mkSymmetric(pcorMatEdwards);
 
 assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat1))))
 assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat2))))
-
+assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat3))))
 
 % Timing
-d = 20;
+d = 50;
 G = mkSymmetric(rand(d,d)>0.8);
 G = setdiag(G,1);
 S = randpd(d);
-tic
-precMat = covselPython(S, G);
-toc
-
-
+tic; precMat1 = covselPython(S, G); toc
+tic; precMat2 = covselProj(S, G); toc
+assert(approxeq(precMat1, precMat2))
 
