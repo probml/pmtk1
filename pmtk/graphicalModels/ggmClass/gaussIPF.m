@@ -1,8 +1,12 @@
-function [precMat, covMat, klDiv] = gaussIPF(X, G)
+function [precMat, covMat] = gaussIPF(S, G)
+% iterative proportional fitting for Gaussian MRFs
+% S = cov(data), G = adjacenct matrix
 
-covMat = cov(X);
-[precMat, klDiv] = helper(G, covMat);
+[precMat] = helper(G, S);
+precMat = full(precMat);
 covMat = inv(precMat);
+
+%#author Erik Sudderth
 
 %%%%%%%
 
