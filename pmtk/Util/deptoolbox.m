@@ -1,4 +1,4 @@
-function [report,errors] = deptoolbox(toolboxname,isroot)
+function [report,errors] = deptoolbox(toolboxname,isroot,visualize)
 % Generate a toolbox dependency report for the current working directory
 % and all of its subdirectories. That is, scan through every m-file in the
 % current directory and all subdirectories and identify dependencies that
@@ -45,6 +45,10 @@ function [report,errors] = deptoolbox(toolboxname,isroot)
 %
 % Code by Matthew Dunham
 
+if(nargin < 3)
+    visualize = true;
+end
+
 currentDirectory = '.'; 
 report = [];
 errors = struct; errors.filename = {}; errors.errmsg = {}; errors.errid = {};
@@ -63,8 +67,10 @@ end
 if(isempty(report.filename))
    fprintf('\n\n no dependencies found.\n\n'); 
 else
-   displayReport(report); 
-   graphReport(report);
+   if(visualize)
+        displayReport(report); 
+        graphReport(report);
+   end
 end
 if(numel(errors.filename) > 0)
     displayErrors(errors);
