@@ -4,15 +4,17 @@ function  h=viewClassTree(directory)
 % discovered as long as they are in the matlab search path. 
 % There are a few restrictions:
 % (1) classes must be written using the new 2008a classdef syntax
-% (2) classes must reside in their own @ directories.
-% (3) requires the graphlayout package be on the path to display the tree.
-% (4) works only on systems that support 'dir', i.e. windows. 
+% (2) requires the graphlayout package be on the path to display the tree.
+% (3) may not work on non-windows systems.
 %  
-% directory  is an optional parameter specifying the directory one level
-%            above all of the @ class directories. The current working
-%            directory is used if this is not specified.
+% directory  is an optional parameter specifying the base directory of the
+%            project. The current working directory is used if this is not specified.
 %Written by Matthew Dunham 
-
+%
+% Changes:
+%
+% November 4,2008 - modified to work when classes do not reside in @
+% directories. 
 
 
 if nargin == 0
@@ -20,8 +22,10 @@ if nargin == 0
 end
 
 
-info = dirinfo(directory);
-baseClasses = vertcat(info.classes);
+info = removeUnwanted(dirinfo(directory));
+
+%baseClasses = vertcat(info.classes);
+baseClasses = findClasses(info);
 
 if(isempty(baseClasses))
     fprintf('\nNo classes found in this directory.\n');
@@ -97,7 +101,29 @@ function list = ancestors(class)
     end
 end
 
+function info = removeUnwanted(info)
+    unwanted = {'old','Old','OLD','deprecated','.svn'};
+    for i=1:numel(unwanted)
+        info(cell2mat(cellfun(@(str)~isempty(str),strfind({info.path} ,unwanted{i}),'UniformOutput',false))) = [];
+    end
+    
+end
 
-
+function baseClasses = findClasses(info)
+   baseClasses = {}; 
+   for i=1:numel(info)
+      mfiles = info(i).m;
+      for j=1:numel(mfiles)
+          file = mfiles{j};
+          fid = fopen(file);
+          fulltext = textscan(fid,'%s','delimiter','\n','whitespace','');
+          fclose(fid);
+          fulltext = fulltext{:};
+          if(~isempty(cell2mat(strfind(fulltext,'classdef'))))
+              baseClasses = [baseClasses;file(1:end-2)];
+          end
+      end
+   end
+end
 
 end
