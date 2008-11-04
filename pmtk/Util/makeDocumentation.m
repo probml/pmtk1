@@ -42,12 +42,12 @@ function makeDocumentation(destination)
        
         end
     end
-%     pause(1);
-%     for i=1:numel(viewInfo)
-%        evalin('base','clear all'); 
-%        publishFile(viewInfo(i).functionName,viewInfo(i).outputDir,viewInfo(i).evalCode); 
-%        close all;
-%     end
+    pause(1);
+    for i=1:numel(viewInfo)
+       evalin('base','clear all'); 
+       publishFile(viewInfo(i).functionName,viewInfo(i).outputDir,viewInfo(i).evalCode); 
+       close all;
+    end
     
     cdDocBase();        
     createViews(viewInfo);                          % create root html files with main table, etc
