@@ -23,8 +23,7 @@ end
 
 
 info = removeUnwanted(dirinfo(directory));
-
-%baseClasses = vertcat(info.classes);
+errors = {};
 baseClasses = findClasses(info);
 
 if(isempty(baseClasses))
@@ -43,25 +42,32 @@ for i=1:numel(allClasses)
    map.(allClasses{i}) = i; 
 end
 
+markForDeletion = [];
 for i=1:numel(allClasses)
     try
         meta = eval(['?',allClasses{i}]);
         parents = meta.SuperClasses;
     catch ME
-        warning('CLASSTREE:discoveryWarning',['Could not discover information about class ',allClasses{i}]);
+        errors = [errors;allClasses{i}];
+        markForDeletion = [markForDeletion,i];
         continue;
     end
     for j=1:numel(parents)
        matrix(map.(allClasses{i}),map.(parents{j}.Name)) = 1;
     end
 end
-
-for i=1:numel(allClasses)
-    allClasses{i} = ['@',allClasses{i}]; 
-end
-
+allClasses(markForDeletion) = [];
+matrix(markForDeletion,:) = [];
+matrix(:,markForDeletion) = [];
 
 h = graphlayout('adjMatrix',matrix,'nodeLabels',allClasses,'splitLabels',false);
+
+if(~isempty(errors))
+    fprintf('\nThe following m-files were\nthought to be classes\nbecause they contain the\nclassdef keyword, but did\nnot respond to queries.\nThey were not included in the graph.\n\n');
+    for i=1:numel(errors)
+       fprintf('%s\n',errors{i}); 
+    end
+end
 
 % biog = biograph(matrix,allClasses);
 % h=view(biog);
@@ -95,9 +101,13 @@ function list = ancestors(class)
     catch
         return;
     end
+    for i=1:numel(parents)
+       list = [list,parents{i}.Name]; 
+    end
+    
     for p=1:numel(parents)
         if(p > numel(parents)),continue,end %bug fix for version 7.5.0 (2007b)
-        list = [parents{p}.Name,ancestors(parents{p}.Name)];
+        list = [list,ancestors(parents{p}.Name)];
     end
 end
 
