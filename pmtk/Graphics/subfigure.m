@@ -32,9 +32,9 @@ function varargout = subfigure(varargin)
 % location specified by m, n, and p. The existing figure is not made current.
 % Existing figures that are overlapped by a new subfigure are not deleted. This
 % behavior is dissimilar to subplot.
-%
-% Steve Hoelzer
-% 2004-5-13
+
+%# author Steve Hoelzer
+%#date  2004-5-13
 
 % Process input arguments
 if nargin == 1

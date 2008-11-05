@@ -15,8 +15,10 @@ function  pairs(X,vnames,plotsymbol,diagonal)
 % NOTE: uses function histo() 
 %---------------------------------------------------
 
-%       Anders Holtsberg, 14-12-94
-%       Copyright (c) Anders Holtsberg
+%#author Anders Holtsberg
+%#date  14-12-94
+
+
 % JP LeSage added the vnames capability
 % Kevin Murphy changed vnames to be cell array (1 March 2007)
 % From http://www.spatial-econometrics.com/

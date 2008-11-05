@@ -12,8 +12,9 @@ function histo(x,N,odd,scale)
 % RETURNS: nothing, simply plots 
 % ------------------------------------------------------------
 
-%       Anders Holtsberg, 14-12-94
-%       Copyright (c) Anders Holtsberg
+%#author Anders Holtsberg
+%#date  14-12-94
+
 
 if nargin < 2, N = []; end
 if nargin < 3, odd = []; end

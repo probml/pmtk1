@@ -4,7 +4,8 @@ function hout=suptitle(str, fs)
 %	above all subplots (a "super title"). Use this function
 %	after all subplot commands.
 
-% Drea Thomas 6/15/95 drea@mathworks.com
+%#author Drea Thomas  drea@mathworks.com
+%#date 6/15/95
 
 % Warning: If the figure or axis units are non-default, this
 % will break.

@@ -12,8 +12,9 @@ function  pscatter(X,varargin)
 % NOTE: uses function histo()  and process_options()
 %---------------------------------------------------
 
-%       Anders Holtsberg, 14-12-94
-%       Copyright (c) Anders Holtsberg
+%#author Anders Holtsberg
+%#date  14-12-94
+
 % JP LeSage added the vnames capability (www.spatial-econometrics.com)
 % Kevin Murphy changed vnames to be cell array (1 March 2007),
 % and added ability to change the plot symbol for classes (28 December 2007)
