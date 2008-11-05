@@ -14,7 +14,7 @@ function complete_subgraphs = maximalCliques( X )
 %   row denotes a new sub-graph
 
 %#author Ahmad
-%#url lhttp://www.mathworks.com/matlabcentral/fx_files/19889/1/maximalCliques.m
+%#url http://www.mathworks.com/matlabcentral/fx_files/19889/1/maximalCliques.m
 
 %TEST CASES
 
