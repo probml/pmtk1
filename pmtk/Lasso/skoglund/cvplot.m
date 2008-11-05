@@ -4,7 +4,9 @@ function cvplot(s_opt, res_mean, res_std)
 %    with error bars resulting from the function CROSSVALIDATE. The optimal
 %    model choice is marked with a dashed red line.
 %
-% Author: Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
+
+%#author Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
+%#url http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3897
 
 %figure; hold on;
 s_sub = linspace(0, 1, 17);

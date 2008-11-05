@@ -14,6 +14,7 @@ function [bestModel, w, gamma] = ARDwipf(X, y, varargin)
 
 %#Author David Wipf
 %#URL http://dsp.ucsd.edu/~dwipf/sparse_learning.m
+%#Modified Kevin Murphy
 
 [n d] = size(X);
 [lambda, maxIter, method, verbose, thresh] = process_options(...

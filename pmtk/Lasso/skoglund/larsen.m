@@ -18,10 +18,14 @@ function beta = larsen(X, y, lambda2, stop, trace)
 %    Returns BETA where each row contains the predictor coefficients of
 %    one iteration. A suitable row is chosen using e.g. cross-validation,
 %    possibly including interpolation to achieve sub-iteration accuracy.
-%
-% Author: Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
 % Reference: 'Regularization and Variable Selection via the Elastic Net' by
 % Hui Zou and Trevor Hastie, 2005.
+
+%#author Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
+%#url http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3897
+
+
+
 
 %% Input checking
 if nargin < 5

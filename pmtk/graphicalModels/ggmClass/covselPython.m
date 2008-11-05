@@ -7,6 +7,7 @@ function precMat = covselPython(C, G)
 
 %#author Joachim Dahl
 %#url http://abel.ee.ucla.edu/cvxopt/examples/documentation/chapter-6/
+%#modified Kevin Murphy
 
 G = setdiag(G,1);
 TT = tril(C .* G);

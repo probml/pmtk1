@@ -1,8 +1,10 @@
 function [beta,iter] = LassoShooting(X, y, lambda,varargin)
 % min_w ||Xw-y||_2^2 + lambda ||w||_1
 % Coordinate descent method  ("Shooting"), [Fu, 1998]
-% Written by Mark Schmidt
-% Modified by Kevin Murphy
+
+%#url http://www.cs.ubc.ca/~schmidtm/Software/lasso.html
+%#author Mark Schmidt
+%#modified  Kevin Murphy
 
 [n p] = size(X);
 [maxIter, optTol, verbose, beta] = ...

@@ -34,6 +34,9 @@ function [X, fX, i] = minimize(X, f, length, varargin)
 %
 % Copyright (C) 2001 - 2006 by Carl Edward Rasmussen (2006-09-08).
 
+%#author Carl Rasmussen
+%#url http://www.kyb.tuebingen.mpg.de/bs/people/carl/code/minimize/
+
 INT = 0.1;    % don't reevaluate within 0.1 of the limit of the current bracket
 EXT = 3.0;                  % extrapolate maximum 3 times the current step-size
 MAX = 20;                         % max 20 function evaluations per line search

@@ -6,6 +6,7 @@ function [precMat, covMat] = ggmIPFR(S, G, varargin)
 
 %#author Giovanni Marchetti 
 %#url http://cran.r-project.org/web/packages/ggm/index.html
+%#modified Kevin Murphy
 
 [n] = process_options(varargin, 'sampleSize', 1);
 d = size(G,1);

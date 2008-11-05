@@ -1,5 +1,4 @@
-% http://www.mathworks.com/matlabcentral/files/11870/deriv.m
-% Written by Daniel Ellis www.stanford.edu/~dbe
+
 %
 % This function returns the numerical derivative of an analytic function.
 % Of special note, is the incorporation of the "complex step-derivative"
@@ -38,6 +37,9 @@
 %             <a href="matlab:eval('dfdx=deriv(f,x,1e-3,''forward2''); fprintf(''The results are in the STACK.\n'')')">>>dfdx=deriv(f,x,1e-3,'forward2');</a>
 %
 % DBE 2006.07.31
+
+%#url http://www.mathworks.com/matlabcentral/files/11870/deriv.m
+%#author Daniel Ellis www.stanford.edu/~dbe
 
 function dfdx=derivComplexTrick(f,x,h,method)
 

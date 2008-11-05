@@ -15,7 +15,10 @@ function [s_opt, b_opt, res_mean, res_std] = crossvalidate(fun, K, steps, X, y, 
 %    Note: This is merely a simple implementation that has been tested with
 %    the LARS and LARSEN function only. Use cautiously.
 %
-% Author: Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
+
+
+%#author Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
+%#url http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3897
 
 %% Check varargin with fun
 fun = fcnchk(fun,length(varargin));

@@ -3,6 +3,7 @@ function precMat = covselChordalPython(C, G)
 % Needs pychordal 
 
 %#author Joachim Dahl
+%#modified Kevin Murphy
 
 G = setdiag(G,1);
 TT = tril(C .* G);

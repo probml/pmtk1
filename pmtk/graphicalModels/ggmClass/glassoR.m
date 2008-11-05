@@ -6,6 +6,7 @@ function [precMat, covMat] = glassoR(X, varargin)
 
 %#author Tibshirani 
 %#url  http://www-stat.stanford.edu/~tibs/glasso/
+%#modified Kevin Murphy
 
 [rho, useMBapprox, junk] = process_options(...
     varargin, 'regularizer', 0.1, 'useMB', 0);

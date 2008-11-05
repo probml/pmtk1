@@ -25,9 +25,11 @@ function beta = lars(X, y, method, stop, useGram, Gram, trace)
 %    Returns BETA where each row contains the predictor coefficients of
 %    one iteration. A suitable row is chosen using e.g. cross-validation,
 %    possibly including interpolation to achieve sub-iteration accuracy.
-%
-% Author: Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
 % Reference: 'Least Angle Regression' by Bradley Efron et al, 2003.
+
+%#author Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
+%#url http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3897
+
 
 %% Input checking
 % Set default values.

@@ -5,6 +5,7 @@ function X = standardize(X)
 %
 % Author: Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
 
+
 [n p] = size(X);
 X = center(X);
 X = X./(ones(n,1)*std(X,1));

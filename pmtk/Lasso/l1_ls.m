@@ -51,8 +51,9 @@ function [x,status,history] = l1_ls(A,varargin)
 %   [x,status] = l1_ls(A,At,m,n,y,lambda,0.001);
 %
  
-% AUTHOR    Kwangmoo Koh <deneb1@stanford.edu>
-% UPDATE    Apr 8 2007
+%#author Kwangmoo Koh <deneb1@stanford.edu>
+%#url www.stanford.edu/~boyd/l1_ls
+%#date  Apr 8 2007
 %
 % COPYRIGHT 2008 Kwangmoo Koh, Seung-Jean Kim, and Stephen Boyd
 
