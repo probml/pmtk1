@@ -1,6 +1,5 @@
-function [beta, C] = logregFitIRLS(y,X, lambda)
+function [beta, C] = logregFitNewton(y,X, lambda)
 % Iteratively reweighted least squares for logistic regression
-% Based on code by David Martin 
 %
 % Rows of X contain data
 % y(i) = 0 or 1
@@ -8,6 +7,9 @@ function [beta, C] = logregFitIRLS(y,X, lambda)
 %
 % Returns beta, a row vector
 % and C, the asymptotic covariance matrix
+
+%#author David Martin
+%#modified Kevin Murphy
 
 if nargin < 3, lambda = 0; end
 [N,p] = size(X);

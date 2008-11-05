@@ -3,7 +3,8 @@ function m = sqdist(p, q, A)
 % SQDIST(p,q)   returns m(i,j) = (p(:,i) - q(:,j))'*(p(:,i) - q(:,j)).
 % SQDIST(p,q,A) returns m(i,j) = (p(:,i) - q(:,j))'*A*(p(:,i) - q(:,j)).
 
-%  From Tom Minka's lightspeed toolbox
+%#author Tom Minka
+%#url http://research.microsoft.com/~minka/software/lightspeed/
 
 [d, pn] = size(p);
 [d, qn] = size(q);

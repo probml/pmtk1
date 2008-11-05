@@ -1,4 +1,4 @@
-function [s, lamcor, lamvar] = covshrinkKPM(x, shrinkvar)
+function [s, lamcor, lamvar] = covshrink(x, shrinkvar)
 % Shrinkage estimate of a covariance matrix, using optimal shrinkage coefficient.
 % INPUT:
 % x is n*p data matrix
@@ -15,8 +15,11 @@ function [s, lamcor, lamvar] = covshrinkKPM(x, shrinkvar)
 % and Opgen-Rhein, R., and K. Strimmer. 2007
 %   Accurate ranking of differentially expressed genes
 %   by a distribution-free shrinkage approach. Statist. Appl. Genet. Mol. Biol. To appear
-% This code is based on their original code http://strimmerlab.org/software.html
-% but has been sped up  by Kevin Murphy and Matt Dunham.
+
+%#author Karl Strimmer
+%#modified Kevin Murphy and Matt Dunham
+%#url  http://strimmerlab.org/software.html
+
 
 if nargin < 2, shrinkvar = 0; end
 
@@ -86,6 +89,7 @@ else        % takes p*p*n space
   %VS = var(XC1 .* XC2, 0,  3) * n/((n-1)^2);
   VS = var(bsxfun(@times,permute(x,[2,3,1]),permute(x,[3,2,1])),0,3)*n/((n-1)^2);
 end
+
 
 if(0)  % sanity check
     XC1test = repmat(reshape(x', [p 1 n]), [1 p 1]); % size p*p*n !

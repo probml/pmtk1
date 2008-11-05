@@ -4,6 +4,9 @@ function x = sample(p, n)
 % probability distribution P (an array of numbers >= 0, whose sum is > 0).
 % sum(P) does not have to be 1, but it must be > 0.
 
+%#author Tom Minka
+%#url http://research.microsoft.com/~minka/software/lightspeed/
+
 % Written by Tom Minka
 % (c) Microsoft Corporation. All rights reserved.
 

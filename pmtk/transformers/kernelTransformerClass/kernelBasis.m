@@ -24,8 +24,9 @@ function K = kernelBasis(X1, X2, kernel, kernelpar)
 %       K = exp(kernelpar(end)-sum((X1i-X2i)^2*kernelpar(i))/nin)
 %       If kernelpar is a matrix of size [nin, nin]
 %       K = exp(-(X1-X2)*kernelpar*(X1-X2)'/nin)
-%  Modified by Balaji Krishnapuram from code by Anton Schweighofer
 
+%#author Anton Schwaighofer
+%#modified Balaji Krishnapuram 
 
 if (size(X1,2)~=size(X2,2))
     error('X1 & X2 differ in dimensionality!!');

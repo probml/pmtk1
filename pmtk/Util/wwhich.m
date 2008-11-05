@@ -12,9 +12,9 @@ function out=wwhich(s1,s2)
 %          use the flag -all to locate them
 %
 %    See WHICH for more info 
-%
-%   by Lucio Andrade
-%http://www.mathworks.com/matlabcentral/files/1266/wwhich.m
+
+%#author Lucio Andrade
+%#url http://www.mathworks.com/matlabcentral/files/1266/wwhich.m
 
 if length(strmatch(strvcat('PCWIN'),computer))
    pathseparator=';';

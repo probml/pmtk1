@@ -1,4 +1,2 @@
-Probabilistic Models Toolkit
-30 October 2008 version
-
+PMTK: Probabilistic Modeling Toolkit
 See http://www.cs.ubc.ca/~murphyk/pmtk/

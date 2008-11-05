@@ -20,10 +20,11 @@ function [w, output] = boundOptL2Stepwise(X,Y,lambda)
 %               padded at the end with negative ones to make this function eml
 %               comliant. output.iter stores the number of iterations and
 %               output.converged is true iff the algorithm converged before the
-%               maximum number of iterations was reached.
-% Based on code by Balaji Krishnapuram
-%
-% Maximizes log likelihood
+%               maximum number of iterations was reached
+
+
+%#author Balaji Krishnapuram
+%#modified Kevin Murphy, Matt Dunham
 
     [nexamples,nclasses]    =size(Y); %#ok
     [nexamples,ndimensions] =size(X);

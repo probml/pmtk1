@@ -1,9 +1,12 @@
 function s = logsumexp(b, dim)
-% s = logsumexp(b) by Tom Minka
+% s = logsumexp(b) 
 % Returns s(i) = log(sum(exp(b(:,i))))  while avoiding numerical underflow.
 % s = logsumexp(b, dim) sums over dimension 'dim' instead of summing over rows
 
 %if isvector(b), b = b(:); end
+
+%#author Tom Minka
+%#url http://research.microsoft.com/~minka/software/lightspeed/
 
 if nargin < 2 % if 2nd argument is missing  
   dim = 1;

@@ -9,11 +9,10 @@ function c = acorr(x,maxlag)
 %   See also
 %     XCORR
 
-% Copyright (C) 2000 Aki Vehtari
-%
-% This software is distributed under the GNU General Public 
-% Licence (version 2 or later); please refer to the file 
-% Licence.txt, included with the software, for details.
+%#author Aki Vehtari
+%#date 2000
+
+
 
 if nargin < 1
   error('Not enough input arguments.');

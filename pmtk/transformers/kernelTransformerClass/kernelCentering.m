@@ -1,8 +1,13 @@
 function Kc = kernelCentering(K, Ktest)
 % Center a kernel matrix.
-% Based on http://kernel.anu.edu.au/code/kpca_toy.m
 % Kc = kernelCentering(K) returns size n*n
 % Kc = kernelCentering(Ktrain, Ktest) returns size ntest * ntrain
+
+%#url http://www.kernel-methods.net/matlab/algorithms/centering.m
+%#authpr John Shawe-Taylor 
+%#modified Kevin Murphy
+
+% See also http://kernel.anu.edu.au/code/kpca_toy.m
 
 if nargin < 2
   n = size(K,1);

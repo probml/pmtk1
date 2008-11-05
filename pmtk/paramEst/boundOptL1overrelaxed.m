@@ -20,8 +20,9 @@ function [W,output]  = boundOptL1overrelaxed(X, Y, lambda)
 %               comliant. output.iter stores the number of iterations and
 %               output.converged is true iff the algorithm converged before the
 %               maximum number of iterations was reached. 
-%
-% Based on code by Balaji Krishnapuram
+
+%#author Balaji Krishnapuram
+%#modified Kevin Murphy, Matt Dunham
 
     [nexamples,nclasses]=size(Y);
     [nexamples,ndimensions]=size(X);

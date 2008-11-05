@@ -16,9 +16,11 @@ function [f,g,H] = multinomLogregNLLGradHessL2(w, X, Y, lambda,offset)
 % f             L2 penalized nll
 % g             gradient of f
 % H             Hessian of f
-% Based on code by Balaji Krishnapuram
 % Note, here we minimize the nll rather than maximize the ll as done in the SMLR
 % paper, hence the sign change. 
+
+%#author Balaji Krishnapuram
+%#modified Kevin Murphy, Matt Dunham
 
 if(nargin <5)
     offset = false;
