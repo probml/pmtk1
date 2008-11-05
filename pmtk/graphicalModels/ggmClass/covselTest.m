@@ -6,15 +6,17 @@ G = zeros(3,3);
 G(1,2)=1; G(2,3)=1; G = mkSymmetric(G);
 precMat1 = covselPython(S, G)
 precMat2 = ggmIPF(S,G)
-%precMat3 = covselFastPython(S, G);
+%precMat3 = covselChordalPython(S, G);
 precMat3 = covselProj(S, G)
 precMat4 = gaussIPF(S, G)
+precMat5 = ggmIPFR(S, G)
 covMat = inv(precMat2);
 precMatEdwards = [0.477 -0.351 0; -0.351 1.19 -0.703; 0 -0.703 1.426];
 assert(approxeq(precMat1, precMatEdwards))
 assert(approxeq(precMat2, precMatEdwards))
 assert(approxeq(precMat3, precMatEdwards))
 assert(approxeq(precMat4, precMatEdwards))
+assert(approxeq(precMat5, precMatEdwards))
 
 
 % Marks - Edwards p48
@@ -29,6 +31,7 @@ precMat1 = ggmIPF(S, G)
 precMat2 = covselPython(S, G)
 precMat3 = covselProj(S, G)
 precMat4 = gaussIPF(S, G)
+precMat5 = ggmIPFR(S, G)
 
 pcorMatEdwards = eye(5,5);
 pcorMatEdwards(2,1) = 0.332;
@@ -41,16 +44,51 @@ assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat1))))
 assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat2))))
 assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat3))))
 assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat4))))
+assert(approxeq(pcorMatEdwards, abs(cov2cor(precMat5))))
 
-% Timing
-d = 50;
+% Timing on random problems - full rank
+d = 10;
 setSeed(0);
+n = d*2;
+X = randn(n,d);
+S = cov(X); 
 G = mkSymmetric(rand(d,d)>0.8);
-G = setdiag(G,1);
-S = randpd(d);
+G = setdiag(G,0);
+%S = randpd(d);
 tic; precMat1 = covselPython(S, G); toc
 tic; precMat2 = covselProj(S, G); toc
 %tic; precMat3 = gaussIPF(S, G); toc
+%tic; precMat4 = ggmIPFR(S, G); toc
 assert(approxeq(precMat1, precMat2))
 %assert(approxeq(precMat1, precMat3))
+
+% Timing on random problems
+d = 10;
+setSeed(2);
+n = ceil(d/2);
+%n = d*2;
+X = randn(n,d);
+S = cov(X); % may not be full rank
+G = mkSymmetric(rand(d,d)>0.8);
+G = setdiag(G,0);
+%S = randpd(d);
+tic; precMat1 = covselPython(S, G); toc
+tic; precMat2 = covselProj(S, G); toc
+%tic; precMat3 = gaussIPF(S, G); toc
+%tic; precMat3 = ggmIPFR(S, G); toc
+assert(approxeq(precMat1, precMat2))
+%assert(approxeq(precMat1, precMat3))
+
+% Timing on random problems - not full rank
+d = 10;
+setSeed(0);
+n = ceil(d/2);
+X = randn(n,d);
+S = cov(X);
+G = mkSymmetric(rand(d,d)>0.8);
+G = setdiag(G,0);
+tic; precMat1 = covselPython(S, G); toc
+tic; precMat2 = covselProj(S, G); toc
+assert(approxeq(precMat1, precMat2))
+
 

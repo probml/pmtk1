@@ -1,8 +1,18 @@
 function [precMat, covMat] = L1precisionBCD(X, varargin)
-% written by Mark Schmidt
+% L1 regularized MLE on precision matrix usign block coordinate descent
+% X = n x d data matrix
+% If useQP = 1, uses algorithm in 
+%   "Model selection through sparse maximum  likelihood
+%   estimation for multivariate Gaussian or binary data", Banerjee et al
+%   2007
+% If useQP = 0, uses algorithm "Sparse inverse covariance estimation the
+% graphical lasso", Friedman 2007
+
+%#author Mark Schmidt
+%#url http://www.cs.ubc.ca/~schmidtm/Software/L1precision.html
 
 [rho, useQP, verbose, junk] = process_options(...
-    varargin, 'regularizer', [], 'useQP', 0, 'verbose', 0);
+    varargin, 'regularizer', 0.1, 'useQP', 0, 'verbose', 0);
 
 [precMat] = helper(cov(X), rho, useQP, verbose);
 covMat = inv(precMat);

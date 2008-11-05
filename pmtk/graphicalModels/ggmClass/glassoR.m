@@ -1,10 +1,11 @@
 function [precMat, covMat] = glassoR(X, varargin)
 % Use R code to find L1-penalized precision matrix
-% R code from http://www-stat.stanford.edu/~tibs/glasso/
+
 % For instructions on calling R from Matlab, see
 % http://www.cs.ubc.ca/~mdunham/tutorial/external.html#21
 
-
+%#author Tibshirani 
+%#url  http://www-stat.stanford.edu/~tibs/glasso/
 
 [rho, useMBapprox, junk] = process_options(...
     varargin, 'regularizer', 0.1, 'useMB', 0);
