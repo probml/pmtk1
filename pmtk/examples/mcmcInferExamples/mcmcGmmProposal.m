@@ -1,5 +1,6 @@
-%% GMM Proposal Example
-% based on code by Christoph Andrieu
+%% Illustrate sampling from a GMM using a Gaussian proposal
+%#author Christoph Andrieu
+
 sigmas = [10 100 500];
 for i=1:length(sigmas)
 
