@@ -60,7 +60,9 @@ allClasses(markForDeletion) = [];
 matrix(markForDeletion,:) = [];
 matrix(:,markForDeletion) = [];
 
-h = graphlayout('adjMatrix',matrix,'nodeLabels',allClasses,'splitLabels',false);
+shortClassNames = shortenClassNames(allClasses);
+
+h = graphlayout('adjMatrix',matrix,'nodeLabels',shortClassNames,'splitLabels',true);
 
 if(~isempty(errors))
     fprintf('\nThe following m-files were\nthought to be classes\nbecause they contain the\nclassdef keyword, but did\nnot respond to queries.\nThey were not included in the graph.\n\n');
@@ -134,6 +136,20 @@ function baseClasses = findClasses(info)
           end
       end
    end
+end
+
+
+function classNames = shortenClassNames(classNames)
+    remove = {'Dist'};            % add to this list to remove other partial strings - case sensitive
+    for i=1:numel(remove)
+        ndx = strfind(classNames,remove{i});
+        for j=1:numel(classNames)
+           if(~isempty(ndx{j}))
+               classNames{j}(ndx{j}:ndx{j}+length(remove{i})-1) = [];
+           end
+        end
+    end
+    
 end
 
 end

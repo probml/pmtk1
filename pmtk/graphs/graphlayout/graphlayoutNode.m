@@ -247,12 +247,19 @@ classdef graphlayoutNode < dynamicprops & hgsetget
             obj.splitLabel = strjust(splitInTwo(label),'center');
             
             function str = splitInTwo(str)
-            % recursively split a string into two.
-               if(length(str) >= SPLITSIZE)
-                  top = [str(1:floor(length(str)/2)),'-'];                    
-                  bottom = str(floor(length(str)/2)+1:end);  
-                  str = strvcat(splitInTwo(top),splitInTwo(bottom)); %#ok
+            % recursively split a string into two based on camel case
+               isupper = isstrprop(str(2:end),'upper');
+               if(size(str,2) >= SPLITSIZE && any(isupper))
+                 first = find(isupper); first = first(1);
+                 top = str(1:first);
+                 bottom = str(first+1:end);
+                 str = strvcat(splitInTwo(top),splitInTwo(bottom)); %#ok
                end
+                  
+                  %top = [str(1:floor(length(str)/2)),'-'];                    
+                  %bottom = str(floor(length(str)/2)+1:end);  
+                  
+               
             end
             
              
