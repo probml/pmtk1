@@ -6,7 +6,7 @@ classdef logregDist < condProbDist
                                 % The form depends on how this object was fit. 
                                 % If method = 'map', the default, then w 
                                 % represents the MAP estimate and is stored as a
-                                % deltaDist object. If method = 'bayesian', then
+                                % constDist object. If method = 'bayesian', then
                                 % w is an mvnDist representing the laplace
                                 % approximation to the posterior. 
                                 
@@ -26,7 +26,7 @@ classdef logregDist < condProbDist
                 'nclasses'   , []);
             
             if(~isempty(m.w) && isnumeric(m.w))
-                m.w = deltaDist(m.w);
+                m.w = constDist(m.w);
             end
         end
 
@@ -107,7 +107,7 @@ classdef logregDist < condProbDist
         %        OR
         %          (2) a matrix of weights of size ndimensions-by-(nclasses-1)
         %        OR
-        %          (3) a deltaDist object centered on the map estimate of the
+        %          (3) a constDist object centered on the map estimate of the
         %              posterior p(w|D)
         %        OR
         %          (4) an mvnDist object representing the posterior p(w|D)
@@ -155,7 +155,7 @@ classdef logregDist < condProbDist
             switch method
                 
                 case 'plugin'
-                    if(isa(w,'deltaDist')),w = w.point; end
+                    if(isa(w,'constDist')),w = w.point; end
                     if(isa(w,'mvnDist')),w = w.mu;end
                     pred = discreteDist(multiSigmoid(X,w(:)));          %#ok
                 case 'mc'
@@ -245,7 +245,7 @@ classdef logregDist < condProbDist
             if(~isempty(optfunc))
                 w = optfunc(@multinomLogregNLLGradHessL2,zeros(d*(obj.nclasses-1),1),lambdaVec,options,X,Y1,0,false);
             end
-            obj.w = deltaDist(w);
+            obj.w = constDist(w);
         end
 
         function [obj,output] = fitL2(obj,X,Y1,lambda,method,optMethod,offsetAdded)
@@ -277,7 +277,7 @@ classdef logregDist < condProbDist
             switch method
                 
                 case 'map'
-                    obj.w = deltaDist(w);
+                    obj.w = constDist(w);
                 case 'bayesian'
                     try
                         [nll, g, H] = multinomLogregNLLGradHessL2(w, X, Y1, lambda,offsetAdded); %#ok  H = hessian of neg log lik    
@@ -285,7 +285,7 @@ classdef logregDist < condProbDist
                         obj.w = mvnDist(w, C); %C  = inv Hessian(neg log lik)
                     catch
                         warning('logregDist:Laplace','Laplace approximation to the posterior could not be computed because the Hessian could not be inverted...using MAP estimate instead');
-                        obj.w = deltadist(w);
+                        obj.w = constDist(w);
                     end
                 otherwise
                     error('%s method is not currently supported given an L2 prior',method);
