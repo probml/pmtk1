@@ -9,7 +9,13 @@ function makeDocumentation(destination)
     viewName1     = 'PMTKdocsByFuncName.html';                  % name of root HTML file for the docs
     defaultDocDir = 'C:\PMTKdocs';                              % default directory to store the documentation
     doNotEvalTag  = '%#!';                                      % If this tag is present in the function's documentation, it is not evaluated when published
+    excludeList = {};                                           % Functions listed here are not displayed in the "Functions Used" column
+    if(exist('trivialFunctionList.txt','file'))
+        excludeList = [excludeList,getText('trivialFunctionList.txt')];
+    end
 
+    makeRootOnly = false;                                       % If true, only the root html file is generated, nothing else is published. 
+    
     originalDirectory = pwd;                                    % save current directory
     if(nargin == 0), destination = defaultDocDir;  end          % this is where the docs will live
     cd(PMTKroot());                                             % change to the base PMTK directory
@@ -42,11 +48,13 @@ function makeDocumentation(destination)
        
         end
     end
-    pause(1);
-    for i=1:numel(viewInfo)
-       evalin('base','clear all'); 
-       publishFile(viewInfo(i).functionName,viewInfo(i).outputDir,viewInfo(i).evalCode); 
-       close all;
+    if(~makeRootOnly)
+        pause(1);
+        for i=1:numel(viewInfo)
+            evalin('base','clear all'); 
+            publishFile(viewInfo(i).functionName,viewInfo(i).outputDir,viewInfo(i).evalCode); 
+            close all;
+        end
     end
     
     cdDocBase();        
@@ -94,6 +102,7 @@ function makeDocumentation(destination)
         fclose(fid);
        
         [funcsUsed,classesUsed] = dependsOn(which(mfile),PMTKroot());
+        funcsUsed = setdiff(funcsUsed,excludeList);
     end
 
     function publishFile(mfile,outputDir,evalCode)
@@ -229,7 +238,9 @@ function makeDocumentation(destination)
        cdDocBase();
        link = ['./additional/',mfile,'.html'];
        if(~exist(link,'file'))
-            publishFile(mfile,outputDir,false);
+            if(~makeRootOnly)
+                publishFile(mfile,outputDir,false);
+            end
        end
        link = ['./additional/',mfile,'.html'];
        htmlString = sprintf('<a href="%s">%s\n',link,mfile);
@@ -239,5 +250,9 @@ function makeDocumentation(destination)
     % Change directory to this documentation's root directory    
         cd(fullfile(destination,destRoot));
     end
+    
+   
+    
+    
 
 end
