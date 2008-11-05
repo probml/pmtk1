@@ -6,8 +6,8 @@ function [edgeStruct] = makeEdgeStruct(adj)
 % V(n) is a pointer into the E array for node n
 % E(V(n):V(n+1)-1) are all the edges connected to node n
 % edgeEnds(e,:) = [i j] means e is an i-j edge
-%
-% Written by Mark Schmidt
+
+%#author Mark Schmidt
 
 nNodes = length(adj);
 [i j] = ind2sub([nNodes nNodes],find(adj));

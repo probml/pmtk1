@@ -9,8 +9,9 @@ function [seps, resids, hists]=seps_resids_hists_cell(cliques)
 %         3. hists, a 1x (num_cliques) cell array of the separators wrt the ordering 
 %         of the cell array cliques.
  
-% Written by Helen Armstrong
 
+%#author Helen Armstrong
+%#url www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf 
 
 num_cliques=size(cliques,2); 
 num_seps=num_cliques; 
