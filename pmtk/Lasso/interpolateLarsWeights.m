@@ -18,6 +18,8 @@ criticalPoints = recoverLambda(X,y,Wfull)'; %in ascending order of magnitude.
 tooBig = lambdas > criticalPoints(end);%can't interpolate outside of the range of criticalPoints
 Winterp = interp1q(criticalPoints,Wfull,lambdas(~tooBig)');
 Wbig = [Winterp; zeros(sum(tooBig), size(Winterp,2))]; % since, if lambda > lambda_max, all weights 0.
-Wbig = Wbig(1:end-1,:);
-Wbig = [Wbig; Wfull(1,:)];
-
+%Wbig = Wbig(1:end-1,:);
+%Wbig = [Wbig; Wfull(1,:)];
+if(any(lambdas == 0))   % Interpolation breaks when lambda = 0, which corresponds to lsq solution = Wfull(1,:)
+    Wbig(lambdas == 0,:) = Wfull(1,:);
+end
