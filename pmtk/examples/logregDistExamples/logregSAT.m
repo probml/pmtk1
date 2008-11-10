@@ -61,8 +61,8 @@ subplot2(2,2,2,2); plot(marginal(mBayes.w,2),'plotArgs', {'linewidth',2}); title
 % interest are returned as a SampleDist object such that
 % samples.samples(s,c,i) = probability that example i belongs to class c
 % according to sample s.
-[pred,sdist] = predict(mBayes,'X',X,'method','mc','nsamples',100);
-sdist = marginal(sdist,2);      % marginal(sdist,1) + marginal(sdist,2) = 1
+pred = predict(mBayes,'X',X,'method','mc','nsamples',100);
+sdist = marginal(pred,2);      % marginal(sdist,1) + marginal(sdist,2) = 1
 %% Plot Credible Intervals
 % Here we obtain error bars on our predictions by looking at the
 % credible intervals.

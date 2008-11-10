@@ -92,7 +92,7 @@ classdef LogregDist < CondProbDist
             end
         end
 
-        function [pred,samples] = predict(obj,varargin)
+        function pred = predict(obj,varargin)
         % Predict the class labels of the specified test examples using the
         % specified method.
         %
@@ -103,14 +103,6 @@ classdef LogregDist < CondProbDist
         %
         % 'X'      The test data: X(i,:) is the ith case
         %
-        % 'w'      (1) unspecified, then then obj.w is used instead. 
-        %        OR
-        %          (2) a matrix of weights of size ndimensions-by-(nclasses-1)
-        %        OR
-        %          (3) a ConstDist object centered on the map estimate of the
-        %              posterior p(w|D)
-        %        OR
-        %          (4) an MvnDist object representing the posterior p(w|D)
         %
         % 'method' {['plugin'] | 'mc' | 'integral'}
         % 
@@ -131,33 +123,29 @@ classdef LogregDist < CondProbDist
         %           one for each test example X(i,:). All of these are
         %           represented in a single DiscreteDist object such that
         %           pred.probs(i,c) is the probability that example i
-        %           belongs to class c. If method = 'mc', pred is the result of
-        %           averaging over all of the samples. 
-        %
-        % samples - empty, [], unless method = 'mc'
-        %           a SampleDist object storing one distribution, (represented
-        %           by samples) for every test example such that
-        %           SampleDist.samples(s,c,i) is the probability that example i
-        %           is in class c according to sample s. In particular, pred
+        %           belongs to class c. If method = 'mc', pred is a SampleDist
+        %           object storing one distribution, (represented by samples)
+        %           for every test example such that SampleDist.samples(s,c,i)
+        %           is the probability that example i is in class c according to
+        %           sample s. 
             
             if(nargin == 2 && ~ischar(varargin{1}))
                 varargin = [varargin,varargin{1}];
                 varargin{1} = 'X';
             end
             
-            [X,w,method,nsamples] = process_options(varargin,'X',[],'w',[],'method','plugin','nsamples',1000);
+            [X,method,nsamples] = process_options(varargin,'X',[],'method','plugin','nsamples',1000);
             if ~isempty(obj.transformer)
                 X = test(obj.transformer, X);
             end
-            samples = [];
-            if(isempty(w)), w = obj.w; end
+            w = obj.w; 
             if(isempty(w)),error('Call fit() first or specify w');end
             switch method
                 
                 case 'plugin'
                     if(isa(w,'ConstDist')),w = w.point; end
                     if(isa(w,'MvnDist')),w = w.mu;end
-                    pred = DiscreteDist(multiSigmoid(X,w(:)));          %#ok
+                    pred = DiscreteDist(multiSigmoid(X,w(:)));                               %#ok
                 case 'mc'
                     if(~isa(w,'MvnDist')),
                         error('w must be an MvnDist object to draw Monte Carlo samples. Either specify p(w|D) as an mvnDist or call fit with ''prior'' = ''l2'', ''method'' = ''bayesian''');
@@ -167,8 +155,7 @@ classdef LogregDist < CondProbDist
                     for s=1:nsamples
                         samples(s,:,:) = multiSigmoid(X,Wsamples(s,:)')';
                     end
-                    samples = SampleDist(samples);
-                    pred = DiscreteDist(mean(samples));
+                    pred = SampleDist(samples);
                 case 'integral'
                     if(obj.nclasses ~=2),error('This method is only available in the 2 class case');end
                     if(~isa(w,'MvnDist')),
@@ -178,8 +165,7 @@ classdef LogregDist < CondProbDist
                     p = p(:);
                     pred = DiscreteDist([p,1-p]);
                 otherwise
-                    error('%s is an unsupported prediction method',method);
-                  
+                    error('%s is an unsupported prediction method',method); 
             end        
         end
 

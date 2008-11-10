@@ -175,26 +175,23 @@ classdef LinregDist < CondProbDist
       
 
             if(nargin == 2 && isnumeric(varargin{1}))
-                X = varargin{1}; method = 'default';
+                X = varargin{1};
             else
-                [X,method] = process_options(varargin,'X',[],'method','default');
+                X = process_options(varargin,'X',[]);
+            end
+        
+        
+            switch class(model.w)
+                case {'MvnDist','MvnInvGammaDist'}
+                    method = 'full';
+                otherwise
+                    method = 'plugin';
             end
             
-            if(strcmpi(method,'default'))
-               switch class(model.w)
-                   case {'MvnDist','MvnInvGammaDist'}
-                       method = 'exact';
-                   otherwise 
-                       method = 'plugin';
-               end
-            end
 
             switch method
 
                 case 'plugin'
-                    if(isa(model.w,'MvnInvGammaDist'))
-                       error('Plugin approximation is not supported when the specified prior is an MvnInvGammaDist object. '); 
-                    end
                     if ~isempty(model.transformer)
                         X = test(model.transformer, X);
                     end
@@ -204,11 +201,9 @@ classdef LinregDist < CondProbDist
                     sigma2Hat = model.sigma2*ones(n,1); % constant variance!
                     py = GaussDist(muHat, sigma2Hat);
 
-                case 'exact'
+                case 'full'
                     py = predictBayesian(model,X);
                     
-                otherwise
-                    error('%s is not supported - choose one of ''plugin'' or ''exact''',method);
             end
 
 
@@ -353,7 +348,7 @@ classdef LinregDist < CondProbDist
                     end
                     if(onesAdded)
                           w0 = mean(y)-mean(X)*(X\center(y));
-                          w = [w0;w(:)];
+                          w = [w0;w(:)];                                                                            %#ok
                           X = [ones(size(X,1),1),X];
                     end
                     model.w = ConstDist(w);
@@ -455,33 +450,33 @@ classdef LinregDist < CondProbDist
         
         function testClass()
             load prostate;
-            lambda = 20;
+            lambda = 0.05;
             sigma2 = 0.5;
             T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()});
             model = LinregDist('transformer',T);
             %% L1 shooting
             modelL1shooting = fit(model,'X',Xtrain,'y',ytrain,'method','map','prior','l1','lambda',lambda,'algorithm','shooting');
-            yp = predict(modelL1shooting,'X',Xtest,'method','plugin');
+            yp = predict(modelL1shooting,'X',Xtest);
             L1shootingErr = mse(ytest,mode(yp))
             %% L1 lars
             modelL1lars = fit(model,'X',Xtrain,'y',ytrain,'method','map','prior','l1','lambda',lambda,'algorithm','lars');
-            yp = predict(modelL1lars,'X',Xtest,'method','plugin');
+            yp = predict(modelL1lars,'X',Xtest);
             L1larsErr = mse(ytest,mode(yp))
             %% L2 QR
             modelL2qr = fit(model,'X',Xtrain,'y',ytrain,'method','map','prior','l2','lambda',lambda,'algorithm','ridgeQR');
-            yp = predict(modelL2qr,'X',Xtest,'method','plugin');
+            yp = predict(modelL2qr,'X',Xtest);
             L2qrErr = mse(ytest,mode(yp))
             %% L2 SVD
             modelL2svd = fit(model,'X',Xtrain,'y',ytrain,'method','map','prior','l2','lambda',lambda,'algorithm','ridgeSVD');
-            yp = predict(modelL2svd,'X',Xtest,'method','plugin');
+            yp = predict(modelL2svd,'X',Xtest);
             L2svdErr = mse(ytest,mode(yp))
             %% Elastic Net, lars
-            modelElasticLars = fit(model,'X',Xtrain,'y',ytrain,'method','map','prior','l1l2','lambda',[lambda,0],'algorithm','lars');
-            yp = predict(modelElasticLars,'X',Xtest,'method','plugin');
+            modelElasticLars = fit(model,'X',Xtrain,'y',ytrain,'method','map','prior','l1l2','lambda',[lambda,lambda],'algorithm','lars');
+            yp = predict(modelElasticLars,'X',Xtest);
             elasticLarsErr = mse(ytest,mode(yp))
             %% Elastic Net shooting
-            modelElasticShooting = fit(model,'X',Xtrain,'y',ytrain,'method','map','prior','l1l2','lambda',[lambda,0],'algorithm','shooting');
-            yp = predict(modelElasticShooting,'X',Xtest,'method','plugin');
+            modelElasticShooting = fit(model,'X',Xtrain,'y',ytrain,'method','map','prior','l1l2','lambda',[lambda,lambda],'algorithm','shooting');
+            yp = predict(modelElasticShooting,'X',Xtest);
             elasticShootingErr = mse(ytest,mode(yp))
             %% MLE
             modelMLE = fit(model,'X',Xtrain,'y',ytrain);
@@ -489,11 +484,11 @@ classdef LinregDist < CondProbDist
             mleErr = mse(ytest,mode(yp))
             %% Bayesian MVN prior
             modelMVN = fit(model,'X',Xtrain,'y',ytrain,'method','bayesian','prior','mvn','lambda',lambda,'sigma2',sigma2);
-            yp = predict(modelMVN,'X',Xtest,'method','exact');
+            yp = predict(modelMVN,'X',Xtest);
             bayesMVNErr = mse(ytest, mode(yp))
             %% Bayesian MVNIG prior
             modelMVNIG = fit(model,'X',Xtrain,'y',ytrain,'method','bayesian','prior','mvnIG','lambda',lambda,'sigma2',sigma2);
-            yp = predict(modelMVNIG,'X',Xtest,'method','exact');
+            yp = predict(modelMVNIG,'X',Xtest);
             bayesMVNIGErr = mse(ytest,mode(yp))
         end 
     end

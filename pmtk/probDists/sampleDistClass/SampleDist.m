@@ -33,8 +33,13 @@ classdef SampleDist < ProbDist
     
     function m = mode(obj)
     % m is of size npdfs-by-d
-      [ndx, m] = max(obj.samples);
-      m = squeeze(m)';
+      if(ndims(obj.samples) == 3)
+         [val,m] = max(mean(obj),[],2);
+         m = m';
+      else
+        [val, m] = max(obj.samples);
+        m = squeeze(m)';
+      end
     end
     
     function v = var(obj)

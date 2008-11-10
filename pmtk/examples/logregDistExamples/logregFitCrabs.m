@@ -12,6 +12,6 @@ m = fit(m, 'X', Xtrain, 'y', ytrain, 'lambda', lambda,'prior','l2','method','bay
 Pmap   = predict(m,'X',Xtest,'method','plugin');
 Pmc    = predict(m,'X',Xtest,'method','mc');
 Pexact = predict(m,'X',Xtest,'method','integral');
-nerrsMAP   = sum(mode(Pmap)' ~= ytest)                                      %#ok
+nerrsMAP   = sum(mode(Pmap)' ~= ytest)                                           %#ok
 nerrsMC    = sum(mode(Pmc)' ~= ytest)                                       %#ok
 nerrsExact = sum(mode(Pexact)' ~= ytest)

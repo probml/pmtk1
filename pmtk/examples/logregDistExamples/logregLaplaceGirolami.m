@@ -93,8 +93,8 @@ subplot(2,2,2); hold on
 S = 100;
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
-[predDist,sdist] = predict(m,'X',grid,'method','mc','nsamples',S);
-pred = marginal(sdist,2);
+predDist = predict(m,'X',grid,'method','mc','nsamples',S);
+pred = marginal(predDist,2);
 %pred = postPredict(m, grid, 'method', 'MC', 'nsamples', S);
 for s=1:min(S,20)
     p = pred.samples(s,:);
