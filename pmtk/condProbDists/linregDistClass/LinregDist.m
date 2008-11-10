@@ -75,12 +75,6 @@ classdef LinregDist < CondProbDist
         end
        
         function model = fit(model,varargin)
-        % Compute the posterior distribution over w, the weights. This is either
-        % a constant distribution representing the MAP estimate if method =
-        % 'map', (the default), or conjugate to the specified prior object, i.e.
-        % one of MvnDist or MvnInvGammaDist. 
-        %
-        % FORMAT: 
         %           model = fit(model,'name1',val1,'name2',val2,...)
         %
         % INPUT
@@ -91,11 +85,18 @@ classdef LinregDist < CondProbDist
         %
         % 'prior'  - In the case that method = 'map' estimation,(default), one
         %            of four strings can be specified, 'none' | 'L1' | 'L2' | 'L1L2' 
-        %            where 'none' corresponds to the mle and 'L1L2' corresponds
-        %            to elastic net. 
+        %            'none' corresponds to the mle.
+        %            'L1' corresponds to lasso,
+        %            'L2' corresponds to ridge
+        %            'L1L2' corresponds to elastic net. 
+        %             This is the prior on weights w.
+        %             Sigma is estimated by MLE (residual variance).
         %
         %            In the case that method = 'bayesian', you can specify a
-        %            preconstructed MvnDist object or an MvnInvGammaDist object.
+        %            preconstructed MvnDist object or an MvnInvGammaDist
+        %            object as the prior. If the former, sigma2 must be
+        %            known. If the latter, the posterior p(w,sigma2|D) is
+        %            estimated.
         %            Alternatively, you can specify the string 'mvn' or 'mvnIG'
         %            and an object will be constructed for you. In these latter 
         %            two cases, the prior is spherical with lambda used as 
@@ -156,43 +157,23 @@ classdef LinregDist < CondProbDist
         %
         % FORMAT:
         %
-        % model = predict(model,'name1',val1,'name2',val2,...);
-        %
-        % OR
-        %
-        % model = predict(model,X)
+        % py = predict(model,X)
         %
         % INPUT:
         % 
         % 'X'        - The test set examples, X(i,:) is example i
         % 
-        % 'method'   - ['plugin'] | 'exact'  
-        %              'plugin' is not available when model.w is an
-        %              MvnInvGammaDist object. 
-        %              
-        %              'exact' is not available when model.w is a ConstDist
-        %              object.
-        %
-        %              If not specified, 'plugin' is used if model.w is a
-        %              ConstDist and 'exact' used otherwise. 
-        % 
-        % OUTPUT:      The output depends on (1), how the model was fit, and (2)
-        %              on the specified prediction method. 
-        %
-        %              When method = 'plugin', the output is a product of N
-        %              independent Gaussian distributions, (one for each test
-        %              example),represented as a single GaussDist object. The
-        %              variance is tied and set to the mean squared error on the
-        %              training set. A point for the targets can be obtained by
-        %              taking the mean of this object as in mean(yp). 
-        %
-        %              When method = 'exact', the output depends on what prior
-        %              was used: if prior = MvnDist, then output = GaussDist,
-        %              again representing a product of N independent Gaussians
-        %              but with non-tied variance. If prior = MvnInvGammaDist,
-        %              then the output is a StudentDist object, representing N
-        %              independent Student T distributions. 
-        % 
+        % OUTPUT
+        % py is a distribution such that py(i) = p(y|X(i,:),model) 
+        % If the model parameters are a point estimate,
+        % then py(i) = GaussDist(w' X(i,:), sigma2)
+        % If the model params are a MVNIG distributionm
+        % then py(i) = StudentDist(...) whose parameters depend on X(i,:)
+        % If the model params are a MVN distribution with fixed sigma2.
+        % then py(i) = GaussDist(E[w]' X(i,:), sigma2)
+        
+      
+
             if(nargin == 2 && isnumeric(varargin{1}))
                 X = varargin{1}; method = 'default';
             else
@@ -433,39 +414,39 @@ classdef LinregDist < CondProbDist
         end
 
         function [py] = predictBayesian(model, X)
-        % Used by predict, when method = 'bayesian'    
-            if ~isempty(model.transformer)
-                X = test(model.transformer, X);
-            end
-            n = size(X,1);
-            done = false;
-            switch class(model.w)
-                case 'MvnDist'
-                    if isa(model.sigma2, 'double')
-                        muHat = X*model.w.mu;
-                        Sn = model.w.Sigma;
-                        sigma2Hat = model.sigma2*ones(n,1) + diag(X*Sn*X');
-                        %{
+          % Used by predict, when method = 'bayesian'
+          if ~isempty(model.transformer)
+            X = test(model.transformer, X);
+          end
+          n = size(X,1);
+          done = false;
+          switch class(model.w)
+            case 'MvnDist'
+              if isa(model.sigma2, 'double')
+                muHat = X*model.w.mu;
+                Sn = model.w.Sigma;
+                sigma2Hat = model.sigma2*ones(n,1) + diag(X*Sn*X');
+                %{
               for i=1:n
                 xi = X(i,:)';
                 s2(i) = model.sigma2 + xi'*Sn*xi;
               end
               assert(approxeq(sigma2Hat, s2))
-                        %}
-                        py = GaussDist(muHat, sigma2Hat);
-                        done = true;
-                    end
-                case 'MvnInvGammaDist'
-                    wn = model.w.mu;
-                    Sn = model.w.Sigma;
-                    vn = model.w.a*2;
-                    sn2 = 2*model.w.b/vn;
-                    m = size(X,n);
-                    SS = sn2*(eye(m) + X*Sn*X');
-                    py = StudentDist(vn, X*wn, diag(SS));
-                    done = true;
-            end
-            assert(done)
+                %}
+                py = GaussDist(muHat, sigma2Hat);
+                done = true;
+              end
+            case 'MvnInvGammaDist'
+              wn = model.w.mu;
+              Sn = model.w.Sigma;
+              vn = model.w.a*2;
+              sn2 = 2*model.w.b/vn;
+              m = n; % size(X,n);
+              SS = sn2*(eye(m) + X*Sn*X');
+              py = StudentDist(vn, X*wn, diag(SS));
+              done = true;
+          end
+          assert(done)
         end
 
     end
