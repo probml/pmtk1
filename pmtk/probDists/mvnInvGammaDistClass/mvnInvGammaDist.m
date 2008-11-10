@@ -1,4 +1,4 @@
-classdef mvnInvGammaDist < vecDist
+classdef MvnInvGammaDist < VecDist
   % p(m,s2|params) = N(m|mu, s2 Sigma) IG(s2| a,b)
   properties
     mu;
@@ -9,7 +9,7 @@ classdef mvnInvGammaDist < vecDist
 
   %% main methods
   methods
-    function m = mvnInvGammaDist(varargin)
+    function m = MvnInvGammaDist(varargin)
       if nargin == 0, varargin = {}; end
       [mu, Sigma, a, b] = process_options(...
         varargin, 'mu', [], 'Sigma', [], 'a', [], 'b', []);
@@ -21,11 +21,11 @@ classdef mvnInvGammaDist < vecDist
       % marginal(obj, 'sigma') or marginal(obj, 'mu')
       switch lower(queryVar)
         case 'sigma'
-          mm = invGammaDist(obj.a, obj.b);
+          mm = InvGammaDist(obj.a, obj.b);
         case 'mu'
           v = 2*obj.a;
           s2 = 2*obj.b/v;
-          mm = mvtDist(v, obj.mu, s2*obj.Sigma);
+          mm = MvtDist(v, obj.mu, s2*obj.Sigma);
         otherwise
           error(['unrecognized variable ' queryVar])
       end

@@ -1,11 +1,11 @@
-classdef infEngine % abstract class
+classdef InfEngine % abstract class
  
   properties
     dummy;
   end
  
   methods
-    function eng = infEngine()
+    function eng = InfEngine()
       eng.dummy = 1;
     end
   end

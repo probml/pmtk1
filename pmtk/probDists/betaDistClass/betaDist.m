@@ -1,4 +1,4 @@
-classdef betaDist < scalarDist
+classdef BetaDist < ScalarDist
 
   properties
     a;
@@ -8,7 +8,7 @@ classdef betaDist < scalarDist
 
   %% main functions
   methods
-    function obj =  betaDist(a,b)
+    function obj =  BetaDist(a,b)
       % betadist(a,b) propto X^{a-1} (1-X)^{b-1}
       % a and b can be vectors, in which case must be same length
       if nargin == 0, a = []; b = []; end

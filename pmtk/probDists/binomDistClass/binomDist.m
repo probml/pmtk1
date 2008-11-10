@@ -1,4 +1,4 @@
-classdef binomDist < discreteDist
+classdef BinomDist < DiscreteDist
   
   properties
     N; 
@@ -11,7 +11,7 @@ classdef binomDist < discreteDist
   
   %% Main methods
   methods 
-    function obj =  binomDist(N,mu)
+    function obj =  BinomDist(N,mu)
       % binomdist(N,mu) binomial distribution
       % N and/or mu can be vectors.
       % If both are vectors, must be same length.
@@ -31,9 +31,9 @@ classdef binomDist < discreteDist
     
     function obj = set.N(obj, N)
       if obj.lockN
-        % for bernoulli case
+        % for Bernoulli case
         %obj.N = 1;
-        warning('BLT:binomdist:setN', 'can''t change N');
+        warning('BLT:Binomdist:setN', 'can''t change N');
       else
         obj.N = N;
       end
@@ -66,7 +66,7 @@ classdef binomDist < discreteDist
        checkParamsAreConst(obj)
        d = nfeatures(obj);
        X = zeros(n, d);
-       % Binomial is a sum of N bernoulli rv's
+       % Binomial is a sum of N Bernoulli rv's
        for j=1:d
          X(:,j) = sum( rand(n,obj.N(j)) < repmat(obj.mu(j), n, obj.N(j)), 2);
          %X(:,j) = binornd(obj.N(j), obj.mu(j), n, 1);
@@ -118,7 +118,7 @@ classdef binomDist < discreteDist
            obj.mu =  Nsucc/Ntot;
          case 'map'
            switch class(obj.mu)
-             case 'betaDist'
+             case 'BetaDist'
                obj.mu = (obj.mu.a + Nsucc - 1) / (obj.mu.a + Nsucc + obj.mu.b + Nfail - 2);
              otherwise
                error(['cannot handle mu of type ' class(obj.mu)])
@@ -140,14 +140,14 @@ classdef binomDist < discreteDist
        end
        Nfail = Ntot - Nsucc;
        switch class(obj.mu)
-         case 'betaDist'
-           obj.mu = betaDist(obj.mu.a + Nsucc, obj.mu.b + Nfail);
-         case 'discreteDist',
+         case 'BetaDist'
+           obj.mu = BetaDist(obj.mu.a + Nsucc, obj.mu.b + Nfail);
+         case 'DiscreteDist',
            Thetas = obj.mu.support;
            lik = Thetas.^Nsucc .* (1-Thetas).^Nfail;
            prior = obj.mu.probs;
            post = normalize(prior .* lik);
-           obj.mu = discreteDist(post, Thetas);
+           obj.mu = DiscreteDist(post, Thetas);
          otherwise
            error(['cannot handle mu of type ' class(obj.mu)])
        end
@@ -162,8 +162,8 @@ classdef binomDist < discreteDist
      function pr = postPredict(obj)
        % p(X|D) 
        switch class(obj.mu)
-         case 'betaDist' % integrrate out mu
-           pr = betaBinomDist(obj.N, obj.mu.a, obj.mu.b);
+         case 'BetaDist' % integrrate out mu
+           pr = BetaBinomDist(obj.N, obj.mu.a, obj.mu.b);
          otherwise
            error(['unrecognized mu type ' class(obj.mu)])
        end
@@ -173,7 +173,7 @@ classdef binomDist < discreteDist
   %% Private methods
   methods(Access = 'protected')
     % we make the constructor and set method call these functions
-    % which can be overwitten by bernoullidist (child class)
+    % which can be overwitten by Bernoullidist (child class)
 
     function obj = setup(obj,N,mu, lockN)
       % binomdist(N,mu) binomial distribution

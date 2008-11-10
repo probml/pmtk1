@@ -1,4 +1,4 @@
-classdef dirichletDist < vecDist
+classdef DirichletDist < VecDist
 
 
   properties
@@ -7,7 +7,7 @@ classdef dirichletDist < vecDist
 
   %% Main methods
   methods
-    function obj =  dirichletDist(alpha)
+    function obj =  DirichletDist(alpha)
       if nargin == 0, alpha = []; end
       obj.alpha = alpha;
     end

@@ -9,7 +9,7 @@ N = length(nu);
 %colors = hsvrand(N);
 xrange =[0.01 2];
 for i=1:N
-    h = plot(invWishartDist(nu(i), sigma2(i)), 'plotArgs', styles{i}, 'xrange',xrange);
+    h = plot(InvWishartDist(nu(i), sigma2(i)), 'plotArgs', styles{i}, 'xrange',xrange);
     hold on
     str{i} = sprintf('%s %3.1f, %s %3.1f', '\nu', nu(i), '\sigma^2', sigma2(i));
 end

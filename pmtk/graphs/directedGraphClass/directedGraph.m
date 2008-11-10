@@ -1,4 +1,4 @@
-classdef directedGraph < graph 
+classdef DirectedGraph < Graph 
   
   properties
     %adjMat;
@@ -7,8 +7,8 @@ classdef directedGraph < graph
   end
 
   methods
-    function obj = directedGraph(varargin)
-      % G = directedGraph(adjMat)
+    function obj = DirectedGraph(varargin)
+      % G = DirectedGraph(adjMat)
       if nargin == 0
         obj.adjMat = [];
         return;
@@ -30,7 +30,7 @@ classdef directedGraph < graph
 
       % expm(G) = I + G + G^2 / 2! + G^3 / 3! + ...
       M = expm(double(full(obj.adjMat))) - eye(length(obj.adjMat));
-      obj2 = directedGraph(M>0);
+      obj2 = DirectedGraph(M>0);
     end
 
     function ps = parents(obj, i)

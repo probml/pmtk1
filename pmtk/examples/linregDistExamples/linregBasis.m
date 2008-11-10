@@ -1,4 +1,4 @@
-function basis
+function linregBasis
     demoBasisSimple();
     demoBasis();
     demoBasisDense();
@@ -71,14 +71,17 @@ function helperBasis(varargin)
         'sampling', sampling, 'deg', deg);
     switch basis
         case 'quad'
-            T = polyBasisTransformer(2);
+            T = PolyBasisTransformer(2);
         case 'rbf'
-            T = rbfBasisTransformer(10, 1);
+            T = RbfBasisTransformer(10, 1);
     end
-    m = linregDist('transformer', T);
-    m = inferParams(m, 'X', xtrain, 'y', ytrain, 'prior', prior, 'sigma2', sigma2);
-    ypredTrain = postPredict(m, xtrain);
-    ypredTest = postPredict(m, xtest);
+    m = LinregDist('transformer', T);
+    m = fit(m,'X',xtrain,'y',ytrain,'prior',prior,'sigma2',sigma2);
+    ypredTrain = predict(m,xtrain);
+    ypredTest =  predict(m,xtest);
+    %m = inferParams(m, 'X', xtrain, 'y', ytrain, 'prior', prior, 'sigma2', sigma2);
+    %ypredTrain = postPredict(m, xtrain);
+    %ypredTest = postPredict(m, xtest);
 
     figure; hold on;
     h = plot(xtest, mean(ypredTest),  'k-');
@@ -126,7 +129,7 @@ function helperBasis(varargin)
     nsamples = 10;
     for s=1:nsamples
         ws = sample(m.w);
-        ms = linregDist('w', ws(:), 'sigma2', sigma2, 'transformer', T);
+        ms = LinregDist('w', ws(:), 'sigma2', sigma2, 'transformer', T);
         [xtrainT, ms.transformer] = train(ms.transformer, xtrain);
         ypred = mean(predict(ms, xtest));
         plot(xtest, ypred, 'k-', 'linewidth', 2);

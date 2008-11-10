@@ -1,4 +1,4 @@
-classdef ggmDecomposable < ggm
+classdef GgmDecomposableDist < GgmDist
   % gaussian graphical model on decomposable graphs
   
   properties
@@ -6,8 +6,8 @@ classdef ggmDecomposable < ggm
 
   %%  Main methods
   methods
-    function obj = ggmDecomposable(G, mu, Sigma)
-      % obj = ggmDecomposable(G, hiwDist(...), []) uses a prior of the form
+    function obj = GgmDecomposableDist(G, mu, Sigma)
+      % obj = GgmDecomposableDist(G, HiwDist(...), []) uses a prior of the form
       % p(mu) propto 1, p(Sigma) = hiw(G)
        if nargin == 0
          G = []; mu = []; Sigma = [];
@@ -17,7 +17,7 @@ classdef ggmDecomposable < ggm
     
     function d = nnodes(obj)
       if ~isempty(obj.G), d = nnodes(obj.G); return; end
-      if isa(obj.mu, 'hiwDist')
+      if isa(obj.mu, 'HiwDist')
         d = size(obj.mu.Phi,1); 
       end
     end
@@ -27,25 +27,25 @@ classdef ggmDecomposable < ggm
       % Arguments:
       % 'data' - data(i,:) is value for i'th case
       [Y] = process_options(varargin, 'data', []);
-      assert(isa(obj.mu, 'hiwDist'))
+      assert(isa(obj.mu, 'HiwDist'))
       % p77 of Helen Armstrong's PhD thesis eqn 4.16
       n = size(Y,1);
       Sy = n*cov(Y,1);
       G = obj.G; delta = obj.mu.delta; Phi = obj.mu.Phi;
       nstar = n-1; d = ndims(obj);
-      L = lognormconst(hiwDist(G, delta, Phi)) ...
-        - lognormconst(hiwDist(G, delta+n, Phi+Sy)) ...
+      L = lognormconst(HiwDist(G, delta, Phi)) ...
+        - lognormconst(HiwDist(G, delta+n, Phi+Sy)) ...
         -  (nstar*d/2) * log(2*pi);
     end
     
     function objs = mkAllGgmDecomposable(obj)
       % objs{i} = ggmDecomp with HIW prior for i'th chordal graph
-      assert(isa(obj.mu, 'hiwDist'))
+      assert(isa(obj.mu, 'HiwDist'))
       delta = obj.mu.delta; Phi = obj.mu.Phi;
       nnodes = size(Phi,1);
-      Gs = mkAllChordal(chordalGraph, nnodes, true);
+      Gs = mkAllChordal(ChordalGraph, nnodes, true);
       for i=1:length(Gs)
-        objs{i} = ggmDecomposable(Gs{i}, hiwDist(Gs{i}, delta, Phi), []);
+        objs{i} = GgmDecomposableDist(Gs{i}, HiwDist(Gs{i}, delta, Phi), []);
       end
     end
     
@@ -65,7 +65,7 @@ classdef ggmDecomposable < ggm
       Sy = n*cov(Y,1);
       delta = obj.mu.delta; Phi = obj.mu.Phi;
       deltaStar = delta + nstar; PhiStar = Phi + Sy;
-      mapPrec = meanInverse(hiwDist(mapG, deltaStar, PhiStar));
+      mapPrec = meanInverse(HiwDist(mapG, deltaStar, PhiStar));
       if nargout >= 3
         logZ = logsumexp(logpostG(:));
         postG = exp(logpostG - logZ);
@@ -76,7 +76,7 @@ classdef ggmDecomposable < ggm
         postMeanG = zeros(d,d);
         % Armstrong thesis p80
         for i=1:N
-          postMeanPrec = postMeanPrec + postG(i) * meanInverse(hiwDist(GGMs{i}.G, deltaStar, PhiStar));
+          postMeanPrec = postMeanPrec + postG(i) * meanInverse(HiwDist(GGMs{i}.G, deltaStar, PhiStar));
           postMeanG = postMeanG + postG(i) * GGMs{i}.G.adjMat;
         end
       end

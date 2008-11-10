@@ -1,3 +1,3 @@
 %% Imputation Demo
 
-demoImputation(mvnDist); % Implmentation is in vecDist class
+demoImputation(MvnDist); % Implmentation is in VecDist class

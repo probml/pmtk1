@@ -1,4 +1,4 @@
-classdef transformer % abstract class
+classdef Transformer % abstract class
   
   properties
     dummy;
@@ -6,7 +6,7 @@ classdef transformer % abstract class
 
   %%  Main methods
   methods
-    function obj = transformer()
+    function obj = Transformer()
       obj.dummy = 1;
     end
     

@@ -1,18 +1,18 @@
 %% BIC Demo
 setSeed(0);
 d = 4;
-G = undirectedGraph('type', 'loop', 'nnodes', d);
-obj = ggm(G, [], []);
+G = UndirectedGraph('type', 'loop', 'nnodes', d);
+obj = GgmDist(G, [], []);
 obj = mkRndParams(obj);
 n = 100;
 X = sample(obj, n);
-modelL1 = fitStructure(ggm, 'data', X, 'lambda', 1e-3);
+modelL1 = fitStructure(GgmDist, 'data', X, 'lambda', 1e-3);
 adjL1 = modelL1.G.adjMat;
-Gs = mkAllUG(undirectedGraph(), d);
+Gs = mkAllUG(UndirectedGraph(), d);
 for i=1:length(Gs)
     if isequal(Gs{i}, G), truendx = i; end
     if isequal(Gs{i}, modelL1.G), L1ndx = i; end
-    models{i} = fit(ggm(Gs{i}), 'data', X);
+    models{i} = fit(GgmDist(Gs{i}), 'data', X);
     BIC(i) = bicScore(models{i}, X);
 end
 logZ = logsumexp(BIC(:));

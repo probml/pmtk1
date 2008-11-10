@@ -5,7 +5,7 @@ figure;
 styles = plotColors;
 xr = [-10 10];
 for j=1:length(mus)
-    obj = laplaceDist(mus(j), bs(j));
+    obj = LaplaceDist(mus(j), bs(j));
     h=plot(obj, 'plotArgs', styles{j}, 'xrange', xr, 'npoints', 100);
     hold on
     legendStr{j} = sprintf('%s=%3.1f, b=%3.1f', '\mu', mus(j), bs(j));

@@ -1,4 +1,4 @@
-classdef mvtDist < vecDist 
+classdef MvtDist < VecDist 
   % multivariate student T p(X|dof, mu,Sigma) 
   
   properties
@@ -9,7 +9,7 @@ classdef mvtDist < vecDist
   
   %% Main methods
   methods
-    function m = mvtDist(dof, mu, Sigma)
+    function m = MvtDist(dof, mu, Sigma)
       if nargin == 0
         mu = []; Sigma = []; dof = [];
       end
@@ -21,7 +21,7 @@ classdef mvtDist < vecDist
     
     function objS = convertToScalarDist(obj)
       if ndims(obj) ~= 1, error('cannot convert to scalarDst'); end
-      objS = studentDist(obj.dof, obj.mu, obj.Sigma);
+      objS = StudentDist(obj.dof, obj.mu, obj.Sigma);
     end
     
     function logZ = lognormconst(obj)
@@ -93,7 +93,7 @@ classdef mvtDist < vecDist
       if d == 1, error('cannot compute marginal of a 1d rv'); end
       mu = mean(obj); C = cov(obj);
       dims = queryVars;
-      mm = mvtDist(obj.dof, mu(dims), C(dims,dims));
+      mm = MvtDist(obj.dof, mu(dims), C(dims,dims));
       if length(dims)==1
         mm = convertToScalarDist(mm);
       end
@@ -118,7 +118,7 @@ classdef mvtDist < vecDist
         h = 1/(m.dof+dB) * (m.dof + (xb-muB)'*SBBinv*(xb-mu(b)));
         SigmaAgivenB = h*(SAA - SAB*SBBinv*SAB');
       end
-      mm = mvtDist(m.dof + dA, muAgivenB, SigmaAgivenB);
+      mm = MvtDist(m.dof + dA, muAgivenB, SigmaAgivenB);
     end
 
      

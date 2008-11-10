@@ -1,7 +1,7 @@
 %% MVN Infer Mean 2D Demo
 setSeed(0);
 muTrue = [0.5 0.5]'; Ctrue = 0.1*[2 1; 1 1];
-mtrue = mvnDist(muTrue, Ctrue);
+mtrue = MvnDist(muTrue, Ctrue);
 xrange = [-1 1 -1 1];
 n = 10;
 X = sample(mtrue, n);
@@ -17,12 +17,12 @@ subplot(nr,nc,2);
 plot(mtrue, 'xrange', [-1 2 -1 2], 'useContour', useContour);
 %gaussPlot2d(mtrue.mu, mtrue.Sigma);
 title('truth'); grid on; axis square
-prior = mvnDist([0 0]', 0.1*eye(2));
+prior = MvnDist([0 0]', 0.1*eye(2));
 subplot(nr,nc,3); plot(prior, 'xrange', xrange, 'useContour', useContour);
 title('prior'); grid on; axis square
 for i=1:length(ns)
     n = ns(i);
-    m = mvnDist(prior, Ctrue);
+    m = MvnDist(prior, Ctrue);
     m = inferParams(m, 'data', X(1:n,:));
     post = m.mu;
     subplot(nr,nc,i+3); plot(post, 'xrange', xrange, 'useContour', useContour, 'npoints', 150);

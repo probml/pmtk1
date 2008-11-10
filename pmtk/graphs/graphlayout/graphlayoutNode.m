@@ -1,4 +1,4 @@
-classdef graphlayoutNode < dynamicprops & hgsetget
+classdef GraphlayoutNode < dynamicprops & hgsetget
 % This class represents a drawable node in an arbitrary graph.
 %
 % Public properties can be set using the standard Matlab set method as in
@@ -57,7 +57,7 @@ classdef graphlayoutNode < dynamicprops & hgsetget
     
     methods
        
-        function obj = graphlayoutNode(label)
+        function obj = GraphlayoutNode(label)
          % Node Constructor
             obj.label = label;
             obj.setSplitLabel(label);

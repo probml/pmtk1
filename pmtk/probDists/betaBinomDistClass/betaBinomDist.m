@@ -1,4 +1,4 @@
-classdef betaBinomDist < discreteDist
+classdef BetaBinomDist < DiscreteDist
   
   properties
     a;
@@ -8,7 +8,7 @@ classdef betaBinomDist < discreteDist
  
   %% Main methods
   methods 
-    function obj =  betaBinomDist(N,a,b)
+    function obj =  BetaBinomDist(N,a,b)
       % betabinomdist(N, a, b) where args are scalars
       if nargin == 0
         N = []; a = []; b = [];

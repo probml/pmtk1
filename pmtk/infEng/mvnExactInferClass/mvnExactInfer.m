@@ -1,4 +1,4 @@
-classdef mvnExactInfer < infEngine
+classdef MvnExactInfer < InfEngine
   % exact inference in the multivariate normal 
   
   properties
@@ -11,7 +11,7 @@ classdef mvnExactInfer < infEngine
   end
  
   methods
-    function eng = mvnExactInfer(mu, Sigma)
+    function eng = MvnExactInfer(mu, Sigma)
       if nargin == 0, mu = []; Sigma = []; end
       eng = setParams(eng, {mu, Sigma});
     end
@@ -56,7 +56,7 @@ classdef mvnExactInfer < infEngine
       mu(H) = eng.bel.mu; % we only store distribution of hidden variables
       Sigma(H,H) = eng.bel.Sigma; 
       dims = queryVars;
-      postQuery = mvnDist(mu(dims), Sigma(dims,dims));
+      postQuery = MvnDist(mu(dims), Sigma(dims,dims));
     end
 
 

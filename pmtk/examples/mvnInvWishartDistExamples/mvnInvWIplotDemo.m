@@ -17,7 +17,7 @@ for i=1:2
     [nr nc] = nsubplots(N);
     for i=1:N
         subplot(nr, nr, i);
-        p = mvnInvWishartDist('mu',mu(i), 'Sigma',sigma2(i), ...
+        p = MvnInvWishartDist('mu',mu(i), 'Sigma',sigma2(i), ...
             'dof', nu(i), 'k', k(i));
         plot(p, 'xrange', [-1 1 0.1 2], 'useContour', useContour);
         shading interp;

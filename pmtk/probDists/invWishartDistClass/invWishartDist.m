@@ -1,11 +1,11 @@
-classdef invWishartDist < matrixDist
+classdef InvWishartDist < MatrixDist
   
   properties
   end
   
   %% Main methods
   methods
-    function m = invWishartDist(dof, Sigma)
+    function m = InvWishartDist(dof, Sigma)
       % We require Sigma is posdef and dof > d-1
       % (An alternative parameterization requires dof > 2d)
       if nargin == 0

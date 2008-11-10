@@ -1,4 +1,4 @@
-classdef dag < directedGraph 
+classdef Dag < DirectedGraph 
   
   properties
     topoOrder;
@@ -6,11 +6,11 @@ classdef dag < directedGraph
 
 
   methods
-    function obj = dag(varargin)
-      % G = dag(adjMat)
-      % G = dag('type', 'chain', 'nnodes', X)
-      % G = dag('type', 'rndDAGFanIn', 'nnodes', X, 'maxFanIn', X)
-      % G = dag('type', 'rndDAGEdgeProb', 'nnodes', X, 'edgeProb', X)
+    function obj = Dag(varargin)
+      % G = Dag(adjMat)
+      % G = Dag('type', 'chain', 'nnodes', X)
+      % G = Dag('type', 'rndDAGFanIn', 'nnodes', X, 'maxFanIn', X)
+      % G = Dag('type', 'rndDAGEdgeProb', 'nnodes', X, 'edgeProb', X)
       if nargin == 0
         obj.adjMat = [];
         return;
@@ -33,9 +33,9 @@ classdef dag < directedGraph
         end
       end
       %obj.topoOrder = topological_sort(obj.adjMat);
-      [d, pre, post, cycle, f, pred] = dfs(obj, [], 1);
+      [d, pre, post, cycle, f, pred] = dfs(obj.adjMat, [], 1);
       if cycle
-        warning('BLT:dag', 'not acyclic')
+        warning('PMTK:Dag', 'not acyclic')
       end
       obj.topoOrder = post(end:-1:1);
     end
@@ -54,7 +54,7 @@ classdef dag < directedGraph
       if ~isempty(order), loadFromFile = false; end
       Gs = mk_all_dags(nnodes, order, loadFromFile);
       for i=1:length(Gs)
-        objs{i} = dag(Gs{i});
+        objs{i} = Dag(Gs{i});
       end
     end
     
@@ -69,7 +69,7 @@ classdef dag < directedGraph
       end
       M = setdiag(M,0);
       moral_edges = sparse(triu(max(0,M-obj.adjMat),1));
-      M = undirectedGraph(M);
+      M = UndirectedGraph(M);
     end
     
   end

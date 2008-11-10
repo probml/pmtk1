@@ -10,8 +10,8 @@ for j=1:length(nus)
   seed = 0; rand('state', seed); randn('state', seed);
   figure(j);clf
   for i=1:9
-    Sigma = sample(wishartDist(nu,S));
-    X = mvnDist([0 0], Sigma);
+    Sigma = sample(WishartDist(nu,S));
+    X = MvnDist([0 0], Sigma);
     subplot(3,3,i)
     plot(X);
     axis equal

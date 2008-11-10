@@ -1,4 +1,4 @@
-classdef invGammaDist < scalarDist
+classdef InvGammaDist < ScalarDist
 
   properties
     a;
@@ -7,7 +7,7 @@ classdef invGammaDist < scalarDist
 
   %% Main methods
   methods
-    function obj =  invGammaDist(a,b)
+    function obj =  InvGammaDist(a,b)
       % a = shape, b = scale
       if nargin == 0
         a = []; b = [];

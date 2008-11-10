@@ -1,4 +1,4 @@
-classdef jointProbDist
+classdef JointProbDist
 
    properties
        

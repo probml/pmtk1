@@ -28,7 +28,7 @@ grid=[reshape(x1,nx*nx,1) reshape(x2,nx*nx,1)];
 
 % Plot data and plug-in predictive
 figure;
-m = fit(logregDist, 'X', X, 'y', y+1);
+m = fit(LogregDist, 'X', X, 'y', y+1);
 pred = predict(m,'X',grid);
 
 contour(x1,x2,reshape(pred.probs(:,2),[nx,nx]),30);
@@ -66,7 +66,7 @@ hold
 plot(W(j,1),W(j,2),'.','MarkerSize',40);
 %Compute the Laplace Approximation
 tic
-m  = fit(logregDist,'X',X,'y',y+1,'prior','l2','lambda',1/alpha,'method','bayesian');
+m  = fit(LogregDist,'X',X,'y',y+1,'prior','l2','lambda',1/alpha,'method','bayesian');
 toc
 wMAP = m.w.mu;
 C = m.w.Sigma;

@@ -1,4 +1,4 @@
-classdef gaussDist < scalarDist
+classdef GaussDist < ScalarDist
   
   properties
     mu;
@@ -9,8 +9,8 @@ classdef gaussDist < scalarDist
   
   %% Main methods
   methods 
-     function m = gaussDist(mu, sigma2)
-      % gaussDist(mu, sigma2) 
+     function m = GaussDist(mu, sigma2)
+      % GaussDist(mu, sigma2) 
       % Note that sigma2 is the variance, not the standard deviation.
       % mu and sigma2 can be vectors; in this case, the result is a MVN with a
       % diagonal covariance matrix (product of independent 1d Gaussians).

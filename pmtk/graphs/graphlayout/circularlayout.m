@@ -1,4 +1,4 @@
-classdef circularlayout < gvizlayout
+classdef Circularlayout < Gvizlayout
 % A layout that also uses graphviz but calls twopi instead of neato to 
 % to display the graph like a tree. 
 %
@@ -6,7 +6,7 @@ classdef circularlayout < gvizlayout
 % University of British Columbia 
 % http://www.cs.ubc.ca/~mdunham/  
     methods
-       function obj = circularlayout(name)
+       function obj = Circularlayout(name)
             if(nargin < 1)
                 obj.name = 'circularlayout';
             else

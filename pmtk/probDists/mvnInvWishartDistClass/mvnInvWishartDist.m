@@ -1,4 +1,4 @@
-classdef mvnInvWishartDist < vecDist
+classdef MvnInvWishartDist < VecDist
   % p(m,S|params) = N(m|mu, 1/k * S) IW(S| dof, Sigma)
   properties
     mu;
@@ -9,7 +9,7 @@ classdef mvnInvWishartDist < vecDist
 
   %% main methods
   methods
-    function m = mvnInvWishartDist(varargin)
+    function m = MvnInvWishartDist(varargin)
       if nargin == 0, varargin = {}; end
       [mu, Sigma, dof, k] = process_options(...
         varargin, 'mu', 0, 'Sigma', 1, 'dof', 1, 'k', []);
@@ -43,8 +43,8 @@ classdef mvnInvWishartDist < vecDist
       % For 1d, L(i) = log p(X(i,:) | theta), where X(i,:) = [mu sigma]
       d = length(obj.mu);
       if d > 1, error('not supported'); end
-      pgauss = mvnDist(obj.mu, obj.Sigma/obj.k);
-      piw = invWishartDist(obj.dof, obj.Sigma);
+      pgauss = MvnDist(obj.mu, obj.Sigma/obj.k);
+      piw = InvWishartDist(obj.dof, obj.Sigma);
       n = size(X,1);
       assert(size(X,2)==2);
       L = logprob(pgauss, X(:,1)) + logprob(piw, X(:,2));
@@ -57,17 +57,17 @@ classdef mvnInvWishartDist < vecDist
         case 'sigma'
           d = size(obj.Sigma,1);
           if d==1 
-            mm = invGammaDist(obj.dof/2, obj.Sigma/2);
+            mm = InvGammaDist(obj.dof/2, obj.Sigma/2);
           else
-            mm = invWishartDist(obj.dof, obj.Sigma);
+            mm = InvWishartDist(obj.dof, obj.Sigma);
           end
         case 'mu'
           d = length(obj.mu);
           v = obj.dof;
           if d==1
-            mm = studentDist(v, obj.mu, obj.Sigma/(obj.k*v));
+            mm = StudentDist(v, obj.mu, obj.Sigma/(obj.k*v));
           else
-            mm = mvtDist(v-d+1, obj.mu, obj.Sigma/(obj.k*(v-d+1)));
+            mm = MvtDist(v-d+1, obj.mu, obj.Sigma/(obj.k*(v-d+1)));
           end
         otherwise
           error(['unrecognized variable ' queryVar])

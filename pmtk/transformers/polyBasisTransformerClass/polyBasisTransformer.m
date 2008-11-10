@@ -1,4 +1,4 @@
-classdef polyBasisTransformer < transformer
+classdef PolyBasisTransformer < Transformer
   
   properties
     degree;
@@ -6,7 +6,7 @@ classdef polyBasisTransformer < transformer
 
   %%  Main methods
   methods
-    function obj = polyBasisTransformer(degree)
+    function obj = PolyBasisTransformer(degree)
       if nargin == 0, degree = []; end
       obj.degree = degree;
     end

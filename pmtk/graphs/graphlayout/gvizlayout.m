@@ -1,4 +1,4 @@
-classdef gvizlayout < abstractlayout
+classdef Gvizlayout < Abstractlayout
 % Use the graphVIZ package to determine the optimal layout for a smartgraph
 %
 % Matthew Dunham
@@ -25,10 +25,10 @@ classdef gvizlayout < abstractlayout
     
    methods
      
-       function obj = gvizlayout(name)
+       function obj = Gvizlayout(name)
        % constructor
             if(nargin < 1)
-                obj.name = 'gvizlayout';
+                obj.name = 'Gvizlayout';
             else
                 obj.name = name;
             end
@@ -39,7 +39,7 @@ classdef gvizlayout < abstractlayout
        
        function available = isavailable(obj)
         % Make sure graphViz is available. 
-            available = gvizlayout.queryGviz('neato');
+            available = Gvizlayout.queryGviz('neato');
             if(not(available))
                   fprintf('Please install or upgrade graphViz\n');
             end

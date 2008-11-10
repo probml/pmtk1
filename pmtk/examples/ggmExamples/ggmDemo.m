@@ -1,7 +1,7 @@
 %% Demo
 d = 10;
-G = undirectedGraph('type', 'loop', 'nnodes', d);
-obj = ggm(G, [], []);
+G = UndirectedGraph('type', 'loop', 'nnodes', d);
+obj = GgmDist(G, [], []);
 obj = mkRndParams(obj);
 n = 1000;
 X = sample(obj, n);

@@ -1,4 +1,4 @@
-classdef abstractlayout < handle
+classdef Abstractlayout < handle
 % This class represents an abstract graph layout. Subclass to create actual
 % layouts. 
     

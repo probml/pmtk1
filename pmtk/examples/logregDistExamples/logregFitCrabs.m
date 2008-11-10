@@ -5,8 +5,8 @@
 % predictive.
 [Xtrain, ytrain, Xtest, ytest] = makeCrabs;
 sigma2 = 32/5;
-T = chainTransformer({standardizeTransformer(false), kernelTransformer('rbf', sigma2)});
-m = logregDist('nclasses',2, 'transformer', T);
+T = ChainTransformer({StandardizeTransformer(false), KernelTransformer('rbf', sigma2)});
+m = LogregDist('nclasses',2, 'transformer', T);
 lambda = 1e-3;
 m = fit(m, 'X', Xtrain, 'y', ytrain, 'lambda', lambda,'prior','l2','method','bayesian');
 Pmap   = predict(m,'X',Xtest,'method','plugin');

@@ -1,7 +1,7 @@
 %% Conditioning an MVN
 setSeed(0);
 d = 4;
-obj = mkRndParams(mvnDist, d);
+obj = mkRndParams(MvnDist, d);
 x = randn(d,1);
 V = [3 4];
 obj = enterEvidence(obj, V, x(V));

@@ -5,8 +5,8 @@ sigmas = [0.05 0.5 50];
 K = 10; % num centers
 for i=1:length(sigmas)
     sigma = sigmas(i);
-    T = chainTransformer({rescaleTransformer, rbfBasisTransformer(K,sigma)});
-    m  = linregDist('transformer', T);
+    T = ChainTransformer({RescaleTransformer, RbfBasisTransformer(K,sigma)});
+    m  = LinregDist('transformer', T);
     m = fit(m, 'X', xtrain, 'y', ytrain, 'lambda', lambda);
     ypred = mean(predict(m, xtest));
     figure(1);clf

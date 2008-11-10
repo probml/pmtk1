@@ -1,4 +1,4 @@
-classdef jtree < tree
+classdef Jtree < Tree
   % Junction (join) tree: nodes are the maxcliques in the corresponding chordal
   % graph
   
@@ -10,14 +10,14 @@ classdef jtree < tree
   end
 
   methods
-    function obj = jtree(adjMat)
+    function obj = Jtree(adjMat)
       % If adjmat is not chordal, it will be made so using the minweight
       % heuristic
       if nargin == 0
         obj.adjMat = [];
         return;
       end
-      CG = chordalGraph(adjMat, 'makeChordal');
+      CG = ChordalGraph(adjMat, 'makeChordal');
       obj.cliques = CG.cliques;
       obj.fillInEdges = CG.fillInEdges;
       obj.adjMat = ripcliques_to_jtree_cell(obj.cliques);

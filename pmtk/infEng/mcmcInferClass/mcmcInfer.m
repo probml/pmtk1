@@ -1,4 +1,4 @@
-classdef mcmcInfer < infEngine
+classdef McmcInfer < InfEngine
   % Markov chain Monte Carlo 
   
   properties
@@ -12,7 +12,7 @@ classdef mcmcInfer < infEngine
   end
  
   methods
-    function eng = mcmcInfer(varargin)
+    function eng = McmcInfer(varargin)
       % Method can be one of: gibbs, metrop or mh
       [Nsamples, Nburnin, thin, method, seeds] = process_options(varargin, ...
         'Nsamples', 1000, 'Nburnin', 100, 'thin', 1, 'method', [], 'seeds', 1);
@@ -153,7 +153,7 @@ classdef mcmcInfer < infEngine
      if ~eng.evidenceEntered
        eng = enterEvidence(eng, [], []);  % compute joint
      end
-     postQuery = sampleDist(eng.samples(:,queryVars));
+     postQuery = SampleDist(eng.samples(:,queryVars));
    end
 
     

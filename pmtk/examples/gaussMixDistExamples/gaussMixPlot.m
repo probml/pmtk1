@@ -1,5 +1,5 @@
 %% Plot a Mixture of Gaussians
-m = gaussMixDist;
+m = MixGaussDist;
 m.K = 3;
 m.mixweights = [0.5 0.3 0.2];
 m.mu(:,1) = [0.22 0.45]';
@@ -13,7 +13,7 @@ xr = plotRange(m, 1);
 figure; hold on;
 colors = {'r', 'g', 'b'};
 for k=1:3
-    mk = mvnDist(m.mu(:,k), m.Sigma(:,:,k));
+    mk = MvnDist(m.mu(:,k), m.Sigma(:,:,k));
     [h,p]=plot(mk, 'useContour', true, 'xrange', xr, 'npoints', 200);
     set(h, 'color', colors{k});
 end

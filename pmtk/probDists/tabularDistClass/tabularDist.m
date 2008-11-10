@@ -1,4 +1,4 @@
-classdef tabularDist < vecDist 
+classdef TabularDist < VecDist 
   % tabular (multi-dimensional array) distribution
   
   properties
@@ -7,10 +7,10 @@ classdef tabularDist < vecDist
   
   %% main methods
   methods
-    function m = tabularDist(T)
+    function m = TabularDist(T)
       if nargin == 0, T = []; end
       m.T = T;
-      m.stateInfEng = tabularInfer;
+      m.stateInfEng = TabularInfer;
     end
 
     function params = getModelParams(obj)

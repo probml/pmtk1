@@ -1,4 +1,4 @@
-classdef dataTable
+classdef DataTable
   
   properties
     X;
@@ -8,7 +8,7 @@ classdef dataTable
   end
   
   methods
-    function obj = dataTable(X, Y, Xnames, Ynames)
+    function obj = DataTable(X, Y, Xnames, Ynames)
       if nargin < 1
         X = [];
       end
@@ -130,7 +130,7 @@ classdef dataTable
           if(~isempty(A.Xnames))
             Xnames = A.Xnames(colNDX);
           end
-          B = dataTable(A.X(S.subs{1},colNDX),Y,Xnames,Ynames);
+          B = DataTable(A.X(S.subs{1},colNDX),Y,Xnames,Ynames);
         case '.' %Still provide access of the form d.X and d.y
           B = builtin('subsref', A, S);
       end

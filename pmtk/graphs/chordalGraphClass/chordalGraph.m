@@ -1,4 +1,4 @@
-classdef chordalGraph < undirectedGraph  
+classdef ChordalGraph < UndirectedGraph  
   % chordal (decomposable/ triangulated) graphs
   
   properties(GetAccess = 'public', SetAccess = 'protected')
@@ -14,11 +14,11 @@ classdef chordalGraph < undirectedGraph
   %% main methods
   methods
     
-    function obj = chordalGraph(adjMat, action, varargin)
-      % obj = chordalGraph(adjMat, 'checkChordal') 
+    function obj = ChordalGraph(adjMat, action, varargin)
+      % obj = ChordalGraph(adjMat, 'checkChordal') 
       %     sets obj.ischordal = false if not chordal (in which case obj is
       %     invalid). This the default action.
-      % obj = chordalGraph(adjMat, 'makeChordal', 'elimOrder', X, 'nodeWeights', X)
+      % obj = ChordalGraph(adjMat, 'makeChordal', 'elimOrder', X, 'nodeWeights', X)
       %    makes adjMat chordal by adding extra edges if necessary.
       %    elimOrder is one of {'minFill', 'minWeight'}
       %     where mcs = max cardinaltiy search. (Default is minWeight.)
@@ -43,7 +43,7 @@ classdef chordalGraph < undirectedGraph
       end
       [obj.ischordal, obj.perfectElimOrder] = check_chordal(obj.adjMat);
       if ~obj.ischordal
-        %warning('BLT:chordalGraph', 'graph is not chordal')
+        %warning('PMTK:ChordalGraph', 'graph is not chordal')
         return;
       end
       % number cliques so they satisfy running intersection property (RIP)
@@ -55,16 +55,16 @@ classdef chordalGraph < undirectedGraph
 
   function objs = mkAllChordal(dummy, nnodes, loadFromFile)
       % Returns cell array of all chordal graphs on nnodes.
-      % eg. CGs = mkAllUG(chordalGraph(), 5);
+      % eg. CGs = mkAllUG(ChordalGraph(), 5);
       % Warning: the number of CGs on d nodes is exponential in d
       % See Helen Armstrong's PhD thesis, p149, U New South Wales 2005
       % Nnodes  2   3   4    5       6       7        8     
       % Ncg     2   8   61   822  18,154  617,675  30,888,596
       if nargin < 3, loadFromFile = true; end
-      Gs = mkAllUG(undirectedGraph(), nnodes, loadFromFile);
+      Gs = mkAllUG(UndirectedGraph(), nnodes, loadFromFile);
       objs = {};
       for i=1:length(Gs)
-        cg = chordalGraph(Gs{i}.adjMat, 'checkChordal');
+        cg = ChordalGraph(Gs{i}.adjMat, 'checkChordal');
         if cg.ischordal
           objs{end+1} = cg;
         end

@@ -1,11 +1,11 @@
-classdef wishartDist  < matrixDist
+classdef WishartDist  < MatrixDist
   
   properties
   end
   
   %% main methods
   methods
-    function m = wishartDist(dof, Sigma)
+    function m = WishartDist(dof, Sigma)
       % We require Sigma is posdef and dof > d-1
       if nargin == 0
         m.Sigma = [];
@@ -17,7 +17,7 @@ classdef wishartDist  < matrixDist
     
     function objS = convertToScalarDist(obj)
       if ndims(obj) ~= 1, error('cannot convert to scalarDst'); end
-      objS = gammaDist(obj.dof/2, obj.Sigma/2);
+      objS = GammaDist(obj.dof/2, obj.Sigma/2);
     end
      
     
@@ -76,7 +76,7 @@ classdef wishartDist  < matrixDist
       % If M ~ Wi(dof,S), then M(q,q) ~ Wi(dof, S(q,q))
       % Press (2005) p112
       q = length(query); d = ndims(obj); v = obj.dof;
-      mm = wishartDist(v, obj.Sigma(query,query));
+      mm = WishartDist(v, obj.Sigma(query,query));
    end
     
    

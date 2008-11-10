@@ -1,4 +1,4 @@
-classdef springlayout < gvizlayout
+classdef Springlayout < Gvizlayout
 % A layout that also uses graphviz but calls twopi instead of neato to 
 % to display the graph like a tree. 
 %
@@ -19,7 +19,7 @@ classdef springlayout < gvizlayout
        
        function available = isavailable(obj)
         % Make sure graphViz is available. 
-            available = gvizlayout.queryGviz('fdp');
+            available = Gvizlayout.queryGviz('fdp');
             if(not(available))
                  fprintf('Please install or upgrade graphViz\n');
             end

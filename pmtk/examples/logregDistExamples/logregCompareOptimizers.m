@@ -10,7 +10,7 @@ figure; hold on;
 
 for mi=1:length(methods)
     tic
-    [m, output{mi}] = fit(logregDist, 'X', X, 'y', Y, ...
+    [m, output{mi}] = fit(LogregDist, 'X', X, 'y', Y, ...
         'lambda', lambda, 'optMethod', methods{mi});                           %#ok
     T = toc                                                                 %#ok
     time(mi) = T;                                                           %#ok

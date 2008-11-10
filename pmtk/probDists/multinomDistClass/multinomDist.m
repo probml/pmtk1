@@ -1,4 +1,4 @@
-classdef multinomDist < vecDist
+classdef MultinomDist < VecDist
   
   properties
     N; 
@@ -8,7 +8,7 @@ classdef multinomDist < vecDist
   
   %% Main methods
   methods 
-    function obj =  multinomDist(N,mu)
+    function obj =  MultinomDist(N,mu)
       if nargin == 0;
         N = []; mu = [];
       end
@@ -61,7 +61,7 @@ classdef multinomDist < vecDist
       % p(Q)
       checkParamsAreConst(obj)
       dims = queryVars;
-      mm = multinomDist(m.N, m.mu(dims));
+      mm = MultinomDist(m.N, m.mu(dims));
      end
     
      
@@ -73,13 +73,13 @@ classdef multinomDist < vecDist
        % method -  'map' or 'mle'
        [X, suffStat, method] = process_options(...
          varargin, 'data', [], 'suffStat', [], 'method', 'mle');
-       if isempty(suffStat), suffStat = multinomDist.mkSuffStat(X); end
+       if isempty(suffStat), suffStat = MultinomDist.mkSuffStat(X); end
        switch method
          case 'mle'
            obj.mu =  suffStat.counts / suffStat.N;
          case 'map'
            switch class(obj.mu)
-             case 'dirichletDist'
+             case 'DirichletDist'
                d = ndims(obj);
                obj.mu  = (suffStat.counts + obj.alpha - 1) / (suffStat.N + sum(obj.alpha) - d);
              otherwise
@@ -97,10 +97,10 @@ classdef multinomDist < vecDist
        % suffStat - SS.counts(j), SS.N = total amount of data
        [X, suffStat] = process_options(...
          varargin, 'data', [], 'suffStat', []);
-       if isempty(suffStat), suffStat = multinomDist.mkSuffStat(X); end
+       if isempty(suffStat), suffStat = MultinomDist.mkSuffStat(X); end
        switch class(obj.mu)
-         case 'dirichletDist'
-           obj.mu = dirichletDist(obj.mu.alpha + suffStat.counts);
+         case 'DirichletDist'
+           obj.mu = DirichletDist(obj.mu.alpha + suffStat.counts);
          otherwise
            error(['cannot handle mu of type ' class(obj.mu)])
        end

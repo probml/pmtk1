@@ -1,16 +1,16 @@
-classdef logregDist < condProbDist 
-% logistic regression, multiclass conditional distribution
+classdef LogregDist < CondProbDist 
+%% Logistic Regression, Multiclass Conditional Distribution
 
     properties
         w;                      % w is the posterior distribution of the weights. 
                                 % The form depends on how this object was fit. 
                                 % If method = 'map', the default, then w 
                                 % represents the MAP estimate and is stored as a
-                                % constDist object. If method = 'bayesian', then
-                                % w is an mvnDist representing the laplace
+                                % ConstDist object. If method = 'bayesian', then
+                                % w is an MvnDist representing the laplace
                                 % approximation to the posterior. 
                                 
-        transformer;            % A data transformer object, e.g. kernelTransformer
+        transformer;            % A data transformer object, e.g. KernelTransformer
         
         nclasses;               % The number of classes
     end
@@ -18,7 +18,7 @@ classdef logregDist < condProbDist
     %% Main methods
     methods
 
-        function m =logregDist(varargin)
+        function m =LogregDist(varargin)
         % Constructor
             [m.transformer,  m.w, m.nclasses] = process_options( varargin ,...
                 'transformer', []             ,...
@@ -26,14 +26,14 @@ classdef logregDist < condProbDist
                 'nclasses'   , []);
             
             if(~isempty(m.w) && isnumeric(m.w))
-                m.w = constDist(m.w);
+                m.w = ConstDist(m.w);
             end
         end
 
         function [obj, output] = fit(obj, varargin)
         % Compute the posterior distribution over w, the weights. This is either
-        % a delta distribution representing the MAP estimate if method =
-        % 'map', (the default), or a full mvnDist distribution representing
+        % a constant distribution representing the MAP estimate if method =
+        % 'map', (the default), or a full MvnDist distribution representing
         % the laplace approximation to the posterior, if method = 'bayesian'.
         %
         % FORMAT:
@@ -59,7 +59,7 @@ classdef logregDist < condProbDist
         %
         % OUTPUT:
         %
-        % obj      - The fitted logregDist object
+        % obj      - The fitted LogregDist object
         % output   - A structure holding the output of the fitting algorithm, if any.
             
             [X, y,  prior, lambda, method,optMethod] = process_options(varargin,...
@@ -107,20 +107,20 @@ classdef logregDist < condProbDist
         %        OR
         %          (2) a matrix of weights of size ndimensions-by-(nclasses-1)
         %        OR
-        %          (3) a constDist object centered on the map estimate of the
+        %          (3) a ConstDist object centered on the map estimate of the
         %              posterior p(w|D)
         %        OR
-        %          (4) an mvnDist object representing the posterior p(w|D)
+        %          (4) an MvnDist object representing the posterior p(w|D)
         %
         % 'method' {['plugin'] | 'mc' | 'integral'}
         % 
         %           plugin   - predictions are made using the MAP estimates,
         %                      (default)
-        %           mc       - only available if w is an mvnDist object, which
+        %           mc       - only available if w is an MvnDist object, which
         %                      will be true if this model was fit with 
         %                      method = 'bayesian'.
         %           integral - only available in 2-class problems where w is an
-        %                      mvnDist object. 
+        %                      MvnDist object. 
         %
         % nsamples [1000] The number of Monte Carlo samples to perform. Only
         %                 used when method = 'mc'
@@ -129,15 +129,15 @@ classdef logregDist < condProbDist
         %
         % pred    - is a series of discrete distributions over class labels,
         %           one for each test example X(i,:). All of these are
-        %           represented in a single discreteDist object such that
+        %           represented in a single DiscreteDist object such that
         %           pred.probs(i,c) is the probability that example i
         %           belongs to class c. If method = 'mc', pred is the result of
         %           averaging over all of the samples. 
         %
         % samples - empty, [], unless method = 'mc'
-        %           a sampleDist object storing one distribution, (represented
+        %           a SampleDist object storing one distribution, (represented
         %           by samples) for every test example such that
-        %           sampleDist.samples(s,c,i) is the probability that example i
+        %           SampleDist.samples(s,c,i) is the probability that example i
         %           is in class c according to sample s. In particular, pred
             
             if(nargin == 2 && ~ischar(varargin{1}))
@@ -155,28 +155,28 @@ classdef logregDist < condProbDist
             switch method
                 
                 case 'plugin'
-                    if(isa(w,'constDist')),w = w.point; end
-                    if(isa(w,'mvnDist')),w = w.mu;end
-                    pred = discreteDist(multiSigmoid(X,w(:)));          %#ok
+                    if(isa(w,'ConstDist')),w = w.point; end
+                    if(isa(w,'MvnDist')),w = w.mu;end
+                    pred = DiscreteDist(multiSigmoid(X,w(:)));          %#ok
                 case 'mc'
-                    if(~isa(w,'mvnDist')),
-                        error('w must be an mvnDist object to draw Monte Carlo samples. Either specify p(w|D) as an mvnDist or call fit with ''prior'' = ''l2'', ''method'' = ''bayesian''');
+                    if(~isa(w,'MvnDist')),
+                        error('w must be an MvnDist object to draw Monte Carlo samples. Either specify p(w|D) as an mvnDist or call fit with ''prior'' = ''l2'', ''method'' = ''bayesian''');
                     end
                     Wsamples = sample(w,nsamples);
                     samples = zeros(nsamples,obj.nclasses,size(X,1));
                     for s=1:nsamples
                         samples(s,:,:) = multiSigmoid(X,Wsamples(s,:)')';
                     end
-                    samples = sampleDist(samples);
-                    pred = discreteDist(mean(samples));
+                    samples = SampleDist(samples);
+                    pred = DiscreteDist(mean(samples));
                 case 'integral'
                     if(obj.nclasses ~=2),error('This method is only available in the 2 class case');end
-                    if(~isa(w,'mvnDist')),
-                        error('w must be an mvnDist object for this method. Either specify p(w|D) as an mvnDist or call fit with ''prior'' = ''l2'', ''method'' = ''bayesian''');
+                    if(~isa(w,'MvnDist')),
+                        error('w must be an MvnDist object for this method. Either specify p(w|D) as an mvnDist or call fit with ''prior'' = ''l2'', ''method'' = ''bayesian''');
                     end
                     p = sigmoidTimesGauss(X, w.mu(:), w.Sigma);
                     p = p(:);
-                    pred = discreteDist([p,1-p]);
+                    pred = DiscreteDist([p,1-p]);
                 otherwise
                     error('%s is an unsupported prediction method',method);
                   
@@ -231,11 +231,11 @@ classdef logregDist < condProbDist
                 case 'unconstrainedapxsub'
                    optfunc = @L1GeneralUnconstrainedApx_sub;
                 case 'boundoptrelaxed'
-                    if(offsetAdded),warning('logregDist:offset','currently penalizes offset weight'),end
+                    if(offsetAdded),warning('LogregDist:offset','currently penalizes offset weight'),end
                     [w,output] =  compileAndRun('boundOptL1overrelaxed',X, Y1, lambda);
                     output.ftrace = output.ftrace(output.ftrace ~= -1);
                 case 'boundoptstepwise'
-                    if(offsetAdded),warning('logregDist:offset','currently penalizes offset weight'),end
+                    if(offsetAdded),warning('LogregDist:offset','currently penalizes offset weight'),end
                     [w, output] = compileAndRun('boundOptL1Stepwise',X, Y1, lambda);
                     output.ftrace = output.ftrace(output.ftrace ~= -1);    
                 otherwise
@@ -245,7 +245,7 @@ classdef logregDist < condProbDist
             if(~isempty(optfunc))
                 w = optfunc(@multinomLogregNLLGradHessL2,zeros(d*(obj.nclasses-1),1),lambdaVec,options,X,Y1,0,false);
             end
-            obj.w = constDist(w);
+            obj.w = ConstDist(w);
         end
 
         function [obj,output] = fitL2(obj,X,Y1,lambda,method,optMethod,offsetAdded)
@@ -253,11 +253,11 @@ classdef logregDist < condProbDist
            [n,d] = size(X);                                                         %#ok
             switch lower(optMethod)
                 case 'boundoptrelaxed'
-                    if(offsetAdded),warning('logregDist:offset','currently penalizes offset weight'),end
+                    if(offsetAdded),warning('LogregDist:offset','currently penalizes offset weight'),end
                     [w, output] = compileAndRun('boundOptL2overrelaxed',X, Y1, lambda);
                     output.ftrace = output.ftrace(output.ftrace ~= -1);
                 case 'boundoptstepwise'
-                    if(offsetAdded),warning('logregDist:offset','currently penalizes offset weight'),end
+                    if(offsetAdded),warning('LogregDist:offset','currently penalizes offset weight'),end
                     [w, output] = compileAndRun('boundOptL2Stepwise',X, Y1, lambda);
                     output.ftrace = output.ftrace(output.ftrace ~= -1);
                 case 'fminuncnewton'
@@ -277,15 +277,15 @@ classdef logregDist < condProbDist
             switch method
                 
                 case 'map'
-                    obj.w = constDist(w);
+                    obj.w = ConstDist(w);
                 case 'bayesian'
                     try
                         [nll, g, H] = multinomLogregNLLGradHessL2(w, X, Y1, lambda,offsetAdded); %#ok  H = hessian of neg log lik    
                         C = inv(H);
-                        obj.w = mvnDist(w, C); %C  = inv Hessian(neg log lik)
+                        obj.w = MvnDist(w, C); %C  = inv Hessian(neg log lik)
                     catch
-                        warning('logregDist:Laplace','Laplace approximation to the posterior could not be computed because the Hessian could not be inverted...using MAP estimate instead');
-                        obj.w = constDist(w);
+                        warning('LogregDist:Laplace','Laplace approximation to the posterior could not be computed because the Hessian could not be inverted...using MAP estimate instead');
+                        obj.w = ConstDist(w);
                     end
                 otherwise
                     error('%s method is not currently supported given an L2 prior',method);
@@ -302,14 +302,14 @@ classdef logregDist < condProbDist
             n = 10; d = 3; C = 2;
             X = randn(n,d );
             y = sampleDiscrete((1/C)*ones(1,C), n, 1);
-            mL2 = logregDist('nclasses', C);
+            mL2 = LogregDist('nclasses', C);
             mL2 = fit(mL2, 'X', X, 'y', y,'method','bayesian');
             predMAPL2 = predict(mL2, 'X',X);                                                %#ok
             [predMCL2,samplesL2]  = predict(mL2,'X',X,'method','mc','nsamples',2000);       %#ok
             predExactL2 = predict(mL2,'X',X,'method','integral');                           %#ok
             llL2 = logprob(mL2, X, y);                                                      %#ok
             %%
-            mL1 = logregDist('nclasses',C);
+            mL1 = LogregDist('nclasses',C);
             mL1 = fit(mL1,'X',X,'y',y,'prior','L1','lambda',0.1);
             pred = predict(mL1,'X',X);                                                      %#ok
         end 

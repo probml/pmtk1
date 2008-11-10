@@ -1,4 +1,4 @@
-classdef randlayout < abstractlayout
+classdef Randlayout < Abstractlayout
 % A greedy, random layout - gives a different layout each time its called. 
 % Matthew Dunham
 % University of British Columbia 
@@ -23,10 +23,10 @@ classdef randlayout < abstractlayout
      
      methods
          
-         function obj = randlayout(name,seed)
+         function obj = Randlayout(name,seed)
          % constructor - seed is optional. 
             if(nargin < 1)
-                obj.name = 'randlayout';
+                obj.name = 'Randlayout';
             else
                 obj.name = name;
             end

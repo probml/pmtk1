@@ -17,12 +17,12 @@ legend({'Class1','Class2'},'Location','BestOutside');
 % takes about 7 minutes to run.
 if(0)
     %%
-    % We create our test function. See the crossValidation class for more
+    % We create our test function. See the CrossValidation class for more
     % details.
     testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
-        mode(predict(fit(logregDist('nclasses',2,'transformer',...
-        chainTransformer({standardizeTransformer(false),...
-        kernelTransformer('rbf', sigma)})),...
+        mode(predict(fit(LogregDist('nclasses',2,'transformer',...
+        ChainTransformer({StandardizeTransformer(false),...
+        KernelTransformer('rbf', sigma)})),...
         'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));
     %%
         % This is the range we will search over; every combination will be
@@ -31,7 +31,7 @@ if(0)
         sigmaRange = 0.5:0.5:10;
         %%
         % Finally we perform the model selection.
-        modelSelection = crossValidation(                 ...
+        modelSelection = CrossValidation(                 ...
             'testFunction' , testFunction               ,...
             'CVvalues'     , { lambdaRange,sigmaRange } ,...
             'lossFunction' , 'ZeroOne'                  ,...
@@ -51,16 +51,16 @@ end
 %% Create the Data Transformer
 % We will make use of PMTK's transformer objects to easily preprocess the data
 % and perform the basis expansion. We chain three transformers together, which
-% will be applied to the data in sequence. When we pass our chainTransformer to
+% will be applied to the data in sequence. When we pass our ChainTransformer to
 % our model, (which we will create shortly), all of the details of the
 % transformation are retained, and where appropriate, applied to future test data.
 %
-T = chainTransformer({standardizeTransformer(false)      ,...
-    kernelTransformer('rbf',sigma)} );
+T = ChainTransformer({StandardizeTransformer(false)      ,...
+    KernelTransformer('rbf',sigma)} );
 %% Create the Model
 % We now create a new logistic regression model and pass it the transformer object
 % we just created.
-model = logregDist('nclasses',2, 'transformer', T);
+model = LogregDist('nclasses',2, 'transformer', T);
 %% Fit the Model
 % To fit the model, we simply call the model's fit method and pass in the data.
 % Here we use an L2 regularizer, however, an L1 sparsity promoting regularizer
@@ -117,14 +117,14 @@ contour(X1grid,X2grid,probGrid,'LineColor','k','LevelStep',0.5,'LineWidth',2.5);
 % Now lets use an L1 prior and repeat our steps. We will use the same
 % sigma value as before.
 if(0) % Takes about 30 minutes
-    T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',sigma)});
-    m = logregDist('nclasses',2,'transformer',T);
+    T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',sigma)});
+    m = LogregDist('nclasses',2,'transformer',T);
     testFunction = @(Xtrain,ytrain,Xtest,lambda)...
         mode(predict(fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l1'),'X',Xtest));
 
 
     lambdaRange = logspace(-1,1,10);
-    modelSelection = crossValidation(                 ...
+    modelSelection = CrossValidation(                 ...
         'testFunction' , testFunction             ,...
         'CVvalues'     , lambdaRange              ,...
         'lossFunction' , 'ZeroOne'                ,...
@@ -138,9 +138,9 @@ else
     % To save time, here are the results of the cross validation.
     lambdaL1 = 1.2915;
 end
-T = chainTransformer({standardizeTransformer(false)      ,...
-    kernelTransformer('rbf',sigma)} );
-model = logregDist('nclasses',2, 'transformer', T);
+T = ChainTransformer({StandardizeTransformer(false)      ,...
+    KernelTransformer('rbf',sigma)} );
+model = LogregDist('nclasses',2, 'transformer', T);
 model = fit(model,'prior','l1','lambda',lambdaL1,'X',X,'y',Y);
 [X1grid, X2grid] = meshgrid(-3:0.02:3,-3:0.02:3);
 [nrows,ncols] = size(X1grid);
@@ -175,8 +175,8 @@ plot(supportVectors(:,1),supportVectors(:,2),'ok','MarkerSize',10,'LineWidth',2)
 % course we are overfitting.
 lambda = 0;                 % lambda = 0 corresponds to MLE
 sigma = 0.5;                % arbitrarily chosen small value for sigma
-T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',sigma)} );
-model = logregDist('nclasses',2, 'transformer', T);
+T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',sigma)} );
+model = LogregDist('nclasses',2, 'transformer', T);
 model = fit(model,'X',X,'y',Y);
 [X1grid, X2grid] = meshgrid(-3:0.02:3,-3:0.02:3);
 [nrows,ncols] = size(X1grid);

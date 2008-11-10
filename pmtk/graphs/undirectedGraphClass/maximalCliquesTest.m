@@ -7,7 +7,7 @@ G = setdiag(G,0);
 celldisp(maximalCliques(G))
 
 % 4-cycle
-GG = undirectedGraph('type', 'loop', 'nnodes', 4);
+GG = UndirectedGraph('type', 'loop', 'nnodes', 4);
 celldisp(maximalCliques(GG))
 G = GG.adjMat;
 celldisp(maximalCliques(G))

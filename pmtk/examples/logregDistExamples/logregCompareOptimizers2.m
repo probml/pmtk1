@@ -21,7 +21,7 @@ figure; hold on;
 [styles, colors, symbols] =  plotColors;                                     %#ok
 for mi=1:length(methods)
     tic
-    [m, output{mi}] = fit(logregDist, 'X', X, 'y', y, 'lambda', lambda, 'optMethod', methods{mi});   %#ok
+    [m, output{mi}] = fit(LogregDist, 'X', X, 'y', y, 'lambda', lambda, 'optMethod', methods{mi});   %#ok
     T = toc                                                                                        %#ok
     time(mi) = T;                                                                                   %#ok
     w{mi} = m.w;                                                                                    %#ok

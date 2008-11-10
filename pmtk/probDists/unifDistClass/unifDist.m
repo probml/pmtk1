@@ -1,4 +1,4 @@
-classdef unifDist < scalarDist 
+classdef UnifDist < ScalarDist 
   %  continuous uniform distribution
   
   properties
@@ -8,7 +8,7 @@ classdef unifDist < scalarDist
   
   %% Main methods
   methods
-    function m = unifDist(lo, hi)
+    function m = UnifDist(lo, hi)
       if nargin == 0
         lo = []; hi =[];
       end

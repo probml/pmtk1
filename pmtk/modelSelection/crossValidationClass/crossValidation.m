@@ -1,4 +1,4 @@
-classdef crossValidation
+classdef CrossValidation
     % Perform k-fold cross validation on a specified test function given a range of
     % CVvalues, (e.g. lambdas) and a specified loss function. Supports
     % multi-dimensional CV, i.e. CV over two or more variables.
@@ -89,7 +89,7 @@ classdef crossValidation
 
     methods
         
-        function obj = crossValidation(varargin)
+        function obj = CrossValidation(varargin)
         % Class constructor
             [   obj.testFunction         ,...
                 obj.lossFunction         ,...

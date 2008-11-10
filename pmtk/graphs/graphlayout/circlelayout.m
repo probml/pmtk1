@@ -1,4 +1,4 @@
-classdef circlelayout < abstractlayout
+classdef Circlelayout < Abstractlayout
 % A simple layout which places node onto a scaled unit circle. 
 %
 % Matthew Dunham
@@ -22,7 +22,7 @@ classdef circlelayout < abstractlayout
      
      methods
          
-         function obj = circlelayout(name)
+         function obj = Circlelayout(name)
          % constructor
             if(nargin < 1)
                 obj.name = 'circlelayout';

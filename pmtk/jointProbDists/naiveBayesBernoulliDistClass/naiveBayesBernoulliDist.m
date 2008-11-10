@@ -1,4 +1,4 @@
-classdef naiveBayesBernoulliDist < jointProbDist
+classdef NaiveBayesBernoulliDist < JointProbDist
 
     properties
         nclasses;                       % class labels must be in {1:n}
@@ -18,7 +18,7 @@ classdef naiveBayesBernoulliDist < jointProbDist
 
     methods
 
-        function obj = naiveBayesBernoulliDist(varargin)
+        function obj = NaiveBayesBernoulliDist(varargin)
             obj.nclasses = process_options(varargin,'nclasses',[]);
 
         end
@@ -36,11 +36,11 @@ classdef naiveBayesBernoulliDist < jointProbDist
             end
 
             if(isempty(obj.classPrior))
-                obj.classPrior = dirichletDist(ones(1,obj.nclasses)); %uninformative prior
+                obj.classPrior = DirichletDist(ones(1,obj.nclasses)); %uninformative prior
             end
 
             if(isempty(obj.featurePrior))
-                obj.featurePrior = betaDist(1,1);                       %uninformative prior
+                obj.featurePrior = BetaDist(1,1);                       %uninformative prior
             end
 
             obj.Nc = histc(Y,1:obj.nclasses);
@@ -49,7 +49,7 @@ classdef naiveBayesBernoulliDist < jointProbDist
                 obj.Njc(:,c) = sum(X(Y==c,:),1);
             end
 
-            obj.classPosterior = dirichletDist(obj.Nc + obj.classPrior.alpha);
+            obj.classPosterior = DirichletDist(obj.Nc + obj.classPrior.alpha);
             
             obj.posteriorParamsMAP = zeros(obj.nclasses,1);
             for c=1:obj.nclasses
@@ -93,7 +93,7 @@ classdef naiveBayesBernoulliDist < jointProbDist
 
             end
 
-            pred = discreteDist(exp(logprobs));
+            pred = DiscreteDist(exp(logprobs));
 
         end
     end
@@ -103,8 +103,8 @@ classdef naiveBayesBernoulliDist < jointProbDist
 
         function classTest()
             load votes;
-            nb = naiveBayesBernoulliDist('nclasses',2);
-            nb = fit(nb,'X',X,'Y',Y,'classPrior',dirichletDist([20,3]),'featurePrior',betaDist(15,10));
+            nb = NaiveBayesBernoulliDist('nclasses',2);
+            nb = fit(nb,'X',X,'Y',Y,'classPrior',DirichletDist([20,3]),'featurePrior',BetaDist(15,10));
             [nb,pred] = predict(nb,'X',X,'classMethod','exact','featureMethod','exact');
             yhat = mode(pred);
             trainSetErrorRate = mean(yhat'~=Y)

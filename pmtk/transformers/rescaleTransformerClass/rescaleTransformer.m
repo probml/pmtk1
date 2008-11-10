@@ -1,4 +1,4 @@
-classdef rescaleTransformer < transformer
+classdef RescaleTransformer < Transformer
   
   properties
     minVal; maxVal;
@@ -8,7 +8,7 @@ classdef rescaleTransformer < transformer
   
   %%  Main methods
   methods
-    function obj = rescaleTransformer(minVal, maxVal)
+    function obj = RescaleTransformer(minVal, maxVal)
       if nargin == 0
         minVal = -1; maxVal = 1;
       end

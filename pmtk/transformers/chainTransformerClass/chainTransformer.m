@@ -1,4 +1,4 @@
-classdef chainTransformer < transformer
+classdef ChainTransformer < Transformer
   
   properties
     transformers;
@@ -7,7 +7,7 @@ classdef chainTransformer < transformer
 
   %%  Main methods
   methods
-    function obj = chainTransformer(transformers)
+    function obj = ChainTransformer(transformers)
       obj.transformers = transformers;
     end
     
@@ -50,7 +50,7 @@ classdef chainTransformer < transformer
   methods(Static = true)
     
     function testClass()
-      T = chainTransformer({standardizeTransformer, addOnesTransformer});
+      T = ChainTransformer({StandardizeTransformer, AddOnesTransformer});
       setSeed(0);
       Xtrain = rand(5,3);
       Xtest = rand(5,3);

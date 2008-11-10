@@ -1,8 +1,8 @@
-classdef gridlayout < abstractlayout
-% Provides a simple, (naive) grid layout for smartgraphs.   
-% An uninitialized instance can be created to pass to the smartgraph
-% constructor by just calling gridlayout without any parameters, e.g.
-% smartgraph('adjMatrix',[0 1; 0 0], 'layout',gridlayout);
+classdef Gridlayout < Abstractlayout
+% Provides a simple, (naive) grid layout for Graphlayout.   
+% An uninitialized instance can be created to pass to the GraphLayout
+% constructor by just calling Gridlayout without any parameters, e.g.
+% Graphlayout('adjMatrix',[0 1; 0 0], 'layout',Gridlayout);
 %
 % Matthew Dunham
 % University of British Columbia 
@@ -23,11 +23,11 @@ classdef gridlayout < abstractlayout
     end
      
     methods
-        function obj = gridlayout(name)
+        function obj = Gridlayout(name)
         
         % constructor
             if(nargin < 1)
-                obj.name = 'gridlayout';
+                obj.name = 'Gridlayout';
             else
                 obj.name = name;
             end

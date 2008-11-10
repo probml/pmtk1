@@ -31,7 +31,7 @@
 % is an example.
 %%
 %  function yhat = testFunction(Xtrain,ytrain,Xtest,lambda,sigma)
-%      T = chainTransformer({standardizeTransformer(false),kernelTransformer(sigma)});
+%      T = chainTransformer({standardizeTransformer(false),KernelTransformer(sigma)});
 %      m = logregDist('nclasses',2,'transformer',T);
 %      m = fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
 %      pred = predict(m,Xtest);

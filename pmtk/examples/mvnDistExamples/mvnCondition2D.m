@@ -5,7 +5,7 @@ mu = [0 0]';
 rho = 0.5;
 %S  = [4 1; 1 1];
 S = [1 rho; rho 1];
-obj = mvnDist(mu,S);
+obj = MvnDist(mu,S);
 figure;
 gaussPlot2d(obj.mu, obj.Sigma);
 hold on;

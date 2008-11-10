@@ -1,4 +1,4 @@
-classdef discreteDist  < probDist
+classdef DiscreteDist  < ProbDist
 
   properties
     probs;
@@ -7,7 +7,7 @@ classdef discreteDist  < probDist
 
 
   methods
-    function obj = discreteDist(probs, support)
+    function obj = DiscreteDist(probs, support)
       % probs is n*d, where probs(i,c) = p(Xi=c)
       if nargin == 0, probs = []; end
       if nargin < 2, support = 1:length(probs); end
@@ -59,12 +59,12 @@ classdef discreteDist  < probDist
   methods(Static = true)
     
     function testClass()
-      p=discreteDist([0.3 0.2 0.5], [-1 0 1]);
+      p=DiscreteDist([0.3 0.2 0.5], [-1 0 1]);
       X=sample(p,1000);
       hh=hist(X,[-1 0 1])
        
       % two ternary variables
-      p=discreteDist([0.3 0.2 0.5; 0.1 0.1 0.8]);
+      p=DiscreteDist([0.3 0.2 0.5; 0.1 0.1 0.8]);
       plot(p);
     end
   end

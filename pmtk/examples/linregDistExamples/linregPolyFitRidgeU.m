@@ -2,8 +2,8 @@
 n = 21;
 [xtrain, ytrain, xtest, ytest] = polyDataMake('n', n, 'sampling', 'thibaux');
 deg = 14;
-m = linregDist();
-m.transformer =  chainTransformer({rescaleTransformer,  polyBasisTransformer(deg)});
+m = LinregDist();
+m.transformer =  ChainTransformer({RescaleTransformer,  PolyBasisTransformer(deg)});
 lambdas = logspace(-10,1.2,15);
 for k=1:length(lambdas)
     lambda = lambdas(k);

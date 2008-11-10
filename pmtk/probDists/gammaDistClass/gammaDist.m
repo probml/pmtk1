@@ -1,4 +1,4 @@
-classdef gammaDist < scalarDist
+classdef GammaDist < ScalarDist
 
   properties
     a;
@@ -7,7 +7,7 @@ classdef gammaDist < scalarDist
 
   %% Main methods
   methods
-    function obj =  gammaDist(a,b)
+    function obj =  GammaDist(a,b)
       % a = shape, b = rate
       % Note that Matlab interprets b as scale=1/rate
       if nargin == 0

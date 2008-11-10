@@ -74,8 +74,8 @@ classdef testSetEvaluator < modelEvaluator
             meval = setPredefinedLoss(meval,'meanZeroOne');
                
             load crabs;
-            T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',2)});
-            m = logregDist('nclasses',2,'transformer',T);
+            T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',2)});
+            m = LogregDist('nclasses',2,'transformer',T);
             meval.fitParams     = {m,'X',Xtrain,'y',ytrain,'prior','l2','method','map','lambda'};
             meval.predictParams = {'X',Xtest,'method','plugin'};
             meval.lossParams    = {ytest};

@@ -1,7 +1,7 @@
 %#demo
 
 xs = -1:0.1:1;
-dist = unifDist(-1,1);
+dist = UnifDist(-1,1);
 px = exp(logprob(dist, xs));
 fn = @(x) x.^2;
 ys = fn(xs);

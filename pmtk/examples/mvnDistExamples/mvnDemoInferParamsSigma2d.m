@@ -3,7 +3,7 @@ doSave = false;
 folder = 'C:\kmurphy\PML\pdfFigures';
 seed = 0; randn('state', seed); rand('twister', seed);
 muTrue = [0 0]'; Ctrue = 0.1*[2 1; 1 1];
-mtrue = mvnDist(muTrue, Ctrue);
+mtrue = MvnDist(muTrue, Ctrue);
 xrange = 2*[-1 1 -1 1];
 n = 20;
 X = sample(mtrue, n);
@@ -35,7 +35,7 @@ if doSave, pdfcrop; print(gcf, '-dpdf', fname); end
 
 for i=1:length(ns)
     n = ns(i);
-    m = mvnDist(muTrue, prior);
+    m = MvnDist(muTrue, prior);
     m = inferParams(m, 'data', X(1:n,:));
     post = m.Sigma;
     plotMarginals(post);

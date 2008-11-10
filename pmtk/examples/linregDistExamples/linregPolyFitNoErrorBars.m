@@ -3,8 +3,8 @@
 degs = 1:2;
 for i=1:length(degs)
     deg = degs(i);
-    m = linregDist;
-    m.transformer =  chainTransformer({rescaleTransformer, polyBasisTransformer(deg)});
+    m = LinregDist;
+    m.transformer =  ChainTransformer({RescaleTransformer, PolyBasisTransformer(deg)});
     m = fit(m, 'X', xtrain, 'y', ytrain);
     ypredTest = mean(predict(m, xtest));
     figure;

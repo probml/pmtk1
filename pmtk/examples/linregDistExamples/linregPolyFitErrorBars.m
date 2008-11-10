@@ -1,14 +1,14 @@
-function hh=polyFitErrorBars(varargin)
+function hh=linregPolyFitErrorBars(varargin)
     [prior] = process_options(varargin, 'prior', 'mvnIG');
     [xtrain, ytrain, xtest, ytestNoisefree, ytestNoisy, sigma2] = polyDataMake(...
         'sampling', 'thibaux');
     degs = 1:2;
     for i=1:length(degs)
         deg = degs(i);
-        T =  chainTransformer({rescaleTransformer, polyBasisTransformer(deg)});
-        m = linregDist('transformer', T);
-        m = inferParams(m, 'X', xtrain, 'y', ytrain, 'prior', prior, 'sigma2', sigma2);
-        ypredTest = postPredict(m, xtest);
+        T =  ChainTransformer({RescaleTransformer, PolyBasisTransformer(deg)});
+        m = LinregDist('transformer', T);
+        m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', prior, 'sigma2', sigma2);
+        ypredTest = predict(m, xtest);
         figure;
         hold on;
         h = plot(xtest, mean(ypredTest),  'k-', 'linewidth', 3);

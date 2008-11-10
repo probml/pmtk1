@@ -1,4 +1,4 @@
-classdef hiwDist < matrixDist
+classdef HiwDist < MatrixDist
   
   properties
     G;
@@ -8,8 +8,8 @@ classdef hiwDist < matrixDist
   
   %% main methods
   methods
-    function m = hiwDist(G, delta, Phi)
-      % hiwDist(G, delta, Phi) G is a decomposableGraph, delta a scalar,
+    function m = HiwDist(G, delta, Phi)
+      % HiwDist(G, delta, Phi) G is a decomposableGraph, delta a scalar,
       % Phi is a positive definite matrix
       if nargin == 0
         m.G = [];

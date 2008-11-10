@@ -2,7 +2,7 @@
 nu = 0.001; S = 0.001; 
 setSeed(1);
 mutrue = 5; Ctrue = 10;
-mtrue = mvnDist(mutrue, Ctrue);
+mtrue = MvnDist(mutrue, Ctrue);
 n = 500;
 X = sample(mtrue, n);
 ns = [0 2 5 50]
@@ -13,7 +13,7 @@ pmax = -inf;
 for i=1:length(ns)
     prior = invWishartDist(nu, S);
     n = ns(i);
-    m = inferParams(mvnDist(mutrue, prior), 'data', X(1:n));
+    m = inferParams(MvnDist(mutrue, prior), 'data', X(1:n));
     post = m.Sigma;
     mean(post);
     figure(fig1);

@@ -1,10 +1,10 @@
 %% Sample Dist Example
 seed = 1;
 setSeed(seed);
-m = mvnDist;
+m = MvnDist;
 m = mkRndParams(m, 2);
 X = sample(m, 500);
-mS = sampleDist(X);
+mS = SampleDist(X);
 figure(1);clf
 for i=1:2
     subplot2(2,2,i,1);

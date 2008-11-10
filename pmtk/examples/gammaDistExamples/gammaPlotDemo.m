@@ -7,7 +7,7 @@ figure;
 [styles, colors, symbols] = plotColors;
 for i=1:length(as)
     a = as(i); b = bs(i);
-    plot(gammaDist(a,b), 'xrange', [0 7], 'plotArgs', {styles{i}, 'linewidth', 2});
+    plot(GammaDist(a,b), 'xrange', [0 7], 'plotArgs', {styles{i}, 'linewidth', 2});
     hold on
     legendStr{i} = sprintf('a=%2.1f,b=%2.1f', a, b);
 end

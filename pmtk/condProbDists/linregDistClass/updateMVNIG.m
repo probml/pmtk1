@@ -19,5 +19,5 @@ else
   sn2 = (1/vn)*(v0*s02 + (y-X*wn)'*(y-X*wn) + (wn-w0)'*Sn*(wn-w0));
 end
 bn = vn*sn2/2;
-w = mvnInvGammaDist('mu', wn, 'Sigma', Sn, 'a', an, 'b', bn);
+w = MvnInvGammaDist('mu', wn, 'Sigma', Sn, 'a', an, 'b', bn);
 end

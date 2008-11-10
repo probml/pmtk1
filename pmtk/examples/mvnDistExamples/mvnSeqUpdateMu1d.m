@@ -1,7 +1,7 @@
 %% Sequential Updating of mu
 setSeed(1);
 mutrue = 5; Ctrue = 10;
-mtrue = mvnDist(mutrue, Ctrue);
+mtrue = MvnDist(mutrue, Ctrue);
 n = 500;
 X = sample(mtrue, n);
 ns = [0 2 5 50]
@@ -10,9 +10,9 @@ pmax = -inf;
 [styles, colors, symbols] =  plotColors();
 for i=1:length(ns)
     k = 0.001;
-    prior = mvnDist(0, 1/k);
+    prior = MvnDist(0, 1/k);
     n = ns(i);
-    m = inferParams(mvnDist(prior, Ctrue), 'data', X(1:n));
+    m = inferParams(MvnDist(prior, Ctrue), 'data', X(1:n));
     post = m.mu;
     [h(i), p]= plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, 'xrange', [0 10]);
     legendstr{i} = sprintf('n=%d', n);

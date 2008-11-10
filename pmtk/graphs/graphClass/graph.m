@@ -1,4 +1,4 @@
-classdef graph 
+classdef Graph 
   
   properties
     adjMat;
@@ -12,7 +12,7 @@ classdef graph
 
  %% Main methods
  methods
-   function obj = graph(adjMat)
+   function obj = Graph(adjMat)
      if nargin == 0
        obj.adjMat = [];
      else
@@ -21,7 +21,7 @@ classdef graph
    end
    
    function h=draw(obj)
-     h = graphlayout('adjMatrix',obj.adjMat);
+     h = Graphlayout('adjMatrix',obj.adjMat);
    end  
    
    function d = nnodes(obj)

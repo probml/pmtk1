@@ -1,8 +1,8 @@
-classdef sampleDist < probDist
+classdef SampleDist < ProbDist
   % Sample based representation of a pdf
   % May represent multiple distributions in pages so long as these are all
   % of he same size, e.g. the same number of samples drawn for each and each
-  % of the same dimensionality. See logregDist.predict('method','mc') for an
+  % of the same dimensionality. See LogregDist.predict('method','mc') for an
   % example of this usage. 
   
   properties
@@ -14,7 +14,7 @@ classdef sampleDist < probDist
 
   %%  Main methods
   methods
-    function m = sampleDist(X)
+    function m = SampleDist(X)
     % Constructor    
       if nargin < 1, X = []; end
       m.samples = X;
@@ -53,15 +53,15 @@ classdef sampleDist < probDist
     
     function mm = marginal(m, queryVars)    
     % mm is of size nsamples-by-numel(queryVars)-by-npdfs    
-      mm = sampleDist(m.samples(:,queryVars,:));
+      mm = SampleDist(m.samples(:,queryVars,:));
     end
     
     function mm = extractDist(m,ndx)
-    % mm is a sampleDist object of size nsamples-by-ndimensions-by-numel(ndx)    
+    % mm is a SampleDist object of size nsamples-by-ndimensions-by-numel(ndx)    
     % When this object represents multiple distributions, you can extract one or
     % more of them and have them returned in a new sampleDist object with this
     % method. 
-        mm = sampleDist(m.samples(:,:,ndx));
+        mm = SampleDist(m.samples(:,:,ndx));
     end
     
     function s = extractSample(m,sampleNDX)

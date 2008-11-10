@@ -1,16 +1,16 @@
 nu = 0.001; S = 0.001;
 setSeed(1);
 muTrue = 5; varTrue = 10;
-X = sample(mvnDist(muTrue, varTrue), 500);
+X = sample(MvnDist(muTrue, varTrue), 500);
 muRange = [-5 15]; sigmaRange  = [0.1 15];
 figure; hold on;
 [styles, colors, symbols] =  plotColors();
 ns = [0 2 5 50]
 for i=1:length(ns)
     k = 0.001;
-    prior = mvnInvWishartDist('mu', 0, 'k', k, 'dof', nu, 'Sigma', S);
+    prior = MvnInvWishartDist('mu', 0, 'k', k, 'dof', nu, 'Sigma', S);
     n = ns(i);
-    m = inferParams(mvnDist(prior, []), 'data', X(1:n));
+    m = inferParams(MvnDist(prior, []), 'data', X(1:n));
     post = m.mu;
     [h(i), ps{i}] = plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, ...
         'xrange', [muRange sigmaRange], 'useContour', true);

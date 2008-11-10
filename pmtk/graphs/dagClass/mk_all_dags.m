@@ -26,7 +26,7 @@ Gs = {};
 j = 1;
 for i=1:m
   G = reshape(ind(i,:)-1, N, N);
-  if checkAcyclic(directedGraph(G))
+  if checkAcyclic(DirectedGraph(G))
     out_of_order = 0;
     if ~isempty(order)
       for k=1:N-1

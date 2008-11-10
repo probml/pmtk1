@@ -1,4 +1,4 @@
-classdef laplaceDist < scalarDist
+classdef LaplaceDist < ScalarDist
   % Laplace distribution or double exponential
   
   properties
@@ -8,8 +8,8 @@ classdef laplaceDist < scalarDist
   
   %% Main methods
   methods 
-     function m = laplaceDist(mu, b)
-      % laplaceDist(mu, sigma) where b is the scalar parameter
+     function m = LaplaceDist(mu, b)
+      % LaplaceDist(mu, sigma) where b is the scalar parameter
        if nargin == 0
         mu = []; b = [];
       end

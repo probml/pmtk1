@@ -5,9 +5,9 @@ sigmas = [10 100 500];
 N = 1000;
 X = zeros(N,  length(seeds), length(sigmas));
 for s=1:length(sigmas)
-    m = gaussMixDist('K', 2, 'mu', [-50 50], 'Sigma', reshape([10^2 10^2], [1 1 2]), ...
+    m = MixGaussDist('K', 2, 'mu', [-50 50], 'Sigma', reshape([10^2 10^2], [1 1 2]), ...
         'mixweights', [0.3 0.7]);
-    eng = mcmcInfer('Nsamples', N, 'Nburnin', 0, 'method', 'metrop', 'seeds', seeds);
+    eng = McmcInfer('Nsamples', N, 'Nburnin', 0, 'method', 'metrop', 'seeds', seeds);
     eng.targetFn = @(x) (logprob(m,x));
     eng.proposalFn = @(x) (x + (sigmas(s) * randn(1,1)));
     eng.xinitFn = @() (m.mu(2));

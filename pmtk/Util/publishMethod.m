@@ -11,7 +11,7 @@ function publishMethod(mfile,methodName,evalCode)
 %
 % Example:
 %
-% publishMethod logregDist demoVisualizePredictive
+% publishMethod LogregDist demoVisualizePredictive
 % 
 % Matthew Dunham
     

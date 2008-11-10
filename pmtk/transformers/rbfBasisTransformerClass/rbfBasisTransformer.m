@@ -1,4 +1,4 @@
-classdef rbfBasisTransformer < transformer
+classdef RbfBasisTransformer < Transformer
   
   properties
     ncenters;
@@ -8,7 +8,7 @@ classdef rbfBasisTransformer < transformer
 
   %%  Main methods
   methods
-    function obj = rbfBasisTransformer(ncenters, sigma)
+    function obj = RbfBasisTransformer(ncenters, sigma)
       if nargin == 0
         ncenters = []; sigma = []; 
       end

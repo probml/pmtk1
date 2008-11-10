@@ -14,24 +14,24 @@ A(3,[1 2 5])=1;
 A(4,[1 2])=1;
 A(5,[2 3 6])=1;
 A(6,5)=1;
-G = chordalGraph(A);
+G = ChordalGraph(A);
 %G.cliques
 assert(G.ischordal)
 
 % Now make it non-chordal
 %%G(2,3)=0; % also sets G(3,2)=0 for free %%%% BUG
-%G2 = chordalGraph(G.adjMat);
+%G2 = ChordalGraph(G.adjMat);
 A(2,3)=0; A(3,2) = 0;
-G2 = chordalGraph(A);
+G2 = ChordalGraph(A);
 assert(~G2.ischordal)
 
 % Now make it chordal
-G3 = chordalGraph(G.adjMat, 'makeChordal');
+G3 = ChordalGraph(G.adjMat, 'makeChordal');
 assert(G3.ischordal)
 G3.fillInEdges;
 
-% Now make jtree
-J = jtree(G.adjMat);
+% Now make Jtree
+J = Jtree(G.adjMat);
 
 
 % Do examples from Helen Armstrong's thesis p27
@@ -41,7 +41,7 @@ ndx = [4 7 10 14 15]; A(ndx,ndx) = 1;
 ndx = [3 5 8 9 12 13 16]; A(ndx, ndx) = 1;
 A = setdiag(A,0);
 figure;imagesc(1-A);colormap('gray')
-G = chordalGraph(A);
+G = ChordalGraph(A);
 assert(G.ischordal)
 
 perm = G.perfectElimOrder;
@@ -69,7 +69,7 @@ ndx = [9 4 21]; A(ndx,ndx)=1;
 A = mkGraphSymmetric(A);
 A = setdiag(A,0);
 figure;imagesc(1-A);colormap('gray')
-G = chordalGraph(A);
+G = ChordalGraph(A);
 assert(G.ischordal)
 
 perm = G.perfectElimOrder;
@@ -79,5 +79,5 @@ figure;imagesc(1-B);colormap('gray')
 % Now make it non-chordal (p30)
 A(8,15) = 1; A(15,8)=1;
 figure;imagesc(1-A);colormap('gray')
-G = chordalGraph(A);
+G = ChordalGraph(A);
 assert(~G.ischordal)

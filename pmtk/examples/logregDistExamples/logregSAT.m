@@ -19,10 +19,10 @@ stat = load('satData.txt');
 y = stat(:,1);                      % class labels
 X = stat(:,4);                      % SAT scores
 [X,perm] = sort(X,'ascend');        % sort for plotting purposes
-y = y(perm) + 1;                    % logregDist requires labels in {1:C}
+y = y(perm) + 1;                    % LogregDist requires labels in {1:C}
 %% Fit via MLE
-T = chainTransformer({standardizeTransformer(false),addOnesTransformer});
-m = logregDist('nclasses',2,'transformer', T);
+T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer});
+m = LogregDist('nclasses',2,'transformer', T);
 m = fit(m, 'X', X, 'y', y,'method','map');         % MLE performed if no prior specified
 %% Classify Training Examples
 pred = predict(m,'X', X,'method','plugin');  % predict on the training examples using MLE
@@ -44,10 +44,10 @@ legend({'Actual','Predicted','p( passing | SAT Score , w )'},'Location','NorthWe
 title('MLE');
 %%  Fit Using Laplace Approximation to the Posterior
 % Here we fit in much the same way but specify an L2 prior. The laplace
-% approximation to the posterior, an mvnDist object, is assigned to
+% approximation to the posterior, an MvnDist object, is assigned to
 % obj.w when 'method' is 'bayesian'.
-T = chainTransformer({standardizeTransformer(false),addOnesTransformer});
-mBayes = logregDist('nclasses',2,'transformer',T);
+T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer});
+mBayes = LogregDist('nclasses',2,'transformer',T);
 mBayes = fit(mBayes,'X',X,'y',y,'prior','l2','lambda',1e-3,'method','bayesian','optMethod','bb');
 %% Plot Posterior of w
 figure; hold on
@@ -56,9 +56,9 @@ subplot2(2,2,1,2); plot(mBayes.w); xlabel('w0'); ylabel('w1');
 subplot2(2,2,2,2); plot(marginal(mBayes.w,2),'plotArgs', {'linewidth',2}); title('w1')
 %% Predict using Monte Carlo sampling of the Posterior Predictive
 % When performing Monte Carlo sampling, the samples are automatically
-% averaged and used to create the discreteDist object storing
+% averaged and used to create the DiscreteDist object storing
 % distributions over class labels for every example. The samples if of
-% interest are returned as a sampleDist object such that
+% interest are returned as a SampleDist object such that
 % samples.samples(s,c,i) = probability that example i belongs to class c
 % according to sample s.
 [pred,sdist] = predict(mBayes,'X',X,'method','mc','nsamples',100);

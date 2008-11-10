@@ -1,6 +1,6 @@
-classdef matrixDist < probDist
+classdef MatrixDist < ProbDist
    % pdf's on positive definite matrices
-   % This class contains code that is common to wishart and invWishart
+   % This class contains code that is common to Wishart and InvWishart
    
   properties
     Sigma;
@@ -71,7 +71,7 @@ classdef matrixDist < probDist
       [nr, nc] = nsubplots(n);
       Sigmas = sample(obj, n);
       for i=1:n
-        pgauss = mvnDist([0 0], Sigmas(:,:,i));
+        pgauss = MvnDist([0 0], Sigmas(:,:,i));
         subplot(nr, nc,i)
         h=gaussPlot2d(pgauss.mu, pgauss.Sigma);
         %grid on

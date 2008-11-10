@@ -1,4 +1,4 @@
-classdef mvnMcmcInfer < mcmcInfer
+classdef MvnMcmcInfer < McmcInfer
   % Gibbs / MH sampling in the multivariate normal 
   
   properties
@@ -7,7 +7,7 @@ classdef mvnMcmcInfer < mcmcInfer
   end
  
   methods
-    function eng = mvnMcmcInfer(varargin)
+    function eng = MvnMcmcInfer(varargin)
       [mu, Sigma, Nsamples, Nburnin, thin, method, SigmaProposal] = process_options(varargin, ...
         'mu', [], 'Sigma', [], 'Nsamples', 1000, 'Nburnin', 100, 'thin', 1, ...
         'method', [], 'SigmaProposal', []);

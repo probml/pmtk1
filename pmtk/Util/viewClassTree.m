@@ -4,7 +4,7 @@ function  h=viewClassTree(directory)
 % discovered as long as they are in the matlab search path. 
 % There are a few restrictions:
 % (1) classes must be written using the new 2008a classdef syntax
-% (2) requires the graphlayout package be on the path to display the tree.
+% (2) requires the Graphlayout package be on the path to display the tree.
 % (3) may not work on non-windows systems.
 %  
 % directory  is an optional parameter specifying the base directory of the
@@ -62,7 +62,7 @@ matrix(:,markForDeletion) = [];
 
 shortClassNames = shortenClassNames(allClasses);
 
-h = graphlayout('adjMatrix',matrix,'nodeLabels',shortClassNames,'splitLabels',true);
+h = Graphlayout('adjMatrix',matrix,'nodeLabels',shortClassNames,'splitLabels',true);
 
 if(~isempty(errors))
     fprintf('\nThe following m-files were\nthought to be classes\nbecause they contain the\nclassdef keyword, but did\nnot respond to queries.\nThey were not included in the graph.\n\n');

@@ -21,7 +21,7 @@ for i=1:2
         h=scatter(X(:,1), X(:,2), 100, str); %set(h, 'markersize', 10);
         hold on
         if plotCov
-            pgauss = fit(mvnDist, 'data',X, 'method', 'mle');
+            pgauss = fit(MvnDist, 'data',X, 'method', 'mle');
             gaussPlot2d(pgauss.mu, pgauss.Sigma);
         end
     end

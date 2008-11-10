@@ -3,8 +3,8 @@
 X = dlmread('rainfallData.txt');
 X = X'; X = X(:); % concatenate across rows, not columns
 X = X(1:end-5); % removing trailing 0s
-objMoM = inferParams(gammaDist, 'data', X, 'method', 'mom');
-objMLE = inferParams(gammaDist, 'data', X, 'method', 'mle');
+objMoM = inferParams(GammaDist, 'data', X, 'method', 'mom');
+objMLE = inferParams(GammaDist, 'data', X, 'method', 'mle');
 [v, binc] = hist(X);
 h = binc(2)-binc(1);
 N = length(X);

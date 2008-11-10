@@ -1,4 +1,4 @@
-classdef ggm < gm
+classdef GgmDist < GmDist
   % gaussian graphical model 
   
   properties
@@ -8,14 +8,14 @@ classdef ggm < gm
 
   %%  Main methods
   methods
-    function obj = ggm(G, mu, Sigma)
-      % ggm(G, mu, Sigma) where G is of type graph
+    function obj = GgmDist(G, mu, Sigma)
+      % GgmDist(G, mu, Sigma) where G is of type graph
       % mu and Sigma can be [] and set later.
       if nargin < 1, G = []; end
       if nargin < 2, mu = []; end
       if nargin < 3, Sigma = []; end
       obj.G = G; obj.mu = mu; obj.Sigma = Sigma;
-      obj.stateInfEng = mvnExactInfer; % ignores graph structure
+      obj.stateInfEng = MvnExactInfer; % ignores graph structure
     end
 
     function params = getModelParams(obj)
@@ -35,14 +35,14 @@ classdef ggm < gm
 
     function L = logprob(obj, X)
       % L(i) = log p(X(i,:) | params)
-      L = logprob(mvnDist(obj.mu, obj.Sigma), X);
+      L = logprob(MvnDist(obj.mu, obj.Sigma), X);
     end
 
     function B = bicScore(obj, X)
       % B = log p(X|model) - (dof/2)*log(N);
       N = size(X,1);
       dof = nedges(obj.G);
-      L = logprob(mvnDist(obj.mu, obj.Sigma), X);
+      L = logprob(MvnDist(obj.mu, obj.Sigma), X);
       B = sum(L) - (dof/2)*log(N);
     end
 
@@ -65,7 +65,7 @@ classdef ggm < gm
         case 'L1BCD', [precMat, covMat] = L1precisionBCD(X, 'regularizer', lambda);
           obj.mu = mean(X);
           obj.Sigma = covMat;
-          obj.G = undirectedGraph(precmatToAdjmat(precMat));
+          obj.G = UndirectedGraph(precmatToAdjmat(precMat));
         otherwise
           error(['unknown method ' method])
       end
@@ -73,7 +73,7 @@ classdef ggm < gm
 
     function X = sample(obj, n)
       % X(i,:) = i'th case
-      X = sample(mvnDist(obj.mu, obj.Sigma), n);
+      X = sample(MvnDist(obj.mu, obj.Sigma), n);
     end
 
 
@@ -89,13 +89,13 @@ classdef ggm < gm
       
       function testClass
           d = 10;
-          G = undirectedGraph('type', 'loop', 'nnodes', d);
-          obj = ggm(G, [], []);
+          G = UndirectedGraph('type', 'loop', 'nnodes', d);
+          obj = GgmDist(G, [], []);
           obj = mkRndParams(obj);
           V = 1:2; H = mysetdiff(1:d, V); xv = randn(2,1);
           obj = enterEvidence(obj, V, xv);
           pobj = marginal(obj, H);
-          obj2 = mvnDist(obj.mu, obj.Sigma);
+          obj2 = MvnDist(obj.mu, obj.Sigma);
           obj2 = enterEvidence(obj2, V, xv);
           pobj2 = marginal(obj2, H);
           assert(approxeq(mean(pobj), mean(pobj2)))

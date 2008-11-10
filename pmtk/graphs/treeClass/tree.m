@@ -1,8 +1,8 @@
-classdef tree < undirectedGraph
+classdef Tree < UndirectedGraph
   
  
  methods
-   function obj = tree(adjMat)
+   function obj = Tree(adjMat)
      % A tree is an undirected graph with no loops
      if nargin == 0
        return;

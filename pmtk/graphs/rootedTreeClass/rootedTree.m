@@ -1,4 +1,4 @@
-classdef rootedTree <  directedGraph
+classdef RootedTree <  DirectedGraph
   
   properties
     root;
@@ -8,7 +8,7 @@ classdef rootedTree <  directedGraph
   end
   
  methods
-   function obj = rootedTree(adjMat, root)
+   function obj = RootedTree(adjMat, root)
      % Adjmat should be the adjmat of a tree
      % All arrows point away from the root (root defaults to 1)
      if nargin == 0, return; end

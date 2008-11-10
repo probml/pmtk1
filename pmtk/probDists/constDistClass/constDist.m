@@ -1,4 +1,4 @@
-classdef constDist < probDist
+classdef ConstDist < ProbDist
   % vector of delta fns (constant values)
   properties
     point;
@@ -6,15 +6,15 @@ classdef constDist < probDist
  
   
   methods 
-    function obj =  constDist(point)
+    function obj =  ConstDist(point)
       if nargin == 0
         point= [];
       end
-      obj.point = point(:)';
+      obj.point = point;
     end
   
     function d = ndims(obj)
-      d = length(obj.point);
+      d = numel(obj.point);
     end
     
     function m = mean(obj)
@@ -31,7 +31,7 @@ classdef constDist < probDist
     
      function point = sample(obj, n)
        % X(i,j) = sample from params(j)
-       point = repmat(obj.point, n, 1);
+       point = repmat(obj.point(:)', n, 1);
      end
     
      function p = logProb(obj, X)
@@ -40,8 +40,9 @@ classdef constDist < probDist
        x = X(:);
        n = length(x);
        p = zeros(n,d);
+       point = obj.point(:)';
        for j=1:d  
-         p(:,j) = (x == obj.point(j));
+         p(:,j) = (x == point(j));
        end
        p = log(p+eps);
      end
@@ -51,20 +52,20 @@ classdef constDist < probDist
      end
      
       function h = plot(obj)
-            stem(obj.point,'LineWidth',3);
+            stem(obj.point(:)','LineWidth',3);
             xlabel('dimension');
             title('constant distribution');
             axis tight;
             grid on;
-        end
-      
+      end
+            
   end
   
   methods(Static = true)
       
       function testClass()
          point = 10*rand(20,1);
-         p = constDist(point);
+         p = ConstDist(point);
          logprob = logProb(p,point);
          s = sample(p,10);
          logZ = lognormconst(p);

@@ -1,14 +1,14 @@
 function gibbs2Ddemo
 % Example of Gibbs sampling in a 2d Gaussian
 
-      m = mvnDist;
+      m = MvnDist;
       setSeed(0);
       m.Sigma = [1 -0.5; -0.5 1];
       m.mu = [1; 1];
       m = enterEvidence(m);
       marg1 = m.marginal(1);
       marg2 = m.marginal(2);
-      m.stateInfEng = mvnMcmcInfer('method', 'gibbs', 'Nsamples', 500);   
+      m.stateInfEng = MvnMcmcInfer('method', 'gibbs', 'Nsamples', 500);   
       m = enterEvidence(m);
       X = m.sample(3);
       

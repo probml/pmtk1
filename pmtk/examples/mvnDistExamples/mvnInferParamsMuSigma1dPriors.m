@@ -3,23 +3,23 @@ clear;
 seed = 0; rand('twister', seed); randn('state', seed);
 muTrue = 10; varTrue = 5^2;
 N = 12;
-X = sample(mvnDist(muTrue, varTrue), N);
+X = sample(MvnDist(muTrue, varTrue), N);
 %X = normrnd(muTrue, sqrt(varTrue), N, 1);
 %X = [141, 102, 73, 171, 137, 91, 81, 157, 146, 69, 121, 134];
 v = 1; S = var(X);
-prior{1} = mvnInvWishartDist('mu', mean(X), 'k', 1, 'dof', v, 'Sigma', v*S);
+prior{1} = MvnInvWishartDist('mu', mean(X), 'k', 1, 'dof', v, 'Sigma', v*S);
 names{1} = 'Data-driven'; % since has access to data
 v = 0; S = 0;
-prior{2} = mvnInvWishartDist('mu', 0, 'k', 0.01, 'dof', v, 'Sigma', v*S);
+prior{2} = MvnInvWishartDist('mu', 0, 'k', 0.01, 'dof', v, 'Sigma', v*S);
 names{2} = 'Jeffreys'; % Jeffrey
 v = N; S = 10;
-prior{3} = mvnInvWishartDist('mu', 5, 'k', N, 'dof', v, 'Sigma', v*S);
+prior{3} = MvnInvWishartDist('mu', 5, 'k', N, 'dof', v, 'Sigma', v*S);
 names{3} = 'Wrong';
 muRange = [0 20]; sigmaRange  = [1 30];
 nr = 3; nc = 3;
 figure;
 for i=1:3
-    m = inferParams(mvnDist(prior{i}, []), 'data', X);
+    m = inferParams(MvnDist(prior{i}, []), 'data', X);
     post{i} = m.mu;
     pmuPost = marginal(post{i}, 'mu');
     pSigmaPost = marginal(post{i}, 'Sigma');

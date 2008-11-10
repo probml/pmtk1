@@ -1,4 +1,4 @@
-classdef kernelTransformer < transformer
+classdef KernelTransformer < Transformer
   
   properties
    kernelType;
@@ -8,7 +8,7 @@ classdef kernelTransformer < transformer
 
   %%  Main methods
   methods
-    function obj = kernelTransformer(kernelType, kernelParams)
+    function obj = KernelTransformer(kernelType, kernelParams)
       if nargin == 0
         kernelType = 'rbf'; kernelParams = 1;
       end

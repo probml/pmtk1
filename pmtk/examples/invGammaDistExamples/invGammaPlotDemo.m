@@ -14,7 +14,7 @@ figure;
 [styles, colors, symbols] = plotColors;
 for i=1:length(as)
     a = as(i); b = bs(i);
-    plot(invGammaDist(a,b), 'xrange', xr, 'plotArgs', {styles{i}, 'linewidth', 2});
+    plot(InvGammaDist(a,b), 'xrange', xr, 'plotArgs', {styles{i}, 'linewidth', 2});
     hold on
     legendStr{i} = sprintf('a=%4.3f,b=%4.3f', a, b);
 end

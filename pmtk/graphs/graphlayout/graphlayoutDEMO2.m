@@ -1,2 +1,2 @@
 load largeExample
-graphlayout(adj);
+Graphlayout(adj);

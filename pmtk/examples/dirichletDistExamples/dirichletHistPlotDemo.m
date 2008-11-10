@@ -2,7 +2,7 @@
 alpha = 0.1; 
 seed = 1; 
 rand('twister', seed); randn('state', seed);
-obj = dirichletDist(alpha*ones(1,5));
+obj = DirichletDist(alpha*ones(1,5));
 n = 5;
 probs = sample(obj, n);
 figure;

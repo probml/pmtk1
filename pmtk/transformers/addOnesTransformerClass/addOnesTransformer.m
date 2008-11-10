@@ -1,11 +1,11 @@
-classdef addOnesTransformer < transformer
+classdef AddOnesTransformer < Transformer
   
   properties
   end
 
   %%  Main methods
   methods
-    function obj = addOnesTransformer()
+    function obj = AddOnesTransformer()
       obj.dummy = 1;
     end
     

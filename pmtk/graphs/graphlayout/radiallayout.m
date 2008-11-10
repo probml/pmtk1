@@ -1,4 +1,4 @@
-classdef radiallayout < gvizlayout
+classdef Radiallayout < Gvizlayout
 % A layout that also uses graphviz but calls twopi instead of neato to 
 % to display the graph like a tree. 
 %
@@ -6,9 +6,9 @@ classdef radiallayout < gvizlayout
 % University of British Columbia 
 % http://www.cs.ubc.ca/~mdunham/  
     methods
-       function obj = radiallayout(name)
+       function obj = Radiallayout(name)
             if(nargin < 1)
-                obj.name = 'radiallayout';
+                obj.name = 'Radiallayout';
             else
                 obj.name = name;
             end
@@ -19,7 +19,7 @@ classdef radiallayout < gvizlayout
        
         function available = isavailable(obj)
         % Make sure graphViz is available. 
-            available = gvizlayout.queryGviz('twopi');
+            available = Gvizlayout.queryGviz('twopi');
             if(not(available))
                    fprintf('Please install or upgrade graphViz\n');
             end

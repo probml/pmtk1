@@ -1,4 +1,4 @@
-classdef gaussMixDist < vecDist 
+classdef MixGaussDist < VecDist 
   % mixture of Gaussians 
   
   properties
@@ -11,7 +11,7 @@ classdef gaussMixDist < vecDist
   
   %% main methods
   methods
-    function m = gaussMixDist(varargin)
+    function m = MixGaussDist(varargin)
       [K, mu, Sigma, mixweights] = process_options(varargin, ...
         'K', [], 'mu', [], 'Sigma', [], 'mixweights', []);
      m.K = K; m.mu = mu; m.Sigma = Sigma; m.mixweights = mixweights;
@@ -38,7 +38,7 @@ classdef gaussMixDist < vecDist
       n = size(X,1);
       LK = zeros(n, obj.K);
       for k=1:obj.K
-        m = mvnDist(obj.mu(:,k), obj.Sigma(:,:,k));
+        m = MvnDist(obj.mu(:,k), obj.Sigma(:,:,k));
         LK(:,k) = logprob(m, X) + repmat(log(obj.mixweights(k)), n, 1);
       end
       % L(i) = log sum_k exp[ log pi_k + log N(X(i,:) | mu(k), Sigma(k)) ]
@@ -93,7 +93,7 @@ classdef gaussMixDist < vecDist
         varargin, 'data', [], 'suffStat', [], 'method', 'mle');
       hasMissingData =  any(isnan(X(:)));
       assert(~hasMissingData)
-      if isempty(SS), SS = mvnDist.mkSuffStat(X); end
+      if isempty(SS), SS = MvnDist.mkSuffStat(X); end
       switch method
         case 'mle'
           obj.mu = SS.xbar;

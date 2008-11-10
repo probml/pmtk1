@@ -1,6 +1,6 @@
 %% Cross Validation Over a 2D Grid of Values
 % Here we demonstrate how to cross validate two values, lambda and sigma
-% simultaneously using the crossValidation class. We use the crabs data set and
+% simultaneously using the CrossValidation class. We use the crabs data set and
 % perform l2 logistic regression with an RBF expansion.
 %%
 % This model selection class requires that two key functions be specified: a loss
@@ -31,8 +31,8 @@
 % is an example.
 %%
 %  function yhat = testFunction(Xtrain,ytrain,Xtest,lambda,sigma)
-%      T = chainTransformer({standardizeTransformer(false),kernelTransformer(sigma)});
-%      m = logregDist('nclasses',2,'transformer',T);
+%      T = ChainTransformer({StandardizeTransformer(false),KernelTransformer(sigma)});
+%      m = LogregDist('nclasses',2,'transformer',T);
 %      m = fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
 %      pred = predict(m,Xtest);
 %      yhat = mode(pred);
@@ -52,7 +52,7 @@
 % * p is fit()
 % * c is the model constructor
 % * t is the chain transformer constructor
-% * s is the standardizeTransformer constructor
+% * s is the StandardizeTransformer constructor
 % * k is the kernalTransformer constructor
 %%
 % Our five input variables are defined in these functions as follows:
@@ -68,10 +68,10 @@
 m = @mode;
 p = @(model,Xtest)predict(model,Xtest);
 f = @(model,Xtrain,ytrain,lambda)fit(model,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
-c = @(trans)logregDist('nclasses',2,'transformer',trans);
-t = @(a,b)chainTransformer({a(),b()});  % Use () to force evaluation before passing on
-s = @(x)standardizeTransformer(false);
-k = @(sigma)kernelTransformer('rbf',sigma);
+c = @(trans)LogregDist('nclasses',2,'transformer',trans);
+t = @(a,b)ChainTransformer({a(),b()});  % Use () to force evaluation before passing on
+s = @(x)StandardizeTransformer(false);
+k = @(sigma)KernelTransformer('rbf',sigma);
 %%
 % Now let us compose c,t,s,k
 c = @(sigma)c(t(s(),k(sigma)));
@@ -82,10 +82,10 @@ testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)m(p(f(c(sigma),Xtrain,ytrain,l
 % Of course we could have done this all in one step.
 %%
 %  testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
-%  mode(predict(fit(logregDist(...
+%  mode(predict(fit(LogregDist(...
 %  'nclasses',2,'transformer',...
-%  chainTransformer(...
-%  {standardizeTransformer(false),kernelTransformer('rbf', sigma)})),...
+%  ChainTransformer(...
+%  {StandardizeTransformer(false),KernelTransformer('rbf', sigma)})),...
 %  'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));
 %
 %% Create the Loss Function
@@ -102,7 +102,7 @@ load crabs;
 %%
 % Performing the actual cross validation simply amounts to instantiating the
 % class with the right inputs.
-modelSelection = crossValidation(                     ...
+modelSelection = CrossValidation(                     ...
     'testFunction' , testFunction                    ,...
     'CVvalues'     , { logspace(-5,0,20) , 1:0.5:15 },... % every combination will be tested
     'lossFunction' , lossFunction                    ,...
@@ -121,8 +121,8 @@ set(gca,'XScale','log');
 %  set(gca,'XScale','log');
 %% Refit
 % Now lets retrain the model using the best lambda and sigma values
-T = chainTransformer({standardizeTransformer(false),kernelTransformer('rbf',bestSigma)});
-m = logregDist('nclasses',2,'transformer',T);
+T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',bestSigma)});
+m = LogregDist('nclasses',2,'transformer',T);
 m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda,'prior','l2');
 pred = predict(m,Xtest);
 yhat = mode(pred);

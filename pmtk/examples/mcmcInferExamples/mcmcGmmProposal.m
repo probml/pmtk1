@@ -6,9 +6,9 @@ for i=1:length(sigmas)
 
     sigma_prop = sigmas(i);
     setSeed(0);
-    m = gaussMixDist('K', 2, 'mu', [-50 50], 'Sigma', reshape([10^2 10^2], [1 1 2]), ...
+    m = MixGaussDist('K', 2, 'mu', [-50 50], 'Sigma', reshape([10^2 10^2], [1 1 2]), ...
         'mixweights', [0.3 0.7]);
-    eng = mcmcInfer('Nsamples', 1000, 'Nburnin', 0, 'method', 'metrop');
+    eng = McmcInfer('Nsamples', 1000, 'Nburnin', 0, 'method', 'metrop');
     eng.targetFn = @(x) (logprob(m,x));
     eng.proposalFn = @(x) (x + (sigma_prop * randn(1,1)));
     eng.xinitFn = @() (m.mu(2));

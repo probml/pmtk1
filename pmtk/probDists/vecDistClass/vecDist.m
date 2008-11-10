@@ -1,6 +1,6 @@
-classdef vecDist < probDist
+classdef VecDist < ProbDist
   % probability density function on vector-valued rv's (joint distributions)
-  % The main methods that this supports which probDist does not are
+  % The main methods that this supports which ProbDist does not are
   %   enterEvidence
   %   marginal
   % The sample method also uses this engine.
@@ -15,7 +15,7 @@ classdef vecDist < probDist
   
   %%  Main methods
   methods
-    function m = vecDist(varargin)
+    function m = VecDist(varargin)
     end
 
     
@@ -131,7 +131,7 @@ classdef vecDist < probDist
      end
        
      function demoImputation(model, varargin)
-       % model is a child class of vecDist
+       % model is a child class of VecDist
       [d, seed, pcMissing] = process_options(varargin, 'd', 10, 'seed', 0, 'pcMissing', 0.3);
       setSeed(seed);
       model = mkRndParams(model, d);

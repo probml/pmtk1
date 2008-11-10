@@ -34,7 +34,7 @@ A = mkGraphSymmetric(A);
 A = setdiag(A,0);
 %}
 
-G = chordalGraph(A)
+G = ChordalGraph(A)
 assert(G.ischordal)
 G.perfectElimOrder
 

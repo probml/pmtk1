@@ -86,7 +86,7 @@ fplot(actual,[-1,1,-1,1],'--b');
 hold on;
 plot(xtrain,ytrain,'ob');
 % Plot the Ordinary Least Squares Solution in red
-OLSw1 = ytrain \ xtrain;
+OLSw1 = xtrain \ ytrain;
 OLSw0 = mean(ytrain) - OLSw1*mean(xtrain);
 OLS = @(x) OLSw0 + OLSw1*x;
 fplot(OLS,[-1,1,-1,1],'r');

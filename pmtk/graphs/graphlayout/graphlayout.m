@@ -1,4 +1,4 @@
-classdef graphlayout < handle    
+classdef Graphlayout < handle    
 % Visualize a directed graph in a Matlab figure window by specifying an
 % adjacency matrix and optionally node labels, descriptions, colors and the
 % the layout algorithm. The best layout algorithms require that graphViz be
@@ -33,8 +33,8 @@ classdef graphlayout < handle
 %
 % 'adjMatrix'         [example matrix] The adjacency matrix
 %
-% 'currentLayout'     [gvizlayout if graphViz installed, else gridlayout] 
-%                     A layout object, i.e. gvizlayout | gridlayout | circlelayout
+% 'currentLayout'     [Gvizlayout if graphViz installed, else Gridlayout] 
+%                     A layout object, i.e. Gvizlayout | Gridlayout | Circlelayout
 %                     (See knownLayouts Property)
 %
 % 'nodeLabels'        ['1':'n'] A cell array of labels for the nodes
@@ -56,12 +56,12 @@ classdef graphlayout < handle
 % adj = rand(5,5) > 0.8;
 % labels = {'First','Second','Third','Fourth','Fifth'};
 % colors = {'g','b'};    % will cycle through
-% s = graphlayout('adjMatrix',adj,'nodeLabels',labels,'nodeColors',colors);
+% s = Graphlayout('adjMatrix',adj,'nodeLabels',labels,'nodeColors',colors);
 %
 % If you are only specifying an adjacency matrix, you can omit the
-% 'adjMatrix' name as in graphlayout(adj).
+% 'adjMatrix' name as in Graphlayout(adj).
 %
-% Calling graphlayout without any parameters displays an example graph. 
+% Calling Graphlayout without any parameters displays an example graph. 
 %
 % Matthew Dunham
 % University of British Columbia 
@@ -86,14 +86,14 @@ classdef graphlayout < handle
        undirected   = false;  % If undirected, arrows are not displayed
        flipped      = false;  % If true, layout is done as though edge directions were reversed. 
                               % (does not affect the logical layout).
-       knownLayouts = {gvizlayout  ,...   % add your own layout here or use
-                       treelayout  ,...   % the addLayout() method
-                       radiallayout,...
-                       circularlayout,...
-                       springlayout,...
-                       circlelayout,...
-                       gridlayout  ,...
-                       randlayout  };
+       knownLayouts = {Gvizlayout  ,...   % add your own layout here or use
+                       Treelayout  ,...   % the addLayout() method
+                       Radiallayout,...
+                       Circularlayout,...
+                       Springlayout,...
+                       Circlelayout,...
+                       Gridlayout  ,...
+                       Randlayout  };
         edgeColor  = [20,43,140]/255;   
         square      = true;  % amounts to a the call "axis square"
         splitLabels = true;
@@ -121,8 +121,8 @@ classdef graphlayout < handle
  
     methods
         
-        function obj = graphlayout(varargin)
-        % graphlayout constructor
+        function obj = Graphlayout(varargin)
+        % Graphlayout constructor
             if(~exist('process_options','file'))
                error('Requires process_options()_ available at http://www.cs.ubc.ca/~murphyk/Software/matlab/process_options.m');
             end
@@ -210,7 +210,7 @@ classdef graphlayout < handle
         function addLayout(obj,layout)
         % Let the graph know about a new layout you have created so that it
         % will be available via a toolbar button. The layout object must be
-        % a descendant of the abstractlayout class. This method does not have
+        % a descendant of the Abstractlayout class. This method does not have
         % to be called for existing layouts, nor does it need to be called
         % if you passed the new layout to the constructor or to the
         % setLayout() method. It will not add two layouts with the same
@@ -332,7 +332,7 @@ classdef graphlayout < handle
         % them yet. 
             obj.nodeArray = [];
             for i=1:obj.nnodes
-                newnode = graphlayoutNode(obj.nodeLabels{i});
+                newnode = GraphlayoutNode(obj.nodeLabels{i});
                 newnode.containingGraph = obj;
                 newnode.showFullLabel = ~obj.splitLabels;
                 obj.nodeArray = [obj.nodeArray newnode];

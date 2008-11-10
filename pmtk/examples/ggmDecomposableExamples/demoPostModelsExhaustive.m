@@ -22,15 +22,15 @@ function [loss, nll, names] = helperPostModelsExhaustive(varargin)
         varargin, 'seed', 0, 'n', 10, 'd', 4, 'graphType', 'chain');
     Phi = 0.1*eye(d); delta = 5; % hyper-params
     setSeed(seed);
-    Gtrue = undirectedGraph('type', graphType, 'nnodes', d);
-    truth = ggm(Gtrue, [], []);
+    Gtrue = UndirectedGraph('type', graphType, 'nnodes', d);
+    truth = GgmDist(Gtrue, [], []);
     Atrue = Gtrue.adjMat;
     truth = mkRndParams(truth);
     Y = sample(truth, n);
 
     prec{1} = inv(truth.Sigma); names{1} = 'truth';
     prec{2} = inv(cov(Y)); names{2} = 'emp';
-    obj = ggmDecomposable([], hiwDist([], delta, Phi), []);
+    obj = GgmDecomposableDist([], HiwDist([], delta, Phi), []);
     [logpostG, GGMs, mapG, mapPrec, postG, postMeanPrec, postMeanG] = ...
         computePostAllModelsExhaustive(obj, Y);
     prec{3} = postMeanPrec; names{3} = 'mean';
@@ -41,7 +41,7 @@ function [loss, nll, names] = helperPostModelsExhaustive(varargin)
     Ytest = sample(truth, nTest);
     for i=1:4
         SigmaHat = inv(prec{i});
-        model = mvnDist(mean(Y), SigmaHat);
+        model = MvnDist(mean(Y), SigmaHat);
         nll(i) = negloglik(model, Ytest);
     end
 

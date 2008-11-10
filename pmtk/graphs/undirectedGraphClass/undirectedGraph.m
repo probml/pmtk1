@@ -1,4 +1,4 @@
-classdef undirectedGraph < graph 
+classdef UndirectedGraph < Graph 
   
   properties
     edgeStruct;
@@ -6,12 +6,12 @@ classdef undirectedGraph < graph
 
 %% main methods
   methods
-    function obj = undirectedGraph(varargin)
-      % G = undirectedGraph(adjMat)
-      % G = undirectedGraph('type', 'rnd', 'nnodes', X, 'edgeProb', X)
-      % G = undirectedGraph('type', 'chain', 'nnodes', X)  Markov chain
-      % G = undirectedGraph('type', loop', 'nnodes', X)
-      % G = undirectedGraph('type', 'lattice2D', 'nrows', X, 'ncols', X,
+    function obj = UndirectedGraph(varargin)
+      % G = UndirectedGraph(adjMat)
+      % G = UndirectedGraph('type', 'rnd', 'nnodes', X, 'edgeProb', X)
+      % G = UndirectedGraph('type', 'chain', 'nnodes', X)  Markov chain
+      % G = UndirectedGraph('type', loop', 'nnodes', X)
+      % G = UndirectedGraph('type', 'lattice2D', 'nrows', X, 'ncols', X,
       %            'wrapAround', X, 'connectivity', X)
       %    where 'connectivity' is one of(4,8,12 or 24, def 4)
       obj.directed = false;
@@ -66,7 +66,7 @@ classdef undirectedGraph < graph
 
      function objs = mkAllUG(dummy, nnodes, loadFromFile)
       % Returns cell array of all UGs on nnodes.
-      % eg. UGs = mkAllUG(undirectedGraph(), 5);
+      % eg. UGs = mkAllUG(UndirectedGraph(), 5);
       % Warning: the number of UGs on d nodes is O(2^(d choose 2))
       % which is just the number of ways to label every possible edge.
       % Nnodes  2   3   4  5       6       7        8      9     10  
@@ -74,7 +74,7 @@ classdef undirectedGraph < graph
       if nargin < 3, loadFromFile = true; end
       Gs = mk_all_ugs(nnodes, loadFromFile);
       for i=1:length(Gs)
-        objs{i} = undirectedGraph(Gs{i});
+        objs{i} = UndirectedGraph(Gs{i});
       end
     end
 
@@ -106,7 +106,7 @@ classdef undirectedGraph < graph
 
       % expm(G) = I + G + G^2 / 2! + G^3 / 3! + ...
       M = expm(double(full(obj.adjMat))) - eye(length(obj.adjMat));
-      obj2 = undirectedGraph(M>0);
+      obj2 = UndirectedGraph(M>0);
     end
 
     function clqs = maximalCliques(obj)

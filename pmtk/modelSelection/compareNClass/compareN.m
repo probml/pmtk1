@@ -1,4 +1,4 @@
-classdef compareN
+classdef CompareN
 % Compare model prediction performance as we increase the number of training 
 % examples. 
     
@@ -33,7 +33,7 @@ classdef compareN
     
     methods
         
-        function obj = compareN(varargin)
+        function obj = CompareN(varargin)
             
               [ obj.testFunctions        ,...
                 obj.names                ,... 

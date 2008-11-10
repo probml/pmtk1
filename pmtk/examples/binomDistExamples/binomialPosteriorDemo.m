@@ -11,15 +11,15 @@ for i = 1:numel(data)
     N0 = data(i).N0;
     N1 = data(i).N1;
     N = N1+N0;
-    m = binomDist(N, betaDist(a,b));
-    %m = bernoulliDist(betaDist(a,b));
-    prior = m.mu; % betaDist
+    m = BinomDist(N, BetaDist(a,b));
+    %m = BernoulliDist(BetaDist(a,b));
+    prior = m.mu; % BetaDist
     m = inferParams(m, 'suffStat', [N1 N]);
-    post = m.mu; % betaDist
+    post = m.mu; % BetaDist
     % The likelihood is the prior with a flat prior
-    m2 = binomDist(N, betaDist(1,1));
+    m2 = BinomDist(N, BetaDist(1,1));
     m2 = inferParams(m2, 'suffStat', [N1 N]);
-    lik = m2.mu; % betaDist
+    lik = m2.mu; % BetaDist
     figure;
     h = plot(prior, 'plotArgs', {'r-', 'linewidth', 3});
     legendstr{1} = sprintf('prior Be(%2.1f, %2.1f)', prior.a, prior.b);

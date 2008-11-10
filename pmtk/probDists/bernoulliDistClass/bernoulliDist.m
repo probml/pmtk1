@@ -1,8 +1,8 @@
-classdef bernoulliDist < binomDist
+classdef BernoulliDist < BinomDist
 % A special case of the binomial distribution.   
   %% main methods
   methods
-    function obj = bernoulliDist(mu)
+    function obj = BernoulliDist(mu)
       obj; % make dummy object
       if nargin == 0;
         mu = [];

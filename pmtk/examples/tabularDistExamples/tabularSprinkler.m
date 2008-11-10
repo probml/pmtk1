@@ -2,7 +2,7 @@
 [G, CPD, joint, nodes] = makeSprinklerBN;
 % joint(c,s,r,w)
 C = nodes.C; R = nodes.R; S = nodes.S; W = nodes.W;
-T = tabularDist(joint);
+T = TabularDist(joint);
 false = 1; true = 2;
 
 pSandW = sumv(joint(:,true,:,true), [C R]); % 0.2781

@@ -1,4 +1,4 @@
-classdef tabularInfer < infEngine
+classdef TabularInfer < InfEngine
   % inference by exhaustive enumeration in multidimensional tables 
   
   properties
@@ -9,15 +9,15 @@ classdef tabularInfer < infEngine
   end
  
   methods
-    function eng = tabularInfer(T)
+    function eng = TabularInfer(T)
       if nargin == 0, T = []; end
       sz = mysize(T);
-      eng.Tfac = tabularFactor(T, 1:length(sz));
+      eng.Tfac = TabularFactor(T, 1:length(sz));
     end
     
     function eng = setParams(eng, params)
       T = params{1};
-      eng.Tfac = tabularFactor(T, 1:ndims(T));
+      eng.Tfac = TabularFactor(T, 1:ndims(T));
     end
     
      function [X, eng] = sample(eng, n)
@@ -35,7 +35,7 @@ classdef tabularInfer < infEngine
       end
       smallpot = marginalize(eng.Tfac, queryVars, false);
       %postQuery = smallpot;
-      postQuery = tabularDist(smallpot.T);
+      postQuery = TabularDist(smallpot.T);
     end
 
 

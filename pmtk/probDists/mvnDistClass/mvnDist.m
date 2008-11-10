@@ -1,4 +1,4 @@
-classdef mvnDist < vecDist 
+classdef MvnDist < VecDist 
   % multivariate normal p(X|mu,Sigma) 
   
   properties
@@ -8,16 +8,16 @@ classdef mvnDist < vecDist
   
   %% main methods
   methods
-    function m = mvnDist(mu, Sigma)
-      % mvnDist(mu, Sigma)
+    function m = MvnDist(mu, Sigma)
+      % MvnDist(mu, Sigma)
       % mu can be a matrix or a pdf, eg. 
-      % mvnDist(mvnInvWishDist(...), [])
+      % MvnDist(MvnInvWishDist(...), [])
       if nargin == 0
         mu = []; Sigma = [];
       end
       m.mu  = mu;
       m.Sigma = Sigma;
-      m.stateInfEng = mvnExactInfer;
+      m.stateInfEng = MvnExactInfer;
     end
 
     function params = getModelParams(obj)
@@ -26,7 +26,7 @@ classdef mvnDist < vecDist
     
     function objS = convertToScalarDist(obj)
       if ndims(obj) ~= 1, error('cannot convert to scalarDst'); end
-      objS = gaussDist(obj.mu, obj.Sigma);
+      objS = GaussDist(obj.mu, obj.Sigma);
     end
     
     function obj = mkRndParams(obj, d)
@@ -127,7 +127,7 @@ classdef mvnDist < vecDist
         varargin, 'data', [], 'suffStat', [], 'method', 'mle');
       hasMissingData =  any(isnan(X(:)));
       assert(~hasMissingData)
-      if isempty(SS), SS = mvnDist.mkSuffStat(X); end
+      if isempty(SS), SS = MvnDist.mkSuffStat(X); end
       switch method
         case 'mle'
           obj.mu = SS.xbar;
@@ -158,20 +158,20 @@ classdef mvnDist < vecDist
          obj = infer(obj.paramInfEng, obj, X);
          return;
        end
-       if isempty(SS), SS = mvnDist.mkSuffStat(X); end
+       if isempty(SS), SS = MvnDist.mkSuffStat(X); end
        if SS.n == 0, return; end
        done = false;
        switch class(obj.mu)
-         case 'mvnDist'
+         case 'MvnDist'
            if isa(obj.Sigma, 'double')
              obj.mu = updateMean(obj.mu, SS, obj.Sigma);
              done = true;
            end
-         case 'mvnInvWishartDist'
+         case 'MvnInvWishartDist'
            obj.mu = updateMeanCov(obj.mu, SS);
            done = true;
          case 'double'
-           if isa(obj.Sigma, 'invWishartDist')
+           if isa(obj.Sigma, 'InvWishartDist')
              obj.Sigma = updateSigma(obj.Sigma, obj.mu, SS);
              done = true;
            end
@@ -187,9 +187,9 @@ classdef mvnDist < vecDist
       Smuinv = inv(pmu.Sigma);
       postSigma = inv(Smuinv + A'*Syinv*A);
       postmu = postSigma*(A'*Syinv*(y-py.mu) + Smuinv*pmu.mu);
-      postmu = mvnDist(postmu, postSigma);
+      postmu = MvnDist(postmu, postSigma);
       %evidence = mvnpdf(y(:)', (A*pmu.mu + py.mu)', py.Sigma + A*pmu.Sigma*A');
-      logevidence = logprob(mvnDist(A*pmu.mu + py.mu, py.Sigma + A*pmu.Sigma*A'), y(:)');
+      logevidence = logprob(MvnDist(A*pmu.mu + py.mu, py.Sigma + A*pmu.Sigma*A'), y(:)');
     end
     
   end % methods

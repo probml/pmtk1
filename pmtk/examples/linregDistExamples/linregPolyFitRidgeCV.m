@@ -4,8 +4,8 @@ if n==21, nfolds = -1; else   nfolds =5; end
 %[xtrain, ytrain, xtest, ytest] = makePolyData(n);
 [xtrain, ytrain, xtest, ytest] = polyDataMake('sampling', 'thibaux', 'n', n);
 deg = 14;
-m = linregDist;
-m.transformer =  chainTransformer({rescaleTransformer,polyBasisTransformer(deg)});
+m = LinregDist;
+m.transformer =  ChainTransformer({RescaleTransformer,PolyBasisTransformer(deg)});
 lambdas = logspace(-10,1.2,15);
 
 for i=1:length(lambdas)

@@ -4,7 +4,7 @@ rand('twister', seed); randn('state', seed);
 pr = [0.1, 0.1, 0.2 0.5, 0.1];
 N = 10;
 prStr = sprintf('%3.1f ', pr);
-p = multinomDist(N, pr);
+p = MultinomDist(N, pr);
 n = 5;
 X = sample(p, n);
 figure;

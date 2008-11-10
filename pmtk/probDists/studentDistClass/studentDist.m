@@ -1,4 +1,4 @@
-classdef studentDist < scalarDist 
+classdef StudentDist < ScalarDist 
   %  student T p(X|dof, mu,sigma2) 
   
   properties
@@ -9,7 +9,7 @@ classdef studentDist < scalarDist
   
   %% Main methods
   methods
-    function m = studentDist(dof, mu, sigma2)
+    function m = StudentDist(dof, mu, sigma2)
       if nargin == 0
         mu = []; sigma2 = []; dof = [];
       end
@@ -71,7 +71,7 @@ classdef studentDist < scalarDist
     end
 
     function mu = mode(m)
-      checkParamsAreConst(obj)
+      checkParamsAreConst(m)
       mu = mean(m);
     end
 

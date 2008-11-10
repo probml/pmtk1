@@ -4,7 +4,7 @@ N = 10;
 figure;
 for i=1:4
     subplot(2,2,i)
-    plot(binomDist(N, thetas(i)));
+    plot(BinomDist(N, thetas(i)));
     title(sprintf('theta=%5.3f', thetas(i)))
 end
 

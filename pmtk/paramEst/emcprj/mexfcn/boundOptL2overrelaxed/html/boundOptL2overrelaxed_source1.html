@@ -1,0 +1,145 @@
+<html>
+<head>
+<link rel="stylesheet" href="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\matlab\\codetools\\matlab-report-styles.css" type="text/css" />
+<style type="text/css" media="screen">
+div.treeview { white-space: nowrap; }
+.treeview img { border: 0px; vertical-align: middle; }
+.trigger { cursor: pointer; }
+.branch { display: none; margin-left: 22px; }
+span.lnnolink { cursor: pointer; color: blue; text-decoration: underline; padding: 1 }
+span.lnnonorm { color: grey; padding: 1 }
+span.textnorm { color: black; padding: 1 }
+span.textcmnt { color: green; padding: 1 }
+span.msglink { cursor: pointer; color: blue; text-decoration: underline }
+span.treelink { cursor: pointer; color: blue; text-decoration: underline }
+.error { color: red; }
+.fcflink { cursor: pointer; color: blue; text-decoration: underline }
+div.tooltip { visibility: hidden; position: fixed;
+  background-color: lightyellow; border: 1px solid black; }
+</style>
+</head>
+<script type="text/javascript" language="JavaScript" src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\emcvhtml.js">
+</script>
+<body onload="initSource()" bgcolor="white" fgcolor="black">
+
+<!--
+Script #1
+-->
+<div class="content" onclick="processMouseClick(event);"
+     onmouseover="processMouseOver(event);"
+     onmouseout="processMouseOut(event);">
+<h2>Function boundOptL2overrelaxed</h2>
+<div class="grayline"/>
+<pre id=scriptText1>
+<span class="lnnonorm">   1</span><a id="scriptLine1_1"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_1"></img><span class="textnorm">function [W, output]  = boundOptL2overrelaxed(X, Y, lambda)
+</span><span class="lnnonorm">   2</span><a id="scriptLine1_2"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_2"></img><span class="textcmnt">%#eml    
+</span><span class="lnnonorm">   3</span><a id="scriptLine1_3"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_3"></img><span class="textcmnt">% Fit the weights for L2 penalized multinomial logistic regression via
+</span><span class="lnnonorm">   4</span><a id="scriptLine1_4"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_4"></img><span class="textcmnt">% overrelaxed bound optimization in O((cd)^3) where c is the number of
+</span><span class="lnnonorm">   5</span><a id="scriptLine1_5"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_5"></img><span class="textcmnt">% classes and d is the number of dimensions.
+</span><span class="lnnonorm">   6</span><a id="scriptLine1_6"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_6"></img><span class="textcmnt">%
+</span><span class="lnnonorm">   7</span><a id="scriptLine1_7"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_7"></img><span class="textcmnt">% Inputs:
+</span><span class="lnnonorm">   8</span><a id="scriptLine1_8"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_8"></img><span class="textcmnt">%
+</span><span class="lnnonorm">   9</span><a id="scriptLine1_9"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_9"></img><span class="textcmnt">% X             nexamples-by-ndimensions
+</span><span class="lnnonorm">  10</span><a id="scriptLine1_10"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_10"></img><span class="textcmnt">% Y             nexamples-by-nclasses (1 of C encoding)
+</span><span class="lnnonorm">  11</span><a id="scriptLine1_11"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_11"></img><span class="textcmnt">% lambda        L2 regularizer
+</span><span class="lnnonorm">  12</span><a id="scriptLine1_12"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_12"></img><span class="textcmnt">%
+</span><span class="lnnonorm">  13</span><a id="scriptLine1_13"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_13"></img><span class="textcmnt">% Outputs:
+</span><span class="lnnonorm">  14</span><a id="scriptLine1_14"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_14"></img><span class="textcmnt">%
+</span><span class="lnnonorm">  15</span><a id="scriptLine1_15"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_15"></img><span class="textcmnt">% w             ndimensions-by-(nclasses-1) regression weights
+</span><span class="lnnonorm">  16</span><a id="scriptLine1_16"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_16"></img><span class="textcmnt">%
+</span><span class="lnnonorm">  17</span><a id="scriptLine1_17"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_17"></img><span class="textcmnt">% ouptut        a structure: ouptut.ftrace stores the negative log likelihood
+</span><span class="lnnonorm">  18</span><a id="scriptLine1_18"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_18"></img><span class="textcmnt">%               evaluated after each iteration. It is of fixed size and may be
+</span><span class="lnnonorm">  19</span><a id="scriptLine1_19"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_19"></img><span class="textcmnt">%               padded at the end with negative ones to make this function eml
+</span><span class="lnnonorm">  20</span><a id="scriptLine1_20"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_20"></img><span class="textcmnt">%               comliant. output.iter stores the number of iterations and
+</span><span class="lnnonorm">  21</span><a id="scriptLine1_21"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_21"></img><span class="textcmnt">%               output.converged is true iff the algorithm converged before the
+</span><span class="lnnonorm">  22</span><a id="scriptLine1_22"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_22"></img><span class="textcmnt">%               maximum number of iterations was reached.
+</span><span class="lnnonorm">  23</span><a id="scriptLine1_23"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_23"></img><span class="textnorm">
+</span><span class="lnnonorm">  24</span><a id="scriptLine1_24"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_24"></img><span class="textnorm">
+</span><span class="lnnonorm">  25</span><a id="scriptLine1_25"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_25"></img><span class="textnorm">
+</span><span class="lnnonorm">  26</span><a id="scriptLine1_26"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_26"></img><span class="textcmnt">%#author Balaji Krishnapuram
+</span><span class="lnnonorm">  27</span><a id="scriptLine1_27"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_27"></img><span class="textcmnt">%#modified Kevin Murphy, Matt Dunham
+</span><span class="lnnonorm">  28</span><a id="scriptLine1_28"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_28"></img><span class="textnorm">
+</span><span class="lnnonorm">  29</span><a id="scriptLine1_29"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_29"></img><span class="textnorm">
+</span><span class="lnnonorm">  30</span><a id="scriptLine1_30"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_30"></img><span class="textnorm">    [nexamples ndimensions]= size(X);
+</span><span class="lnnonorm">  31</span><a id="scriptLine1_31"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_31"></img><span class="textnorm">    [nexamples nclasses] = size(Y); % 1 of C encoding
+</span><span class="lnnonorm">  32</span><a id="scriptLine1_32"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_32"></img><span class="textnorm">    convergence_tol = 1e-5;
+</span><span class="lnnonorm">  33</span><a id="scriptLine1_33"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_33"></img><span class="textnorm">    maxiters = 10000;
+</span><span class="lnnonorm">  34</span><a id="scriptLine1_34"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_34"></img><span class="textnorm">    % precompute as much as we can.
+</span><span class="lnnonorm">  35</span><a id="scriptLine1_35"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_35"></img><span class="textnorm">
+</span><span class="lnnonorm">  36</span><a id="scriptLine1_36"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_36"></img><span class="textnorm">    % Surrogate for Hessian: eq 8 in SMLR paper
+</span><span class="lnnonorm">  37</span><a id="scriptLine1_37"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_37"></img><span class="textnorm">    B = kron((-1/2)*(eye(nclasses-1) - (ones(nclasses-1)/nclasses)),X'*X);
+</span><span class="lnnonorm">  38</span><a id="scriptLine1_38"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_38"></img><span class="textnorm">    BGinv=pinv(B-lambda*eye((nclasses-1)*ndimensions));  % see eq 10
+</span><span class="lnnonorm">  39</span><a id="scriptLine1_39"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_39"></img><span class="textnorm">    BGinv_times_B=BGinv*B;
+</span><span class="lnnonorm">  40</span><a id="scriptLine1_40"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_40"></img><span class="textnorm">
+</span><span class="lnnonorm">  41</span><a id="scriptLine1_41"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_41"></img><span class="textnorm">    w = zeros(ndimensions*(nclasses-1),1); %reshape to ndimensions-by-(nclasses-1) after convergence
+</span><span class="lnnonorm">  42</span><a id="scriptLine1_42"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_42"></img><span class="textnorm">    converged=false; iter=1;
+</span><span class="lnnonorm">  43</span><a id="scriptLine1_43"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_43"></img><span class="textnorm">
+</span><span class="lnnonorm">  44</span><a id="scriptLine1_44"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_44"></img><span class="textnorm">    % parameters for overrelaxation
+</span><span class="lnnonorm">  45</span><a id="scriptLine1_45"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_45"></img><span class="textnorm">    eta=1; eta_increase_factor=1.1;
+</span><span class="lnnonorm">  46</span><a id="scriptLine1_46"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_46"></img><span class="textnorm">    ftrace = -ones(maxiters,1);
+</span><span class="lnnonorm">  47</span><a id="scriptLine1_47"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_47"></img><span class="textnorm">    dims = 1:(nclasses - 1);
+</span><span class="lnnonorm">  48</span><a id="scriptLine1_48"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_48"></img><span class="textnorm">    while (not(converged))
+</span><span class="lnnonorm">  49</span><a id="scriptLine1_49"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_49"></img><span class="textnorm">        P = multiSigmoid(X,w);
+</span><span class="lnnonorm">  50</span><a id="scriptLine1_50"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_50"></img><span class="textnorm">        grad=reshape(X'*(Y(:,dims)-P(:,dims)),ndimensions*(nclasses-1),1);   
+</span><span class="lnnonorm">  51</span><a id="scriptLine1_51"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_51"></img><span class="textnorm">        w_new = BGinv_times_B*w - BGinv*grad;      % eq 10 SMLR paper (newton step)
+</span><span class="lnnonorm">  52</span><a id="scriptLine1_52"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_52"></img><span class="textnorm">
+</span><span class="lnnonorm">  53</span><a id="scriptLine1_53"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_53"></img><span class="textnorm">        %-----------------------------------------------------
+</span><span class="lnnonorm">  54</span><a id="scriptLine1_54"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_54"></img><span class="textnorm">        %                     optional overrelaxation
+</span><span class="lnnonorm">  55</span><a id="scriptLine1_55"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_55"></img><span class="textnorm">        P=(multiSigmoid(X,w_new));
+</span><span class="lnnonorm">  56</span><a id="scriptLine1_56"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_56"></img><span class="textnorm">        log_likelihood =  sum(sum(Y.*log(P)));
+</span><span class="lnnonorm">  57</span><a id="scriptLine1_57"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_57"></img><span class="textnorm">        log_posterior = log_likelihood - lambda*(w_new'*w_new);
+</span><span class="lnnonorm">  58</span><a id="scriptLine1_58"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_58"></img><span class="textnorm">
+</span><span class="lnnonorm">  59</span><a id="scriptLine1_59"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_59"></img><span class="textnorm">        w_overrelaxed= w + eta*(w_new-w);
+</span><span class="lnnonorm">  60</span><a id="scriptLine1_60"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_60"></img><span class="textnorm">        P=(multiSigmoid(X,w_overrelaxed));
+</span><span class="lnnonorm">  61</span><a id="scriptLine1_61"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_61"></img><span class="textnorm">        log_likelihood_overrelaxed =  sum(sum(Y.*log(P)));
+</span><span class="lnnonorm">  62</span><a id="scriptLine1_62"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_62"></img><span class="textnorm">        log_posterior_overrelaxed = log_likelihood_overrelaxed - lambda*w_overrelaxed'*w_overrelaxed;
+</span><span class="lnnonorm">  63</span><a id="scriptLine1_63"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_63"></img><span class="textnorm">
+</span><span class="lnnonorm">  64</span><a id="scriptLine1_64"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_64"></img><span class="textnorm">        if (log_posterior_overrelaxed &lt; log_posterior)
+</span><span class="lnnonorm">  65</span><a id="scriptLine1_65"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_65"></img><span class="textnorm">            eta=1; % don't relax
+</span><span class="lnnonorm">  66</span><a id="scriptLine1_66"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_66"></img><span class="textnorm">        else     % relax
+</span><span class="lnnonorm">  67</span><a id="scriptLine1_67"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_67"></img><span class="textnorm">            eta=eta*eta_increase_factor;
+</span><span class="lnnonorm">  68</span><a id="scriptLine1_68"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_68"></img><span class="textnorm">            w_new=w_overrelaxed;
+</span><span class="lnnonorm">  69</span><a id="scriptLine1_69"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_69"></img><span class="textnorm">            log_posterior = log_posterior_overrelaxed;
+</span><span class="lnnonorm">  70</span><a id="scriptLine1_70"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_70"></img><span class="textnorm">        end
+</span><span class="lnnonorm">  71</span><a id="scriptLine1_71"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_71"></img><span class="textnorm">        %-----------------------------------------------------
+</span><span class="lnnonorm">  72</span><a id="scriptLine1_72"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_72"></img><span class="textnorm">        ftrace(iter) = -log_posterior;
+</span><span class="lnnonorm">  73</span><a id="scriptLine1_73"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_73"></img><span class="textnorm">        
+</span><span class="lnnonorm">  74</span><a id="scriptLine1_74"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_74"></img><span class="textnorm">        converged = ((norm(w_new-w)/norm(w))&lt;convergence_tol);
+</span><span class="lnnonorm">  75</span><a id="scriptLine1_75"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_75"></img><span class="textnorm">        w=w_new;
+</span><span class="lnnonorm">  76</span><a id="scriptLine1_76"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_76"></img><span class="textnorm">        iter=iter+1;
+</span><span class="lnnonorm">  77</span><a id="scriptLine1_77"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_77"></img><span class="textnorm">        if(iter &gt;= maxiters)
+</span><span class="lnnonorm">  78</span><a id="scriptLine1_78"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_78"></img><span class="textnorm">            break;
+</span><span class="lnnonorm">  79</span><a id="scriptLine1_79"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_79"></img><span class="textnorm">        end
+</span><span class="lnnonorm">  80</span><a id="scriptLine1_80"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_80"></img><span class="textnorm">    end
+</span><span class="lnnonorm">  81</span><a id="scriptLine1_81"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_81"></img><span class="textnorm">    W = reshape(w,ndimensions,nclasses-1);
+</span><span class="lnnonorm">  82</span><a id="scriptLine1_82"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_82"></img><span class="textnorm">    output.ftrace = ftrace;
+</span><span class="lnnonorm">  83</span><a id="scriptLine1_83"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_83"></img><span class="textnorm">    output.iter = iter;
+</span><span class="lnnonorm">  84</span><a id="scriptLine1_84"></a><img src="file:///C:\\Program Files\\MATLAB\\R2008b\\toolbox\\emlcoder\\emlcoder\\resources\\right_arrow.gif" align="top" hspace=2 style="visibility:hidden" id="scriptArrow1_84"></img><span class="textnorm">    output.converged = converged;</span>
+</pre>
+<br />
+</div>
+<div class="tooltip" id="msgtooltip1_1">
+<table border=0 cellspacing=0 cellpadding=6>
+<tr><td align=left class="td-linebottomrt">
+Could not locate the MEX compiler options file mexopts.bat.<br />
+Run mex -setup to select the MEX compiler and create the MEX options file.
+</td></tr>
+</table>
+</div>
+<div class="tooltip" id="msgtooltip1_2">
+<table border=0 cellspacing=0 cellpadding=6>
+<tr><td align=left class="td-linebottomrt">
+Error building MEX function.
+</td></tr>
+</table>
+</div>
+<div class="tooltip" id="msgtooltip1_0">
+<table border=0 cellspacing=0 cellpadding=0>
+<tr><td align=left class="td-linebottomrt">
+Open function 'boundOptL2overrelaxed' in the MATLAB editor
+</td></tr>
+</table>
+</div>
+</body>
+</html>
+

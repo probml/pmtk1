@@ -1,11 +1,11 @@
-classdef scalarDist < probDist
+classdef ScalarDist < ProbDist
   
   properties
   end
 
  
   methods
-    function m = scalarDist(varargin)
+    function m = ScalarDist(varargin)
     end
     
     function nll = negloglik(obj, X)

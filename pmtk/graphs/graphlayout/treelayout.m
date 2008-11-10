@@ -1,4 +1,4 @@
-classdef treelayout < gvizlayout
+classdef Treelayout < Gvizlayout
 % A layout that also uses graphviz but calls dot instead of neato to 
 % to display the graph like a tree.
 %
@@ -7,9 +7,9 @@ classdef treelayout < gvizlayout
 % http://www.cs.ubc.ca/~mdunham/
   
     methods
-       function obj = treelayout(name)
+       function obj = Treelayout(name)
             if(nargin < 1)
-                obj.name = 'treelayout';
+                obj.name = 'Treelayout';
             else
                 obj.name = name;
             end
@@ -21,7 +21,7 @@ classdef treelayout < gvizlayout
        
        function available = isavailable(obj)
         % Make sure graphViz is available. 
-            available = gvizlayout.queryGviz('dot');
+            available = Gvizlayout.queryGviz('dot');
             if(not(available))
                  fprintf('Please install or upgrade graphViz\n');
             end

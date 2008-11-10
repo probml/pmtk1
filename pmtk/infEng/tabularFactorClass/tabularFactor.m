@@ -1,5 +1,4 @@
-% 
-classdef tabularFactor 
+classdef TabularFactor 
   % tabular (multi-dimensional array) factor/potential
   
   properties
@@ -10,7 +9,7 @@ classdef tabularFactor
   
   %% main methods
   methods
-    function m = tabularFactor(T, domain)
+    function m = TabularFactor(T, domain)
       if nargin < 1, T = []; end
       if nargin < 2, domain = 1:myndims(T); end
       m.T = T;
@@ -24,7 +23,7 @@ classdef tabularFactor
       ns = zeros(1, max(bigpot.domain));
       ns(bigpot.domain) = bigpot.sizes;
       smallT = marg_table(bigpot.T, bigpot.domain, bigpot.sizes, onto, maximize);
-      smallpot = tabularFactor(smallT, onto);
+      smallpot = TabularFactor(smallT, onto);
     end
     
     function Tbig = multiplyBy(Tbig, Tsmall)

@@ -1,4 +1,4 @@
-classdef standardizeTransformer < transformer
+classdef StandardizeTransformer < Transformer
   
   properties
     mu; sigma;
@@ -7,7 +7,7 @@ classdef standardizeTransformer < transformer
 
   %%  Main methods
   methods
-    function obj = standardizeTransformer(saveParams)
+    function obj = StandardizeTransformer(saveParams)
       % if saveParams = true, we standardize the test set using 
       % the parameters computed on the training set;
       % otherwise we use the test set params.

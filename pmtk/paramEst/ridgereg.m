@@ -30,12 +30,12 @@ switch lower(method)
       w  = XX \ yy; % generalized ridge
     end
   case 'ridgesvd'
-    [U,D,V] = svd(XtrainC,'econ');
+    [U,D,V] = svd(XC,'econ');
     D2 = diag(D.^2);
     if lambda==0
-      w = pinv(XtrainC)*ytrainC;
+      w = pinv(XC)*yC;
     else
-      w  = V*diag(1./(D2 + lambda))*D*U'*ytrainC;
+      w  = V*diag(1./(D2 + lambda))*D*U'*yC;
     end
   otherwise
     error(['unknown method ' method])

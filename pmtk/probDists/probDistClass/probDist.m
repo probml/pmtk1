@@ -1,4 +1,4 @@
-classdef probDist
+classdef ProbDist
   % probability density function
   
   properties

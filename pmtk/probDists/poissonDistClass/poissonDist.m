@@ -1,4 +1,4 @@
-classdef poissonDist < discreteDist
+classdef PoissonDist < DiscreteDist
   
   properties
     lambda;
@@ -6,7 +6,7 @@ classdef poissonDist < discreteDist
  
   
   methods 
-    function obj =  poissonDist(lambda)
+    function obj =  PoissonDist(lambda)
       if nargin == 0;
         lambda = [];
       end
