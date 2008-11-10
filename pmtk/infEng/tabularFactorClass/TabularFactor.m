@@ -80,7 +80,7 @@ classdef TabularFactor
       ndx = mk_multi_index(d, vnodes, visValues);
       TT = myreshape(Fbig.T, Fbig.sizes);
       Tsmall = squeeze(TT(ndx{:}));
-      Fsmall = tabularFactor(Tsmall, hidNodes);
+      Fsmall = TabularFactor(Tsmall, hidNodes);
     end
     
     function x = mode(Tfac)
