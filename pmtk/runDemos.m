@@ -47,7 +47,7 @@ demoPostModelsExhaustive
 pause(2); close('all'); clear('all');
 
 %% ggm
-%ggmBICdemo
+ggmBICdemo
 ggmDemo
 ggmInferDemo
 pause(2); close('all'); clear('all');

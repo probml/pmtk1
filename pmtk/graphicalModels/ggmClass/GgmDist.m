@@ -54,7 +54,7 @@ classdef GgmDist < GmDist
       [X, SS] = process_options(...
         varargin, 'data', [], 'suffStat', []);
       obj.mu = mean(X);
-      [precMat, covMat] = gaussIPF(X, obj.G.adjMat);
+      [precMat, covMat] = gaussIPF(cov(X), obj.G.adjMat);
       obj.Sigma = covMat;
     end
 
