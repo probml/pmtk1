@@ -58,7 +58,7 @@ classdef TabularFactor
       if sz>10000
        sprintf('creating tabular factor with %d entries', sz)
       end
-      T = tabularFactor(myones(ns(dom)), dom);
+      T = TabularFactor(myones(ns(dom)), dom);
       for i=1:N
         Ti = varargin{i};
         T = multiplyBy(T, Ti);

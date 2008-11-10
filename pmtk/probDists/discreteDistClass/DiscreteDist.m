@@ -1,4 +1,4 @@
-classdef DiscreteDist  < ProbDist
+classdef DiscreteDist  < MultinomDist
 
   properties
     probs;

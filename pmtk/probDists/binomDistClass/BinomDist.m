@@ -1,8 +1,7 @@
 classdef BinomDist < DiscreteDist
   
   properties
-    N; 
-    mu;
+  
   end
   
   properties(GetAccess = 'private')
@@ -29,15 +28,15 @@ classdef BinomDist < DiscreteDist
     end
     
     
-    function obj = set.N(obj, N)
-      if obj.lockN
-        % for Bernoulli case
-        %obj.N = 1;
-        warning('BLT:Binomdist:setN', 'can''t change N');
-      else
-        obj.N = N;
-      end
-    end
+%     function obj = set.N(obj, N)
+%       if obj.lockN
+%         % for Bernoulli case
+%         %obj.N = 1;
+%         warning('BLT:Binomdist:setN', 'can''t change N');
+%       else
+%         obj.N = N;
+%       end
+%     end
 
 
     function d = nfeatures(obj)

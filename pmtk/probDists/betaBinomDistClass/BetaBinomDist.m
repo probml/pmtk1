@@ -3,7 +3,6 @@ classdef BetaBinomDist < DiscreteDist
   properties
     a;
     b;
-    N;
   end
  
   %% Main methods
