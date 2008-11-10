@@ -10,7 +10,7 @@ for i=1:length(ns)
     k = 0.001;
     prior = MvnInvWishartDist('mu', 0, 'k', k, 'dof', nu, 'Sigma', S);
     n = ns(i);
-    m = inferParams(MvnDist(prior, []), 'data', X(1:n));
+    m = fit(MvnDist(prior, []), 'data', X(1:n));
     post = m.mu;
     [h(i), ps{i}] = plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, ...
         'xrange', [muRange sigmaRange], 'useContour', true);

@@ -6,12 +6,12 @@ for i=1:numel(priorVars)
     sigma2 = 1;
     m = MvnDist(prior, sigma2);
     x = 3;
-    m = inferParams(m, 'data', x);
+    m = fit(m, 'data', x);
     post = m.mu;
     % The likelihood is proportional to the posterior when we use a flat prior
     priorBroad = MvnDist(0, 1e10);
     m2 = MvnDist(priorBroad, sigma2);
-    m2 = inferParams(m2, 'data', x);
+    m2 = fit(m2, 'data', x);
     lik = m2.mu;
     % Now plot
     figure;

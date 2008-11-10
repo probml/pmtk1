@@ -13,7 +13,7 @@ pmax = -inf;
 for i=1:length(ns)
     prior = invWishartDist(nu, S);
     n = ns(i);
-    m = inferParams(MvnDist(mutrue, prior), 'data', X(1:n));
+    m = fit(MvnDist(mutrue, prior), 'data', X(1:n));
     post = m.Sigma;
     mean(post);
     figure(fig1);

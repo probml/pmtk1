@@ -110,7 +110,95 @@ classdef MvnDist < VecDist
 %        samples = bsxfun(@plus,obj.mu(:), A*Z)';
 %     end
     
-    function obj = fit(obj, varargin)
+
+    function obj = fit(obj,varargin)
+    % Fit the distribution via the specified method
+    %
+    % FORMAT: 
+    %
+    %  obj = fit(obj,'name1',val1,'name2',val2,...);
+    %
+    % INPUT:
+    %
+    % 'data'     -        data(i,:) is case i
+    % 'suffStat' -        the sufficient statistics of the data made via
+    %                     SS = MvnDist.mkSuffStat(data). If not specified, this
+    %                     is automatically calculated.
+    %
+    % 'method'   -        If either obj.mu or obj.Sigma is an object, 
+    %                     method is automatically set to 'bayesian' otherwise it
+    %                     is set to 'mle'. You can also specify 'covshrink'.
+    %
+    % OUTPUT:
+    %
+    % obj        -         the fitted object. 
+    
+        [data,suffStat,method] = process_options(varargin,...
+            'data',[],'suffStat',[],'method','default');                        %#ok
+        
+        if(strcmp(method,'default'))
+           
+            if(isa(obj.mu,'double') && isa(obj.Sigma,'double'))
+               method = 'mle'; 
+            else
+               method = 'bayesian'; 
+            end
+        end
+        
+        switch(lower(method))
+            case 'bayesian'
+                obj = inferParams(obj,varargin{:});
+            otherwise
+                obj = fitMAP(obj,varargin{:});
+        end
+    end
+   
+    
+    function [postmu, logevidence] = softCondition(pmu, py, A, y)
+      % Bayes rule for MVNs
+      Syinv = inv(py.Sigma);
+      Smuinv = inv(pmu.Sigma);
+      postSigma = inv(Smuinv + A'*Syinv*A);
+      postmu = postSigma*(A'*Syinv*(y-py.mu) + Smuinv*pmu.mu);
+      postmu = MvnDist(postmu, postSigma);
+      %evidence = mvnpdf(y(:)', (A*pmu.mu + py.mu)', py.Sigma + A*pmu.Sigma*A');
+      logevidence = logprob(MvnDist(A*pmu.mu + py.mu, py.Sigma + A*pmu.Sigma*A'), y(:)');
+    end
+    
+  end % methods
+
+  %% Demos
+  methods(Static = true)
+    function suffStat = mkSuffStat(X)
+      % SS.n
+      % SS.xbar = 1/n sum_i X(i,:)'
+      % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k)
+      n = size(X,1);
+      suffStat.n = n;
+      %suffStat.X = sum(X,1)'; % column vector
+      suffStat.xbar = sum(X,1)'/n; % column vector
+      Xc = (X-repmat(suffStat.xbar',n,1));
+      suffStat.XX = (Xc'*Xc)/n;
+    end
+ 
+       
+    function plot2dMarginalFigure()
+      plotGauss2dMargCond;
+    end
+
+  end
+
+
+  %% Private methods
+  methods(Access = 'protected')
+    function checkParamsAreConst(obj)
+      p = isa(obj.mu, 'double') && isa(obj.Sigma, 'double');
+      if ~p
+        error('params must be constant')
+      end
+    end
+    
+     function obj = fitMAP(obj, varargin)
       % Point estimate of parameters
       % m = fit(model, 'name1', val1, 'name2', val2, ...)
       % Arguments are
@@ -181,49 +269,22 @@ classdef MvnDist < VecDist
        end
     end
     
-    function [postmu, logevidence] = softCondition(pmu, py, A, y)
-      % Bayes rule for MVNs
-      Syinv = inv(py.Sigma);
-      Smuinv = inv(pmu.Sigma);
-      postSigma = inv(Smuinv + A'*Syinv*A);
-      postmu = postSigma*(A'*Syinv*(y-py.mu) + Smuinv*pmu.mu);
-      postmu = MvnDist(postmu, postSigma);
-      %evidence = mvnpdf(y(:)', (A*pmu.mu + py.mu)', py.Sigma + A*pmu.Sigma*A');
-      logevidence = logprob(MvnDist(A*pmu.mu + py.mu, py.Sigma + A*pmu.Sigma*A'), y(:)');
-    end
     
-  end % methods
-
-  %% Demos
-  methods(Static = true)
-    function suffStat = mkSuffStat(X)
-      % SS.n
-      % SS.xbar = 1/n sum_i X(i,:)'
-      % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k)
-      n = size(X,1);
-      suffStat.n = n;
-      %suffStat.X = sum(X,1)'; % column vector
-      suffStat.xbar = sum(X,1)'/n; % column vector
-      Xc = (X-repmat(suffStat.xbar',n,1));
-      suffStat.XX = (Xc'*Xc)/n;
-    end
- 
-       
-    function plot2dMarginalFigure()
-      plotGauss2dMargCond;
-    end
-
-  end
-
-
-  %% Private methods
-  methods(Access = 'protected')
-    function checkParamsAreConst(obj)
-      p = isa(obj.mu, 'double') && isa(obj.Sigma, 'double');
-      if ~p
-        error('params must be constant')
-      end
-    end
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   end
 
 

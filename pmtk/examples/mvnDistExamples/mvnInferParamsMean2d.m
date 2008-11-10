@@ -23,7 +23,7 @@ title('prior'); grid on; axis square
 for i=1:length(ns)
     n = ns(i);
     m = MvnDist(prior, Ctrue);
-    m = inferParams(m, 'data', X(1:n,:));
+    m = fit(m, 'data', X(1:n,:));
     post = m.mu;
     subplot(nr,nc,i+3); plot(post, 'xrange', xrange, 'useContour', useContour, 'npoints', 150);
     title(sprintf('post after %d obs', n)); grid on; axis square

@@ -20,7 +20,7 @@ fname = fullfile(folder, sprintf('MVNcovDemoData.pdf'));
 if doSave, pdfcrop; print(gcf, '-dpdf', fname); end
 
 %prior = invWishartDist(10, Ctrue); % cheat!
-prior = invWishartDist(2, eye(2));
+prior = InvWishartDist(2, eye(2));
 plotMarginals(prior);
 %set(gcf, 'name', 'prior');
 suplabel('prior');
@@ -36,7 +36,7 @@ if doSave, pdfcrop; print(gcf, '-dpdf', fname); end
 for i=1:length(ns)
     n = ns(i);
     m = MvnDist(muTrue, prior);
-    m = inferParams(m, 'data', X(1:n,:));
+    m = fit(m, 'data', X(1:n,:));
     post = m.Sigma;
     plotMarginals(post);
     suplabel(sprintf('post after %d obs', n));

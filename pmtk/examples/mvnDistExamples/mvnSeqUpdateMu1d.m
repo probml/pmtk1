@@ -12,7 +12,7 @@ for i=1:length(ns)
     k = 0.001;
     prior = MvnDist(0, 1/k);
     n = ns(i);
-    m = inferParams(MvnDist(prior, Ctrue), 'data', X(1:n));
+    m = fit(MvnDist(prior, Ctrue), 'data', X(1:n));
     post = m.mu;
     [h(i), p]= plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, 'xrange', [0 10]);
     legendstr{i} = sprintf('n=%d', n);

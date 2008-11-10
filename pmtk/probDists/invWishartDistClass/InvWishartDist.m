@@ -18,7 +18,7 @@ classdef InvWishartDist < MatrixDist
     
     function objS = convertToScalarDist(obj)
       if ndims(obj) ~= 1, error('cannot convert to scalarDst'); end
-      objS = invGammaDist(obj.dof/2, obj.Sigma/2);
+      objS = InvGammaDist(obj.dof/2, obj.Sigma/2);
      end
     
     function d = ndims(obj)

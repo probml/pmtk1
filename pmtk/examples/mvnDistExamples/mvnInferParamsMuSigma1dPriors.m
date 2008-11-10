@@ -19,7 +19,7 @@ muRange = [0 20]; sigmaRange  = [1 30];
 nr = 3; nc = 3;
 figure;
 for i=1:3
-    m = inferParams(MvnDist(prior{i}, []), 'data', X);
+    m = fit(MvnDist(prior{i}, []), 'data', X);
     post{i} = m.mu;
     pmuPost = marginal(post{i}, 'mu');
     pSigmaPost = marginal(post{i}, 'Sigma');
