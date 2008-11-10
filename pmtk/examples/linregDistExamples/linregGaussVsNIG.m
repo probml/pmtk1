@@ -12,7 +12,7 @@ function hh=helperGaussVsNIG(varargin)
     T = PolyBasisTransformer(2);
     m = LinregDist('transformer', T);
     m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', prior, 'sigma2', sigma2);
-    %ypredTrain = postPredict(m, xtrain);
+   
     ypredTest = predict(m, xtest);
 
     hold on;

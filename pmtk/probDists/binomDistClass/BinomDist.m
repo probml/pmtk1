@@ -104,7 +104,7 @@ classdef BinomDist < DiscreteDist
        % Arguments are
        % data - data(j) = number of successes (out of Ntrials) in experiment j
        % suffStat - [totalNumSucc totalNumTrials]
-       % method - one of  'map' or 'mle'
+       % method - one of  'map' or 'mle' or 'bayesian'
        [X, suffStat, method] = process_options(...
          varargin, 'data', [], 'suffStat', [], 'method', 'mle');
        if ~isempty(suffStat)
@@ -123,49 +123,18 @@ classdef BinomDist < DiscreteDist
              otherwise
                error(['cannot handle mu of type ' class(obj.mu)])
            end
+           case 'bayesian'
+               obj = fitBayesian(obj,varargin{:});
        end
      end
-
-      function obj = inferParams(obj, varargin)
-       % m = inferParams(model, 'name1', val1, 'name2', val2, ...)
-       % Arguments are
-       % data - data(j) = number of successes (out of Ntrials) in experiment j
-       % suffStat - [totalNumSucc totalNumTrials]
-       [X, suffStat] = process_options(...
-         varargin, 'data', [], 'suffStat', []);
-       if ~isempty(suffStat)
-         Nsucc = suffStat(1); Ntot = suffStat(2);
-       else
-         Nsucc = sum(X); Ntot = length(X) * obj.N;
-       end
-       Nfail = Ntot - Nsucc;
-       switch class(obj.mu)
-         case 'BetaDist'
-           obj.mu = BetaDist(obj.mu.a + Nsucc, obj.mu.b + Nfail);
-         case 'DiscreteDist',
-           Thetas = obj.mu.support;
-           lik = Thetas.^Nsucc .* (1-Thetas).^Nfail;
-           prior = obj.mu.probs;
-           post = normalize(prior .* lik);
-           obj.mu = DiscreteDist(post, Thetas);
-         otherwise
-           error(['cannot handle mu of type ' class(obj.mu)])
-       end
-      end
-
      
      function pr = predict(obj)
-       % p(X|muHat)
-      pr = obj;
-     end
-     
-     function pr = postPredict(obj)
        % p(X|D) 
        switch class(obj.mu)
          case 'BetaDist' % integrrate out mu
            pr = BetaBinomDist(obj.N, obj.mu.a, obj.mu.b);
          otherwise
-           error(['unrecognized mu type ' class(obj.mu)])
+           pr = obj;
        end
      end
 
@@ -197,6 +166,33 @@ classdef BinomDist < DiscreteDist
       obj.lockN = lockN;
     end
 
+     function obj = fitBayesian(obj, varargin)
+       % m = fitBayesian(model, 'name1', val1, 'name2', val2, ...)
+       % Arguments are
+       % data - data(j) = number of successes (out of Ntrials) in experiment j
+       % suffStat - [totalNumSucc totalNumTrials]
+       [X, suffStat,method] = process_options(...
+         varargin, 'data', [], 'suffStat', [],'method',[]);
+       if ~isempty(suffStat)
+         Nsucc = suffStat(1); Ntot = suffStat(2);
+       else
+         Nsucc = sum(X); Ntot = length(X) * obj.N;
+       end
+       Nfail = Ntot - Nsucc;
+       switch class(obj.mu)
+         case 'BetaDist'
+           obj.mu = BetaDist(obj.mu.a + Nsucc, obj.mu.b + Nfail);
+         case 'DiscreteDist',
+           Thetas = obj.mu.support;
+           lik = Thetas.^Nsucc .* (1-Thetas).^Nfail;
+           prior = obj.mu.probs;
+           post = normalize(prior .* lik);
+           obj.mu = DiscreteDist(post, Thetas);
+         otherwise
+           error(['cannot handle mu of type ' class(obj.mu)])
+       end
+      end
+    
 
     function checkParamsAreConst(obj)
       p = isa(obj.mu, 'double');

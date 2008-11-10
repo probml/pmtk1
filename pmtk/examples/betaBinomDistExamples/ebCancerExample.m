@@ -7,7 +7,7 @@ data.n = [1083 855 3461 657 1208 1025 527 1668 583 582 917 857 ...
 % EB matrix of counts
 X = [data.y(:) data.n(:)-data.y(:)];
 dist = BetaBinomDist;
-dist = inferParams(dist, 'data', X, 'method', 'fixedpoint');
+dist = fit(dist, 'data', X, 'method', 'fixedpoint');
 a = dist.a; b = dist.b;
 [a b]
 

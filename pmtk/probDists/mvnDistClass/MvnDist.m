@@ -147,7 +147,7 @@ classdef MvnDist < VecDist
         
         switch(lower(method))
             case 'bayesian'
-                obj = inferParams(obj,varargin{:});
+                obj = fitBayesian(obj,varargin{:});
             otherwise
                 obj = fitMAP(obj,varargin{:});
         end
@@ -228,9 +228,9 @@ classdef MvnDist < VecDist
       end
     end
 
-    function obj = inferParams(obj, varargin)
+    function obj = fitBayesian(obj, varargin)
       % Computer posterior over params
-       % m = inferParams(model, 'name1', val1, 'name2', val2, ...)
+       % m = fitBayesian(model, 'name1', val1, 'name2', val2, ...)
        % Arguments are
        % data - data(i,:) = case i
        % suffStat - 

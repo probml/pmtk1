@@ -79,9 +79,7 @@ function helperBasis(varargin)
     m = fit(m,'X',xtrain,'y',ytrain,'prior',prior,'sigma2',sigma2);
     ypredTrain = predict(m,xtrain);
     ypredTest =  predict(m,xtest);
-    %m = inferParams(m, 'X', xtrain, 'y', ytrain, 'prior', prior, 'sigma2', sigma2);
-    %ypredTrain = postPredict(m, xtrain);
-    %ypredTest = postPredict(m, xtest);
+  
 
     figure; hold on;
     h = plot(xtest, mean(ypredTest),  'k-');

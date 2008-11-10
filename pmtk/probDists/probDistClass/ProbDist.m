@@ -14,7 +14,7 @@ classdef ProbDist
     X = sample(obj, n); % X(i,j) = sample from params(j), an nxd matrix
     p = logprob(obj, D); % p(i,j) = log p(D(i) | params(j))
     logZ = lognormconst(obj);
-    obj = inferParams(obj, varargin);
+    obj = fit(obj, varargin);
     pr = predict(obj, D); 
   end
   %}

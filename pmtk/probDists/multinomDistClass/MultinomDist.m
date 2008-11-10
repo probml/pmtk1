@@ -70,7 +70,7 @@ classdef MultinomDist < VecDist
        % Arguments are
        % data - data(i,:) = vector of counts for trial i
        % suffStat - SS.counts(j), SS.N = total amount of data
-       % method -  'map' or 'mle'
+       % method -  'map' or 'mle' or 'bayesian'
        [X, suffStat, method] = process_options(...
          varargin, 'data', [], 'suffStat', [], 'method', 'mle');
        if isempty(suffStat), suffStat = MultinomDist.mkSuffStat(X); end
@@ -85,26 +85,14 @@ classdef MultinomDist < VecDist
              otherwise
                error(['cannot handle mu of type ' class(obj.mu)])
            end
+         case 'bayesian'
+             obj = fitBayesian(obj,varargin{:});
          otherwise
            error(['unknown method ' method])
        end
      end
 
-     function obj = inferParams(obj, varargin)
-       % m = inferParams(model, 'name1', val1, 'name2', val2, ...)
-       % Arguments are
-       % data - data(i,:) = vector of counts for trial i
-       % suffStat - SS.counts(j), SS.N = total amount of data
-       [X, suffStat] = process_options(...
-         varargin, 'data', [], 'suffStat', []);
-       if isempty(suffStat), suffStat = MultinomDist.mkSuffStat(X); end
-       switch class(obj.mu)
-         case 'DirichletDist'
-           obj.mu = DirichletDist(obj.mu.alpha + suffStat.counts);
-         otherwise
-           error(['cannot handle mu of type ' class(obj.mu)])
-       end
-     end
+     
      
   end
 
@@ -129,6 +117,22 @@ classdef MultinomDist < VecDist
         error('parameters must be constants')
       end
     end
+    
+    function obj = fitBayesian(obj, varargin)
+       % m = fitBayesian(model, 'name1', val1, 'name2', val2, ...)
+       % Arguments are
+       % data - data(i,:) = vector of counts for trial i
+       % suffStat - SS.counts(j), SS.N = total amount of data
+       [X, suffStat] = process_options(...
+         varargin, 'data', [], 'suffStat', []);
+       if isempty(suffStat), suffStat = MultinomDist.mkSuffStat(X); end
+       switch class(obj.mu)
+         case 'DirichletDist'
+           obj.mu = DirichletDist(obj.mu.alpha + suffStat.counts);
+         otherwise
+           error(['cannot handle mu of type ' class(obj.mu)])
+       end
+     end
 
   end
   

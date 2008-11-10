@@ -14,11 +14,11 @@ for i = 1:numel(data)
     m = BinomDist(N, BetaDist(a,b));
     %m = BernoulliDist(BetaDist(a,b));
     prior = m.mu; % BetaDist
-    m = inferParams(m, 'suffStat', [N1 N]);
+    m = fit(m, 'suffStat', [N1 N],'method','bayesian');
     post = m.mu; % BetaDist
     % The likelihood is the prior with a flat prior
     m2 = BinomDist(N, BetaDist(1,1));
-    m2 = inferParams(m2, 'suffStat', [N1 N]);
+    m2 = fit(m2, 'suffStat', [N1 N],'method','bayesian');
     lik = m2.mu; % BetaDist
     figure;
     h = plot(prior, 'plotArgs', {'r-', 'linewidth', 3});

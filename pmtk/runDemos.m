@@ -45,7 +45,7 @@ pause(2); close('all'); clear('all');
 %% ggmDecomposable
 demoPostModelsExhaustive
 pause(2); close('all'); clear('all');
-%ok
+
 %% ggm
 %ggmBICdemo
 ggmDemo
@@ -53,7 +53,7 @@ ggmInferDemo
 pause(2); close('all'); clear('all');
 
 %% graph
- %graphClassDemo
+%graphClassDemo
 pause(2); close('all'); clear('all');
 
 %% hiwDist

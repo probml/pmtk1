@@ -49,8 +49,8 @@ classdef BetaBinomDist < DiscreteDist
        logZ = betaln(obj.a, obj.b);
      end
      
-     function obj = inferParams(obj, varargin)
-      % m = inferParams(model, 'name1', val1, 'name2', val2, ...)
+     function obj = fit(obj, varargin)
+      % m = fit(model, 'name1', val1, 'name2', val2, ...)
       % Arguments are
       % data - data(i) = case i
       % method - currently must be fixedpoint

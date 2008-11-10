@@ -364,7 +364,7 @@ classdef LinregDist < CondProbDist
         function model = fitBayesian(model, varargin)
         % Helper method to perform Bayesian inference    
         % Used by fit() when method = 'bayesian'    
-        % m = inferParams(model, 'name1', val1, 'name2', val2, ...)
+        % m = fitBayesian(model, 'name1', val1, 'name2', val2, ...)
         % Arguments are
         % 'X' - X(i,:) Do NOT include a column of 1's
         % 'y'- y(i)

@@ -9,9 +9,9 @@ b = 2;
 m = BinomDist(N, BetaDist(a,b));
 %m = BernoulliDist(BetaDist(a,b));
 prior = m.mu; % BetaDist
-m0 = postPredict(m); figure; plot(m0); title('prior predictive')
-m = inferParams(m, 'data', X);
-mm = postPredict(m); % posterior predictive is BetaBinomDist
+m0 = predict(m); figure; plot(m0); title('prior predictive')
+m = fit(m, 'data', X,'method','bayesian');
+mm = predict(m); % posterior predictive is BetaBinomDist
 figure;
 h1 = plot(mm, 'plotArgs', 'b'); title('posterior predictive')
 % MAP estimation
