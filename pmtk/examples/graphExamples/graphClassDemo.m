@@ -19,7 +19,7 @@ G(z,z)=1;
 
 GG = DirectedGraph(G);
 draw(GG)
-[d, pre, post, cycle, f, pred] = dfs(GG,[],1);
+[d, pre, post, cycle, f, pred] = dfs(GG.adjMat,[],1);
 assert(isequal(d, [1 2 9 4 3 10]))
 assert(isequal(f, [8 7 12 5 6 11]))
 assert(cycle)

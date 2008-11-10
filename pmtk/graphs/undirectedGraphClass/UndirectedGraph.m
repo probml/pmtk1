@@ -124,7 +124,7 @@ classdef UndirectedGraph < Graph
       % In this case, 1->2 in the transitive closure, but 1 cannot get to itself.
       % If G was undirected, 1 could get to itself, but this graph is not cyclic.
       % So we cannot use the closure test in the undirected case.
-      [d, pre, post, cycle] = dfs(obj,[],0);
+      [d, pre, post, cycle] = dfs(obj);
       b = ~cycle;
     end
     
@@ -133,7 +133,7 @@ classdef UndirectedGraph < Graph
      % Set obj.adjMat = -1*obj.adjMat first to find max spanning tree.
      % Uses Prim's algorithm, which is O(d^2)
      [A, cost] = minimum_spanning_tree(obj.adjMat);
-     obj2 = tree(A);
+     obj2 = Tree(A);
      end
 
   end
