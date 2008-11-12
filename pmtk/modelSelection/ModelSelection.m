@@ -13,7 +13,7 @@ classdef ModelSelection
 % function to score it, this score is returned to search and the process
 % repeated until search decides to stop. Search then passes the results to
 % select, which may choose say the model with the best score or the
-% simpliest within one standard error of best, etc. 
+% simplest within one standard error of best, etc. 
 %
 % Score has at its disposal two additional functions, which it can optionally
 % use. Suppose that the scoring function were cross validation, then a possible
