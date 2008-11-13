@@ -1,4 +1,4 @@
-%% Posterior Example
+%% Example of parameter updating in a Beta-Bernoulli model. 
 
 data(1).a = 2;      data(2).a = 5;
 data(1).b = 2;      data(2).b = 2;

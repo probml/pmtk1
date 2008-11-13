@@ -1,4 +1,4 @@
-%% Bayesian Inference - Posterior Predictive Distribution
+%%  Posterior Predictive Distribution for Beta-Binomial model
 N = 10;
 X = [1 2];
 N1 = sum(X);

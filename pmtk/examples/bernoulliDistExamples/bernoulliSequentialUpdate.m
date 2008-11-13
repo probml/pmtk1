@@ -1,4 +1,4 @@
-%% Sequential Bayesian Updating. 
+%% Sequential Bayesian Updating of a Beta-Bernoulli model. 
 setSeed(0);
 m = BernoulliDist(0.7);
 n = 100;
