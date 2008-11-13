@@ -47,7 +47,7 @@ classdef ModelSelection
         lossFunction;
         selectFunction;
         models;
-        order;
+        ordering;
         Xdata;      
         Ydata;       
     end
@@ -56,6 +56,7 @@ classdef ModelSelection
         CVnfolds;      
         verbose;     
         doplot;
+        progressBar;
     end
     
     properties(GetAccess = 'public',SetAccess = 'private')  
@@ -88,7 +89,8 @@ classdef ModelSelection
         %                   model's score and these results must be stored and
         %                   returned in an array of structs with the fields
         %                   'model','score', and 'stdErr'. See the implemented
-        %                   exhaustiveSearch method for an example.
+        %                   exhaustiveSearch method for an example. You should
+        %                   also update the progress bar each iteration. 
         %
         % scoreFunction   - By default, the built in cvScore function, (for
         %                   cross validation) is used and this does not have to 
@@ -131,7 +133,16 @@ classdef ModelSelection
         %                    validation, this is set automatically but may need
         %                    to be overridden. By default, mean squared error is
         %                    used if Ydata ~= round(Ydata), otherwise, zero-one
-        %                    loss is used. 
+        %                    loss is used. If you want to use the default
+        %                    cvScore function but your own lossFunction, note
+        %                    that cvScore will pass it three inputs in this
+        %                    order: (1) the output from testFunction, (2) Xtest,
+        %                    (3) ytest. Your function must take these three
+        %                    inputs even if it doesn't use them all. For
+        %                    instance the built in mse loss function has this
+        %                    form:
+        %                    @(yhat,Xtest,ytest)mse(reshape(yhat,size(ytest)),ytest)
+        %                    
         %
         % selectFunction   - This is a handle to a function, which takes in the
         %                    results of the model search and makes the final
@@ -163,7 +174,7 @@ classdef ModelSelection
         % 'Ydata'          - All of the output data, where Ydata(i,:) is the ith
         %                    target. 
         %
-        % 'order'          - ['ascend'] | 'descend' Used by the default selector
+        % 'ordering'          - ['ascend'] | 'descend' Used by the default selector
         %                    function. If 'ascend', the best model is the one
         %                    with the smallest score, if 'descend' its the other
         %                    way round. 
@@ -195,7 +206,7 @@ classdef ModelSelection
                 obj.models               ,...
                 obj.Xdata                ,...
                 obj.Ydata                ,...
-                obj.order                ,...
+                obj.ordering                ,...
                 obj.CVnfolds             ,...
                 obj.verbose              ,...
                 obj.doplot           ] =  ...
@@ -208,7 +219,7 @@ classdef ModelSelection
                 'models'        ,[]                              ,...
                 'Xdata'         ,[]                              ,...
                 'Ydata'         ,[]                              ,...
-                'order'         ,'ascend'                        ,...
+                'ordering'      ,'ascend'                        ,...
                 'CVnfolds'      ,5                               ,...
                 'verbose'       ,true                            ,...
                 'doplot'        ,true                            );
@@ -217,14 +228,20 @@ classdef ModelSelection
                 
             if(isempty(obj.lossFunction) && ~isempty(obj.Ydata))
                 if(isequal(obj.Ydata,round(obj.Ydata)))
-                    obj.lossFunction = @(yhat,ytest)sum(reshape(yhat,size(ytest)) ~= ytest);
+                    obj.lossFunction = @(yhat,Xtest,ytest)sum(reshape(yhat,size(ytest)) ~= ytest);
                 else
-                    obj.lossFunction = @(yhat,ytest)mse(reshape(yhat,size(ytest)),ytest);
+                    obj.lossFunction = @(yhat,Xtest,ytest)mse(reshape(yhat,size(ytest)),ytest);
                 end
             end
-            
+            if(obj.verbose)
+                obj.progressBar = waitbar(0,'Model Selection Progress');
+                tic
+            end
             results = obj.searchFunction(obj);
             [obj.bestModel,obj.sortedResults] = obj.selectFunction(obj,results);
+            if(obj.verbose)
+                close(obj.progressBar);
+            end
             if(obj.doplot)
                 plot(obj,results);
             end
@@ -250,7 +267,7 @@ classdef ModelSelection
         % obj      - the modelSelection object (read only)
         % results  - the results struct with fields: 'model','score', and
         %            'stdErr'
-            [val,perm] = sort([results.score],obj.order);
+            [val,perm] = sort([results.score],obj.ordering);
             sortedResults = results(perm);
             bestModel = sortedResults(1).model; 
         end
@@ -268,10 +285,22 @@ classdef ModelSelection
         % results    - an array of structs with 'model',score',and 'stdErr' fields
         %
             results = struct('model',{},'score',{},'stdErr',{});
-            for i=1:size(obj.models,1)
+            nmodels = size(obj.models,1);
+            for i=1:nmodels;
+                if(obj.verbose)
+                    t = toc;
+                    str = sprintf('Model: %d of %d\nElapsed Time: %d minute(s), %d seconds',i,nmodels,floor(t/60),floor(rem(t,60))); 
+                    waitbar(i/nmodels,obj.progressBar,str); 
+                end
                 m = obj.models{i};
                 results(i).model = m;
-                [results(i).score,results(i).stdErr] = obj.scoreFunction(obj,m);
+                try
+                    [results(i).score,results(i).stdErr] = obj.scoreFunction(obj,m);
+                catch
+                    results(i).score = obj.scoreFunction(obj,m);
+                    results(i).stdErr = 0;
+                end
+                
             end
         end
         
@@ -302,7 +331,7 @@ classdef ModelSelection
                 ytrain = obj.Ydata(trainfolds{f},:);
                 Xtest  = obj.Xdata(testfolds{f} ,:);
                 ytest  = obj.Ydata(testfolds{f},:);
-                scoreArray(testfolds{f}) = obj.lossFunction(obj.testFunction(Xtrain,ytrain,Xtest,model{:}),ytest);
+                scoreArray(testfolds{f}) = obj.lossFunction(obj.testFunction(Xtrain,ytrain,Xtest,model{:}),Xtest,ytest);
             end
             score = mean(scoreArray);
             stdErr = std (scoreArray)/sqrt(n);
@@ -314,12 +343,75 @@ classdef ModelSelection
         
          
         function plot(obj,results)
-           
+        % Plot the model selection results.    
+            is2d = true;
+            is3d = true;
+            for i=1:size(obj.models,1)
+               n = numel(obj.models{i});
+               if(n ~= 1),is2d = false;end
+               if(n ~= 2),is3d = false;end
+            end
+            if(is2d && isnumeric(obj.models{1}{1}))
+                plotErrorBars2d(obj,results);
+            end
+            
+            if(is3d && isnumeric(obj.models{1}{1}))
+               plot3d(obj,results); 
+            end
         end 
         
+        
+        
+        
+        function plotErrorBars2d(obj,results)
+        % An error bar plot of the model selection curve. 
+           h = figure;
+           models = cell2mat(vertcat(results.model));
+           scores = vertcat(results.score);
+           stdErrs = vertcat(results.stdErr);
+           errorbar(models,scores,stdErrs,'LineWidth',2);
+           title('Model Selection Curve');
+           xlabel('Model');
+           ylabel('Score');
+           ax = axis;
+           line([obj.bestModel{1},obj.bestModel{1}],[ax(3),ax(4)],'LineStyle','--','Color','r');
+           box on;
+           axis tight;
+           if(isequal(logspace(log10(min(models)),log10(max(models)),numel(models))',models))
+               warning('off','MATLAB:Axes:NegativeDataInLogAxis');
+               set(gca,'Xscale','log'); 
+           end
+           pdfcrop  
+        end
+        
+        function plot3d(obj,results)
+        % A plot of the error/score surface    
+           figure; hold on;
+           ms = cell2mat(vertcat(results.model));
+           nrows = numel(unique(ms(:,1)));
+           ncols = numel(unique(ms(:,2)));
+           X = reshape(ms(:,1),nrows,ncols);
+           Y = reshape(ms(:,2),nrows,ncols);
+           Z = reshape(vertcat(results.score),nrows,ncols); 
+           surf(X,Y,Z);
+           view([0,90])
+           colorbar;
+           xlabel('first model param');
+           ylabel('second model param');
+           title(sprintf('Color Denotes Score\nVal1: %f\nVal2: %f',obj.bestModel{1},obj.bestModel{2}));
+           axis tight;    
+           box on;
+           warning('off','MATLAB:Axes:NegativeDataInLogAxis');
+           if(isequal(logspace(log10(min(ms(:,1))),log10(max(ms(:,1))),numel(unique(ms(:,1))))',unique(ms(:,1))))
+               set(gca,'Xscale','log'); 
+           end
+           if(isequal(logspace(log10(min(ms(:,2))),log10(max(ms(:,2))),numel(unique(ms(:,2))))',unique(ms(:,2))))
+               set(gca,'Yscale','log'); 
+           end
+           
+        end
+        
     end
-    
-   
     
     methods(Static = true)
         
@@ -350,90 +442,112 @@ classdef ModelSelection
         
         function testClass()
         % Simple test of this class    
-        
-       
-        
-%             load car;
-%             rand('twister',0);
-%             perm = randperm(size(X,1));
-%             X = X(perm,:);
-%             Y = Y(perm,:);
-%             Xtrain = X(1:1000,:);
-%             ytrain = Y(1:1000,:);
-%             Xtest =  X(1001:end,:);
-%             ytest =  Y(1001:end,:);
-
-if(0)
-            rand('twister',0);
-            [X,Y] = fisherIrisLoad;
-            perm = randperm(150);
-            X = X(perm,:); Y = Y';
-            Y = Y(perm,:);
-            Xtrain = X(1:110,:);
-            ytrain = Y(1:110,:);
-            Xtest  = X(111:end,:);
-            ytest  = Y(111:end,:);
-            model = LogregDist('transformer',ChainTransformer({StandardizeTransformer(false),addOnesTransformer()}));
-            testFunction = @(Xtrain,ytrain,Xtest,lambda)mode(predict(fit(model,'X',Xtrain,'y',ytrain,'lambda',lambda),Xtest));
-            models = ModelSelection.formatModels(logspace(-3,3,50));
-            ms = ModelSelection('testFunction',testFunction,'Xdata',X,'Ydata',Y,'models',models);
-        
-            yhat = mode(predict(fit(model,'X',Xtrain,'y',ytrain,'lambda',ms.bestModel{1}),Xtest));    
-            mean(yhat' ~= ytest)
-end   
-
-         
-
-
-
-         %% CV
-        
             load prostate;
-            testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
-                mode(predict(fit(LinregDist('transformer',...
-                ChainTransformer(...
-                {StandardizeTransformer(false),KernelTransformer('rbf', sigma)})),...
-                'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));
             
-            models = ModelSelection.formatModels([logspace(-5,3,30),5000,10000,100000],[0.01,1:15,100]); %[0.01,1:15,100]
-        if(0)   
-            ms = ModelSelection('testFunction',testFunction,'Xdata',Xtrain,'Ydata',ytrain,...
-                'models',models,'order','ascend');
+            baseModel = LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),addOnesTransformer()}));
+            models = ModelSelection.formatModels(logspace(-5,3,100));
+       
+            %% CV MSE loss    
+            testFunction = @(Xtrain,ytrain,Xtest,lambda)mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',lambda),Xtest));
+            msCVmse = ModelSelection('testFunction',testFunction,'Xdata',Xtrain,'Ydata',ytrain,'models',models);
+            
+            yhat = mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msCVmse.bestModel{1}),Xtest));    
+            cvFinalError = mse(yhat,ytest);
+            title(sprintf('CV mse loss\nlambda = %f\nFinal MSE: %f',msCVmse.bestModel{1},cvFinalError));
+            xlabel('lambda');
+            %% CV NLL loss
+            
+            testFunction = @(Xtrain,ytrain,Xtest,lambda)fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',lambda);
+            lossFunction = @(fittedObj,Xtest,ytest)-logprob(fittedObj,Xtest,ytest);
+            msCVnll = ModelSelection('testFunction',testFunction,'lossFunction',lossFunction,'Xdata',Xtrain,'Ydata',ytrain,'models',models);
+            
+            yhat = mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msCVnll.bestModel{1}),Xtest));    
+            cvnllFinalError = mse(yhat,ytest);
+            title(sprintf('CV NLL\nlambda = %f\nFinal MSE: %f',msCVnll.bestModel{1},cvnllFinalError));
+            xlabel('lambda');
+            
+            %% BIC
+            scoreFcn = @(obj,model) -bicScore(fit(LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),addOnesTransformer()})),'X',obj.Xdata,'y',obj.Ydata,'lambda',model{1}),obj.Xdata,obj.Ydata,model{1});
+            msBic = ModelSelection('Xdata',Xtrain,'Ydata',ytrain,'models',models,'scoreFunction',scoreFcn);
+            
+            yhat = mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msBic.bestModel{1}),Xtest));    
+            bicFinalError = mse(yhat,ytest);
+            title(sprintf('BIC\nlambda = %f\nFinal MSE: %f',msBic.bestModel{1},bicFinalError));
+            xlabel('lambda');
+            
+            %% AIC
+            scoreFcn = @(obj,model) -aicScore(fit(LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),addOnesTransformer()})),'X',obj.Xdata,'y',obj.Ydata,'lambda',model{1}),obj.Xdata,obj.Ydata,model{1});
+            msAic = ModelSelection('Xdata',Xtrain,'Ydata',ytrain,'models',models,'scoreFunction',scoreFcn);
+            
+            yhat = mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msAic.bestModel{1}),Xtest));    
+            aicFinalError = mse(yhat,ytest);
+            title(sprintf('AIC\nlambda = %f\nFinal MSE: %f',msAic.bestModel{1},aicFinalError));
+            xlabel('lambda');
+            
+            placeFigures('square',false);
+    
+
+           %% 2D CV mse loss
+
+           testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
+               mode(predict(fit(LogregDist(...
+               'nclasses',2,'transformer',...
+               ChainTransformer(...
+               {StandardizeTransformer(false),KernelTransformer('rbf', sigma)})),...
+               'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));
+        
+           load crabs;
+           models = ModelSelection.formatModels(logspace(-6,-3,20) , 1:0.5:15 );
            
-            
-            model = LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf', ms.bestModel{2})}));
-            model = fit(model,'X',Xtrain,'y',ytrain,'prior','l2','lambda',ms.bestModel{1});
-            yhat = mode(predict(model,Xtest));
-            err = mse(yhat,ytest)
+           ms = ModelSelection(                     ...
+               'testFunction' , testFunction                    ,...
+               'models'       , models,...  
+               'Xdata'        , Xtrain                          ,...
+               'Ydata'        , ytrain                          );
+           
+           bestVals = ms.bestModel;
+           bestLambda = bestVals{1}
+           bestSigma  = bestVals{2}
+           
+           T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',bestSigma)});
+           m = LogregDist('nclasses',2,'transformer',T);
+           m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda,'prior','l2');
+           pred = predict(m,Xtest);
+           yhat = mode(pred);
+           errorRate = mean(yhat'~=ytest)
+
+           %% 2D CV nll loss
+           
+           
+           %% 2D BIC
+           
+           scoreFcn = @(obj,model) -bicScore(fit(LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',model{2})})),'X',obj.Xdata,'y',obj.Ydata,'lambda',model{1}),obj.Xdata,obj.Ydata,model{1});
+           ms2dBIC = ModelSelection('scoreFunction',scoreFcn,'models',models,'Xdata',Xtrain,'Ydata',ytrain);
+           bestVals = ms2dBIC.bestModel;
+           bestLambda = bestVals{1}
+           bestSigma  = bestVals{2}
+           T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',bestSigma)});
+           m = LogregDist('nclasses',2,'transformer',T);
+           m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda);
+           pred = predict(m,Xtest);
+           yhat = mode(pred);
+           errorRate = mean(yhat'~=ytest)
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+  
+         
+        
+        
         end
-            
-          %% BIC  
-            
-            msBic = ModelSelection('scoreFunction',@ModelSelection.bicScoreFcn,'Xdata',Xtrain,'Ydata',ytrain,...
-                'models',models,'order','descend');
-            
-            model = LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf', msBic.bestModel{2})}));
-            %model = LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()}));
-            model = fit(model,'X',Xtrain,'y',ytrain,'prior','l2','lambda',msBic.bestModel{1});
-            yhatBic = mode(predict(model,Xtest));
-            errBic = mse(yhatBic,ytest)
-          
-        end
-        
-         function [score,stdErr] = bicScoreFcn(obj,model)
-                stdErr = 0;
-                lambda = model{1}; sigma = model{2};
-                T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',sigma)});
-                %T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()});
-      
-                m = LinregDist('transformer',T);
-                m = fit(m,'X',obj.Xdata,'y',obj.Ydata,'lambda',lambda);
-                score = bicScore(m,obj.Xdata,obj.Ydata,lambda);
-        end
-        
-        
-        
-        
         
         
         
