@@ -6,21 +6,10 @@ classdef ModelSelection
 % the appropriate points. Default built in functions exist for many of these. 
 %
 % See modelSelectionDemo under the PMTK/examples directory for a number of
-% examples and read the descriptions of each property below. 
+% examples and read constructor documentation below. 
 %
 % Here is a schematic of the model selection process. The arrows represent
-% parameter passing. The search function proposes a model and asks the score
-% function to score it, this score is returned to search and the process
-% repeated until search decides to stop. Search then passes the results to
-% select, which may choose say the model with the best score or the
-% simplest within one standard error of best, etc. 
-%
-% Score has at its disposal two additional functions, which it can optionally
-% use. Suppose that the scoring function were cross validation, then a possible
-% loss function would be mean squared error and the test function would take in
-% Xtrain,ytrain,Xtest, and the model parameters, and return predictions, which
-% would be passed to loss. In the case of cv, the scoring function would perform
-% nfold loops before returning the score for a single model to search. 
+% parameter passing. 
 %
 %                  ____________________________________________________________
 %                 |                                                            |
@@ -30,9 +19,26 @@ classdef ModelSelection
 %  |  select  |<--- |  search  |<--- |  score   |--->|  test   |--->| loss  |  |
 %  |__________|   | |__________|---> |__________|    |_________|    |_______|  |
 %                 |                                                            |
-%                 |                            i=1:max(nmodels,max_iters)      |
+%                 |                search until stopping criteria reached      |
 %                 |____________________________________________________________|
 % 
+%
+% The search function proposes a model and asks the score function to score it,
+% this score is returned to search and the process repeated until search decides
+% to stop. Search then passes the results to select, which may choose say the
+% model with the best score or the simplest within one standard error of best,
+% etc. 
+%
+% Score has at its disposal two additional functions, which it can optionally
+% use. Suppose that the scoring function were cross validation, then a possible
+% loss function would be mean squared error and the test function would take in
+% Xtrain,ytrain,Xtest, and the model parameters, and return predictions, which
+% would be passed to loss. In the case of cv, the scoring function would perform
+% nfold loops before returning the score for a single model. 
+
+
+
+
 
     properties(GetAccess = 'public',SetAccess = 'private')  % Input Properties
         searchFunction;
@@ -41,6 +47,7 @@ classdef ModelSelection
         lossFunction;
         selectFunction;
         models;
+        order;
         Xdata;      
         Ydata;       
     end
@@ -156,6 +163,11 @@ classdef ModelSelection
         % 'Ydata'          - All of the output data, where Ydata(i,:) is the ith
         %                    target. 
         %
+        % 'order'          - ['ascend'] | 'descend' Used by the default selector
+        %                    function. If 'ascend', the best model is the one
+        %                    with the smallest score, if 'descend' its the other
+        %                    way round. 
+        %
         % 'CVnfolds'       - Only used by cross validation, this value specifies
         %                    the number of folds to perform, (default = 5).
         %
@@ -183,6 +195,7 @@ classdef ModelSelection
                 obj.models               ,...
                 obj.Xdata                ,...
                 obj.Ydata                ,...
+                obj.order                ,...
                 obj.CVnfolds             ,...
                 obj.verbose              ,...
                 obj.doplot           ] =  ...
@@ -195,6 +208,7 @@ classdef ModelSelection
                 'models'        ,[]                              ,...
                 'Xdata'         ,[]                              ,...
                 'Ydata'         ,[]                              ,...
+                'order'         ,'ascend'                        ,...
                 'CVnfolds'      ,5                               ,...
                 'verbose'       ,true                            ,...
                 'doplot'        ,true                            );
@@ -236,7 +250,7 @@ classdef ModelSelection
         % obj      - the modelSelection object (read only)
         % results  - the results struct with fields: 'model','score', and
         %            'stdErr'
-            [val,perm] = sort([results.score],'ascend');
+            [val,perm] = sort([results.score],obj.order);
             sortedResults = results(perm);
             bestModel = sortedResults(1).model; 
         end
@@ -281,7 +295,7 @@ classdef ModelSelection
         %               the runs.     
         %
             n = size(obj.Xdata,1);                                    
-            [trainfolds,testfolds] = Kfold(n,obj.CVnfolds,false);
+            [trainfolds,testfolds] = Kfold(n,obj.CVnfolds,true);
             scoreArray = zeros(n,1);
             for f = 1:obj.CVnfolds
                 Xtrain = obj.Xdata(trainfolds{f},:); 
@@ -321,7 +335,11 @@ classdef ModelSelection
          %
          % models = ModelSelection.formatModels(1:10,0.1:0.05:1,3:7,0:1)
          % models = ModelSelection.formatModels(logspace(-2,0,20),1:0.5:15);
-             space = gridSpace(varargin{:});
+             if(nargin == 1)
+                space = varargin{1}';
+             else
+                space = gridSpace(varargin{:});
+             end
              models = cell(size(space,1),1);
              for i=1:size(space,1)
                 models{i} = num2cell(space(i,:));
@@ -332,19 +350,93 @@ classdef ModelSelection
         
         function testClass()
         % Simple test of this class    
-            load crabs;
+        
+       
+        
+%             load car;
+%             rand('twister',0);
+%             perm = randperm(size(X,1));
+%             X = X(perm,:);
+%             Y = Y(perm,:);
+%             Xtrain = X(1:1000,:);
+%             ytrain = Y(1:1000,:);
+%             Xtest =  X(1001:end,:);
+%             ytest =  Y(1001:end,:);
+
+if(0)
+            rand('twister',0);
+            [X,Y] = fisherIrisLoad;
+            perm = randperm(150);
+            X = X(perm,:); Y = Y';
+            Y = Y(perm,:);
+            Xtrain = X(1:110,:);
+            ytrain = Y(1:110,:);
+            Xtest  = X(111:end,:);
+            ytest  = Y(111:end,:);
+            model = LogregDist('transformer',ChainTransformer({StandardizeTransformer(false),addOnesTransformer()}));
+            testFunction = @(Xtrain,ytrain,Xtest,lambda)mode(predict(fit(model,'X',Xtrain,'y',ytrain,'lambda',lambda),Xtest));
+            models = ModelSelection.formatModels(logspace(-3,3,50));
+            ms = ModelSelection('testFunction',testFunction,'Xdata',X,'Ydata',Y,'models',models);
+        
+            yhat = mode(predict(fit(model,'X',Xtrain,'y',ytrain,'lambda',ms.bestModel{1}),Xtest));    
+            mean(yhat' ~= ytest)
+end   
+
+         
+
+
+
+         %% CV
+        
+            load prostate;
             testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
-                mode(predict(fit(LogregDist(...
-                'nclasses',2,'transformer',...
+                mode(predict(fit(LinregDist('transformer',...
                 ChainTransformer(...
                 {StandardizeTransformer(false),KernelTransformer('rbf', sigma)})),...
                 'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));
             
-            models = ModelSelection.formatModels(logspace(-3,0,10),1:5);
+            models = ModelSelection.formatModels([logspace(-5,3,30),5000,10000,100000],[0.01,1:15,100]); %[0.01,1:15,100]
+        if(0)   
+            ms = ModelSelection('testFunction',testFunction,'Xdata',Xtrain,'Ydata',ytrain,...
+                'models',models,'order','ascend');
+           
             
-            m = ModelSelection('testFunction',testFunction,'Xdata',Xtrain,'Ydata',ytrain,...
-                'models',models);
+            model = LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf', ms.bestModel{2})}));
+            model = fit(model,'X',Xtrain,'y',ytrain,'prior','l2','lambda',ms.bestModel{1});
+            yhat = mode(predict(model,Xtest));
+            err = mse(yhat,ytest)
         end
+            
+          %% BIC  
+            
+            msBic = ModelSelection('scoreFunction',@ModelSelection.bicScoreFcn,'Xdata',Xtrain,'Ydata',ytrain,...
+                'models',models,'order','descend');
+            
+            model = LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf', msBic.bestModel{2})}));
+            %model = LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()}));
+            model = fit(model,'X',Xtrain,'y',ytrain,'prior','l2','lambda',msBic.bestModel{1});
+            yhatBic = mode(predict(model,Xtest));
+            errBic = mse(yhatBic,ytest)
+          
+        end
+        
+         function [score,stdErr] = bicScoreFcn(obj,model)
+                stdErr = 0;
+                lambda = model{1}; sigma = model{2};
+                T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',sigma)});
+                %T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()});
+      
+                m = LinregDist('transformer',T);
+                m = fit(m,'X',obj.Xdata,'y',obj.Ydata,'lambda',lambda);
+                score = bicScore(m,obj.Xdata,obj.Ydata,lambda);
+        end
+        
+        
+        
+        
+        
+        
+        
         
         
     end
