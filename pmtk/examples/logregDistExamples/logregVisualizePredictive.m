@@ -14,10 +14,10 @@ title('Training Data');
 legend({'Class1','Class2'},'Location','BestOutside');
 %% Cross Validate L2
 % Here we cross validate sigma and lambda simultaneously for L2 LR. This
-% takes about 7 minutes to run.
+% takes about 3 minutes to run.
 if(0)
     %%
-    % We create our test function. See the CrossValidation class for more
+    % We create our test function. See the ModelSelection class for more
     % details.
     testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
         mode(predict(fit(LogregDist('nclasses',2,'transformer',...
@@ -27,25 +27,25 @@ if(0)
     %%
         % This is the range we will search over; every combination will be
         % tested.
-        lambdaRange = logspace(-4,0,20);
-        sigmaRange = 0.5:0.5:10;
+        lambdaRange = logspace(-2,1.5,30);
+        sigmaRange = 0.1:0.1:2;
+        modelSpace = ModelSelection.makeModelSpace(lambdaRange,sigmaRange);
         %%
         % Finally we perform the model selection.
-        modelSelection = CrossValidation(                 ...
-            'testFunction' , testFunction               ,...
-            'CVvalues'     , { lambdaRange,sigmaRange } ,...
-            'lossFunction' , 'ZeroOne'                  ,...
-            'verbose'      , true                       ,...
-            'Xdata'        , X                          ,...
-            'Ydata'        , Y                          );
-        set(gca,'XScale','log');   % since our lambdas are log spaced
-        lambda = modelSelection.bestValue(1);
-        sigma  = modelSelection.bestValue(2);
+        mselect = ModelSelection(                ...
+            'testFunction' , testFunction        ,...
+            'models'       , modelSpace          ,...
+            'Xdata'        , X                   ,...
+            'Ydata'        , Y                   );
+        lambdaL2 = mselect.bestModel{1};
+        sigmaL2  = mselect.bestModel{2};
 else
     %%
     % To save time, here are the results of the cross validation.
-    sigma = 2;
-    lambda = 0.0078476;
+    %sigma = 2;
+    %lambda = 0.0078476;
+    lambdaL2 = 7.8805;
+    sigmaL2 = 0.2;
 end
 % We are now ready to fit.
 %% Create the Data Transformer
@@ -56,7 +56,7 @@ end
 % transformation are retained, and where appropriate, applied to future test data.
 %
 T = ChainTransformer({StandardizeTransformer(false)      ,...
-    KernelTransformer('rbf',sigma)} );
+    KernelTransformer('rbf',sigmaL2)} );
 %% Create the Model
 % We now create a new logistic regression model and pass it the transformer object
 % we just created.
@@ -68,7 +68,7 @@ model = LogregDist('nclasses',2, 'transformer', T);
 % 'l1' as we will see later. We are performing map estimation here,
 % however in the L2 case we can perform full Bayesian estimation by
 % appending 'method','bayesian' to the call to fit().
-model = fit(model,'prior','l2','lambda',lambda,'X',X,'y',Y);
+model = fit(model,'prior','l2','lambda',lambdaL2,'X',X,'y',Y);
 %%
 % We can specify which optimization method we would like to use by passing in
 % its name to the fit method as in the following. There are number of options
@@ -114,32 +114,34 @@ title('Decision Boundary (L2 Logistic Regression)');
 box on;
 contour(X1grid,X2grid,probGrid,'LineColor','k','LevelStep',0.5,'LineWidth',2.5);
 %% L1 Prior
-% Now lets use an L1 prior and repeat our steps. We will use the same
-% sigma value as before.
-if(0) % Takes about 30 minutes
-    T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',sigma)});
-    m = LogregDist('nclasses',2,'transformer',T);
-    testFunction = @(Xtrain,ytrain,Xtest,lambda)...
-        mode(predict(fit(m,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l1'),'X',Xtest));
+% Now lets use an L1 prior and repeat our steps. 
+if(0) % Takes about 3 minutes
 
+     testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
+        mode(predict(fit(LogregDist('nclasses',2,'transformer',...
+        ChainTransformer({StandardizeTransformer(false),...
+        KernelTransformer('rbf', sigma)})),...
+        'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l1'),Xtest));
 
     lambdaRange = logspace(-1,1,10);
-    modelSelection = CrossValidation(                 ...
-        'testFunction' , testFunction             ,...
-        'CVvalues'     , lambdaRange              ,...
-        'lossFunction' , 'ZeroOne'                ,...
-        'verbose'      , true                     ,...
-        'Xdata'        , X                        ,...
-        'Ydata'        , Y                        );
-    set(gca,'XScale','log');   % since our lambdas are log spaced
-    lambdaL1 = modelSelection.bestValue;
+    sigmaRange = [0.2,0.5:0.5:4];
+    modelSpaceL1 = ModelSelection.makeModelSpace(lambdaRange,sigmaRange);
+    mSelectL1 = ModelSelection(                 ...
+        'testFunction' , testFunction            ,...
+        'models'     , modelSpaceL1              ,...
+        'Xdata'        , X                       ,...
+        'Ydata'        , Y                       );
+    lambdaL1 = mSelectL1.bestModel{1};
+    sigmaL1 = mSelectL1.bestModel{2};
 else
     %%
     % To save time, here are the results of the cross validation.
-    lambdaL1 = 1.2915;
+    %lambdaL1 = 1.2915;
+    lambdaL1 = 2.1544;
+    sigmaL1 = 0.2;
 end
 T = ChainTransformer({StandardizeTransformer(false)      ,...
-    KernelTransformer('rbf',sigma)} );
+    KernelTransformer('rbf',sigmaL1)} );
 model = LogregDist('nclasses',2, 'transformer', T);
 model = fit(model,'prior','l1','lambda',lambdaL1,'X',X,'y',Y);
 [X1grid, X2grid] = meshgrid(-3:0.02:3,-3:0.02:3);
@@ -167,7 +169,7 @@ contour(X1grid,X2grid,probGrid,'LineColor','k','LevelStep',0.5,'LineWidth',2.5);
 %% Identify "support vectors"
 % We now visualize the "support vectors", i.e.
 % the examples corresponding to non-zero weights.
-supportVectors = X(model.w.point ~= 0,:); %#ok
+supportVectors = X(model.w.point ~= 0,:);
 plot(supportVectors(:,1),supportVectors(:,2),'ok','MarkerSize',10,'LineWidth',2)
 %% MLE with Small Sigma
 % Here we investigate what happens when we use the MLE and a small value
