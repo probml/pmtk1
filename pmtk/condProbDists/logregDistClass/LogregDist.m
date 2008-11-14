@@ -13,8 +13,13 @@ classdef LogregDist < CondProbDist
         transformer;            % A data transformer object, e.g. KernelTransformer
         
         nclasses;               % The number of classes
+        
+        classSupport;           % The suppport of the target y, e.g. [0,1], [-1,+1], 1:K, etc. 
     end
 
+    
+    
+    
     %% Main methods
     methods
 
@@ -80,7 +85,7 @@ classdef LogregDist < CondProbDist
             end
 
             if isempty(obj.nclasses), obj.nclasses = length(unique(y)); end
-            Y1 = oneOfK(y, obj.nclasses);
+            [Y1,obj.classSupport] = oneOfK(y, obj.nclasses);
 
             switch lower(prior)
                 case {'l1'}
@@ -123,11 +128,13 @@ classdef LogregDist < CondProbDist
         %           one for each test example X(i,:). All of these are
         %           represented in a single DiscreteDist object such that
         %           pred.probs(i,c) is the probability that example i
-        %           belongs to class c. If method = 'mc', pred is a SampleDist
-        %           object storing one distribution, (represented by samples)
-        %           for every test example such that SampleDist.samples(s,c,i)
-        %           is the probability that example i is in class c according to
-        %           sample s. 
+        %           belongs to class c. 
+        %           
+        %           If method = 'mc', pred is a SampleDistDiscrete object storing one
+        %           distribution, (represented by samples) for every test
+        %           example such that pred.samples(s,c,i) is the
+        %           probability that example i is in class c according to sample
+        %           s. Simply take the mode to obtain predicted class labels. 
             
             if(nargin == 2 && ~ischar(varargin{1}))
                 varargin = [varargin,varargin{1}];
@@ -145,7 +152,7 @@ classdef LogregDist < CondProbDist
                 case 'plugin'
                     if(isa(w,'ConstDist')),w = w.point; end
                     if(isa(w,'MvnDist')),w = w.mu;end
-                    pred = DiscreteDist(multiSigmoid(X,w(:)));                               %#ok
+                    pred = DiscreteDist(multiSigmoid(X,w(:)),obj.classSupport);  %#ok
                 case 'mc'
                     if(~isa(w,'MvnDist')),
                         error('w must be an MvnDist object to draw Monte Carlo samples. Either specify p(w|D) as an mvnDist or call fit with ''prior'' = ''l2'', ''method'' = ''bayesian''');
@@ -155,7 +162,7 @@ classdef LogregDist < CondProbDist
                     for s=1:nsamples
                         samples(s,:,:) = multiSigmoid(X,Wsamples(s,:)')';
                     end
-                    pred = SampleDist(samples);
+                    pred = SampleDistDiscrete(samples,obj.classSupport);
                 case 'integral'
                     if(obj.nclasses ~=2),error('This method is only available in the 2 class case');end
                     if(~isa(w,'MvnDist')),
@@ -163,7 +170,7 @@ classdef LogregDist < CondProbDist
                     end
                     p = sigmoidTimesGauss(X, w.mu(:), w.Sigma);
                     p = p(:);
-                    pred = DiscreteDist([p,1-p]);
+                    pred = DiscreteDist([p,1-p],obj.classSupport);
                 otherwise
                     error('%s is an unsupported prediction method',method); 
             end        

@@ -15,10 +15,10 @@ classdef DiscreteDist  < MultinomDist
       obj.support = support;
     end
 
-    function obj = computeProbs(obj)
-      % for child classes
-        obj.probs = exp(logprob(obj, obj.support));
-    end
+%     function obj = computeProbs(obj)
+%       % for child classes
+%         obj.probs = exp(logprob(obj, obj.support));
+%     end
     
     function h=plot(obj, varargin)
       % plot a probability mass function as a histogram
