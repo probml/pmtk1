@@ -176,7 +176,7 @@ classdef ModelSelection
         %
         % 'ordering'          - ['ascend'] | 'descend' Used by the default selector
         %                    function. If 'ascend', the best model is the one
-        %                    with the smallest score, if 'descend' its the other
+        %                    with the smallest score, if 'descend' - the other
         %                    way round. 
         %
         % 'CVnfolds'       - Only used by cross validation, this value specifies
@@ -360,9 +360,6 @@ classdef ModelSelection
             end
         end 
         
-        
-        
-        
         function plotErrorBars2d(obj,results)
         % An error bar plot of the model selection curve. 
            h = figure;
@@ -386,7 +383,7 @@ classdef ModelSelection
         
         function plot3d(obj,results)
         % A plot of the error/score surface    
-           figure; hold on;
+           fig = figure; hold on;
            ms = cell2mat(vertcat(results.model));
            nrows = numel(unique(ms(:,1)));
            ncols = numel(unique(ms(:,2)));
@@ -415,7 +412,7 @@ classdef ModelSelection
     
     methods(Static = true)
         
-         function models = formatModels(varargin)
+         function models = makeModelSpace(varargin)
          % Helper function to prepare the model space for model selection. The
          % output of this function can be passed directly to the ModelSelection
          % constructor. 
@@ -437,122 +434,7 @@ classdef ModelSelection
                 models{i} = num2cell(space(i,:));
              end
         end
-        
-        
-        
-        function testClass()
-        % Simple test of this class    
-            load prostate;
-            
-            baseModel = LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),addOnesTransformer()}));
-            models = ModelSelection.formatModels(logspace(-5,3,100));
-       
-            %% CV MSE loss    
-            testFunction = @(Xtrain,ytrain,Xtest,lambda)mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',lambda),Xtest));
-            msCVmse = ModelSelection('testFunction',testFunction,'Xdata',Xtrain,'Ydata',ytrain,'models',models);
-            
-            yhat = mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msCVmse.bestModel{1}),Xtest));    
-            cvFinalError = mse(yhat,ytest);
-            title(sprintf('CV mse loss\nlambda = %f\nFinal MSE: %f',msCVmse.bestModel{1},cvFinalError));
-            xlabel('lambda');
-            %% CV NLL loss
-            
-            testFunction = @(Xtrain,ytrain,Xtest,lambda)fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',lambda);
-            lossFunction = @(fittedObj,Xtest,ytest)-logprob(fittedObj,Xtest,ytest);
-            msCVnll = ModelSelection('testFunction',testFunction,'lossFunction',lossFunction,'Xdata',Xtrain,'Ydata',ytrain,'models',models);
-            
-            yhat = mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msCVnll.bestModel{1}),Xtest));    
-            cvnllFinalError = mse(yhat,ytest);
-            title(sprintf('CV NLL\nlambda = %f\nFinal MSE: %f',msCVnll.bestModel{1},cvnllFinalError));
-            xlabel('lambda');
-            
-            %% BIC
-            scoreFcn = @(obj,model) -bicScore(fit(LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),addOnesTransformer()})),'X',obj.Xdata,'y',obj.Ydata,'lambda',model{1}),obj.Xdata,obj.Ydata,model{1});
-            msBic = ModelSelection('Xdata',Xtrain,'Ydata',ytrain,'models',models,'scoreFunction',scoreFcn);
-            
-            yhat = mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msBic.bestModel{1}),Xtest));    
-            bicFinalError = mse(yhat,ytest);
-            title(sprintf('BIC\nlambda = %f\nFinal MSE: %f',msBic.bestModel{1},bicFinalError));
-            xlabel('lambda');
-            
-            %% AIC
-            scoreFcn = @(obj,model) -aicScore(fit(LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),addOnesTransformer()})),'X',obj.Xdata,'y',obj.Ydata,'lambda',model{1}),obj.Xdata,obj.Ydata,model{1});
-            msAic = ModelSelection('Xdata',Xtrain,'Ydata',ytrain,'models',models,'scoreFunction',scoreFcn);
-            
-            yhat = mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msAic.bestModel{1}),Xtest));    
-            aicFinalError = mse(yhat,ytest);
-            title(sprintf('AIC\nlambda = %f\nFinal MSE: %f',msAic.bestModel{1},aicFinalError));
-            xlabel('lambda');
-            
-            placeFigures('square',false);
     
-
-           %% 2D CV mse loss
-
-           testFunction = @(Xtrain,ytrain,Xtest,lambda,sigma)...
-               mode(predict(fit(LogregDist(...
-               'nclasses',2,'transformer',...
-               ChainTransformer(...
-               {StandardizeTransformer(false),KernelTransformer('rbf', sigma)})),...
-               'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));
-        
-           load crabs;
-           models = ModelSelection.formatModels(logspace(-6,-3,20) , 1:0.5:15 );
-           
-           ms = ModelSelection(                     ...
-               'testFunction' , testFunction                    ,...
-               'models'       , models,...  
-               'Xdata'        , Xtrain                          ,...
-               'Ydata'        , ytrain                          );
-           
-           bestVals = ms.bestModel;
-           bestLambda = bestVals{1}
-           bestSigma  = bestVals{2}
-           
-           T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',bestSigma)});
-           m = LogregDist('nclasses',2,'transformer',T);
-           m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda,'prior','l2');
-           pred = predict(m,Xtest);
-           yhat = mode(pred);
-           errorRate = mean(yhat'~=ytest)
-
-           %% 2D CV nll loss
-           
-           
-           %% 2D BIC
-           
-           scoreFcn = @(obj,model) -bicScore(fit(LinregDist('transformer',ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',model{2})})),'X',obj.Xdata,'y',obj.Ydata,'lambda',model{1}),obj.Xdata,obj.Ydata,model{1});
-           ms2dBIC = ModelSelection('scoreFunction',scoreFcn,'models',models,'Xdata',Xtrain,'Ydata',ytrain);
-           bestVals = ms2dBIC.bestModel;
-           bestLambda = bestVals{1}
-           bestSigma  = bestVals{2}
-           T = ChainTransformer({StandardizeTransformer(false),KernelTransformer('rbf',bestSigma)});
-           m = LogregDist('nclasses',2,'transformer',T);
-           m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda);
-           pred = predict(m,Xtest);
-           yhat = mode(pred);
-           errorRate = mean(yhat'~=ytest)
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-  
-         
-        
-        
-        end
-        
-        
-        
-        
-        
     end
         
  end
