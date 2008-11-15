@@ -33,6 +33,7 @@ classdef DirichletDist < VecDist
 
     function X = sample(obj, n)
       % X(i,:) = random probability vector of size d that sums to one
+      if(nargin < 2), n = 1;end
       X = dirichlet_sample(obj.alpha(:)',n);
     end
 
@@ -44,7 +45,7 @@ classdef DirichletDist < VecDist
 
     function logZ = lognormconst(obj)
       a = sum(obj.alpha);
-      logZ = sum(gammaln(obj.obj)) - gammaln(a);
+      logZ = sum(gammaln(obj.alpha)) - gammaln(a);
     end
 
     function plot(obj) % over-ride default

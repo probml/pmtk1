@@ -1,15 +1,14 @@
 classdef GenerativeClassifierDist < ProbDist
-  
+    
     
     properties(Abstract = true)
-        nclasses;
+        nclasses;                       % classes in 1:K
         classConditionalDensities;
-        isvectorized;
-        classPosterior; 
+        classPosterior;
     end
     
     methods
-                
+        
         function obj = fit(obj,varargin)
             
             [X,y,classPrior,featurePrior] = process_options(varargin,...
@@ -22,42 +21,40 @@ classdef GenerativeClassifierDist < ProbDist
             Nc = histc(canonizeLabels(y),1:obj.nclasses);
             obj.classPosterior = DirichletDist(Nc + classPrior.alpha);
             
-            classes = unique(y);
-            if(obj.isvectorized)
-                obj = fitClassConditional(obj,X,y,featurePrior);
-            else
-               
-                for c=1:obj.nclasses
-                    obj.fitClassConditional(obj,X(Y==classes(c),:),classes(c),featurePrior);
-                end
-                
+            for c=1:obj.nclasses
+                obj.classConditionalDensities{c} = obj.fitClassConditional(obj,X(Y==c,:),c,featurePrior);
             end
-            
             
         end
         
+        function pred = predict(obj,X)
         
-        function pred = predict(obj,varargin)
+            logprobs = logprob(obj,X,1:obj.nclasses);
+            pred = DiscreteDist(exp(logprobs));
             
         end
         
         function L = logprob(obj,X,y)
-            
-            if(obj.isvectorized)
-                error('not supported');
-            else
-               L = 0;
-               for i=1:numel(y)
-                  L = L + logprob(obj.classConditionalDensities{y(i)},X); 
-               end
+            L = 0;
+            py = mean(obj.classPosterior);  
+            for i=1:numel(y)
+                L = L + logprob(obj.classConditionalDensities{y(i)},X)+ logprob(py(i));
             end
+            
         end
         
-        function s = sample(obj,n)
+        function X = sample(obj,y,n)
             
-            
+            if(nargin < 2)
+               y = argmax(classPosterior.sample());
+            end
+            if(~isscalar(y))
+                error('y must be scalar as samples from different class conditional densities may not have the same dimensions.');
+            end
+            if(nargin < 3), n = 1;end
+            X = sample(obj.classConditionalDensities{y},n);
         end
-       
+        
     end
     
     methods(Access = 'protected', Abstract = true)
