@@ -5,8 +5,8 @@ classdef ModelSelection
 % allowing the user to specify custom functions, which are executed at the
 % the appropriate points. Default built in functions exist for many of these. 
 %
-% See modelSelectionDemo under the PMTK/examples directory for a number of
-% examples and read constructor documentation below. 
+% See modelSelect1D and modelSelect2D under the PMTK/examples/modelSelect
+% directory for a number of examples and read constructor documentation below. 
 %
 % Here is a schematic of the model selection process. The arrows represent
 % parameter passing. 
@@ -98,14 +98,14 @@ classdef ModelSelection
         %                   number of folds to perform. 
         %
         %                   If you want to use your own custom score function,
-        %                   this must be a function handle to a function that
-        %                   takes as input, the ModelSelection object as well as
-        %                   a single model to be scored as passed by the search
-        %                   function. The function must then return a scalar 
-        %                   score for the model and the standard error of this
-        %                   score, (use 0 if this is not a meaningful quantity).
+        %                   this must be a handle to a function that takes as
+        %                   input, the ModelSelection object as well as a single
+        %                   model to be scored as passed by the search function.
+        %                   The function must then return a scalar score for the
+        %                   model and the standard error of this score, (use 0
+        %                   if this is not a meaningful quantity).
         %
-        % testFunction     - This is handle to a function, which is
+        % testFunction     - This is a handle to a function, which is
         %                    optionally used by scoreFunction and must have
         %                    an appropriate interface. Its output will usually
         %                    be passed to lossFunction. 
@@ -163,8 +163,8 @@ classdef ModelSelection
         %                    models are stored collectively as a cell array of
         %                    cell arrays, i.e. models{i} returns the ith
         %                    model as a cell array. You can use the static
-        %                    method ModelSelection.formatModels() to help format
-        %                    models. See its interface for details. 
+        %                    method ModelSelection.formatModels() to help create 
+        %                    the model space. See its interface for details. 
         %
         % 'Xdata'          - All of the input data, where Xdata(i,:) is the ith
         %                    case. In the case of cross validation, this is
