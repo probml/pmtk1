@@ -9,12 +9,15 @@ function [s, lamcor, lamvar] = covshrink(x, shrinkvar)
 % lamcor is the shrinkage coefficient for the correlaiton matrix
 % lamvar is the shrinkage coefficient for the variances
 %
-% See  J. Schaefer and K. Strimmer.  2005.  A shrinkage approach to 
+% The algorithm is explained in
+% - J. Schaefer and K. Strimmer. "A shrinkage approach to 
 %   large-scale covariance matrix estimation and implications 
-%   for functional genomics. Statist. Appl. Genet. Mol. Biol. 4:32.
-% and Opgen-Rhein, R., and K. Strimmer. 2007
-%   Accurate ranking of differentially expressed genes
-%   by a distribution-free shrinkage approach. Statist. Appl. Genet. Mol. Biol. To appear
+%   for functional genomics." Statist. Appl. Genet. Mol. Biol. 4:32. 2005
+% - R. Opgen-Rhein and K. Strimmer. 
+%   "Accurate ranking of differentially expressed genes
+%   by a distribution-free shrinkage approach". Statist. Appl. Genet. Mol. Biol. 2007
+% - Ledoit and Wolf. "A Well-Conditioned Estimator for Large-Dimensional
+%     Covariance Matrices", J. of Multivariate Analysis, 2004.
 
 %#author Karl Strimmer
 %#modified Kevin Murphy and Matt Dunham
