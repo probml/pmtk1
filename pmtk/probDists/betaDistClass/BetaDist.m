@@ -48,7 +48,7 @@ classdef BetaDist < ScalarDist
 
     function X = sample(obj, n)
       % X(i,j) = sample from params(j) for i=1:n
-      d = ndims(obj);
+      d = length(obj.a);
       X = zeros(n, d);
       for j=1:d
         if useStatsToolbox
@@ -60,7 +60,7 @@ classdef BetaDist < ScalarDist
     end
 
     function p = logprob(obj, X, paramNdx)
-      % p(i,j) = log p(x(i) | params(j))
+          % p(i,j) = log p(x(i) | params(j))
       d = nfeatures(obj);
       if nargin < 3, paramNdx = 1:d; end
       x = X(:);
@@ -78,6 +78,32 @@ classdef BetaDist < ScalarDist
         warning(warn);
         p(:,jj) = logkerna + logkernb - betaln(a,b);
       end
+    
+        
+        
+        
+        
+%      %   p(i,j) = log p(X(i,j) | obj.a(paramNdx(j),obj.b(paramNdx(j))
+%         
+%         [n,dd] = size(X);
+%         if(nargin < 3),paramNdx = 1:dd;end
+%         d = length(paramNdx);
+%         if(d ~= dd)
+%             error('The dimensions of X do not match the number of specified parameter indices, length(paramNdx)');
+%         end
+%         p = zeros(size(X));
+%         for j=1:d
+%            a = obj.a(paramNdx(j)); 
+%            b = obj.b(paramNdx(j));
+%            warn = warning('off','MATLAB:log:logOfZero');
+%            logkerna = (a-1).*log(X(:,j));    logkerna(a==1 & X(:,j)==0) = 0;
+%            logkernb = (b-1).*log(1-X(:,j));  logkernb(b==1 & X(:,j)==1) = 0;
+%            warning(warn);
+%            p(:,j) = logkerna + logkernb - betaln(a,b); 
+%         end
+        
+     
+        
     end
 
 
