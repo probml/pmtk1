@@ -6,6 +6,7 @@ muRange = [-5 15]; sigmaRange  = [0.1 15];
 figure; hold on;
 [styles, colors, symbols] =  plotColors();
 ns = [0 2 5 50]
+ns = 10;
 for i=1:length(ns)
     k = 0.001;
     prior = MvnInvWishartDist('mu', 0, 'k', k, 'dof', nu, 'Sigma', S);

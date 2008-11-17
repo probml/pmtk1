@@ -1,4 +1,4 @@
-%% Infer Mu and Sigma
+%% Demo of inferring mu and sigma for a 1d Gaussian
 clear;
 seed = 0; rand('twister', seed); randn('state', seed);
 muTrue = 10; varTrue = 5^2;

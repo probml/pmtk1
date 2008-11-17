@@ -1,4 +1,4 @@
-%% MVN Infer Parameters
+%% Demo of inferrring 2d covariance given fixed mean 
 doSave = false;
 folder = 'C:\kmurphy\PML\pdfFigures';
 seed = 0; randn('state', seed); rand('twister', seed);

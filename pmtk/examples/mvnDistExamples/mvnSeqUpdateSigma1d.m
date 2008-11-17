@@ -5,7 +5,7 @@ mutrue = 5; Ctrue = 10;
 mtrue = MvnDist(mutrue, Ctrue);
 n = 500;
 X = sample(mtrue, n);
-ns = [0 2 5 50]
+ns = [0 2 5 50];
 fig1= figure; hold on;
 fig2 = figure;
 pmax = -inf;
