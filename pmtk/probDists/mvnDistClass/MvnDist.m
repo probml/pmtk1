@@ -222,7 +222,7 @@ classdef MvnDist < VecDist
           obj.Sigma = SS.XX;
         case 'covshrink',
           obj.mu =  mean(X);
-          obj.Sigma =  covshrinkKPM(X);
+          obj.Sigma =  covshrink(X);
         otherwise
           error(['bad method ' method])
       end
@@ -251,39 +251,45 @@ classdef MvnDist < VecDist
        done = false;
        switch class(obj.mu)
          case 'MvnDist'
-           if isa(obj.Sigma, 'double')
-             obj.mu = updateMean(obj.mu, SS, obj.Sigma);
+           if ~isa(obj.Sigma, 'double'), error('Sigma must be a constant'); end
+             %obj.mu = updateMean(obj.mu, SS, obj.Sigma);
+             mu = obj.mu;
+             S0 = mu.Sigma; S0inv = inv(S0);
+             mu0 = mu.mu;
+             S = obj.Sigma; Sinv = inv(S);
+             n = SS.n;
+             Sn = inv(inv(S0) + n*Sinv);
+             obj.mu = MvnDist(Sn*(n*Sinv*SS.xbar + S0inv*mu0), Sn);
              done = true;
-           end
          case 'MvnInvWishartDist'
-           obj.mu = updateMeanCov(obj.mu, SS);
+           %obj.mu = updateMeanCov(obj.mu, SS);
+           mu = obj.mu;
+           k0 = mu.k; m0 = mu.mu; T0 = mu.Sigma; v0 = mu.dof;
+           n = SS.n;
+           kn = k0 + n;
+           vn = v0 + n;
+           Tn = T0 + n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-m0)*(SS.xbar-m0)';
+           mn = (k0*m0 + n*SS.xbar)/kn;
+           obj.mu = MvnInvWishartDist('mu',mn, 'Sigma', Tn, 'dof', vn, 'k', kn);
            done = true;
          case 'double'
-           if isa(obj.Sigma, 'InvWishartDist')
-             obj.Sigma = updateSigma(obj.Sigma, obj.mu, SS);
-             done = true;
-           end
+           if ~isa(obj.Sigma, 'InvWishartDist'), error('Sigma must be InvWishart'); end
+           %obj.Sigma = updateSigma(obj.Sigma, obj.mu, SS);
+           mu = obj.mu; Sigma = obj.Sigma;
+           n = SS.n;
+           T0 = Sigma.Sigma;
+           v0 = Sigma.dof;
+           vn = v0 + n;
+           Tn = T0 + n*SS.XX +  n*(SS.xbar-mu)*(SS.xbar-mu)';
+           obj.Sigma = InvWishartDist(vn, Tn);
+           done = true;
        end
        if ~done
          obj = infer(obj.paramInfEng, obj, X);
        end
     end
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+ 
     
   end
 

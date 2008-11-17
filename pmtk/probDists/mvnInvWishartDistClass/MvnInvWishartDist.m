@@ -43,7 +43,8 @@ classdef MvnInvWishartDist < VecDist
       % For 1d, L(i) = log p(X(i,:) | theta), where X(i,:) = [mu sigma]
       d = length(obj.mu);
       if d > 1, error('not supported'); end
-      pgauss = MvnDist(obj.mu, obj.Sigma/obj.k);
+      pgauss = MvnDist(obj.mu, obj.Sigma/obj.k); % obj.Sigma is the argument!!
+      warning('wrong formula')
       piw = InvWishartDist(obj.dof, obj.Sigma);
       n = size(X,1);
       assert(size(X,2)==2);
