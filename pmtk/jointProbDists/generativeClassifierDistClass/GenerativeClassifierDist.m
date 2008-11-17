@@ -5,7 +5,13 @@ classdef GenerativeClassifierDist < ProbDist
         nclasses;                       % classes in 1:K
         classConditionalDensities;
         classPosterior;
+        defaultFeaturePrior
     end
+    
+    properties
+        classSupport; 
+    end
+    
     
     methods
         
@@ -14,37 +20,50 @@ classdef GenerativeClassifierDist < ProbDist
             [X,y,classPrior,featurePrior] = process_options(varargin,...
                 'X',[],'y',[],'classPrior',[],'featurePrior',[]);
             
+            if(isempty(obj.nclasses))
+                obj.nclasses = numel(unique(y));
+            end
+            
             if(isempty(classPrior))
                 classPrior = DirichletDist(ones(1,obj.nclasses)); %uninformative prior
             end
             
-            Nc = histc(canonizeLabels(y),1:obj.nclasses);
-            obj.classPosterior = DirichletDist(Nc + classPrior.alpha);
+            if(isempty(featurePrior))
+               featurePrior = obj.defaultFeaturePrior; 
+            end
+            
+            [y,classSupport] = canonizeLabels(y);
+            if(isempty(obj.classSupport)),obj.classSupport = classSupport;end
+            
+            Nc = histc(y,1:obj.nclasses);
+            obj.classPosterior = DirichletDist(Nc(:)' + classPrior.alpha);
             
             for c=1:obj.nclasses
-                obj.classConditionalDensities{c} = obj.fitClassConditional(obj,X(Y==c,:),c,featurePrior);
+                obj.classConditionalDensities{c} = fitClassConditional(obj,X,y,c,featurePrior);
             end
             
         end
         
         function pred = predict(obj,X)
-        
-            logprobs = logprob(obj,X,1:obj.nclasses);
-            pred = DiscreteDist(exp(logprobs));
+            
+            logprobs = logprob(obj,X);
+            probs = exp(logprobs);
+            probs = bsxfun(@rdivide,probs,sum(probs,2)); % normalize posterior 
+            pred = DiscreteDist(probs,obj.classSupport);
             
         end
         
-        function L = logprob(obj,X,y)
-            L = 0;
-            py = mean(obj.classPosterior);  
-            for i=1:numel(y)
-                L = L + logprob(obj.classConditionalDensities{y(i)},X)+ logprob(py(i));
+        function L = logprob(obj,X)
+        % unnormalized    
+            logpy = log(mean(obj.classPosterior));  
+            L = zeros(size(X,1),obj.nclasses);
+            for c=1:obj.nclasses
+                L(:,c) = logprobCCD(obj,X,c) + logpy(c);
             end
-            
+          
         end
         
         function X = sample(obj,y,n)
-            
             if(nargin < 2)
                y = argmax(classPosterior.sample());
             end
@@ -52,13 +71,23 @@ classdef GenerativeClassifierDist < ProbDist
                 error('y must be scalar as samples from different class conditional densities may not have the same dimensions.');
             end
             if(nargin < 3), n = 1;end
+            y = find(y==obj.classSupport);
+            if(isempty(y))
+                error('%d is not in the support',y);
+            end
+            
             X = sample(obj.classConditionalDensities{y},n);
+            
         end
         
     end
     
     methods(Access = 'protected', Abstract = true)
-        obj = fitClassConditional(obj,X,y,prior);
+        
+        ccd = fitClassConditional(obj,X,y,c,prior);
+        logp = logprobCCD(obj,X,c);
+      
+      
     end
     
     

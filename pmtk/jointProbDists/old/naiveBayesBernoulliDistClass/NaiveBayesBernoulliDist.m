@@ -1,4 +1,4 @@
-classdef NaiveBayesBernoulliDist < JointProbDist
+classdef NaiveBayesBernoulliDist 
 
     properties
         nclasses;                       % class labels must be in {1:n}
