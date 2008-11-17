@@ -1,4 +1,4 @@
-function labels = canonizeLabels(labels)
+function [labels,support] = canonizeLabels(labels)
 % Transform labels to 1:K
 %
 % Example:
@@ -15,10 +15,10 @@ function labels = canonizeLabels(labels)
 
 
     if(ischar(labels))
-        [j,j,labels] = unique(labels,'rows');
+        [support,j,labels] = unique(labels,'rows');
         labels = labels';
     else
-        [j,j,labels] = unique(labels);
+        [support,j,labels] = unique(labels);
     end
     
     
