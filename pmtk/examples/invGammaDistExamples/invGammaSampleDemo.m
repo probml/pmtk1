@@ -10,7 +10,7 @@ end
 figure;
 for i=1:length(as)
     a = as(i); b = bs(i);
-    XX = sample(invGammaDist(a,b), 1000);
+    XX = sample(InvGammaDist(a,b), 1000);
     subplot(length(as),1,i);
     hist(XX);
     title(sprintf('a=%4.3f,b=%4.3f', a, b))

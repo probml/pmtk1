@@ -6,7 +6,7 @@
 % We will use the prostate data set and create our base model, the LinregDist 
 % object, which will be used throughout. 
 load prostate;
-T = ChainTransformer({StandardizeTransformer(false),addOnesTransformer()});
+T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()});
 baseModel = LinregDist('transformer',T);
 %% Model Space
 % In this example, we will use the built in exhaustive search function and so we

@@ -87,7 +87,7 @@ classdef GaussDist < ScalarDist
         error('cannot handle missing data')
       end
       if(strcmp(method,'default'))
-        if(isa(obj.mu,'double') && isa(obj.Sigma,'double'))
+        if(isa(obj.mu,'double') && isa(obj.sigma2,'double'))
           method = 'mle';
         else
           method = 'bayesian';

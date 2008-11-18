@@ -46,7 +46,7 @@ postMeanApprox =  dblquad(foo,x1min,x1max,x2min,x2max)
 postVarExact = Strue(1,1)
 postVarApprox = postMeanSquaredApprox - (postMeanApprox)^2
 
-keyboard
+%keyboard
 
 %{
 tic

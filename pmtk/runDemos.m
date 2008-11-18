@@ -104,3 +104,71 @@ mcmcGmmBurnin
 mcmcGmmProposal
 pause(2); close('all'); clear('all');
 
+%% modelSelection
+modelSelect1D
+%modelSelect2D
+pause(2); close('all'); clear('all');
+
+%% multinomDist
+multinomPlotDemo
+pause(2); close('all'); clear('all');
+
+%% mvnDist
+demoNumericalIntMvn
+mvnCondition
+mvnCondition2D
+mvnHeightWeight
+mvnImputationDemo
+mvnInferParamsMean1d
+mvnInferParamsMean2d
+mvnInferParamsMuSigma1dPriors
+mvnInferParamsSigma2d
+mvnPlot2Ddemo
+mvnSeqlUpdateMuSigma1D
+mvnSeqUpdateMu1d
+mvnSeqUpdateSigma1d
+mvnSoftCondition
+pause(2); close('all'); clear('all');
+
+%% mvnInvWishartDist
+mvnInvWIplotDemo
+pause(2); close('all'); clear('all');
+
+%% mvnMcmcInfer
+mvnMCMCexample1D
+mvnMCMCexample2D
+pause(2); close('all'); clear('all');
+
+%% mvtDist
+mvtPlotDemo
+pause(2); close('all'); clear('all');
+
+%% normalInvGammaDist
+demoNumericalIntNIG
+pause(2); close('all'); clear('all');
+
+%% poissonDist
+poissonPlotDemo
+pause(2); close('all'); clear('all');
+
+%% sampleDist
+sampleDistDemo
+pause(2); close('all'); clear('all');
+
+%% studentDist
+studentVSGauss
+pause(2); close('all'); clear('all');
+
+%% tabularDist
+tabularSprinkler
+pause(2); close('all'); clear('all');
+
+%% tabularFactor
+tabFactSprinkler1
+tabFactSprinkler2
+pause(2); close('all'); clear('all');
+
+%% wishartDist
+WIplotDemo
+pause(2); close('all'); clear('all');
+
