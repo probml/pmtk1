@@ -35,6 +35,7 @@ pause(2); close('all'); clear('all');
 %% gaussDist
 gaussCVfitDemo
 gaussHeightWeight
+gaussInferMuSigmaDemo
 gaussPlotDemo
 pause(2); close('all'); clear('all');
 
@@ -101,63 +102,5 @@ pause(2); close('all'); clear('all');
 mcmcConvDiagGmm
 mcmcGmmBurnin
 mcmcGmmProposal
-pause(2); close('all'); clear('all');
-
-%% multinomDist
-multinomPlotDemo
-pause(2); close('all'); clear('all');
-
-%% mvnDist
-mvnCondition
-mvnCondition2D
-mvnDemoInferParamsSigma2d
-mvnHeightWeight
-mvnImputationDemo
-mvnInferParamsMean1d
-mvnInferParamsMean2d
-mvnInferParamsMuSigma1dPriors
-mvnPlot2Ddemo
-mvnSequentialUpdateMuSigma1D
-mvnSeqUpdateMu1d
-mvnSeqUpdateSigma1d
-mvnSoftCondition
-pause(2); close('all'); clear('all');
-
-%% mvnInvWishartDist
-mvnInvWIplotDemo
-pause(2); close('all'); clear('all');
-
-%% mvnMcmcInfer
-mvnMCMCexample1D
-mvnMCMCexample2D
-pause(2); close('all'); clear('all');
-
-%% mvtDist
-mvtPlotDemo
-pause(2); close('all'); clear('all');
-
-%% poissonDist
-poissonPlotDemo
-pause(2); close('all'); clear('all');
-
-%% sampleDist
-sampleDistDemo
-pause(2); close('all'); clear('all');
-
-%% studentDist
-studentVSGauss
-pause(2); close('all'); clear('all');
-
-%% tabularDist
-tabularSprinkler
-pause(2); close('all'); clear('all');
-
-%% tabularFactor
-tabFactSprinkler1
-tabFactSprinkler2
-pause(2); close('all'); clear('all');
-
-%% wishartDist
-WIplotDemo
 pause(2); close('all'); clear('all');
 

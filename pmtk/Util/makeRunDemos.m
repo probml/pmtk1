@@ -23,7 +23,7 @@ function makeRunDemos()
        if(~isempty(entry.m))
              [base,pack] = fileparts(entry.path);
              tl = '';
-             if(length(path) > 8 && strfind(pack,'Examples'))
+             if(length(pack) > 8 && strfind(pack,'Examples'))
                 tl = pack(1:end-8);  
              end
            
