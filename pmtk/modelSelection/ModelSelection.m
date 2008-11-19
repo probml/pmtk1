@@ -6,7 +6,7 @@ classdef ModelSelection
 % the appropriate points. Default built in functions exist for many of these. 
 %
 % See modelSelect1D and modelSelect2D under the PMTK/examples/modelSelect
-% directory for a number of examples and read constructor documentation below. 
+% directory for a number of examples and read the constructor documentation below. 
 %
 % Here is a schematic of the model selection process. The arrows represent
 % parameter passing. 
@@ -16,34 +16,32 @@ classdef ModelSelection
 %                 |                         ____________________________       |
 %                 |                        |                            |      |
 %   __________    |  __________       _____V____      _________      ___|___   |
-%  |  select  |<--- |  search  |<--- |  score   |--->|  test   |--->| loss  |  |
+%  |  select  |<--- |  search  |<--- |  score   |--->| predict |--->| loss  |  |
 %  |__________|   | |__________|---> |__________|    |_________|    |_______|  |
 %                 |                                                            |
 %                 |                search until stopping criteria reached      |
 %                 |____________________________________________________________|
 % 
 %
-% The search function proposes a model and asks the score function to score it,
+% The search function proposes a model and asks the score function to score it;
 % this score is returned to search and the process repeated until search decides
 % to stop. Search then passes the results to select, which may choose say the
 % model with the best score or the simplest within one standard error of best,
 % etc. 
 %
 % Score has at its disposal two additional functions, which it can optionally
-% use. Suppose that the scoring function were cross validation, then a possible
-% loss function would be mean squared error and the test function would take in
-% Xtrain,ytrain,Xtest, and the model parameters, and return predictions, which
-% would be passed to loss. In the case of cv, the scoring function would perform
-% nfold loops before returning the score for a single model. 
-
-
-
+% use: predict and loss. Suppose that the scoring function were cross
+% validation, then a possible loss function would be mean squared error and the
+% predict function would take in Xtrain,ytrain,Xtest, and the model parameters,
+% and return predictions, which would be passed to loss. In the case of cv, the
+% scoring function would perform nfold loops before returning the score for a
+% single model. 
 
 
     properties(GetAccess = 'public',SetAccess = 'private')  % Input Properties
         searchFunction;
         scoreFunction;
-        testFunction;
+        predictFunction;
         lossFunction;
         selectFunction;
         models;
@@ -60,8 +58,8 @@ classdef ModelSelection
     end
     
     properties(GetAccess = 'public',SetAccess = 'private')  
-        sortedResults;
-        bestModel;
+        sortedResults;   
+        bestModel;   
     end
 
     methods
@@ -80,7 +78,7 @@ classdef ModelSelection
         %                   is used and this does not have to be specified. 
         %
         %                   If you want to use your own custom search function,
-        %                   this must be a function handle, which takes in an
+        %                   this must be a handle to a function, which takes in an
         %                   object of type ModelSelection as input and uses the
         %                   values stored in its properties. In particular, it
         %                   must minimally call obj.scoreFunction for every
@@ -90,7 +88,8 @@ classdef ModelSelection
         %                   returned in an array of structs with the fields
         %                   'model','score', and 'stdErr'. See the implemented
         %                   exhaustiveSearch method for an example. You should
-        %                   also update the progress bar each iteration. 
+        %                   also update the progress bar each iteration. Note 
+        %                   the 'model' field stores the index into obj.models. 
         %
         % scoreFunction   - By default, the built in cvScore function, (for
         %                   cross validation) is used and this does not have to 
@@ -105,7 +104,7 @@ classdef ModelSelection
         %                   model and the standard error of this score, (use 0
         %                   if this is not a meaningful quantity).
         %
-        % testFunction     - This is a handle to a function, which is
+        % predictFunction  - This is a handle to a function, which is
         %                    optionally used by scoreFunction and must have
         %                    an appropriate interface. Its output will usually
         %                    be passed to lossFunction. 
@@ -118,25 +117,24 @@ classdef ModelSelection
         %                    where param1,param2,... etc collectively represent
         %                    the model, e.g. perhaps lambda and sigma. The
         %                    scoring function passes these parameters by
-        %                    emptying the ith model into the testFunction using
+        %                    emptying the ith model into the predictFunction using
         %                    the cell operation {:} as in 
         %
-        %                    testFunction(Xtrain,ytrain,Xtest,models{i}{:})
+        %                    predictFunction(Xtrain,ytrain,Xtest,models{i}{:})
         %
         %                    If, for instance, the ith model contains three
         %                    values, all three of these are passed to
-        %                    testFunction as three separate parameters. 
+        %                    predictFunction as three separate parameters. 
         %
         % lossFunction     - This is a function handle - optionally used
-        %                    by the scoreFunction, which will generally pass in
-        %                    the ouput of testFunction. In the case of cross
+        %                    by the scoreFunction. In the case of cross
         %                    validation, this is set automatically but may need
         %                    to be overridden. By default, mean squared error is
         %                    used if Ydata ~= round(Ydata), otherwise, zero-one
         %                    loss is used. If you want to use the default
         %                    cvScore function but your own lossFunction, note
         %                    that cvScore will pass it three inputs in this
-        %                    order: (1) the output from testFunction, (2) Xtest,
+        %                    order: (1) the output from predictFunction, (2) Xtest,
         %                    (3) ytest. Your function must take these three
         %                    inputs even if it doesn't use them all. For
         %                    instance the built in mse loss function has this
@@ -154,7 +152,8 @@ classdef ModelSelection
         %                    is an array of structs with the fields,
         %                    'model','score', and 'stdErr'. It returns the same
         %                    array of structs but sorted by score and the chosen
-        %                    model. 
+        %                    model. Note that the field model stores indices
+        %                    into obj.models.
         % 
         % models           - These are the candidate models. Exhaustive search
         %                    uses these but custom search methods may or may
@@ -164,7 +163,8 @@ classdef ModelSelection
         %                    cell arrays, i.e. models{i} returns the ith
         %                    model as a cell array. You can use the static
         %                    method ModelSelection.formatModels() to help create 
-        %                    the model space. See its interface for details. 
+        %                    the model space. See its interface for details.
+        %                    
         %
         % 'Xdata'          - All of the input data, where Xdata(i,:) is the ith
         %                    case. In the case of cross validation, this is
@@ -193,14 +193,18 @@ classdef ModelSelection
         %
         % obj      - the model selection object, after it has run to completion.
         %
-        %            obj.bestModel stores the selected model 
+        %            obj.bestModel stores the best model. (In actual fact it
+        %            stores the index to the best model but when queried, it 
+        %            automatically returns the best model). 
         %           
         %            obj.sortedResults stores all of the results in an array of 
-        %            structs with the fields, 'model','score', and 'stdErr'.
+        %            structs with the fields, 'model','score', and 'stdErr'. The
+        %            model field stores indices into obj.models. 
         %
+        %% PROCESS INPUTS
             [   obj.searchFunction       ,...
                 obj.scoreFunction        ,...
-                obj.testFunction         ,...
+                obj.predictFunction         ,...
                 obj.lossFunction         ,...
                 obj.selectFunction       ,...
                 obj.models               ,...
@@ -211,21 +215,23 @@ classdef ModelSelection
                 obj.verbose              ,...
                 obj.doplot           ] =  ...
                 process_options(varargin ,...
-                'searchFunction',@exhaustiveSearch               ,...
-                'scoreFunction' ,@cvScore                        ,...
-                'testFunction'  ,@(varargin)varargin{:}          ,...
-                'lossFunction'  ,[]                              ,...
-                'selectFunction',@bestSelector                   ,...
-                'models'        ,[]                              ,...
-                'Xdata'         ,[]                              ,...
-                'Ydata'         ,[]                              ,...
-                'ordering'      ,'ascend'                        ,...
-                'CVnfolds'      ,5                               ,...
-                'verbose'       ,true                            ,...
-                'doplot'        ,true                            );
+                'searchFunction' ,@exhaustiveSearch               ,...
+                'scoreFunction'  ,@cvScore                        ,...
+                'predictFunction',@(varargin)varargin{:}          ,...
+                'lossFunction'   ,[]                              ,...
+                'selectFunction' ,@bestSelector                   ,...
+                'models'         ,[]                              ,...
+                'Xdata'          ,[]                              ,...
+                'Ydata'          ,[]                              ,...
+                'ordering'       ,'ascend'                        ,...
+                'CVnfolds'       ,5                               ,...
+                'verbose'        ,true                            ,...
+                'doplot'         ,true                            );
             
+            %% ERROR CHECK
             if(isempty(obj.models)),error('You must specify models to do model selection');end
-                
+            
+            %% SET DEFAULT LOSS
             if(isempty(obj.lossFunction) && ~isempty(obj.Ydata))
                 if(isequal(obj.Ydata,round(obj.Ydata)))
                     obj.lossFunction = @(yhat,Xtest,ytest)sum(reshape(yhat,size(ytest)) ~= ytest);
@@ -233,12 +239,16 @@ classdef ModelSelection
                     obj.lossFunction = @(yhat,Xtest,ytest)mse(reshape(yhat,size(ytest)),ytest);
                 end
             end
+            %% SETUP PROGRESS BAR
             if(obj.verbose)
                 obj.progressBar = waitbar(0,'Model Selection Progress');
                 tic
             end
+            %% RUN
             results = obj.searchFunction(obj);
+            %% SELECT
             [obj.bestModel,obj.sortedResults] = obj.selectFunction(obj,results);
+            %% DISPLAY
             if(obj.verbose)
                 close(obj.progressBar);
             end
@@ -250,7 +260,13 @@ classdef ModelSelection
                fprintf('Best Model = ');
                display(obj.bestModel); 
             end
-            
+            %%
+        end
+        
+        function best = get.bestModel(obj)
+        % Intercept requests for the best model so that we can return the actual
+        % best model when requested, not just its index.
+            best = obj.models{obj.bestModel};
         end
         
     end
@@ -266,10 +282,10 @@ classdef ModelSelection
         %
         % obj      - the modelSelection object (read only)
         % results  - the results struct with fields: 'model','score', and
-        %            'stdErr'
+        %            'stdErr'. Note that 'model' stores indices into obj.models
             [val,perm] = sort([results.score],obj.ordering);
             sortedResults = results(perm);
-            bestModel = sortedResults(1).model; 
+            bestModel = sortedResults(1).model;
         end
         
         function results = exhaustiveSearch(obj)
@@ -282,8 +298,9 @@ classdef ModelSelection
         %
         % OUTPUT:
         %
-        % results    - an array of structs with 'model',score',and 'stdErr' fields
-        %
+        % results    - an array of structs with 'model',score',and 'stdErr'
+        %              fields. The 'model' field stores indices into obj.models.
+        %              
             results = struct('model',{},'score',{},'stdErr',{});
             nmodels = size(obj.models,1);
             for i=1:nmodels;
@@ -293,7 +310,7 @@ classdef ModelSelection
                     waitbar(i/nmodels,obj.progressBar,str); 
                 end
                 m = obj.models{i};
-                results(i).model = m;
+                results(i).model = i;
                 try
                     [results(i).score,results(i).stdErr] = obj.scoreFunction(obj,m);
                 catch
@@ -331,7 +348,7 @@ classdef ModelSelection
                 ytrain = obj.Ydata(trainfolds{f},:);
                 Xtest  = obj.Xdata(testfolds{f} ,:);
                 ytest  = obj.Ydata(testfolds{f},:);
-                scoreArray(testfolds{f}) = obj.lossFunction(obj.testFunction(Xtrain,ytrain,Xtest,model{:}),Xtest,ytest);
+                scoreArray(testfolds{f}) = obj.lossFunction(obj.predictFunction(Xtrain,ytrain,Xtest,model{:}),Xtest,ytest);
             end
             score = mean(scoreArray);
             stdErr = std (scoreArray)/sqrt(n);
@@ -363,7 +380,7 @@ classdef ModelSelection
         function plotErrorBars2d(obj,results)
         % An error bar plot of the model selection curve. 
            h = figure;
-           models = cell2mat(vertcat(results.model));
+           models = cell2mat(vertcat(obj.models{:}));%cell2mat(vertcat(results.model));
            scores = vertcat(results.score);
            stdErrs = vertcat(results.stdErr);
            errorbar(models,scores,stdErrs,'LineWidth',2);
@@ -384,7 +401,7 @@ classdef ModelSelection
         function plot3d(obj,results)
         % A plot of the error/score surface    
            fig = figure; hold on;
-           ms = cell2mat(vertcat(results.model));
+           ms = cell2mat(vertcat(obj.models{:}));%cell2mat(vertcat(results.model));
            nrows = numel(unique(ms(:,1)));
            ncols = numel(unique(ms(:,2)));
            X = reshape(ms(:,1),nrows,ncols);

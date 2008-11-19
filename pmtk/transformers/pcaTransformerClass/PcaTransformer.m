@@ -64,6 +64,23 @@ classdef PcaTransformer < Transformer
            yhat = mode(pred);
            errPCA = mean(yhat~=ytest)
            warning(warn);
+           
+           if(0)
+           [Xtrain,Xtest,ytrain,ytest] = setupMnist(false);
+           X = [Xtrain;Xtest]; clearvars -except X ytrain ytest
+           X = train(PcaTransformer('k',40),X);
+           Xtrain = X(1:60000,:); 
+           Xtest = X(60001:end,:);
+           clear X
+           T = ChainTransformer({StandardizeTransformer(true),AddOnesTransformer()});
+           m = LogregDist('nclasses',10,'transformer',T);
+           m = fit(m,'X',Xtrain,'y',ytrain,'lambda',0.1);
+           pred = predict(m,Xtest);
+           yhat = mode(pred);
+           err = mean(yhat~=ytest)
+           end
+           
+           
          
         end
         
