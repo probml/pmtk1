@@ -1,4 +1,4 @@
-function [B, Z, evals, Xrecon, mu] = pcaFast(X, K, method)
+function [B, Z, evals, Xrecon, mu] = pcaFast(X, K, method,centerX)
 % X is n*d - rows are examples, columns are features
 % If K is not specified, we use the maximum possible value (min(n,d))
 % B is d*K (the basis vectors)
@@ -7,12 +7,16 @@ function [B, Z, evals, Xrecon, mu] = pcaFast(X, K, method)
 % Xrecon is n*d - reconstructed from first K
 % mu is d*1
 
+if(nargin < 4)
+   centerX = true; 
+end
+
 [n d] = size(X);
 if nargin < 2
   %K = min(n,d); 
   K = rank(X);
 end
-if nargin < 3
+if nargin < 3 || isempty(method)
   cost = [d^3 n^3 min(n*d^2, d*n^2)];
   [junk, method] = min(cost);
 end
@@ -20,8 +24,13 @@ end
 methodNames = {'eig(Xt X)', 'eig(X Xt)', 'SVD(X)'};
 fprintf('using method %s\n', methodNames{method});
 
-mu = mean(X);
-X = X - repmat(mu, n, 1);
+if(centerX)
+    mu = mean(X);
+    %X = X - repmat(mu, n, 1);
+    X = bsxfun(@minus,X,mu);
+else
+    mu = zeros(1,size(X,2));
+end
 switch method
  case 1,
   %[evec, evals] = eig(cov(X));
@@ -45,4 +54,7 @@ switch method
   evals = (1/n)*diag(S).^2;
 end
 Z = X*B;
-Xrecon = Z*B' + repmat(mu, n, 1);
+%Xrecon = Z*B' + repmat(mu, n, 1);
+if(nargout > 3)
+    Xrecon = bsxfun(@plus,Z*B',mu);
+end
