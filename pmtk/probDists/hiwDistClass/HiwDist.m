@@ -1,4 +1,4 @@
-classdef HiwDist < MatrixDist
+classdef HiwDist < ProbDist
   
   properties
     G;
@@ -66,6 +66,13 @@ classdef HiwDist < MatrixDist
     
   end
   
+  
+  
+  methods(Access = 'protected')
+      
+      
+      
+  end
  
 
 
