@@ -9,7 +9,7 @@ nNs = length(Ns);
 nDs = length(Ds);
 ntrials = 10;
 %methodNames = {'eig(X''X) d^3', 'eig(X X'') n^3', 'SVD(X) n d min(n,d)'};
-methodNames = {'eig(X''X)', 'eig(X X'')', 'SVD(X)'};
+methodNames = {'eigCov', 'eigGram', 'svd'};
 nmethods = length(methodNames);
 tim = zeros(nNs, nDs, nmethods);
 for ni=1:length(Ns)
@@ -20,8 +20,8 @@ for ni=1:length(Ns)
     for method=1:nmethods
       tic
       for trials=1:ntrials
-	[B{method}, Xproj{method}, evals{method}, Xrecon{method}, mu{method}] = ...
-	    pcaFast(X, K, method);
+        [B{method}, Xproj{method}, evals{method}, Xrecon{method}, mu{method}] = ...
+	    pcaPmtk(X, K, methodNames{method});
       end
       tim(ni, di, method)  = toc;
       switch method

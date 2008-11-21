@@ -14,7 +14,7 @@ n = size(X,1);
 
 % concatenate noise dimensions to convert from 2d to 10d
 Y = [X 0.01*randn(n,8)];
-[B, Z, evals, Xrecon, mu] = pcaMLABA(Y);
+[B, Z, evals, Xrecon, mu] = pcaPmtk(Y);
 
 figure(2);clf
 bar(evals)

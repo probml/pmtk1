@@ -16,7 +16,7 @@ end
 
 nc = 5;  % number of examples of each class
 X  = double(reshape(data(:,1:nc,:), [256 nc*10]))';
-[B, Z] = pcaFast(X, 2);
+[B, Z] = pcaPmtk(X, 2);
 
 color = hsvrand(10);
 figure(1);clf

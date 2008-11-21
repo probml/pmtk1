@@ -10,10 +10,11 @@
 
 load 'yeastData310.mat';
 
-[B, Z, evals, Xrecon, mu] = pcaFast(X);
+[B, Z, evals, Xrecon, mu] = pcaPmtk(X);
 
-% scree plot
+figure;
 cumsum(evals./sum(evals) * 100)
+title('scree plot')
 
 figure(1); plot(X'); set(gca,'xticklabel',times);
 title('raw data')
