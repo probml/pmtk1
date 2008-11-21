@@ -325,7 +325,7 @@ classdef LinregDist < CondProbDist
                                 w0 = mean(y)-mean(X)*(X\center(y));
                                 model.w = ConstDist([w0;w]);
                             else
-                                model.w = Constdist(larsLambda(X,y,lambda)');
+                                model.w = ConstDist(larsLambda(X,y,lambda)');
                             end
                         otherwise 
                             error('%s is not a supported L1 algorithm',algorithm);

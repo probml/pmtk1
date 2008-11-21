@@ -27,7 +27,7 @@ classdef CondProbDist
           case 'squarederr'
             score(testidx) = squaredErr(obj,  Xtest, Ytest);
           otherwise
-            error(['unrecognized objective ' objective]);
+            error('%s is an unrecognized objective ',objective);
         end
         %fprintf('fold %d, logprob %5.3f\n', k, L(k));
       end

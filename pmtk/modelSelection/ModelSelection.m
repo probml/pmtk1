@@ -233,7 +233,9 @@ classdef ModelSelection
             
             %% SET DEFAULT LOSS
             if(isempty(obj.lossFunction) && ~isempty(obj.Ydata))
-                if(isequal(obj.Ydata,round(obj.Ydata)))
+                if(iscell(obj.Ydata))
+                    obj.lossFunction = @(yhat,Xtest,ytest)sum(canonizeLabels(yhat) ~= canonizeLabels(ytest));
+                elseif(isequal(obj.Ydata,round(obj.Ydata)))
                     obj.lossFunction = @(yhat,Xtest,ytest)sum(reshape(yhat,size(ytest)) ~= ytest);
                 else
                     obj.lossFunction = @(yhat,Xtest,ytest)mse(reshape(yhat,size(ytest)),ytest);
@@ -307,7 +309,7 @@ classdef ModelSelection
                 if(obj.verbose)
                     t = toc;
                     str = sprintf('Model: %d of %d\nElapsed Time: %d minute(s), %d seconds',i,nmodels,floor(t/60),floor(rem(t,60))); 
-                    waitbar(i/nmodels,obj.progressBar,str); 
+                    waitbar((i-1)/nmodels,obj.progressBar,str); 
                 end
                 m = obj.models{i};
                 results(i).model = i;
@@ -317,8 +319,11 @@ classdef ModelSelection
                     results(i).score = obj.scoreFunction(obj,m);
                     results(i).stdErr = 0;
                 end
-                
             end
+            t = toc;
+            str = sprintf('Finishing...\nElapsed Time: %d minute(s), %d seconds',floor(t/60),floor(rem(t,60))); 
+            waitbar(1,obj.progressBar,str);
+            pause(0.5);
         end
         
         function [score,stdErr] = cvScore(obj,model)
@@ -368,12 +373,16 @@ classdef ModelSelection
                if(n ~= 1),is2d = false;end
                if(n ~= 2),is3d = false;end
             end
+            try
             if(is2d && isnumeric(obj.models{1}{1}))
                 plotErrorBars2d(obj,results);
             end
             
             if(is3d && isnumeric(obj.models{1}{1}))
                plot3d(obj,results); 
+            end
+            catch
+                close;
             end
         end 
         

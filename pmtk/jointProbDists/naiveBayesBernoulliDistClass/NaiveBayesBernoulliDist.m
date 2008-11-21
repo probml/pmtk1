@@ -1,26 +1,29 @@
 classdef NaiveBayesBernoulliDist < GenerativeClassifierDist
-    
-    properties
-        nclasses;                                           % classes in 1:K
-        classConditionalDensities;
-        classPosterior;
-        defaultFeaturePrior = BetaDist(2,2); 
-    end
-    
-    
-    
+% Naive Bayes with products of Bernoulli distributions as class conditional
+% densities. 
     
     methods
         
         function obj = NaiveBayesBernoulliDist(varargin)
-            obj.nclasses = process_options(varargin,'nclasses',[]);
+        % Constructor
+        %
+        % FORMAT:
+        %           obj = NaiveBayesBernoulliDist('name1',val1,'name2',val2,...)
+        %
+        % INPUT:
+        %           'nclasses'     - the number of classes
+        %           'transformer'  - a data transformer object, (optional)
+        %
+        % OUTPUT:
+        %
+        %          obj             - the constructed model
+            [obj.nclasses,obj.transformer] = process_options(varargin,'nclasses',[],'transformer',[]);
             obj.classConditionalDensities = cell(obj.nclasses,1);
+            obj.defaultFeaturePrior = BetaDist(2,2);
         end
-        
       
-        
-        
     end
+    
     
     methods(Access = 'protected')
         
@@ -39,7 +42,7 @@ classdef NaiveBayesBernoulliDist < GenerativeClassifierDist
             end 
         end
         
-        function logp = logprobCCD(obj,X,c)
+        function logp = logprobCCD(obj,X,c)    
             dist = obj.classConditionalDensities{c};
             m = mean(dist);                           
             logp = X*log(m)' + (1-X)*log(1-m)';
@@ -56,42 +59,6 @@ classdef NaiveBayesBernoulliDist < GenerativeClassifierDist
            nb = NaiveBayesBernoulliDist('nclasses',3);
            nb = fit(nb,'X',X,'y',Y);
            pred = predict(nb,X);
-           
-           load mnistAll;
-           Xtrain = (reshape(mnist.train_images,28*28,[]))' ;
-           Xtest  = (reshape(mnist.test_images,28*28,[]))'  ;
-           m = mean([Xtrain(:);Xtest(:)]);
-           Xtrain = Xtrain >= m;
-           Xtest = Xtest >= m;
-           ytrain = double(mnist.train_labels);
-           ytest  = double(mnist.test_labels);
-           clear mnistAll;
-           nb = NaiveBayesBernoulliDist('nclasses',10);
-           nb = fit(nb,'X',Xtrain,'y',ytrain,'featurePrior',BetaDist(2,2),'classPrior',DirichletDist([0,10000*ones(1,9)]));
-           pred = predict(nb,Xtest);
-           yhat = mode(pred);
-           err = mean(yhat~=ytest)
-           for i=0:9
-             figure;
-             imagesc(reshape(sample(nb,i),28,28));
-           end
-           placeFigures
-           ccm = zeros(10,10);
-           for i=1:10
-               for j=1:10
-                   ccm(i,j) = sum(yhat == i-1 & ytest == j-1);
-               end
-           end
-           hintonDiagram(ccm);
-           title('Class Confusion Matrix');
-           xlabel('actual','FontSize',12);
-           ylabel('predicted','FontSize',12);
-        
-           
-           labels = {'0','1','2','3','4','5','6','7','8','9'};
-           set(gca,'XTickLabel',labels,'YTicklabel',labels,'box','on','FontSize',12);
-           
-             
         end
         
     end

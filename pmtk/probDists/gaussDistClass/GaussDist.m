@@ -114,7 +114,7 @@ classdef GaussDist < ScalarDist
               bn = b0 + 0.5*sum((X-xbar).^2) + 0.5*n*k0*(m0-xbar)^2/(k0+n);
               obj.mu = NormInvGammaDist('mu', mn, 'k', kn, 'a', an, 'b', bn);
             case 'double'
-             if ~isa(obj.sigma2, 'invGammaDist'), error('sigma must be IG'); end
+             if ~isa(obj.sigma2, 'InvGammaDist'), error('sigma must be IG'); end
              a0 = obj.sigma2.a; b0 = obj.sigma2.b;
              an = a0 +  n/2;
              bn = b0 + 0.5*sum((X-obj.mu).^2);
