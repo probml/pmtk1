@@ -5,7 +5,9 @@ function x = pagerank(U,G,p)
 % a bar graph of page rank, and print the dominant URLs in page rank order.
 % x = pagerank(U,G,p) returns the page ranks instead of printing.
 % See also SURFER, SPY.
-% Cleve Moler, http://www.mathworks.com/moler/ncm/pagerank.m
+
+%#author Cleve Moler
+%#url http://www.mathworks.com/moler/ncm/pagerank.m
 
 if nargin < 3, p = .85; end
 

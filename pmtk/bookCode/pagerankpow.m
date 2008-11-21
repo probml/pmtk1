@@ -4,17 +4,17 @@ function [x,cnt] = pagerankpow(G)
 % [x,cnt] = pagerankpow(G) also counts the number of iterations.
 % There are no matrix operations.  Only the link structure
 % of G is used with the power method.
-% Cleve Moler, http://www.mathworks.com/moler/ncm/pagerankpow.m
+
+%#author Cleve Moler
+%#url http://www.mathworks.com/moler/ncm/pagerankpow.m
 
 % Link structure
 
 [n,n] = size(G);
 for j = 1:n
-   L{j} = find(G(:,j));
-   c(j) = length(L{j});
+   L{j} = find(G(:,j)); % set of links coming into node j
+   c(j) = length(L{j}); % in-degree
 end
-
-% Power method
 
 p = .85;
 delta = (1-p)/n;

@@ -17,7 +17,7 @@ p = 0.85;
 x = (I - p*G*D)\e;
 x = x/sum(x);
 
-% MLABA method
+% direct method
 z = ((1-p)*(c~=0) + (c==0))/n;
 T = p*G*D + e*z;
 pi = (I-T+ones(n,n))\e;
@@ -32,3 +32,12 @@ end
 
 % Matrix free power method
 [x,cnt] = pagerankpow(G)
+
+load harvard500
+figure;spy(G)
+tic
+[x,cnt] = pagerankpow(G);
+toc
+figure;bar(x);set(gca,'xlim',[-10 510]);set(gca,'ylim',[0 0.02])
+
+

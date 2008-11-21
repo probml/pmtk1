@@ -1,10 +1,28 @@
 function laplaceDemoJohnsonSmoking()
 % Johnson and Albert p35
 
-initVal = [2; 5]; 
-grad = @(theta) numericalGradient(@johnsonSmokingLogpost, theta, {});
-hess = @(theta) numericalHessian(@johnsonSmokingLogpost, theta, {});
-[mode, C, logZ, niter] = laplaceApprox(initVal, @johnsonSmokingLogpost, grad, hess)
+initVal = [2 5]; 
+
+%{
+  function [f,g,H] = foo(theta)
+    fn = @(theta) johnsonSmokingLogpostT(theta);
+    f = fn(theta);
+    %g = numericalGradient(@fn, theta, {});
+    %H = numericalHessian(@fn, theta, {});
+    g = gradest(fn, theta)';
+    H = hessian(fn, theta);
+  end
+
+[f,g,H] = foo(initVal);
+%}
+
+disp('johnson')
+[mu, C, logZ] = laplaceApproxJohnson(@johnsonSmokingLogpostT, initVal)
+
+disp('minfunc')
+[mu2, C2, logZ2] = laplaceApprox(@johnsonSmokingLogpostT, initVal)
+
+keyboard
 
 % Credible interval for alpha
 z = norminv(1-0.025);
@@ -30,7 +48,7 @@ grid on
 hold on
 plot(mode(1), mode(2), 'x', 'markersize', 12)
 
-p2 = mvnpdf(xy', mode', C);
+p2 = mvnpdf(xy', mu', C);
 p2 = reshape(p2, size(alphas));
 h2 = max(p2(:));
 vals2 = [0.1*h2 0.01*h2 0.001*h2];
@@ -40,4 +58,10 @@ title('Laplace')
 axis('square')
 grid on
 hold on
-plot(mode(1), mode(2), 'x', 'markersize', 12)
+plot(mu(1), mu(2), 'x', 'markersize', 12)
+
+keyboard
+
+
+
+end
