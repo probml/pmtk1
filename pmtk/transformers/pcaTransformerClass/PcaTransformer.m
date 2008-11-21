@@ -1,13 +1,12 @@
 classdef PcaTransformer < Transformer
     
-    
-    
+   
     properties
         k;                  % the dimensionality of the principle components
-        method;             % 1,2,3,4 selected automatically
         basisVectors;
-        eigVectors;
+        evals;
         mu;                 % mean(Xtrain)
+        method = 'default'; % one of {'default', 'eigCov', 'eigGram', 'svd'}
     end
     
     
@@ -17,7 +16,7 @@ classdef PcaTransformer < Transformer
             if(nargin == 1)
                 obj.k = varargin{1};
             else
-                [obj.k,obj.method] = process_options(varargin,'k',[],'method',[]);
+                [obj.k, obj.method] = process_options(varargin,'k',[],'method','default');
             end
         end
         
@@ -27,7 +26,7 @@ classdef PcaTransformer < Transformer
             end
             obj.mu = mean(X);
             X = bsxfun(@minus,X,obj.mu);
-            [obj.basisVectors, Xlow, obj.eigVectors] = pcaFast(X, obj.k,[],false);
+            [obj.basisVectors, Xlow, obj.evals] = pcaPmtk(X, obj.k, obj.method, false);
         end
         
         function Xnew = test(obj,X)
