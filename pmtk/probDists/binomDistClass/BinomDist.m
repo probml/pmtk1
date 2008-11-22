@@ -6,6 +6,7 @@ classdef BinomDist < DiscreteDist
   
   properties(GetAccess = 'private')
     lockN;
+    N
   end
   
   %% Main methods
@@ -39,7 +40,7 @@ classdef BinomDist < DiscreteDist
 %     end
 
 
-    function d = nfeatures(obj)
+    function d = ndims(obj)
       d = length(obj.N);
     end
 
@@ -63,7 +64,7 @@ classdef BinomDist < DiscreteDist
     function X = sample(obj, n)
        % X(i,j) = sample from params(j) for i=1:n
        checkParamsAreConst(obj)
-       d = nfeatures(obj);
+       d = ndims(obj);
        X = zeros(n, d);
        % Binomial is a sum of N Bernoulli rv's
        for j=1:d
@@ -76,7 +77,7 @@ classdef BinomDist < DiscreteDist
        % p(i,j) = log p(x(i) | params(j))
        % eg., logprob(binomdist(10,[0.5 0.1]), 1:10)
        checkParamsAreConst(obj)
-       d = nfeatures(obj);
+       d = ndims(obj);
        if nargin < 3, paramNdx = 1:d; end
        x = X(:);
        n = length(x);

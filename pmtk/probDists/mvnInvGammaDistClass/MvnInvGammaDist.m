@@ -30,7 +30,18 @@ classdef MvnInvGammaDist < VecDist
           error(['unrecognized variable ' queryVar])
       end
     end
+    
+    
+    
+    function d = ndims(obj)
+        d = numel(obj.mu);
+    end
    
+   
+    
+    function l = logprob(obj,varargin)
+       error('not yet implemented');  
+    end
 
   end
     

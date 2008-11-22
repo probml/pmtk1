@@ -26,7 +26,7 @@ classdef ChainTransformer < Transformer
       end
     end
     
-    function d = nfeatures(obj, X)
+    function d = ndims(obj, X)
       X = train(obj,X);
       d = size(X,2);
       % there is probably a more efficient way...

@@ -1,5 +1,5 @@
 %% Student T vs Gaussian
-useLog = true
+useLog = true;
 dofs = [0.1 1 5];
 xr = [-4 4];
 figure;

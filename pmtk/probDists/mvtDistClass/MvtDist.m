@@ -17,7 +17,10 @@ classdef MvtDist < VecDist
       m.dof = dof;
       m.Sigma = Sigma;
     end
-
+    
+    function d = ndims(obj)
+       d = numel(obj.mu); 
+    end
     
     function objS = convertToScalarDist(obj)
       if ndims(obj) ~= 1, error('cannot convert to scalarDst'); end
@@ -121,7 +124,7 @@ classdef MvtDist < VecDist
       mm = MvtDist(m.dof + dA, muAgivenB, SigmaAgivenB);
     end
 
-     
+   
   end % methods
 
 

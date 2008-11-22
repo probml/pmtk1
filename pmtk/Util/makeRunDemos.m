@@ -4,6 +4,10 @@ function makeRunDemos()
 %
 % Version 1.0
     
+    excludeTag = '%#exclude';
+    slowTag    = '%#slow';
+    brokenTag  = '%#broken';
+
     utilDir = fileparts(which('makeRunDemos'));
     cd(utilDir);  cd ..;
     
@@ -29,8 +33,21 @@ function makeRunDemos()
            
              fprintf(fid,'%%%% %s\n',tl);
              for j=1:numel(entry.m)
-                    mfile = entry.m{j};
-                    fprintf(fid,'%s\n',mfile(1:end-2));
+                    if(~tagsearch(entry.m{j},excludeTag))
+                        slow = tagsearch(entry.m{j},slowTag);
+                        broken = tagsearch(entry.m{j},brokenTag);
+                        if(slow || broken), fprintf(fid,'%%'); end
+                        mfile = entry.m{j};
+                        fprintf(fid,'%s',mfile(1:end-2));
+                        if(broken)
+                            fprintf(fid,' - broken!\n');
+                        elseif(slow)
+                            fprintf(fid,' - slow!\n');
+                        else
+                            fprintf(fid,'\n');
+                        end 
+                    end
+                    
              end
              fprintf(fid,'pause(2); close(''all''); clear(''all'');\n\n');           
        end
@@ -38,6 +55,7 @@ function makeRunDemos()
     end
    
     fclose(fid);
+    
     
     
     

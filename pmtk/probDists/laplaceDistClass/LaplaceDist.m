@@ -1,4 +1,4 @@
-classdef LaplaceDist < ScalarDist
+classdef LaplaceDist < ProbDist
   % Laplace distribution or double exponential
   
   properties
@@ -17,7 +17,7 @@ classdef LaplaceDist < ScalarDist
       m.b = b(:)';
      end
      
-     function d = nfeatures(obj)
+     function d = ndims(obj)
        d = length(obj.b);
      end
    
@@ -51,13 +51,19 @@ classdef LaplaceDist < ScalarDist
      
      function p = logprob(obj, X)
        % p(i,j) = log p(X(i) | params(j))
-       d = nfeatures(obj);
+       d = ndims(obj);
        n = length(X);
        p = zeros(n,d);
        logZ = lognormconst(obj);
        for j=1:d
          p(:,j) = -(abs(X-obj.mu(j))/obj.b(j)) - logZ(j);
        end
+     end
+     
+     function xrange = plotRange(obj, sf)
+         if nargin < 2, sf = 2; end
+         m = mean(obj); v = sqrt(var(obj));
+         xrange = [m-sf*v, m+sf*v];
      end
       
 

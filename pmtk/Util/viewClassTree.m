@@ -20,7 +20,7 @@ function  h=viewClassTree(directory)
 if nargin == 0
     directory = '.';
 end
-
+excludeList = {'dependsOn','viewClassTree','getClasses'};
 
 info = removeUnwanted(dirinfo(directory));
 errors = {};
@@ -44,16 +44,20 @@ end
 
 markForDeletion = [];
 for i=1:numel(allClasses)
-    try
-        meta = eval(['?',allClasses{i}]);
-        parents = meta.SuperClasses;
-    catch ME
-        errors = [errors;allClasses{i}];
+    if(isempty(cell2mat(strfind(excludeList,allClasses{i}))))
+        try
+            meta = eval(['?',allClasses{i}]);
+            parents = meta.SuperClasses;
+        catch ME
+            errors = [errors;allClasses{i}];
+            markForDeletion = [markForDeletion,i];
+            continue;
+        end
+        for j=1:numel(parents)
+            matrix(map.(allClasses{i}),map.(parents{j}.Name)) = 1;
+        end
+    else
         markForDeletion = [markForDeletion,i];
-        continue;
-    end
-    for j=1:numel(parents)
-       matrix(map.(allClasses{i}),map.(parents{j}.Name)) = 1;
     end
 end
 allClasses(markForDeletion) = [];
@@ -66,7 +70,7 @@ h = Graphlayout('adjMatrix',matrix,'nodeLabels',shortClassNames,'splitLabels',tr
 
 if(~isempty(errors))
     fprintf('\nThe following m-files were\nthought to be classes\nbecause they contain the\nclassdef keyword, but did\nnot respond to queries.\nThey were not included in the graph.\n\n');
-    for i=1:numel(errors)
+    for i=1:numel(errors) 
        fprintf('%s\n',errors{i}); 
     end
 end

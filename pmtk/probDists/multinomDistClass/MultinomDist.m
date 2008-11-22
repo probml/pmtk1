@@ -1,8 +1,7 @@
-classdef MultinomDist < VecDist
+classdef MultinomDist < DiscreteDist
   
   properties
     N; 
-    mu;
   end
   
   
@@ -20,11 +19,18 @@ classdef MultinomDist < VecDist
       figure; bar(obj.mu);
       title(sprintf('Mu(%d,:)', obj.N))
     end
-  
-    
+ 
     function m = mean(obj)
      checkParamsAreConst(obj)
       m = obj.N * obj.mu;
+    end
+    
+    function m = mode(obj)
+        m = floor((obj.N+1)*obj.mu);
+    end
+    
+    function v = var(obj)
+        v = obj.N*obj.mu*(1-obj.mu);
     end
     
    

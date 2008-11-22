@@ -1,4 +1,4 @@
-classdef InvGammaDist < ScalarDist
+classdef InvGammaDist < ProbDist
 
   properties
     a;
@@ -16,14 +16,10 @@ classdef InvGammaDist < ScalarDist
       obj.b = b;
     end
 
-    function d = nfeatures(obj)
+    function d = ndims(obj)
       d = length(obj.a);
     end
   
-    function xrange = plotRange(obj) % over-ride default
-      xrange = [0 3*mean(obj)];
-    end
-
     function m = mean(obj)
       m = obj.b ./ (obj.a-1);
     end
@@ -39,7 +35,7 @@ classdef InvGammaDist < ScalarDist
 
     function X = sample(obj, n)
       % X(i,j) = sample from params(j) for i=1:n
-      d = nfeatures(obj);
+      d = ndims(obj);
       X = zeros(n, d);
       for j=1:d
         v = 2*obj.a(j);
@@ -54,7 +50,7 @@ classdef InvGammaDist < ScalarDist
 
     function p = logprob(obj, X)
       % p(i,j) = log p(x(i) | params(j))
-      d = nfeatures(obj);
+      d = ndims(obj);
       x = X(:);
       n = length(x);
       p = zeros(n,d);
@@ -65,6 +61,15 @@ classdef InvGammaDist < ScalarDist
       end
     end
 
+  end
+  
+  
+  methods
+      
+      function xrange = plotRange(obj) % over-ride default
+          xrange = [0 3*mean(obj)];
+      end
+      
   end
 
 end

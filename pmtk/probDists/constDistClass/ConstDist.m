@@ -34,7 +34,7 @@ classdef ConstDist < ProbDist
        point = repmat(obj.point(:)', n, 1);
      end
     
-     function p = logProb(obj, X)
+     function p = logprob(obj, X)
        % p(i,j) = log p(x(i) | params(j))
        d = ndims(obj);
        x = X(:);

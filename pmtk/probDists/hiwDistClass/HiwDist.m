@@ -64,16 +64,11 @@ classdef HiwDist < ProbDist
       end
     end
     
-  end
-  
-  
-  
-  methods(Access = 'protected')
-      
-      
-      
-  end
  
-
-
+  function logprob(obj,varargin)
+      error('not yet implemented');
+  end
+  
+  
+  end
 end

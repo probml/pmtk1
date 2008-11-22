@@ -3,6 +3,7 @@ classdef BetaBinomDist < DiscreteDist
   properties
     a;
     b;
+    N
   end
  
   %% Main methods
@@ -18,7 +19,7 @@ classdef BetaBinomDist < DiscreteDist
       obj.support = 0:N;
     end
  
-    function d = nfeatures(obj)
+    function d = ndims(obj)
       d = length(obj.a);
     end
     
@@ -34,7 +35,7 @@ classdef BetaBinomDist < DiscreteDist
    
      function p = logprob(obj, X, paramNdx)
        % p(i,j) = log p(x(i) | params(j))
-       if nargin < 3, paramNdx = 1:nfeatures(obj); end
+       if nargin < 3, paramNdx = 1:ndims(obj); end
        x = X(:);
        p = zeros(length(x),length(paramNdx));
        for jj=1:length(paramNdx)

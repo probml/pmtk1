@@ -11,7 +11,10 @@ classdef DirichletDist < VecDist
       if nargin == 0, alpha = []; end
       obj.alpha = alpha;
     end
-
+    
+    function d = ndims(obj)
+       d = numel(obj.alpha); 
+    end
 
     function m = mean(obj)
       a = sum(obj.alpha);

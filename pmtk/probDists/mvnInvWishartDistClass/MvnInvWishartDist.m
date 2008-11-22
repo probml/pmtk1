@@ -30,15 +30,7 @@ classdef MvnInvWishartDist < VecDist
       k = obj.k;
       lnZ = (v*d/2)*log(2) + mvtGammaln(d,v/2) -(v/2)*logdet(S) + (d/2)*log(2*pi/k);
     end
-    
-    function xrange = plotRange(obj)
-      d = length(obj.mu);
-      if d > 1, error('not supported'); end
-      sf = 2;
-      S = obj.Sigma/obj.k;
-      xrange = [obj.mu-sf*S, obj.mu+sf*S, 0.01, sf*S];
-    end
-    
+     
     function L = logprob(obj, X)
       % For 1d, L(i) = log p(X(i,:) | theta), where X(i,:) = [mu sigma]
       d = length(obj.mu);
@@ -75,8 +67,19 @@ classdef MvnInvWishartDist < VecDist
       end
     end
     
+   
     
 
+  end
+  
+  methods
+      function xrange = plotRange(obj)
+          d = length(obj.mu);
+          if d > 1, error('not supported'); end
+          sf = 2;
+          S = obj.Sigma/obj.k;
+          xrange = [obj.mu-sf*S, obj.mu+sf*S, 0.01, sf*S];
+      end
   end
     
     

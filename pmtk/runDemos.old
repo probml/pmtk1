@@ -145,7 +145,7 @@ mvtPlotDemo
 pause(2); close('all'); clear('all');
 
 %% naiveBayesBernoulliDist
-NBmnistDemo
+%NBmnistDemo - slow!
 pause(2); close('all'); clear('all');
 
 %% normalInvGammaDist

@@ -1,4 +1,4 @@
-classdef UnifDist < ScalarDist 
+classdef UnifDist < ProbDist 
   %  continuous uniform distribution
   
   properties
@@ -34,6 +34,17 @@ classdef UnifDist < ScalarDist
       end
     end
     
+    function m = mean(obj)
+        m = (obj.hi + obj.lo)/2;
+    end
+    
+    function m = mode(obj)
+        m = obj.lo;
+    end
+    
+    function v = var(obj)
+       v = ((obj.hi - obj.lo).^2)/12;
+    end
    
    
      function X = sample(obj, n)
@@ -43,8 +54,15 @@ classdef UnifDist < ScalarDist
       for j=1:d
         X(:,j) = unifrnd(obj.lo(j), obj.hi(j), n, 1);
       end
-    end
-
+     end
+    
+     function e = entropy(obj)
+        e = log(obj.hi - obj.lo);
+     end
+        
+     function m = momentGeneratingFunction(obj)
+        m = @(t)(exp(t*obj.hi)-exp(t*obj.lo))/(t*(obj.hi-obj.lo)); 
+     end
     
 
   end % methods

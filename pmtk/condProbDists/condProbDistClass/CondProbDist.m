@@ -1,4 +1,4 @@
-classdef CondProbDist
+classdef CondProbDist < ProbDist
   % conditional probability density function (y|x)
   
   properties
@@ -8,7 +8,11 @@ classdef CondProbDist
 
   %%  Main methods
   methods
-    
+     
+      function d = ndims(obj)
+         d = obj.ndimsX; 
+      end
+      
     function [mu, stdErr] = cvScore(obj, X, Y, varargin)
       % X(i,:), Y(i,:)
       [nfolds, objective, randOrder] = process_options(...

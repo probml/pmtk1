@@ -82,6 +82,10 @@ classdef InvWishartDist < ProbDist
             end
         end
         
+        function v = var(obj,varargin)
+           error('not yet imlemented'); 
+        end
+        
         
         function mm = marginal(obj, query)
             % If M ~ IW(dof,S), then M(q,q) ~ IW(dof-2d+2q, S(q,q))
@@ -140,7 +144,7 @@ classdef InvWishartDist < ProbDist
     end
     
     
-    methods(Access = 'protected')
+    methods
         
         function xrange = plotRange(obj)
             if ndims(obj) > 1

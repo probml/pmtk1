@@ -1,8 +1,9 @@
-classdef DiscreteDist  < MultinomDist
+classdef DiscreteDist  < VecDist
 
   properties
     probs;
     support;
+    mu;
   end
 
 
@@ -19,6 +20,30 @@ classdef DiscreteDist  < MultinomDist
       % for child classes
         obj.probs = exp(logprob(obj, obj.support));
     end
+    
+    function m = mean(obj)
+       m = obj.mu; 
+    end
+    
+    function d = ndims(obj)
+       d = numel(obj.mu); 
+    end
+    
+    function v = var(obj)
+        v = obj.mu.*(1-obj.mu);
+    end
+    
+    function logp = logprob(obj, X)
+       % p(i) = log p(X(i,:))
+       n = size(X,1);
+       p = repmat(obj.mu,n,1);
+       xlogp = sum(X .* log(p), 2);
+       logp = - sum(factorialln(X), 2) + xlogp; 
+       % debugging
+       %logp2 = log(mnpdf(X,obj.mu));
+       %assert(approxeq(logp, logp2))
+     end
+    
     
     function h=plot(obj, varargin)
       % plot a probability mass function as a histogram

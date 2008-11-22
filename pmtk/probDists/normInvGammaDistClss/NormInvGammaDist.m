@@ -16,6 +16,9 @@ classdef NormInvGammaDist < VecDist
       m.mu = mu; m.k = k; m.a = a; m.b = b;
     end
     
+    function d = ndims(obj)
+       d = numel(obj.mu); 
+    end
  
     function mm = marginal(obj, queryVar)
       % marginal(obj, 'sigma') or marginal(obj, 'mu')
@@ -49,18 +52,27 @@ classdef NormInvGammaDist < VecDist
       assert(approxeq(L,L2))
       %}
     end
+    
+   
+    
+   
+    
+    
+        
       
-  function xrange = plotRange(obj)
-      d = length(obj.mu);
-      if d > 1, error('not supported'); end
-      sf = 2;
-      S = obj.b/obj.a;
-      xrange = [obj.mu-sf*S, obj.mu+sf*S, 0.01, sf*S];
-    end
+  
   end
     
-  %% demos
-  methods(Static = true)
+  
+  methods
+      function xrange = plotRange(obj)
+          d = length(obj.mu);
+          if d > 1, error('not supported'); end
+          sf = 2;
+          S = obj.b/obj.a;
+          xrange = [obj.mu-sf*S, obj.mu+sf*S, 0.01, sf*S];
+      end
+      
   end
     
 end

@@ -33,6 +33,12 @@ classdef TabularDist < VecDist
     function print(m)
       dispjoint(m.stateInfEng.Tfac.T); % assumes infEng is tabularInfer...
     end
+     
+    function logprob(obj,varargin)
+       error('not yet implemented');  
+    end
+    
+  
     
   end % methods
 

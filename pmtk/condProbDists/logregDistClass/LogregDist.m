@@ -77,7 +77,7 @@ classdef LogregDist < CondProbDist
 
             output = [];
             if lambda > 0 && strcmpi(prior, 'none'), prior = 'L2'; end
-
+            
             offsetAdded = false;
             if ~isempty(obj.transformer)
                 [X, obj.transformer] = train(obj.transformer, X);
@@ -85,8 +85,10 @@ classdef LogregDist < CondProbDist
             end
 
             if isempty(obj.nclasses), obj.nclasses = length(unique(y)); end
+            obj.ndimsX = size(X,2);
+            obj.ndimsY = size(y,2);
             [Y1,obj.classSupport] = oneOfK(y, obj.nclasses);
-
+            
             switch lower(prior)
                 case {'l1'}
                      obj = fitL1(obj,X,Y1,lambda,method,optMethod,offsetAdded);

@@ -1,4 +1,4 @@
-classdef StudentDist < ScalarDist 
+classdef StudentDist < ProbDist 
   %  student T p(X|dof, mu,sigma2) 
   
   properties
@@ -102,7 +102,10 @@ classdef StudentDist < ScalarDist
       obj.sigma2 = params(2);
       obj.dof = params(3);
     end
-     
+    
+    function c = cov(obj)
+       c = obj.sigma2; 
+    end
     
      
   end % methods

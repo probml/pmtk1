@@ -1,4 +1,4 @@
-classdef GaussDist < ScalarDist
+classdef GaussDist < ProbDist
   
   properties
     mu;
@@ -20,7 +20,7 @@ classdef GaussDist < ScalarDist
       m.sigma2 = sigma2;
      end
      
-     function d = nfeatures(obj)
+     function d = ndims(obj)
        d = length(obj.mu);
      end
      
@@ -57,7 +57,7 @@ classdef GaussDist < ScalarDist
      
      function X = sample(m, n)
        % X(i,j) = sample from gauss(m.mu(j), m.sigma(j)) for i=1:n
-       d = nfeatures(m);
+       d = ndims(m);
        X = randn(n,d) .* repmat(sqrt(m.sigma2), n, 1) + repmat(m.mu, n, 1);
      end
 
@@ -67,7 +67,7 @@ classdef GaussDist < ScalarDist
      
      function p = logprob(obj, X)
        % p(i,j) = log p(X(i) | params(j))
-       d = nfeatures(obj);
+       d = ndims(obj);
        n = length(X);
        p = zeros(n,d);
        logZ = lognormconst(obj);
@@ -126,6 +126,16 @@ classdef GaussDist < ScalarDist
           error(['unrecognized method ' method])
       end
     end
+  end
+  
+  methods
+      
+      function xrange = plotRange(obj, sf)
+          if nargin < 2, sf = 2; end
+          m = mean(obj); v = sqrt(var(obj));
+          xrange = [m-sf*v, m+sf*v];
+      end
+      
   end
  
   

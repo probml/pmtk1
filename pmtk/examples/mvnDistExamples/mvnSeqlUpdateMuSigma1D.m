@@ -1,3 +1,4 @@
+
 nu = 0.001; S = 0.001;
 setSeed(1);
 muTrue = 5; varTrue = 10;

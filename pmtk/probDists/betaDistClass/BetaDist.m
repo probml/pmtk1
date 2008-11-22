@@ -1,4 +1,4 @@
-classdef BetaDist < ScalarDist
+classdef BetaDist < ProbDist
 
   properties
     a;
@@ -16,13 +16,11 @@ classdef BetaDist < ScalarDist
       obj.b = b;
     end
 
-    function d = nfeatures(obj)
+    function d = ndims(obj)
       d = length(obj.a);
     end
 
-    function xrange = plotRange(obj) % over-ride default
-      xrange = [0 1];
-    end
+   
 
     function m = mean(obj)
       m = obj.a ./(obj.a + obj.b);
@@ -61,7 +59,7 @@ classdef BetaDist < ScalarDist
 
     function p = logprob(obj, X, paramNdx)
           % p(i,j) = log p(x(i) | params(j))
-      d = nfeatures(obj);
+      d = ndims(obj);
       if nargin < 3, paramNdx = 1:d; end
       x = X(:);
       n = length(x);
@@ -129,6 +127,13 @@ classdef BetaDist < ScalarDist
       end
     end
   end
-
+    
+  methods
+      
+      function xrange = plotRange(obj) % over-ride default
+        xrange = [0 1];
+      end 
+ 
+  end
 
 end

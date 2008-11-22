@@ -16,7 +16,7 @@ classdef RbfBasisTransformer < Transformer
       obj.sigma = sigma;
     end
     
-    function d=nfeatures(obj, X)
+    function d=ndims(obj, X)
       d = obj.ncenters;
     end
      

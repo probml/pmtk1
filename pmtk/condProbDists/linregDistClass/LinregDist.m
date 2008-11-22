@@ -358,6 +358,8 @@ classdef LinregDist < CondProbDist
             end
              yhat = X*model.w.point(:);
              model.sigma2 = mean((yhat-y).^2);
+             model.ndimsX = size(X,2);
+             model.ndimsY = size(y,2);
         end
 
 
@@ -406,6 +408,8 @@ classdef LinregDist < CondProbDist
                     done = true;
             end
             assert(done)
+            model.ndimsX = size(X,2);
+            model.ndimsY = size(y,2);
         end
 
         function [py] = predictBayesian(model, X)
@@ -442,8 +446,9 @@ classdef LinregDist < CondProbDist
               done = true;
           end
           assert(done)
+        
         end
-
+            
     end
     
     methods(Static = true)

@@ -1,4 +1,4 @@
-classdef GammaDist < ScalarDist
+classdef GammaDist < ProbDist
 
   properties
     a;
@@ -17,14 +17,10 @@ classdef GammaDist < ScalarDist
       obj.b = b;
     end
 
-    function d = nfeatures(obj)
+    function d = ndims(obj)
        d = length(obj.a);
     end
-    
-    function xrange = plotRange(obj) % over-ride default
-      xrange = [0 3*mean(obj)];
-    end
-
+   
     function m = mean(obj)
       m = obj.a ./ obj.b;
     end
@@ -56,7 +52,7 @@ classdef GammaDist < ScalarDist
 
     function p = logprob(obj, X)
       % p(i,j) = log p(x(i) | params(j))
-      d = nfeatures(obj);
+      d = ndims(obj);
       x = X(:);
       n = length(x);
       p = zeros(n,d);
@@ -93,6 +89,16 @@ classdef GammaDist < ScalarDist
     end
     
 
+  end
+  
+  
+  methods
+    
+    function xrange = plotRange(obj) % over-ride default
+      xrange = [0 3*mean(obj)];
+    end 
+      
+      
   end
 
 end

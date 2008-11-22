@@ -54,6 +54,8 @@ classdef WishartDist < ProbDist
             L = L(:);
         end
         
+       
+        
         function m = mean(obj)
             m = obj.dof * obj.Sigma;
         end
@@ -131,10 +133,11 @@ classdef WishartDist < ProbDist
             end
         end
         
+       
         
     end
     
-    methods(Access = 'protected')
+    methods
         function xrange = plotRange(obj)
             if ndims(obj) > 1
                 error('only works for 1d')

@@ -104,6 +104,12 @@ classdef GenerativeClassifierDist < ProbDist
             
         end
         
+       
+        
+        function d = ndims(obj)
+            d = ndims(obj.classConditionalDensities{1});
+        end
+        
     end
     
     methods(Access = 'protected', Abstract = true)

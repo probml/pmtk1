@@ -105,6 +105,8 @@ classdef MixGaussDist < VecDist
           error(['bad method ' method])
       end
     end
+    
+    
 
     
   end % methods

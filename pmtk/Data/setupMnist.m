@@ -7,16 +7,18 @@ if(nargin == 0),binary = false;end
     
     
 load mnistAll
-Xtrain = double(reshape(mnist.train_images,28*28,60000)');
-Xtest = double(reshape(mnist.test_images,28*28,10000)');
-ytrain = double(mnist.train_labels);
-ytest = double(mnist.test_labels);
+Xtrain = (reshape(mnist.train_images,28*28,60000)');
+Xtest = (reshape(mnist.test_images,28*28,10000)');
+ytrain = (mnist.train_labels);
+ytest = (mnist.test_labels);
+clear mnist;
 if(binary)
     mu = mean([Xtrain(:);Xtest(:)]);
     Xtrain = Xtrain >=mu;
     Xtest = Xtest >=mu;
 end
+ytrain = double(ytrain);
+ytest  = double(ytest);
 
-clear mnist;
 
 end

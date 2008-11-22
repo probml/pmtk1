@@ -93,11 +93,20 @@ classdef SampleDist < ProbDist
       end
     end
     
+    function s = sample(obj,n)
+        ndx = randi(size(obj.samples,1),n,1);
+        s = obj.samples(ndx);
+    end
+    
+    function l = logprob(obj,varargin)
+       error('not yet implemented');  
+    end
+    
     function [h, hist_area] = plot(obj, varargin)
       [scaleFactor, useHisto,distNDX] = process_options(...
         varargin, 'scaleFactor', 1, 'useHisto', 1,'distNDX',1);
       samples = obj.samples(:,:,distNDX);
-      switch nfeatures(obj)
+      switch ndims(obj)
         case 1,
           if useHisto
             [bin_counts, bin_locations] = hist(samples, 20);
@@ -115,7 +124,7 @@ classdef SampleDist < ProbDist
       end
     end
       
-    function d = nfeatures(obj)
+    function d = ndims(obj)
       % num dimensions (variables)
       %mu = mean(obj); d = length(mu);
       d = size(obj.samples,2);
