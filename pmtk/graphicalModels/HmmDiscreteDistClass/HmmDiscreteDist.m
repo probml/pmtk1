@@ -152,18 +152,16 @@ classdef HmmDiscreteDist < HmmDist
         function casino()
             % 1 = fair, 2 = loaded
             obsmat = [ones(1,6)./6;ones(1,5)./10,0.5];
-            %transmat = [0.95,0.05;0.1,0.90];
-            transmat  = [0.99,0.01;0.1,0.90];
+            transmat = [0.95,0.05;0.1,0.90];
+            %transmat  = [0.99,0.01;0.1,0.90];
             pi = [0.5,0.5];
             model = HmmDiscreteDist('nstates',2,'noutputSymbols',6,'obsmat',obsmat,'transmat',transmat,'pi',pi);
-            nsamples = 300; length = 1;
+            nsamples = 1; length = 300;
             [rolls,die] = sample(model,nsamples,length);
+           
             dielabel = repmat('F',size(die));
             dielabel(die == 2) = 'L';
-            vit = zeros(size(die));
-            for i=1:nsamples
-                vit(i,:) = viterbi(model,rolls(i,:));
-            end
+            vit = viterbi(model,rolls);
             vitlabel = repmat('F',size(vit));
             vitlabel(vit == 2) = 'L';
             rollLabel = num2str(rolls);
@@ -174,11 +172,11 @@ classdef HmmDiscreteDist < HmmDist
                 fprintf('Viterbi: %s\n\n',vitlabel(i:i+59));
             end
             
-            filtered = predict(model,'X',rolls,'method','filtering');
-            smoothed = predict(model,'X',rolls,'method','smoothing');
-            d = 1:300;
+            filtered = squeeze(predict(model,'X',rolls,'method','filtering'))';
+            smoothed = squeeze(predict(model,'X',rolls,'method','smoothing'))';
+         
             figure; hold on;
-            plot(d(die == 1),0,'.r','MarkerSize',10);
+         
             
             
             plot(filtered(:,1));
