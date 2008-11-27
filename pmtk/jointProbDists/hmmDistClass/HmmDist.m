@@ -151,8 +151,79 @@ classdef HmmDist < ProbDist
     end
     
     methods(Access = 'protected')
+         
+        function emUpdate(model,data,transitionPrior,observationPrior,varargin)
+        % Update the transition matrix, the state conditional densities and pi,
+        % the distribution over starting hidden states, using em.
         
-        function data = checkData(model,data)
+               [opt_tol,max_iter,clamp_pi,clamp_obs,clamp_trans] = ...
+                   process_options(varargin ,...
+                   'opt_tol'                ,1e-4   ,...
+                   'max_iter'               ,20     ,...
+                   'clamp_pi'               ,false  ,...
+                   'clamp_obs'              ,false  ,...
+                   'clamp_trans'            ,false  );
+           
+               if(clamp_pi || clamp_obs || clamp_trans)
+                  warning('clamping not yet implemented'); 
+               end
+               loglikelihood = -inf;
+               
+               iter = 1;
+               converged = false;
+               switch(class(data))
+                   case 'cell'
+                       nobservations = numel(data);
+                   case 'double'
+                       nobservations = size(data,3);
+               end
+               
+               
+               while(iter < max_iter && ~converged)
+                   
+                   %% E Step
+                   prev_ll = loglikelihood;
+                   exp_num_visits1 = zeros(model.nstates,1);
+                   exp_num_trans   = zeros(model.nstates,model.nstates);
+                   for j=1:nobservations
+                         switch(class(data))
+                            case 'cell'
+                            	observation = data{j};
+                            case 'double'
+                                observation = data(:,:,j);
+                        end
+                        obslength = size(observation,2);
+                        obslik = zeros(model.nstates,obslength);
+                        for i=1:obj.nstates
+                           stateCondDist = model.stateConditionalDensities{i};
+                           obslik(:,i) = exp(logprob(stateCondDist,observation)); 
+                        end
+                        [gamma, alpha, beta, current_ll] = hmmFwdBack(model.pi, model.transitionMatrix, obslik);
+                        exp_num_visits1 = exp_num_visits1 + gamma(:,1);
+                        xi = hmmComputeTwoSlice(alpha, beta, model.transitionMatrix, obslik);
+                        exp_num_trans   = exp_num_trans + xi;
+                        
+                        % compute the expected sufficient stats for the
+                        % observation model here.
+                        
+                        loglikelihood = loglikelihood + current_ll;
+                   end
+                   
+                   %% M Step
+                   model.pi = normalize(exp_num_visits1);
+                   model.transitionMatrix = normalize(exp_num_trans,2);
+                   % maximize the observation model here. 
+                   
+                  
+                   %% Test Convergence
+                   iter = iter + 1;
+                   converged = (abs(loglikelihood - prev_ll) / (abs(loglikelihood) + abs(prev_ll) + eps)/2) < opt_tol;
+                   if(loglikelihood - prev_ll < 1e-3),warning('log likelihood decreased during em step');end
+               end % end of em loop
+            
+        end % end of emUpdate method
+        
+         function data = checkData(model,data)
         % basic checks to make sure the data is in the right format
            if(isempty(data))
                error('You must specify data to fit this object');
@@ -192,64 +263,6 @@ classdef HmmDist < ProbDist
                    error('Data must be either a matrix of double values or a cell array');
            end
         end % end of checkData method
-        
-        function emUpdate(model,data,transitionPrior,observationPrior,varargin)
-        % Update the transition matrix, the state conditional densities and pi,
-        % the distribution over starting hidden states using em.
-        
-               [opt_tol,max_iter,clamp_pi,clamp_obs,clamp_trans] = ...
-                   process_options(varargin ,...
-                   'opt_tol'                ,1e-4   ,...
-                   'max_iter'               ,20     ,...
-                   'clamp_pi'               ,false  ,...
-                   'clamp_obs'              ,false  ,...
-                   'clamp_trans'            ,false  );
-           
-               loglikelihood = 0;
-               iter = 0;
-               converged = false;
-               switch(class(data))
-                   case 'cell'
-                       nobservations = numel(data);
-                   case 'double'
-                       nobservations = size(data,3);
-               end
-               
-               
-               while(iter < max_iter && ~converged)
-                   
-                   
-                   exp_num_visits1 = zeros(model.nstates,1);
-                   exp_num_trans   = zeros(model.nstates,model.nstates);
-                   for j=1:nobservations
-                         switch(class(data))
-                            case 'cell'
-                            	observation = data{j};
-                            case 'double'
-                                observation = data(:,:,j);
-                        end
-                        obslength = size(observation,2);
-                        obslik = zeros(model.nstates,obslength);
-                        for i=1:obj.nstates
-                           stateCondDist = model.stateConditionalDensities{i};
-                           obslik(:,i) = exp(logprob(stateCondDist,observation)); 
-                        end
-                        [gamma, alpha, beta, current_ll] = hmmFwdBack(model.pi, model.transitionMatrix, obslik);
-                        exp_num_visits1 = exp_num_visits1 + gamma(:,1);
-                        xi = hmmComputeTwoSlice(alpha, beta, model.transitionMatrix, obslik);
-                        exp_num_trans   = exp_num_trans + xi;
-                        
-                                
-                        loglikelihood = loglikelihood + current_ll;
-                   end
-                   
-                  
-                   
-                   
-                   
-               end % end of em loop
-            
-        end
         
     end % end of protected methods
 end % end of class
