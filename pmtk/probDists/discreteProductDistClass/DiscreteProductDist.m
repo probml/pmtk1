@@ -1,26 +1,21 @@
-classdef DiscreteProductDist  < VecDist
+classdef DiscreteProductDist  < ProductDist
 
   properties
-    probs;
+    
     support;
     mu;
   end
 
 
   methods
-    function obj = DiscreteProductDist(probs, support)
+    function obj = DiscreteProductDist(mu, support)
       % probs is n*d, where probs(i,c) = p(Xi=c)
-      if nargin == 0, probs = []; end
+      if nargin == 0, mu = []; end
       if nargin < 2, support = 1:length(probs); end
-      obj.probs = probs;
+      obj.mu = mu;
       obj.support = support;
     end
 
-    function obj = computeProbs(obj)
-      % for child classes
-        obj.probs = exp(logprob(obj, obj.support));
-    end
-    
     function m = mean(obj)
        m = obj.mu; 
     end
@@ -81,17 +76,6 @@ classdef DiscreteProductDist  < VecDist
     end
   end
 
-  methods(Static = true)
-    
-    function testClass()
-      p=DiscreteDist([0.3 0.2 0.5], [-1 0 1]);
-      X=sample(p,1000);
-      hh=hist(X,[-1 0 1])
-       
-      % two ternary variables
-      p=DiscreteDist([0.3 0.2 0.5; 0.1 0.1 0.8]);
-      plot(p);
-    end
-  end
+ 
   
 end

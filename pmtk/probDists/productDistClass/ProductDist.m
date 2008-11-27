@@ -1,8 +1,8 @@
 classdef ProductDist < ProbDist
-    %PRODUCTDIST Summary of this class goes here
-    %   Detailed explanation goes here
+   
     
     properties
+        ndistributions;
     end
     
     methods

@@ -140,6 +140,29 @@ classdef HmmDist < ProbDist
         
         function pred = predict(model,varargin)
             
+            [X,target,indices,method] = process_options(varargin,'X',[],'target','z','indices',[],'method','smoothing');
+            switch lower(target)
+                case 'z'
+                    switch lower(method)
+                        
+                        case 'smoothing'
+                            
+                            
+                            
+                        case 'filtering'
+                            
+                        case 'viterbi'
+                            
+                        case 'sampling'
+                            
+                        otherwise
+                            error('%s is not a valid prediction method',method);
+                    end
+                case 'x'
+                    error('not yet implemented');
+            end
+            
+            
         end
         
         function [obs,hidden] = sample(model,nsamples,length)
@@ -150,9 +173,7 @@ classdef HmmDist < ProbDist
             d = model.obsDims;
         end
         
-        function path = viterbi(model,X)
-            
-        end
+      
         
     end
     
