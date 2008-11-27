@@ -77,8 +77,8 @@ classdef MultinomDist < DiscreteDist
        % data - data(i,:) = vector of counts for trial i
        % suffStat - SS.counts(j), SS.N = total amount of data
        % method -  'map' or 'mle' or 'bayesian'
-       [X, suffStat, method] = process_options(...
-         varargin, 'data', [], 'suffStat', [], 'method', 'mle');
+       [X, suffStat, method,prior] = process_options(...
+         varargin, 'data', [], 'suffStat', [], 'method', 'mle','prior',[]);
        if isempty(suffStat), suffStat = MultinomDist.mkSuffStat(X); end
        switch method
          case 'mle'
@@ -87,7 +87,17 @@ classdef MultinomDist < DiscreteDist
            switch class(obj.mu)
              case 'DirichletDist'
                d = ndims(obj);
-               obj.mu  = (suffStat.counts + obj.alpha - 1) / (suffStat.N + sum(obj.alpha) - d);
+               obj.mu  = (suffStat.counts + obj.mu.alpha - 1) / (suffStat.N + sum(obj.mu.alpha) - d);
+               case 'double'
+               if(isempty(prior))
+                  error('No prior specified, cannot do map estimation'); 
+               end
+               switch(class(prior))
+                   case 'DirichletDist'
+                       obj.mu  = (suffStat.counts + prior.alpha - 1) / (suffStat.N + sum(prior.alpha) - ndims(obj));
+                   otherwise
+                        error(['cannot handle prior of type ' class(prior)])
+               end
              otherwise
                error(['cannot handle mu of type ' class(obj.mu)])
            end

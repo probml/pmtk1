@@ -9,9 +9,12 @@ classdef HmmDist < ProbDist
         transitionMatrix;           % matrix of size nstates-by-nstates
                                     % transitionMatrix(i,j) = p( Z(t) = j | Z(t-1) = i), 
                                     % where Z(t) is the the hidden state at time t.
-                                                 
+                                    
+        observationModel;           % A string describing the observation model                                                 
         stateConditionalDensities;  % the observation model - one object per 
-                                    % hidden state stored as a cell array.
+                                    % hidden state stored as a cell array. Tied
+                                    % parameters represented as ParmaDist
+                                    % objects. 
         verbose = true;             
         
         
@@ -89,7 +92,7 @@ classdef HmmDist < ProbDist
                  'transitionPrior'  ,[]         ,...
                  'observationPrior' ,[]         );
              
-                 
+             model.observationModel = observationModel;    
              if(~isempty(latentValues)),error('fully observable data case not yet implemented');end
              
              data = checkData(model,data);
@@ -228,22 +231,53 @@ classdef HmmDist < ProbDist
                         xi = hmmComputeTwoSlice(alpha, beta, model.transitionMatrix, obslik);
                         exp_num_trans   = exp_num_trans + xi;
                         
-                        % compute the expected sufficient stats for the
-                        % observation model here.
-                        
+                        expSSobs = expectedSSobservation(model,data,gamma);
                         loglikelihood = loglikelihood + current_ll;
                    end
                    
                    %% M Step
                    model.pi = normalize(exp_num_visits1);
-                   model.transitionMatrix = normalize(exp_num_trans,2);
-                   % maximize the observation model here. 
+                   if(~isempty(transitionPrior))
+                      if(numel(transitionPrior) == 1)
+                          if(iscell(transitionPrior))
+                              transitionPrior = transitionPrior{:};
+                          end
+                          switch class(transitionPrior)
+                              case 'DirichletDist'
+                                model.transitionMatrix = normalize(bsxfun(@plus,exp_num_trans,transitionPrior.alpha(:)'),2);
+                              otherwise
+                                  error('%s is an unsupported prior on the transition matrix.',class(transitionPrior));
+                          end
+                           
+                      elseif(numel(transitionPrior) == model.nstates)
+                              alpha = zeros(size(model.transitionMatrix));
+                              for i=1:numel(transitionPrior)
+                                 prior = transitionPrior{i};
+                                 if(~isa(prior,'DirichletDist'))
+                                    error('%s is not a supported prior on a row of the transition matrix',class(prior)); 
+                                 end
+                                 alpha(i,:) = prior.alpha(:)';
+                              end
+                              model.transitionMatrix = normalize(exp_num_trans + alpha - 1,2);
+                      else
+                         error('Inconsistent number of prior distributions on the transition matrix: must be 1 or nstates'); 
+                      end
+                   end
+                 
+                   if(isempty(observationPrior))
+                        for i=1:model.nstates   
+                              model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'suffStat',expSSobs);
+                        end
+                   else
+                       for i=1:model.nstates   
+                              model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'suffStat',expSSobs,'prior',observationPrior);
+                       end
+                   end
                    
-                  
                    %% Test Convergence
                    iter = iter + 1;
                    converged = (abs(loglikelihood - prev_ll) / (abs(loglikelihood) + abs(prev_ll) + eps)/2) < opt_tol;
-                   if(loglikelihood - prev_ll < 1e-3),warning('log likelihood decreased during em step');end
+                   if(loglikelihood - prev_ll < 1e-3),warning('HmmDist:lldecrease','log likelihood decreased during em step');end
                end % end of em loop
             
         end % end of emUpdate method
@@ -317,6 +351,44 @@ classdef HmmDist < ProbDist
                 obslik(j,:) = exp(logprob(model.stateConditionalDensities{j},obs));
             end
             
+        end
+        
+        function SS = expectedSSobservation(model,data,gamma)
+        % Compute the expected sufficient statistics for the observation model. 
+        
+        switch lower(model.observationModel)
+            case 'discrete'
+                noutputsymbols = model.stateConditionalModels{1}.N;
+                ss = zeros(model.nstates,noutputsymbols);
+                for ex=1:numex
+                    obs = model.getObservation(data,ex);
+                    T = length(obs);  
+                    % loop over whichever is shorter
+                    if T < O
+                        for t=1:T
+                            o = obs(t);
+                            ss(:,o) = ss(:,o) + gamma(:,t);
+                        end
+                    else
+                        for o=1:O
+                            ndx = find(obs==o);
+                            if ~isempty(ndx)
+                                ss(:,o) = ss(:,o) + sum(gamma(:, ndx), 2);
+                            end
+                        end
+                    end
+                end
+            SS = struct('counts',{},'N',{});
+            for i=1:model.nstates
+               SS(i).counts = ss(i,:);
+               SS(i).N = N;
+            end
+            case 'mvn'
+                
+            case 'mvnmix'
+                
+        end
+        
         end
         
         
