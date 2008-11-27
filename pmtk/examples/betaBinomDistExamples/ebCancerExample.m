@@ -1,4 +1,4 @@
-%% EB Cancer Example
+%% Empirical Bayes Missouri Cancer Example
 % Johnson and Albert  p67, p24
 data.y = [0 0 2 0 1 1 0 2 1 3 0 1 1 1 54 0 0 1 3 0];
 data.n = [1083 855 3461 657 1208 1025 527 1668 583 582 917 857 ...

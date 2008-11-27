@@ -33,11 +33,12 @@ classdef SampleDist < ProbDist
     
     function m = mode(obj)
     % m is of size npdfs-by-d
+    warning('cannot find mode of a bag of samples');
       if(ndims(obj.samples) == 3)
          [val,m] = max(mean(obj),[],2);
          m = m';
       else
-        [val, m] = max(obj.samples);
+        [val, m] = max(obj.samples); % mode is most probable, not largest!
         m = squeeze(m)';
       end
     end
@@ -88,8 +89,18 @@ classdef SampleDist < ProbDist
       l = zeros(d,1); u = zeros(d,1);
       for j=1:d
         tmp = sort(samples(:,j), 'ascend');     %#ok
-        l(j) = tmp(floor((1-q)*Nsamples));
-        u(j) = tmp(floor(q*Nsamples));
+        u(j) = tmp(floor((1-q)*Nsamples));
+        l(j) = tmp(floor(q*Nsamples));
+      end
+    end
+    
+    function v = cdf(obj, x)
+      [Nsamples d] = size(obj.samples);
+      for j=1:d
+        tmp = sort(obj.samples(:,j), 'ascend'); %#ok
+        ndx = find(x <= tmp);
+        ndx = ndx(1);
+        v(j) = ndx/Nsamples;
       end
     end
     

@@ -1,4 +1,4 @@
-function val = johnsonSmokingLogpostT(xy)
+function val = smokingCancerLogpost(xy)
 % Smoking/cancer example from Johnson and Albert p51
 % val(i) = log posteror with xy(i,:) is i'th param vector (alpha, eta)
 

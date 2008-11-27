@@ -13,8 +13,8 @@ classdef GaussDist < ProbDist
       % Note that sigma2 is the variance, not the standard deviation.
       % mu and sigma2 can be vectors; in this case, the result is a MVN with a
       % diagonal covariance matrix (product of independent 1d Gaussians).
-      if nargin == 0
-        mu = []; sigma2 = [];
+      if nargin < 2
+        sigma2 = [];
       end
       m.mu  = mu;
       m.sigma2 = sigma2;
@@ -53,7 +53,11 @@ classdef GaussDist < ProbDist
       z=norminv(1-alpha/2);
       assert(approxeq(l, mu-z*sigma));
       assert(approxeq(u, mu+z*sigma));
-    end
+     end
+     
+     function v = cdf(obj, x)
+       v = normcdf(x, obj.mu, sqrt(obj.sigma2));
+     end
      
      function X = sample(m, n)
        % X(i,j) = sample from gauss(m.mu(j), m.sigma(j)) for i=1:n
@@ -81,8 +85,13 @@ classdef GaussDist < ProbDist
       % Arguments are
       % data - data(i) = case i
       % method - must be one of { mle, bayesian }.
-      [X, suffStat, method] = process_options(...
-        varargin, 'data', [], 'suffStat', [], 'method', 'default');
+      if isa(varargin{1}, 'double')
+        X = varargin{1};
+        method = 'default';
+      else
+        [X, suffStat, method] = process_options(...
+          varargin, 'data', [], 'suffStat', [], 'method', 'default');
+      end
       if any(isnan(X(:)))
         error('cannot handle missing data')
       end

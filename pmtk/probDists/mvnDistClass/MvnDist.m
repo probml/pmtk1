@@ -17,7 +17,6 @@ classdef MvnDist < VecDist
       end
       m.mu  = mu;
       m.Sigma = Sigma;
-      m.stateInfEng = MvnExactInfer;
     end
 
     function params = getModelParams(obj)
@@ -48,8 +47,9 @@ classdef MvnDist < VecDist
       logZ = (d/2)*log(2*pi) + 0.5*logdet(obj.Sigma);
     end
     
-    function L = logprob(obj, X)
+    function L = logprob(obj, X, normalize)
       % L(i) = log p(X(i,:) | params)
+      if nargin < 3, normalize = true; end
       mu = obj.mu(:)'; % ensure row vector
       if length(mu)==1
         X = X(:); % ensure column vector
@@ -65,7 +65,11 @@ classdef MvnDist < VecDist
         L = repmat(NaN,N,1);
       else
         mahal = sum(((X-M)*inv(obj.Sigma)).*(X-M),2);
-        L = -0.5*mahal - lognormconst(obj);
+        if normalize
+          L = -0.5*mahal - lognormconst(obj);
+        else
+          L = -0.5*mahal;
+        end
       end
       %assert(approxeq(L,L1))
     end
@@ -97,20 +101,54 @@ classdef MvnDist < VecDist
     end
   
     function v = var(obj)
-      v = cov(obj);
+      v = diag(cov(obj));
     end
     
     
-%     function samples = sample(obj,n)
-%     % Sample n times from this distribution: samples is of size
-%     % nsamples-by-ndimensions
-%        if(nargin < 2), n = 1; end;
-%        A = chol(obj.Sigma,'lower');
-%        Z = randn(length(obj.mu),n);
-%        samples = bsxfun(@plus,obj.mu(:), A*Z)';
-%     end
+    function samples = sample(obj,n)
+      % Sample n times from this distribution: samples is of size
+      % nsamples-by-ndimensions
+      checkParamsAreConst(obj);
+      if(nargin < 2), n = 1; end;
+      A = chol(obj.Sigma,'lower');
+      Z = randn(length(obj.mu),n);
+      samples = bsxfun(@plus,obj.mu(:), A*Z)';
+    end
     
-
+     function [postQuery] = marginal(obj, queryVars)
+       % prob = sum_h p(Query,h)
+       checkParamsAreConst(obj);
+       Q = queryVars;
+       postQuery = MvnDist(obj.mu(Q), obj.Sigma(Q,Q));
+     end
+     
+     function prob = predict(obj, visVars, visValues, queryVars)
+      %prob =  sum_h p(query,h|visVars=visValues)
+      checkParamsAreConst(obj);
+      [muHgivenV, SigmaHgivenV] = gaussianConditioning(...
+        obj.mu, obj.Sigma, visVars, visValues); 
+      prob = MvnDist(muHgivenV, SigmaHgivenV);
+      if nargin >= 4
+        prob = marginal(prob, queryVars);
+      end
+     end
+   
+      function Xc = impute(obj, X)
+       % Fill in NaN entries of X using posterior mode on each row
+       checkParamsAreConst(obj);
+       [n d] = size(X);
+       Xc = X;
+       for i=1:n
+         hidNodes = find(isnan(X(i,:)));
+         if isempty(hidNodes), continue, end;
+         visNodes = find(~isnan(X(i,:)));
+         visValues = X(i,visNodes);
+         postH = predict(obj, visNodes, visValues);
+         mu = mode(postH);
+         Xc(i,hidNodes) = mu(:)';
+       end
+      end
+     
     function obj = fit(obj,varargin)
     % Fit the distribution via the specified method
     %

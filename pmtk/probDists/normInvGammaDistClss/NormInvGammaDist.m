@@ -11,13 +11,17 @@ classdef NormInvGammaDist < VecDist
   methods
     function m = NormInvGammaDist(varargin)
       if nargin == 0, varargin = {}; end
-      [mu, k, a, b] = process_options(...
-        varargin, 'mu', [], 'k', [], 'a', [], 'b', []);
+      if ~isempty(varargin) & isa(varargin{1}, 'double')
+       mu =  varargin{1}; k = varargin{2}; a= varargin{3};  b = varargin{4};
+      else
+        [mu, k, a, b] = process_options(...
+          varargin, 'mu', [], 'k', [], 'a', [], 'b', []);
+      end
       m.mu = mu; m.k = k; m.a = a; m.b = b;
     end
     
     function d = ndims(obj)
-       d = numel(obj.mu); 
+       d = 2;
     end
  
     function mm = marginal(obj, queryVar)
@@ -36,13 +40,16 @@ classdef NormInvGammaDist < VecDist
       logZ = 0.5*log(2*pi) -0.5*log(obj.k) + gammaln(obj.a) -obj.a*log(obj.b);
     end
     
-    function L = logprob(obj, X)
+    function L = logprob(obj, X, normalize)
        % L(i) = log p(X(i,:) | theta), where X(i,:) = [mu sigma]
+       if nargin < 3, normalize = true; end
       n = size(X,1);
       sigma2 = X(:,2); mu = X(:,1);
       a = obj.a; b = obj.b; m = obj.mu; k = obj.k;
       L = -(a+3/2)*log(sigma2) - (2*b + k*(m-mu).^2)./(2*sigma2);
-      L = L - lognormconst(obj)*ones(n,1);
+      if normalize
+        L = L - lognormconst(obj)*ones(n,1);
+      end
       %{
       for i=1:n
         pgauss = GaussDist(obj.mu, X(i,2)./obj.k);
@@ -53,13 +60,24 @@ classdef NormInvGammaDist < VecDist
       %}
     end
     
-   
-    
-   
-    
-    
+    function m = mean(obj)
+      nu = obj.a*2; sigma2 = 2*obj.b/nu;
+      m = [obj.mu, nu/(nu-2)*sigma2];
+      %m1 = marginal(obj, 'mu');
+      %m2 = marginal(obj, 'sigma');
+      %m = [mean(m1) mean(m2)];
+    end
         
+    function m = mode(obj)
+      nu = obj.a*2; sigma2 = 2*obj.b/nu;
+      m = [obj.mu, (nu*sigma2)/(nu-1)];
+    end
       
+    function v = var(obj)
+      m1 = marginal(obj, 'mu');
+      m2 = marginal(obj, 'sigma');
+      v = [var(m1) var(m2)];
+    end
   
   end
     
