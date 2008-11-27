@@ -42,8 +42,10 @@ classdef DiscreteDist  < VecDist
        % debugging
        %logp2 = log(mnpdf(X,obj.mu));
        %assert(approxeq(logp, logp2))
-     end
+    end
     
+     
+   
     
     function h=plot(obj, varargin)
       % plot a probability mass function as a histogram

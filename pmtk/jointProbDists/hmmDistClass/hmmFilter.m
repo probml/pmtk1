@@ -1,4 +1,4 @@
-function [alpha, loglik] = hmmForwards(initDist, transmat, obslik)
+function [alpha, loglik] = hmmFilter(initDist, transmat, obslik)
 % INPUT:
 % initDist(i) = Pr(Q(1) = i)
 % transmat(i,j) = Pr(Q(t) = j | Q(t-1)=i)

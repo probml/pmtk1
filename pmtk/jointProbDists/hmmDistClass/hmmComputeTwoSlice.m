@@ -17,6 +17,7 @@ else
   xi = zeros(K,K,T-1);
 end
 
+xi_summed = zeros(size(transmat));
 for t=T-1:-1:1
  b = beta(:,t+1) .* obslik(:,t+1);
  tmpXi = normalize((transmat .* (alpha(:,t) * b')));
