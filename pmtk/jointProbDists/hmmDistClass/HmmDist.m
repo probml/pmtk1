@@ -129,16 +129,11 @@ classdef HmmDist < ProbDist
         end
 
         function logp = logprob(model,X)
-      
+         
             [junk,n] = model.getObservation(X,1);
             logp = zeros(n,1);
             for i=1:n
-                obs = getObservation(X,i);
-                obslik = zeros(model.nstates,size(obs,2));     % obslik(i,t) = p(X(t) | Z(t)=i)
-                for j = 1:model.nstates
-                    obslik(j,:) = exp(logprob(model.stateConditionalDensities{j},obs));
-                end
-                [alpha,logp(i)] = hmmFilter(model.pi,model.transitionMatrix,obslik);
+                [alpha,logp(i)] = hmmFilter(model.pi,model.transitionMatrix,getObslik(model,getObservation(X,i)));
             end
         end
         
@@ -293,8 +288,15 @@ classdef HmmDist < ProbDist
  
             end
             
+        end
+        
+        function obslik = getObslik(model,obs)
+        % obslik(i,t) = p(X(t) | Z(t)=i)   
             
-            
+            obslik = zeros(model.nstates,size(obs,2));     
+            for j = 1:model.nstates
+                obslik(j,:) = exp(logprob(model.stateConditionalDensities{j},obs));
+            end
             
         end
         
