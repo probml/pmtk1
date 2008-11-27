@@ -9,6 +9,7 @@ function [alpha, loglik] = hmmFilter(initDist, transmat, obslik)
 % loglik = log p(y(1:T))
 
 [K T] = size(obslik);
+scale = zeros(T,1);
 alpha = zeros(K,T);
 [alpha(:,1), scale(1)] = normalize(initDist(:) .* obslik(:,1));
 for t=2:T

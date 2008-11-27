@@ -52,12 +52,16 @@ classdef HmmDist < ProbDist
         %                      all of the same length, 't', then data is of size
         %                      d-by-t-by-n, otherwise, data is a cell array such
         %                      that data{ex}{i,j} is the ith dimension at time
-        %                      step j in example ex. 
+        %                      step j in example ex.
+        %
+        % 'latentValues'     - values for the latent variables in the case of
+        %                     fully observable data.
+        %                     
         %
         % 'observationModel' - a string describing the observation model to use: 
         %                      'discrete' | 'mvn' | 'mixMvn'
         %
-        % 'method'            - ['map'] | 'bayesian'
+        % 'method'           - ['map'] | 'bayesian'
         %
         % 'algorithm'        -  ['em']  the fitting algorithm to use
         %
@@ -76,8 +80,9 @@ classdef HmmDist < ProbDist
         % used to initialize the fitting algorithm. Similarly for model.pi and
         % model.transitionMatrix.
             
-             [data,method,algorithm,observationModel,transitionPrior,observationPrior,options] = process_options(varargin,...
+             [data,latentValues,method,algorithm,observationModel,transitionPrior,observationPrior,options] = process_options(varargin,...
                  'data'             ,[]         ,...
+                 'latentValues'     ,[]         ,...
                  'method'           ,'map'      ,...
                  'algorithm'        ,'em'       ,...
                  'observationModel' ,''         ,...
@@ -85,6 +90,7 @@ classdef HmmDist < ProbDist
                  'observationPrior' ,[]         );
              
                  
+             if(~isempty(latentValues)),error('fully observable data case not yet implemented');end
              
              data = checkData(model,data);
              
@@ -122,13 +128,18 @@ classdef HmmDist < ProbDist
                 
         end
 
-        
-        
-        
-        
         function logp = logprob(model,X)
-            
-            
+      
+            [junk,n] = model.getObservation(X,1);
+            logp = zeros(n,1);
+            for i=1:n
+                obs = getObservation(X,i);
+                obslik = zeros(model.nstates,size(obs,2));     % obslik(i,t) = p(X(t) | Z(t)=i)
+                for j = 1:model.nstates
+                    obslik(j,:) = exp(logprob(model.stateConditionalDensities{j},obs));
+                end
+                [alpha,logp(i)] = hmmFilter(model.pi,model.transitionMatrix,obslik);
+            end
         end
         
         
@@ -263,6 +274,30 @@ classdef HmmDist < ProbDist
                    error('Data must be either a matrix of double values or a cell array');
            end
         end % end of checkData method
+        
+        
+        function [obs,n] = getObservation(model,X,i)
+        % Get the ith observation/example from X.     
+            switch class(X)
+                case 'cell'
+                    n = numel(X);
+                    obs = X{i};
+                case 'double'
+                    if(ndims(X) == 3)
+                        n = size(X,3);
+                        obs = X(:,:,i);
+                    else
+                        n = size(X,1);
+                        obs = X(i,:);
+                    end
+ 
+            end
+            
+            
+            
+            
+        end
+        
         
     end % end of protected methods
 end % end of class
