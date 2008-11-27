@@ -1,4 +1,4 @@
-function M = sample_discrete(prob, r, c)
+function M = sampleDiscrete(prob, r, c)
 % SAMPLE_DISCRETE Like the built in 'rand', except we draw from a non-uniform discrete distrib.
 % M = sample_discrete(prob, r, c)
 %
@@ -10,7 +10,7 @@ n = length(prob);
 if nargin == 1
   r = 1; c = 1;
 elseif nargin == 2
-  c == r;
+  c = r;
 end
 
 R = rand(r, c);

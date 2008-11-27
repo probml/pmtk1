@@ -146,9 +146,7 @@ classdef HmmDist < ProbDist
                     switch lower(method)
                         
                         case 'smoothing'
-                            
-                            
-                            
+                           
                         case 'filtering'
                             
                         case 'viterbi'
