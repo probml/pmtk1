@@ -58,6 +58,20 @@ classdef ProbDist
             stdErr = std(score,0,2)/sqrt(n);
         end
         
+        function cellArray = copy(obj,varargin)
+        % Create a cell array of copies of a probability distribution. Uses
+        % repmat semantics - e.g. copy(obj,3) or copy(obj,3,5) or
+        % copy(obj,[3,5,2])
+        %
+        % example:
+        %
+        % d = copy(DiscreteDist,3,5)  % - creates a 3-by-5 cell array of DiscreteDist objects
+        %
+           cellArray = num2cell(repmat(obj,varargin{:}));
+        end
+        
+        
+        
     end
     
     
