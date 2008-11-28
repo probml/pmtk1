@@ -141,7 +141,7 @@ classdef HmmDiscreteDist < HmmDist
             path = viterbi_path(model.pi,model.transmat,obslik);
         end
         
-        function d = ndims(model)
+        function d = ndimensions(model)
            d = model.nstates; 
         end
         

@@ -15,7 +15,7 @@ classdef UnifDist < ParamDist
      m.lo = lo; m.hi = hi;
     end
 
-    function d = ndims(m)
+    function d = ndimensions(m)
       d = length(m.lo);
     end
     
@@ -23,7 +23,7 @@ classdef UnifDist < ParamDist
     function L = logprob(obj, X)
       % L(i,j) = log p(X(i) | params(j))
       [N d] = size(X);
-      d = ndims(obj);
+      d = ndimensions(obj);
       if d==1, X = X(:); end
       L = zeros(N,d);
       for j=1:d
@@ -49,7 +49,7 @@ classdef UnifDist < ParamDist
    
      function X = sample(obj, n)
       % X(i,j) = sample ffrom params(j) i=1:n
-      d = ndims(obj);
+      d = ndimensions(obj);
       assert(statsToolboxInstalled);
       for j=1:d
         X(:,j) = unifrnd(obj.lo(j), obj.hi(j), n, 1);

@@ -35,7 +35,7 @@ classdef MultinomDist < DiscreteDist
     
    
     function X = sample(obj, n)
-       % X(i,:) = random vector (of length ndims) of ints that sums to N, for i=1:n
+       % X(i,:) = random vector (of length ndimensions) of ints that sums to N, for i=1:n
        checkParamsAreConst(obj)
        if nargin < 2, n = 1; end
        if statsToolboxInstalled
@@ -86,7 +86,7 @@ classdef MultinomDist < DiscreteDist
          case 'map'
            switch class(obj.mu)
              case 'DirichletDist'
-               d = ndims(obj);
+               d = ndimensions(obj);
                obj.mu  = (suffStat.counts + obj.mu.alpha - 1) / (suffStat.N + sum(obj.mu.alpha) - d);
                case 'double'
                if(isempty(prior))
@@ -94,7 +94,7 @@ classdef MultinomDist < DiscreteDist
                end
                switch(class(prior))
                    case 'DirichletDist'
-                       obj.mu  = (suffStat.counts + prior.alpha - 1) / (suffStat.N + sum(prior.alpha) - ndims(obj));
+                       obj.mu  = (suffStat.counts + prior.alpha - 1) / (suffStat.N + sum(prior.alpha) - ndimensions(obj));
                    otherwise
                         error(['cannot handle prior of type ' class(prior)])
                end

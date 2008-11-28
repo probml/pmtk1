@@ -14,7 +14,7 @@ classdef PoissonDist < DiscreteDist
       obj.support = 0:25; % truncate support for plotting purposes
     end
 
-    function d = ndims(obj)
+    function d = ndimensions(obj)
       d = length(obj.lambda);
     end
     
@@ -37,7 +37,7 @@ classdef PoissonDist < DiscreteDist
     function X = sample(obj, n)
        % X(i,j) = sample from params(j) for i=1:n
        checkParamsAreConst(obj)
-       d = ndims(obj);
+       d = ndimensions(obj);
        X = zeros(n, d);
        if ~statsToolboxInstalled, error('need stats toolbox'); end
        for j=1:d
@@ -48,7 +48,7 @@ classdef PoissonDist < DiscreteDist
      function p = logprob(obj, X, paramNdx)
        % p(i,j) = log p(x(i) | params(j))
        checkParamsAreConst(obj)
-       d = ndims(obj);
+       d = ndimensions(obj);
        if nargin < 3, paramNdx = 1:d; end
        x = X(:);
        n = length(x);

@@ -29,7 +29,7 @@ classdef MixGaussDist < ParamDist
       obj.mixweights = normalise(rand(1,K));
     end
     
-    function d = ndims(m)
+    function d = ndimensions(m)
       d = size(m.mu,1);
     end
     
@@ -48,7 +48,7 @@ classdef MixGaussDist < ParamDist
   
     function mu = mean(m)
       checkParamsAreConst(m)
-      d = ndims(m);
+      d = ndimensions(m);
       %M = obj.mu .* repmat(obj.mixweights,d,1);
       M = bsxfun(@times,  m.mu, m.mixweights(:)');
       mu = sum(M, 2);
@@ -66,7 +66,7 @@ classdef MixGaussDist < ParamDist
       % X(i,:) = sample for i=1:n
       if nargin < 2, n = 1; end
       Z = sampleDiscrete(obj.mixweights, n, 1);
-      d = ndims(obj);
+      d = ndimensions(obj);
       X = zeros(n, d);
       for k=1:obj.K
         ndx = find(Z==k);
@@ -108,11 +108,11 @@ classdef MixGaussDist < ParamDist
     
     function xrange = plotRange(obj, sf)
         if nargin < 2, sf = 3; end
-        %if ndims(obj) ~= 2, error('can only plot in 2d'); end
+        %if ndimensions(obj) ~= 2, error('can only plot in 2d'); end
         mu = mean(obj); C = cov(obj);
         s1 = sqrt(C(1,1));
         x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
-        if ndims(obj)==2
+        if ndimensions(obj)==2
             s2 = sqrt(C(2,2));
             x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
             xrange = [x1min x1max x2min x2max];

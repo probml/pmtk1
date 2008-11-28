@@ -22,7 +22,7 @@ T2 = marginal(T1, [S]);
 function [postQuery] = conditional(obj, visVars, visValues, queryVars)
       % p(Xh|Xvis=vis) doesn't change state of model
       obj = enterEvidence(obj, visVars, visValues);
-      if nargin < 4, queryVars = mysetdiff(1:ndims(obj), visVars); end
+      if nargin < 4, queryVars = mysetdiff(1:ndimensions(obj), visVars); end
       [postQuery] = marginal(obj, queryVars);
         end
 %}

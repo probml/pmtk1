@@ -172,7 +172,7 @@ classdef HmmDist < ParamDist
             
         end
         
-        function d = ndims(model)
+        function d = ndimensions(model)
             d = model.obsDims;
         end
         

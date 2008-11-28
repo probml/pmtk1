@@ -17,7 +17,7 @@ classdef GammaDist < ParamDist
       obj.b = b;
     end
 
-    function d = ndims(obj)
+    function d = ndimensions(obj)
        d = length(obj.a);
     end
    
@@ -35,7 +35,7 @@ classdef GammaDist < ParamDist
 
     function X = sample(obj, n)
       % X(i,j) = sample from params(j) for i=1:n
-      d = ndims(obj);
+      d = ndimensions(obj);
       X = zeros(n, d);
       for j=1:d
         if useStatsToolbox
@@ -52,7 +52,7 @@ classdef GammaDist < ParamDist
 
     function p = logprob(obj, X)
       % p(i,j) = log p(x(i) | params(j))
-      d = ndims(obj);
+      d = ndimensions(obj);
       x = X(:);
       n = length(x);
       p = zeros(n,d);

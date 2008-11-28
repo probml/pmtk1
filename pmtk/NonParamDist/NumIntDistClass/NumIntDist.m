@@ -29,9 +29,7 @@ classdef NumIntDist  < NonParamDist
       d = length(obj.range)/2;
     end
     
-    function d = ndims(obj)
-      d = ndimensions(obj);
-    end
+  
     
     function m = moment(obj, pow)
       for dim=1:ndimensions(obj)

@@ -20,7 +20,7 @@ classdef HiwDist < ParamDist
       m.Phi = Phi;
     end
     
-    function d = ndims(obj)
+    function d = ndimensions(obj)
       d = size(obj.Phi,1); 
     end
     
@@ -35,7 +35,7 @@ classdef HiwDist < ParamDist
     function m = meanInverse(obj)
       % E[inv(Sigma)]
       % See Armstrong thesis p80
-      d = ndims(obj);
+      d = ndimensions(obj);
       m = zeros(d,d);
       cliques = obj.G.cliques; seps = obj.G.seps;
       delta = obj.delta; Phi = obj.Phi;
@@ -55,7 +55,7 @@ classdef HiwDist < ParamDist
       
     function X = sample(obj, n)
       % X(:,:,i) is a random matrix drawn from HIW() for i=1:n
-      d = ndims(obj);
+      d = ndimensions(obj);
       X  = zeros(d,d,n);
       for i=1:n
         Sigma_id = sampleFromIdentity(obj.G, obj.delta);

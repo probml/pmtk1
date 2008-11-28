@@ -23,7 +23,7 @@ classdef RescaleTransformer < Transformer
       [Xnew] = rescaleData(X, obj.minVal, obj.maxVal, obj.minx, obj.rangex);
     end
   
-    function d = ndims(obj, X)
+    function d = ndimensions(obj, X)
       d = size(X,2);
     end   
     

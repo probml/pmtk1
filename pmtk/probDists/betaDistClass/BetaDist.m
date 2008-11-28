@@ -16,7 +16,7 @@ classdef BetaDist < ParamDist
       obj.b = b;
     end
 
-    function d = ndims(obj)
+    function d = ndimensions(obj)
       d = length(obj.a);
     end
 
@@ -28,7 +28,7 @@ classdef BetaDist < ParamDist
 
     function m = mode(obj)
 %       valid = find(obj.a + obj.b > 2);
-%       d = ndims(obj);
+%       d = ndimensions(obj);
 %       m = NaN*ones(1,d);
 %       m(valid) = (obj.a(valid)  - 1) ./ (obj.a(valid) + obj.b(valid) - 2);
         m = (obj.a-1)/(obj.a + obj.b -2);  
@@ -37,7 +37,7 @@ classdef BetaDist < ParamDist
 
     function m = var(obj)
       valid = find(obj.a + obj.b > 1);
-      d = ndims(obj);
+      d = ndimensions(obj);
       m = NaN*ones(1,d);
       m(valid) = (obj.a(valid) .* obj.b(valid)) ./ ...
         ( (obj.a(valid) + obj.b(valid)).^2 .* (obj.a(valid) + obj.b(valid) + 1) );
@@ -59,7 +59,7 @@ classdef BetaDist < ParamDist
 
     function p = logprob(obj, X, paramNdx)
           % p(i,j) = log p(x(i) | params(j))
-      d = ndims(obj);
+      d = ndimensions(obj);
       if nargin < 3, paramNdx = 1:d; end
       x = X(:);
       n = length(x);

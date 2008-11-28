@@ -17,7 +17,7 @@ classdef KernelTransformer < Transformer
     end
     
       
-    function d=ndims(obj)
+    function d=ndimensions(obj)
       d = size(obj.basis,1);
     end
      

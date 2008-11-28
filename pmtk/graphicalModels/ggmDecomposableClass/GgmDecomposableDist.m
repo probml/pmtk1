@@ -32,7 +32,7 @@ classdef GgmDecomposableDist < GgmDist
       n = size(Y,1);
       Sy = n*cov(Y,1);
       G = obj.G; delta = obj.mu.delta; Phi = obj.mu.Phi;
-      nstar = n-1; d = ndims(obj);
+      nstar = n-1; d = ndimensions(obj);
       L = lognormconst(HiwDist(G, delta, Phi)) ...
         - lognormconst(HiwDist(G, delta+n, Phi+Sy)) ...
         -  (nstar*d/2) * log(2*pi);

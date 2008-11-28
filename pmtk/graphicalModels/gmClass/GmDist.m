@@ -8,7 +8,7 @@ classdef GmDist < ParamDist
   %%  Main methods
   methods
      
-    function d = ndims(obj)
+    function d = ndimensions(obj)
        d = nnodes(obj.G);
     end
     

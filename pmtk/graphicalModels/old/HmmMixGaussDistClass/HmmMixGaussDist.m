@@ -91,7 +91,7 @@ classdef HmmMixGaussDist < HmmDist
            [obs, hidden] = mhmm_sample(length, nsamples, initial_prob, model.transmat, model.mu, model.Sigma, model.mixmat);
         end
         
-        function d = ndims(model)
+        function d = ndimensions(model)
             d = size(model.mu,1);
         end
         

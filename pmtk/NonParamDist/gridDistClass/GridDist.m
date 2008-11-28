@@ -88,9 +88,7 @@ classdef GridDist  < NonParamDist
       end
     end
     
-    function d = ndims(obj)
-      d = ndimensions(obj);
-    end
+   
     
     function p = logprob(obj)
       p = [];

@@ -106,8 +106,8 @@ classdef GenerativeClassifierDist < ProbDist
         
        
         
-        function d = ndims(obj)
-            d = ndims(obj.classConditionalDensities{1});
+        function d = ndimensions(obj)
+            d = ndimensions(obj.classConditionalDensities{1});
         end
         
     end

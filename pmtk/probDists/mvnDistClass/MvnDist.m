@@ -24,26 +24,26 @@ classdef MvnDist < ParamDist
     end
     
     function objS = convertToScalarDist(obj)
-      if ndims(obj) ~= 1, error('cannot convert to scalarDst'); end
+      if ndimensions(obj) ~= 1, error('cannot convert to scalarDst'); end
       objS = GaussDist(obj.mu, obj.Sigma);
     end
     
     function obj = mkRndParams(obj, d)
-      if nargin < 2, d = ndims(obj); end
+      if nargin < 2, d = ndimensions(obj); end
       obj.mu = randn(d,1);
       obj.Sigma = randpd(d);
     end
     
-    function d = ndims(m)
+    function d = ndimensions(m)
       if isa(m.mu, 'double')
         d = length(m.mu);
       else
-        d = ndims(m.mu);
+        d = ndimensions(m.mu);
       end
     end
 
     function logZ = lognormconst(obj)
-      d = ndims(obj);
+      d = ndimensions(obj);
       logZ = (d/2)*log(2*pi) + 0.5*logdet(obj.Sigma);
     end
     
@@ -79,7 +79,7 @@ classdef MvnDist < ParamDist
       % Plot an ellipse representing the 95% contour of a Gaussian
       % eg figure; plotContour2d(mvnDist([0 0], [2 1; 1 1]))
       checkParamsAreConst(obj)
-      if ndims(obj) ~= 2
+      if ndimensions(obj) ~= 2
         error('only works for 2d')
       end
       h = gaussPlot2d(obj.mu, obj.Sigma);
@@ -232,11 +232,11 @@ classdef MvnDist < ParamDist
     
     function xrange = plotRange(obj, sf)
         if nargin < 2, sf = 3; end
-        %if ndims(obj) ~= 2, error('can only plot in 2d'); end
+        %if ndimensions(obj) ~= 2, error('can only plot in 2d'); end
         mu = mean(obj); C = cov(obj);
         s1 = sqrt(C(1,1));
         x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
-        if ndims(obj)==2
+        if ndimensions(obj)==2
             s2 = sqrt(C(2,2));
             x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
             xrange = [x1min x1max x2min x2max];

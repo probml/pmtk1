@@ -22,7 +22,7 @@ classdef PolyBasisTransformer < Transformer
       Xnew = degexpand(X, obj.degree, addOnes);
      end
     
-     function d = ndims(obj, X)
+     function d = ndimensions(obj, X)
       d = obj.degree+1;
      end
      

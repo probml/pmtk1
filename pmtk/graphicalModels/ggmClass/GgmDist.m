@@ -25,7 +25,7 @@ classdef GgmDist < GmDist
     function obj = mkRndParams(obj)
       % Set Sigma to a random pd matrix such that SigmaInv is consistent
       % with G
-      d = ndims(obj);
+      d = ndimensions(obj);
       obj.mu = randn(d,1);
       A = obj.G.adjMat;
       prec = randpd(d) .* A;

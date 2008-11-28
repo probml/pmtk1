@@ -18,7 +18,7 @@ classdef MvnInvWishartDist < ParamDist
       m.mu = mu; m.Sigma = Sigma; m.dof = dof; m.k = k;
     end
     
-    function d = ndims(obj)
+    function d = ndimensions(obj)
       % for the purposes of plotting etc, the dimensionality is |m|+|S|
       d = length(obj.mu) + length(obj.Sigma(:));
     end

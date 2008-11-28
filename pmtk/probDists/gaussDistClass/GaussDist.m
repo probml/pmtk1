@@ -20,7 +20,7 @@ classdef GaussDist < ParamDist
       m.sigma2 = sigma2;
      end
      
-     function d = ndims(obj)
+     function d = ndimensions(obj)
        d = length(obj.mu);
      end
      
@@ -62,7 +62,7 @@ classdef GaussDist < ParamDist
      function X = sample(m, n)
        % X(i,j) = sample from gauss(m.mu(j), m.sigma(j)) for i=1:n
        if nargin < 2, n  = 1; end
-       d = ndims(m);
+       d = ndimensions(m);
        X = randn(n,d) .* repmat(sqrt(m.sigma2), n, 1) + repmat(m.mu, n, 1);
      end
 
@@ -72,7 +72,7 @@ classdef GaussDist < ParamDist
      
      function p = logprob(obj, X)
        % p(i,j) = log p(X(i) | params(j))
-       d = ndims(obj);
+       d = ndimensions(obj);
        n = length(X);
        p = zeros(n,d);
        logZ = lognormconst(obj);

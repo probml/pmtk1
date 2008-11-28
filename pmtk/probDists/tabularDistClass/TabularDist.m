@@ -19,8 +19,8 @@ classdef TabularDist < NonParamDist
        X = sampleDiscrete(T, n, 1);
     end
     
-    function d = ndims(obj)
-     d = ndims(obj.Tfac);
+    function d = ndimensions(obj)
+     d = ndimensions(obj.Tfac);
     end
   
     function m = mode(obj)

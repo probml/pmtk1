@@ -12,7 +12,7 @@ classdef DirichletDist < ParamDist
       obj.alpha = alpha;
     end
     
-    function d = ndims(obj)
+    function d = ndimensions(obj)
        d = numel(obj.alpha); 
     end
 
@@ -22,7 +22,7 @@ classdef DirichletDist < ParamDist
     end
 
     function m = mode(obj)
-      a = sum(obj.alpha); k = ndims(obj);
+      a = sum(obj.alpha); k = ndimensions(obj);
       m = (obj.alpha-1)/(a-k);
     end
 
@@ -57,11 +57,11 @@ classdef DirichletDist < ParamDist
     
     function xrange = plotRange(obj, sf)
         if nargin < 2, sf = 3; end
-        %if ndims(obj) ~= 2, error('can only plot in 2d'); end
+        %if ndimensions(obj) ~= 2, error('can only plot in 2d'); end
         mu = mean(obj); C = cov(obj);
         s1 = sqrt(C(1,1));
         x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
-        if ndims(obj)==2
+        if ndimensions(obj)==2
             s2 = sqrt(C(2,2));
             x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
             xrange = [x1min x1max x2min x2max];

@@ -117,7 +117,7 @@ classdef SampleDist < NonParamDist
       [scaleFactor, useHisto,distNDX] = process_options(...
         varargin, 'scaleFactor', 1, 'useHisto', 1,'distNDX',1);
       samples = obj.samples(:,:,distNDX);
-      switch ndims(obj)
+      switch ndimensions(obj)
         case 1,
           if useHisto
             [bin_counts, bin_locations] = hist(samples, 20);
@@ -135,7 +135,7 @@ classdef SampleDist < NonParamDist
       end
     end
       
-    function d = ndims(obj)
+    function d = ndimensions(obj)
       % num dimensions (variables)
       %mu = mean(obj); d = length(mu);
       d = size(obj.samples,2);

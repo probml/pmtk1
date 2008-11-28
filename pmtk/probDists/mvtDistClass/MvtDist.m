@@ -18,17 +18,17 @@ classdef MvtDist < ParamDist
       m.Sigma = Sigma;
     end
     
-    function d = ndims(obj)
+    function d = ndimensions(obj)
        d = numel(obj.mu); 
     end
     
     function objS = convertToScalarDist(obj)
-      if ndims(obj) ~= 1, error('cannot convert to scalarDst'); end
+      if ndimensions(obj) ~= 1, error('cannot convert to scalarDst'); end
       objS = StudentDist(obj.dof, obj.mu, obj.Sigma);
     end
     
     function logZ = lognormconst(obj)
-      d = ndims(obj);
+      d = ndimensions(obj);
       v = obj.dof;
       logZ = -gammaln(v/2 + d/2) + gammaln(v/2) + 0.5*logdet(obj.Sigma) ...
         + (d/2)*log(v) + (d/2)*log(pi);
@@ -92,7 +92,7 @@ classdef MvtDist < ParamDist
     function mm = marginal(obj, queryVars)
       % p(Q)
       checkParamsAreConst(obj)
-      d = ndims(obj);
+      d = ndimensions(obj);
       if d == 1, error('cannot compute marginal of a 1d rv'); end
       mu = mean(obj); C = cov(obj);
       dims = queryVars;
@@ -105,7 +105,7 @@ classdef MvtDist < ParamDist
     function mm = conditional(m, visVars, visValues)
       % p(Xh|Xvis=vis) 
       checkParamsAreConst(m)
-      d = ndims(obj);
+      d = ndimensions(obj);
       if d == 1, error('cannot compute conditional of a 1d rv'); end
       % p(Xa|Xb=b)
       b = visVars; a = setdiff(1:d, b);
@@ -126,11 +126,11 @@ classdef MvtDist < ParamDist
     
     function xrange = plotRange(obj, sf)
         if nargin < 2, sf = 3; end
-        %if ndims(obj) ~= 2, error('can only plot in 2d'); end
+        %if ndimensions(obj) ~= 2, error('can only plot in 2d'); end
         mu = mean(obj); C = cov(obj);
         s1 = sqrt(C(1,1));
         x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
-        if ndims(obj)==2
+        if ndimensions(obj)==2
             s2 = sqrt(C(2,2));
             x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
             xrange = [x1min x1max x2min x2max];

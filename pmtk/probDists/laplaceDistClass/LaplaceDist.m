@@ -17,7 +17,7 @@ classdef LaplaceDist < ParamDist
       m.b = b(:)';
      end
      
-     function d = ndims(obj)
+     function d = ndimensions(obj)
        d = length(obj.b);
      end
    
@@ -37,7 +37,7 @@ classdef LaplaceDist < ParamDist
      function X = sample(obj,n)
        % X(i,j) = sample from params(j)
         % See http://en.wikipedia.org/wiki/Laplace_distribution
-       d = ndims(obj);
+       d = ndimensions(obj);
        for j=1:d
          u = rand(n,1) - 0.5;
          b = obj.sigma(j);
@@ -51,7 +51,7 @@ classdef LaplaceDist < ParamDist
      
      function p = logprob(obj, X)
        % p(i,j) = log p(X(i) | params(j))
-       d = ndims(obj);
+       d = ndimensions(obj);
        n = length(X);
        p = zeros(n,d);
        logZ = lognormconst(obj);

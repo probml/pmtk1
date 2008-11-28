@@ -18,7 +18,7 @@ classdef StudentDist < ParamDist
       m.sigma2 = sigma2;
     end
 
-    function d = ndims(m)
+    function d = ndimensions(m)
       d = length(m.mu);
     end
     
@@ -34,7 +34,7 @@ classdef StudentDist < ParamDist
     end
     
     function logZ = lognormconst(obj)
-      d = ndims(obj);
+      d = ndimensions(obj);
       v = obj.dof;
       logZ = -gammaln(v/2 + 1/2) + gammaln(v/2) + 0.5 * log(v * pi .* obj.sigma2); 
     end
@@ -43,7 +43,7 @@ classdef StudentDist < ParamDist
     function L = logprob(obj, X)
       % L(i,j) = log p(X(i) | params(j))
       [N d] = size(X);
-      d = ndims(obj);
+      d = ndimensions(obj);
       if d==1, X = X(:); end
       logZ = lognormconst(obj);
       for j=1:d
@@ -57,7 +57,7 @@ classdef StudentDist < ParamDist
      function X = sample(obj, n)
       % X(i,j) = sample ffrom params(j) i=1:n
       checkParamsAreConst(obj)
-      d = ndims(obj);
+      d = ndimensions(obj);
       assert(statsToolboxInstalled);
       for j=1:d
         mu = repmat(obj.mu(j), n, 1);

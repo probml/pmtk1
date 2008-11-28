@@ -20,7 +20,7 @@ classdef DiscreteProductDist  < ProductDist
        m = obj.mu; 
     end
     
-    function d = ndims(obj)
+    function d = ndimensions(obj)
        d = numel(obj.mu); 
     end
     

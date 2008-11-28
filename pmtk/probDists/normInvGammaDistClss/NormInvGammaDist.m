@@ -20,7 +20,7 @@ classdef NormInvGammaDist < ParamDist
       m.mu = mu; m.k = k; m.a = a; m.b = b;
     end
     
-    function d = ndims(obj)
+    function d = ndimensions(obj)
        d = 2;
     end
  

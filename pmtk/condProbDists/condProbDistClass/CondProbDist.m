@@ -9,7 +9,7 @@ classdef CondProbDist < ParamDist
   %%  Main methods
   methods
      
-      function d = ndims(obj)
+      function d = ndimensions(obj)
          d = obj.ndimsX; 
       end
       

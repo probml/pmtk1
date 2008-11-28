@@ -18,17 +18,17 @@ classdef WishartDist < ParamDist
         end
         
         function objS = convertToScalarDist(obj)
-            if ndims(obj) ~= 1, error('cannot convert to scalarDst'); end
+            if ndimensions(obj) ~= 1, error('cannot convert to scalarDst'); end
             objS = GammaDist(obj.dof/2, obj.Sigma/2);
         end
         
         
-        function d = ndims(obj)
+        function d = ndimensions(obj)
             d = size(obj.Sigma,1);
         end
         
         function lnZ = lognormconst(obj)
-            d = ndims(obj);
+            d = ndimensions(obj);
             v = obj.dof;
             S = obj.Sigma;
             lnZ = (v*d/2)*log(2) + mvtGammaln(d,v/2) +(v/2)*logdet(S);
@@ -38,7 +38,7 @@ classdef WishartDist < ParamDist
             % L(i) = log p(X(:,:,i) | theta)
             % If object is scalar, then L(i) = log p(X(i) | theta))
             v = obj.dof;
-            d = ndims(obj);
+            d = ndimensions(obj);
             if d==1
                 n = length(X);
                 X(find(X==0)) = eps;
@@ -61,13 +61,13 @@ classdef WishartDist < ParamDist
         end
         
         function m = mode(obj)
-            m = (obj.dof - ndims(obj) - 1) * obj.Sigma;
+            m = (obj.dof - ndimensions(obj) - 1) * obj.Sigma;
         end
         
         
         function X = sample(obj, n)
             % X(:,:,i) is a random matrix drawn from Wi() for i=1:n
-            d = ndims(obj);
+            d = ndimensions(obj);
             if nargin < 2, n = 1; end
             X  = zeros(d,d,n);
             [X(:,:,1), D] = wishrnd(obj.Sigma, obj.dof);
@@ -79,12 +79,12 @@ classdef WishartDist < ParamDist
         function mm = marginal(obj, query)
             % If M ~ Wi(dof,S), then M(q,q) ~ Wi(dof, S(q,q))
             % Press (2005) p112
-            q = length(query); d = ndims(obj); v = obj.dof;
+            q = length(query); d = ndimensions(obj); v = obj.dof;
             mm = WishartDist(v, obj.Sigma(query,query));
         end
         
         function [h,p] = plot(obj, varargin)
-            if ndims(obj)==1
+            if ndimensions(obj)==1
                 objS = convertToScalarDist(obj);
                 [h,p] = plot(objS, varargin{:});
             else
@@ -94,7 +94,7 @@ classdef WishartDist < ParamDist
         
         function plotMarginals(obj)
             figure;
-            d = ndims(obj);
+            d = ndimensions(obj);
             nr = d; nc = d;
             for i=1:d
                 subplot2(nr,nc,i,i);
@@ -120,7 +120,7 @@ classdef WishartDist < ParamDist
         function h = plotSamples2d(obj, n)
             % eg plotSamples2d(invWishartDist(5, randpd(2)), 4)
             figure;
-            if ndims(obj) ~= 2
+            if ndimensions(obj) ~= 2
                 error('only works for 2d')
             end
             [nr, nc] = nsubplots(n);
@@ -139,7 +139,7 @@ classdef WishartDist < ParamDist
     
     methods
         function xrange = plotRange(obj)
-            if ndims(obj) > 1
+            if ndimensions(obj) > 1
                 error('only works for 1d')
             end
             m = mode(obj);

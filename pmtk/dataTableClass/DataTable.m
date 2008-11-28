@@ -33,7 +33,7 @@ classdef DataTable
       obj.Ynames = Ynames;
     end
     
-    function n = ndims(D)
+    function n = ndimensions(D)
       n = size(D.X,2);
     end
     
