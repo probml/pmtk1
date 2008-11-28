@@ -1,4 +1,4 @@
-classdef BetaDist < ProbDist
+classdef BetaDist < ParamDist
 
   properties
     a;

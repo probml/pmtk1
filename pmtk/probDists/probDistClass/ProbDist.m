@@ -10,7 +10,7 @@ classdef ProbDist
     % var()
     % sample()
         logprob();
-        ndims();
+        %ndims();
     end
     
     %%  Main methods

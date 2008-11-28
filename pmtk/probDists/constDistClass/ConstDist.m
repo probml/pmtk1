@@ -1,4 +1,4 @@
-classdef ConstDist < ProbDist
+classdef ConstDist < NonParamDist
   % vector of delta fns (constant values)
   properties
     point;

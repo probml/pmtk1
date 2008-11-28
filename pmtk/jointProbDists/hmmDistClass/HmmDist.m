@@ -1,4 +1,4 @@
-classdef HmmDist < ProbDist
+classdef HmmDist < ParamDist
 % Hidden Markov Model   
     
     properties                           
@@ -22,6 +22,8 @@ classdef HmmDist < ProbDist
     
     properties(GetAccess = 'private', SetAccess = 'private')
         obsDims;   % the dimensionality of an observation at a single time point t. 
+        nsymbols; % if observation model is discrete, this is the number of output symbols.
+        
     end
     
     methods
@@ -104,7 +106,7 @@ classdef HmmDist < ProbDist
                          case 'map'
                             switch lower(algorithm)
                                 case 'em'
-                                    emUpdateDiscrete(model,data,transitionPrior,observationPrior,options{:});
+                                    emUpdate(model,data,transitionPrior,observationPrior,options{:});
                                 otherwise
                                     error('%s is not a valid map algorithm',algorithm);
                             end
@@ -199,12 +201,7 @@ classdef HmmDist < ProbDist
                
                iter = 1;
                converged = false;
-               switch(class(data))
-                   case 'cell'
-                       nobservations = numel(data);
-                   case 'double'
-                       nobservations = size(data,3);
-               end
+               [junk,nobservations] = getObservation(model,data,1);
                
                
                while(iter < max_iter && ~converged)
@@ -214,12 +211,7 @@ classdef HmmDist < ProbDist
                    exp_num_visits1 = zeros(model.nstates,1);
                    exp_num_trans   = zeros(model.nstates,model.nstates);
                    for j=1:nobservations
-                         switch(class(data))
-                            case 'cell'
-                            	observation = data{j};
-                            case 'double'
-                                observation = data(:,:,j);
-                        end
+                        observation = getObservation(model,data,j);  
                         obslength = size(observation,2);
                         obslik = zeros(model.nstates,obslength);
                         for i=1:obj.nstates
@@ -281,6 +273,42 @@ classdef HmmDist < ProbDist
                end % end of em loop
             
         end % end of emUpdate method
+        
+        function initializeParams(model,X)
+        % Initialize parameters    
+           
+            if(isempty(model.transitionMatrix))
+               model.transitionMatrix = normalize(rand(model.nstates,model.nstates),2); 
+            end
+            if(isempty(model.pi))
+               model.pi = normalize(ones(1,model.nstates)); 
+            end
+            switch lower(model.observationModel)
+                case 'discrete'
+                    
+                    for i=1:model.nstates
+                       %model.stateConditionalDensities{i} = Discrete();
+                        
+                    end
+                case 'mvn'
+                    
+                case 'mvnMix'
+                    
+            end
+        end
+        
+        
+        function [nsym,sym] = noutputSymbols(model,X)
+            assert(strcmpi(model.observationModel,'discrete'));
+            [junk,n] = getObervation(model,X,1);
+            unq = [];
+            for i=1:n
+                unq = union(unq,unique(getObservation(model,X,i)));
+            end
+            nsym = numel(unq);
+            sym = unq;
+        end
+        
         
          function data = checkData(model,data)
         % basic checks to make sure the data is in the right format
@@ -358,8 +386,8 @@ classdef HmmDist < ProbDist
         
         switch lower(model.observationModel)
             case 'discrete'
-                noutputsymbols = model.stateConditionalModels{1}.N;
-                ss = zeros(model.nstates,noutputsymbols);
+                
+                ss = zeros(model.nstates,model.noutputsymbols);
                 for ex=1:numex
                     obs = model.getObservation(data,ex);
                     T = length(obs);  

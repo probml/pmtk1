@@ -1,4 +1,4 @@
-classdef WishartDist < ProbDist
+classdef WishartDist < ParamDist
     
     properties
         Sigma;

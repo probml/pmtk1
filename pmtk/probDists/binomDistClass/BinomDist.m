@@ -185,7 +185,7 @@ classdef BinomDist < DiscreteDist
          case 'DiscreteDist',
            Thetas = obj.mu.support;
            lik = Thetas.^Nsucc .* (1-Thetas).^Nfail;
-           prior = obj.mu.probs;
+           prior = obj.mu.mu;
            post = normalize(prior .* lik);
            obj.mu = DiscreteDist(post, Thetas);
          otherwise

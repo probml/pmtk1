@@ -1,4 +1,4 @@
-classdef GmDist < VecDist
+classdef GmDist < ParamDist
   % graphical model
   
   properties

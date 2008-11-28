@@ -1,4 +1,4 @@
-classdef NormInvGammaDist < VecDist
+classdef NormInvGammaDist < ParamDist
   % p(m,s2|params) = N(m|mu, s2 / k0 ) IG(s2| a,b)
   properties
     mu;

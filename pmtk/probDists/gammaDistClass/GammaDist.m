@@ -1,4 +1,4 @@
-classdef GammaDist < ProbDist
+classdef GammaDist < ParamDist
 
   properties
     a;

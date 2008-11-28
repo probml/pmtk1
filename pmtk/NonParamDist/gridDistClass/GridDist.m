@@ -1,4 +1,4 @@
-classdef GridDist  < VecDist
+classdef GridDist  < NonParamDist
 
   properties
     density;

@@ -1,4 +1,4 @@
-classdef MixGaussDist < VecDist 
+classdef MixGaussDist < ParamDist 
   % mixture of Gaussians 
   
   properties
@@ -104,6 +104,21 @@ classdef MixGaussDist < VecDist
         otherwise
           error(['bad method ' method])
       end
+    end
+    
+    function xrange = plotRange(obj, sf)
+        if nargin < 2, sf = 3; end
+        %if ndims(obj) ~= 2, error('can only plot in 2d'); end
+        mu = mean(obj); C = cov(obj);
+        s1 = sqrt(C(1,1));
+        x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
+        if ndims(obj)==2
+            s2 = sqrt(C(2,2));
+            x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
+            xrange = [x1min x1max x2min x2max];
+        else
+            xrange = [x1min x1max];
+        end
     end
     
     

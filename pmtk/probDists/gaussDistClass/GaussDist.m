@@ -1,4 +1,4 @@
-classdef GaussDist < ProbDist
+classdef GaussDist < ParamDist
   
   properties
     mu;

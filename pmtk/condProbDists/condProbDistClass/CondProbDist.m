@@ -1,4 +1,4 @@
-classdef CondProbDist < ProbDist
+classdef CondProbDist < ParamDist
   % conditional probability density function (y|x)
   
   properties

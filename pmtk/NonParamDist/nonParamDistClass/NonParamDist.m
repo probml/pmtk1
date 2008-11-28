@@ -1,8 +1,7 @@
-classdef ProductDist < ParamDist
-   
+classdef NonParamDist < ProbDist
+ 
     
     properties
-        ndistributions;
     end
     
     methods

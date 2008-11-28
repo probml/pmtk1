@@ -1,4 +1,4 @@
-classdef HiwDist < ProbDist
+classdef HiwDist < ParamDist
   
   properties
     G;

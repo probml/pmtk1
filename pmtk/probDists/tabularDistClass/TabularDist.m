@@ -1,4 +1,4 @@
-classdef TabularDist < VecDist 
+classdef TabularDist < NonParamDist 
   % tabular (multi-dimensional array) distribution
   
   properties

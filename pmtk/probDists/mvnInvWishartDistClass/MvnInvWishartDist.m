@@ -1,4 +1,4 @@
-classdef MvnInvWishartDist < VecDist
+classdef MvnInvWishartDist < ParamDist
   % p(m,S|params) = N(m|mu, 1/k * S) IW(S| dof, Sigma)
   properties
     mu;

@@ -1,4 +1,5 @@
-classdef InvGammaDist < ProbDist
+classdef InvGammaDist < ParamDist
+    
 
   properties
     a;

@@ -1,4 +1,4 @@
-classdef NumIntDist  < VecDist
+classdef NumIntDist  < NonParamDist
    % Compute posterior quantities using numerical integration (up to 3d)
    
   properties
@@ -14,7 +14,7 @@ classdef NumIntDist  < VecDist
       % densityFn(X(i,:)) is the unnormalized density at specifed vector
       % range = [x1min, x1max, x2min, x2max, x3min, x3max]
       if nargin < 3, tol = 1e-5; end
-      obj.densityFn = @(X) exp(logDensityFn(X));%#ok
+      obj.densityFn = @(X) exp(logDensityFn(X));
       obj.logDensityFn = logDensityFn;
       obj.range = range;
       obj.tol = tol;
