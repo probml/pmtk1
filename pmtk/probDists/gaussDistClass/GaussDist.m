@@ -61,6 +61,7 @@ classdef GaussDist < ProbDist
      
      function X = sample(m, n)
        % X(i,j) = sample from gauss(m.mu(j), m.sigma(j)) for i=1:n
+       if nargin < 2, n  = 1; end
        d = ndims(m);
        X = randn(n,d) .* repmat(sqrt(m.sigma2), n, 1) + repmat(m.mu, n, 1);
      end

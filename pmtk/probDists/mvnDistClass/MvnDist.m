@@ -148,7 +148,33 @@ classdef MvnDist < VecDist
          Xc(i,hidNodes) = mu(:)';
        end
       end
+      
+      
+      function fc = makeFullConditionals(obj, visVars, visVals)
+        d = length(obj.mu);
+        if nargin < 2
+          % Sample from the unconditional distribution
+          visVars = []; visVals = [];
+        end
+        V = visVars; H = mysetdiff(1:d, V);
+        x = zeros(1,d); x(V) = visVals;
+        for i=1:length(H)
+          fc{i} = @(xh) fullCond(obj, xh, i, H, x);
+        end
+      end
+      
+      function p = fullCond(obj, xh, i, H, x)
+        x(H) = xh; % insert sampled hidden values into hidden slot
+        x(i) = []; % remove value for i'th node, which will be sampled
+        d = length(obj.mu);
+        dom = 1:d; dom(i) = []; % specify that all nodes are observed except i
+        [muAgivenB, SigmaAgivenB] = gaussianConditioning(obj.mu, obj.Sigma, dom, x);
+        %xi = normrnd(muAgivenB, sqrt(SigmaAgivenB));
+        p = GaussDist(muAgivenB, SigmaAgivenB);
+      end
+    
      
+      
     function obj = fit(obj,varargin)
     % Fit the distribution via the specified method
     %
