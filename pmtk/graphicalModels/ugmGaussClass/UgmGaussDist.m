@@ -1,5 +1,5 @@
-classdef GgmDist < GmDist
-  % gaussian graphical model 
+classdef UgmGaussDist < UgmDist
+  % undirected gaussian graphical model 
   
   properties
     mu;
