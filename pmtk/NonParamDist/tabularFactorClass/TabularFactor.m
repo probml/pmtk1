@@ -2,7 +2,7 @@ classdef TabularFactor
   % tabular (multi-dimensional array) factor/potential
   
   properties
-    T;
+    T; % multi-dimensional array
     domain;
     sizes;
   end
@@ -40,55 +40,45 @@ classdef TabularFactor
       Tbig.T(:) = Tbig.T(:) ./ Ts(:);  % must have bigT(:) on LHS to preserve shape
     end
     
-    function T = multiplyFactors(varargin)
-      % T = multiplyFactors(fac1, fac2, ...)
-      N = length(varargin);
-      dom = [];
-      for i=1:N
-        Ti = varargin{i};
-        dom = [dom Ti.domain];
-      end
-      dom = unique(dom);
-      ns = zeros(1, max(dom));
-      for i=1:N
-        Ti = varargin{i};
-        ns(Ti.domain) = Ti.sizes;
-      end
-      sz = prod(ns(dom));
-      if sz>10000
-       sprintf('creating tabular factor with %d entries', sz)
-      end
-      T = TabularFactor(myones(ns(dom)), dom);
-      for i=1:N
-        Ti = varargin{i};
-        T = multiplyBy(T, Ti);
-      end
-    end
+   
 
     function [Tfac, Z] = normalizeFactor(Tfac)
       [Tfac.T, Z] = normalize(Tfac.T);
     end
     
-    function Fsmall = slice(Fbig, visNodes, visValues)
-      % Return Tsmall(hnodes) = Tbig(visNodes=visValues, hnodes=:)
-      if isempty(visNodes), Fsmall = Fbig; return; end
-      vnodes = lookupIndices(visNodes, Fbig.domain);
-      d = length(Fbig.sizes);
-      %hnodes = setdiff(1:d, visNodes);
-      hidNodes = mysetdiff(Fbig.domain, visNodes);
-      hnodes = mysetdiff(1:d, vnodes);
-      ndx = mk_multi_index(d, vnodes, visValues);
-      TT = myreshape(Fbig.T, Fbig.sizes);
-      Tsmall = squeeze(TT(ndx{:}));
-      Fsmall = TabularFactor(Tsmall, hidNodes);
-    end
-    
-    function x = mode(Tfac)
-      x = argmax(Tfac.T);
-    end
+   
+   
     
   end % methods
 
- 
+  methods(Static=true)
+    
+    function T = multiplyFactors(facs)
+      % T = multiplyFactors({fac1, fac2, ...})
+      N = length(facs);
+      dom = [];
+      for i=1:N
+        Ti = facs{i}; 
+        dom = [dom Ti.domain];
+      end
+      dom = unique(dom);
+      ns = zeros(1, max(dom));
+      for i=1:N
+        Ti = facs{i}; 
+        ns(Ti.domain) = Ti.sizes;
+      end
+      sz = prod(ns(dom));
+      if sz>10000
+        sprintf('creating tabular factor with %d entries', sz)
+      end
+      T = TabularFactor(myones(ns(dom)), dom);
+      for i=1:N
+        Ti = facs{i};
+        T = multiplyBy(T, Ti);
+      end
+    end
+    
+  end
+    
 
 end

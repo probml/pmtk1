@@ -9,7 +9,7 @@ classdef ProbDist
     % mode()
     % var()
     % sample()
-        logprob();
+        %logprob();
         ndimensions();
     end
     

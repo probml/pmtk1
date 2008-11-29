@@ -2,18 +2,14 @@ classdef GmDist < ParamDist
   % graphical model
   
   properties
-    G;
+    G; %  a graph object
   end
 
   %%  Main methods
   methods
      
     function d = ndimensions(obj)
-       d = nnodes(obj.G);
-    end
-    
-    function logprob(obj,varargin)
-        error('not yet implemented'); 
+       d = nnodes(obj.G); % size(obj.G,1);
     end
    
   end
