@@ -70,7 +70,11 @@ classdef ProbDist
            cellArray = num2cell(repmat(obj,varargin{:}));
         end
         
-        
+        function prodDist = mtimes(obj1,obj2)
+            
+            prodDist = ProductDist({obj1,obj2});
+            
+        end
         
     end
     
