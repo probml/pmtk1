@@ -3,13 +3,16 @@ classdef TableJointDist < NonParamDist
   
   properties
     T;
+    domain;
   end
 
   
   %% main methods
   methods
-    function m = TableJointDist(T)
+    function m = TableJointDist(T, domain)
       m.T  = T;
+      if nargin < 2, domain = 1:ndims(T); end
+      m.domain = domain;
     end
 
     function [X] = sample(obj, n)
@@ -31,24 +34,27 @@ classdef TableJointDist < NonParamDist
       dispjoint(obj.T);
     end
      
+        
     function postQuery = marginal(obj, queryVars)
-      dom = 1:ndimensions(obj);
-      H  = mysetdiff(dom, queryVars);
+      R  = mysetdiff(obj.domain, queryVars); % variables to remove (marginalize over)
+      Rndx = lookupIndices(R, obj.domain);
       smallT = obj.T;
-      for i=1:length(H)
-        smallT = sum(smallT, H(i));
+      for i=1:length(Rndx)
+        smallT = sum(smallT, Rndx(i));
       end
       smallT = squeeze(smallT);
-      postQuery = TableJointDist(smallT);
+      postQuery = TableJointDist(smallT, queryVars);
     end
     
-     function Tsmall = slice(Tbig, vNodes, visValues)
+     function Tsmall = slice(Tbig, visVars, visValues)
       % Return Tsmall(hnodes) = Tbig(visNodes=visValues, hnodes=:)
-      if isempty(vNodes), Tsmall = Tbig; return; end
+      if isempty(visVars), Tsmall = Tbig; return; end
       d = ndimensions(Tbig);
-      ndx = mk_multi_index(d, vNodes, visValues);
+      Vndx = lookupIndices(visVars, Tbig.domain);
+      ndx = mk_multi_index(d, Vndx, visValues);
       Tsmall = squeeze(Tbig.T(ndx{:}));
-      Tsmall = TableJointDist(Tsmall);
+      H = mysetdiff(Tbig.domain, visVars);
+      Tsmall = TableJointDist(Tsmall, H);
      end
     
      function [obj, Z] = normalize(obj)
@@ -69,13 +75,25 @@ classdef TableJointDist < NonParamDist
       % ll(i) = log p(X(i,:) | params)
       % L = sum_i ll(i)
       sz = mysize(obj.T);
-      ndx = subv2ind(sz, X);
+      ndx = subv2ind(sz, X); % convert data pattern into array index
       ll = log(obj.T(ndx));
       L = sum(ll);
     end
     
   end % methods
 
+  methods(Static = true)
+    function testSprinkler()
+      [dgm] = DgmDist.mkSprinklerDgm;
+      T = dgmDiscreteToTable(dgm);
+      J = T.T; % CSRW
+      C = 1; S = 2; R = 3; W = 4;
+      pSgivenCW = predict(T, [C W], [1 1], [S]);
+      pSgivenCW2 = sumv(J(1,:,:,1),3) ./ sumv(J(1,:,:,1),[2 3]);
+      assert(approxeq(pSgivenCW.T(:), pSgivenCW2(:)))
+    end
+    
+  end
   
 
 end

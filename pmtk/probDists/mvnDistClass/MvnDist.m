@@ -4,19 +4,22 @@ classdef MvnDist < ParamDist
   properties
     mu;
     Sigma;
+    domain;
   end
   
   %% main methods
   methods
-    function m = MvnDist(mu, Sigma)
+    function m = MvnDist(mu, Sigma, domain)
       % MvnDist(mu, Sigma)
       % mu can be a matrix or a pdf, eg. 
       % MvnDist(MvnInvWishDist(...), [])
       if nargin == 0
         mu = []; Sigma = [];
       end
+      if nargin < 3, domain = 1:length(mu); end
       m.mu  = mu;
       m.Sigma = Sigma;
+      m.domain = domain;
     end
 
     function params = getModelParams(obj)
@@ -118,16 +121,17 @@ classdef MvnDist < ParamDist
      function [postQuery] = marginal(obj, queryVars)
        % prob = sum_h p(Query,h)
        checkParamsAreConst(obj);
-       Q = queryVars;
-       postQuery = MvnDist(obj.mu(Q), obj.Sigma(Q,Q));
+       Q = lookupIndices(queryVars, obj.domain);
+       postQuery = MvnDist(obj.mu(Q), obj.Sigma(Q,Q), queryVars);
      end
      
      function prob = predict(obj, visVars, visValues, queryVars)
       %prob =  sum_h p(query,h|visVars=visValues)
+      H = mysetdiff(obj.domain, visVars);
       checkParamsAreConst(obj);
       [muHgivenV, SigmaHgivenV] = gaussianConditioning(...
         obj.mu, obj.Sigma, visVars, visValues); 
-      prob = MvnDist(muHgivenV, SigmaHgivenV);
+      prob = MvnDist(muHgivenV, SigmaHgivenV, H);
       if nargin >= 4
         prob = marginal(prob, queryVars);
       end
