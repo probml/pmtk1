@@ -17,7 +17,7 @@ classdef TrellisDist < NonParamDist
             
     end
     
-    properties(GetAccess = 'public', SetAccess = 'protected')
+    properties(GetAccess = 'protected', SetAccess = 'protected')
     % Values here are calculated only as needed and stored for future queries.   
     
     
@@ -26,7 +26,7 @@ classdef TrellisDist < NonParamDist
       gamma;    % gamma(i,t) = p(S(t)=i | y(1:T))      (smoothing) forwards/backwards
       gamma2;
       xi;       % two slice marginal distribution 
-                % xi(i,j,t)  = p(Z(t)=i, Z(t+1)=j | y(1:T)) , t=1:T-1
+    
     end
     
     properties(GetAccess = 'protected' , SetAccess = 'protected')
@@ -52,17 +52,17 @@ classdef TrellisDist < NonParamDist
         
         %% Setters
         function trellis = set.pi(trellis,pi)
-            reset(trellis);
+            trellis = reset(trellis);
             trellis.pi = pi;
         end
         
         function trellis = set.A(trellis,A)
-           reset(trellis);
+           trellis = reset(trellis);
            trellis.A = A;
         end
         
         function trellis = set.B(trellis,B)
-           reset(trellis)
+           trellis = reset(trellis);
            trellis.B = B;
         end
     end
@@ -124,7 +124,7 @@ classdef TrellisDist < NonParamDist
                 return;
             end
             
-            if(isempty(tj)) % compute one slice
+            if(nargin < 3 || isempty(tj)) % compute one slice
                switch lower(method)
                    case 'filtered'
                        if(isempty(trellis.alpha))
@@ -146,16 +146,7 @@ classdef TrellisDist < NonParamDist
          
         end
         
-        function [expWeights,trellis] = expectedWeights(trellis)
-        % Compute the expected weigths that will be used along with the
-        % observation in calculating the expected sufficient statistics.
-            checkParams(trellis);
-            if(isempty(trellis.gamma))
-                [trellis.gamma, trellis.alpha, trellis.beta, trellis.logp] = hmmFwdBack(trellis.pi, trellis.A, trellis.B);
-            end
-            expWeights = sum(trellis.gamma,2);
-        end
-        
+      
         function [logp,trellis] = logprob(trellis)
             
             if(isempty(trellis.logp))
@@ -165,15 +156,11 @@ classdef TrellisDist < NonParamDist
             
         end
         
-        function [s,trellis] = sample(trellis,s)
+        function [s,trellis] = sample(trellis,nsamples)
             checkParams(trellis);
+            s = hmmSamplePost(trellis.pi, trellis.A, trellis.B, nsamples);           
         end
-        
-        
-        function [pred,trellis] = predictFutureObservations(trellis,horizon)
-            
-        end
-        
+               
         function [h,trellis] = plot(trellis,varargin)
             checkParams(trellis);
         end
@@ -184,7 +171,7 @@ classdef TrellisDist < NonParamDist
           trellis.alpha = [];  
           trellis.beta = [];    
           trellis.gamma = [];   
-          trellis.gamm2 = [];
+          trellis.gamma2 = [];
           trellis.xi = [];      
           trellis.viterbiPath = []; 
           trellis.logp = [];  
@@ -196,6 +183,12 @@ classdef TrellisDist < NonParamDist
              trellis.xi = hmmComputeTwoSlice(trellis.alpha, trellis.beta, trellis.A, trellis.B);
            
         end
+        
+        function d = ndimensions(trellis)
+            d = size(trellis.B,2);
+        end
+            
+            
         
     end
     

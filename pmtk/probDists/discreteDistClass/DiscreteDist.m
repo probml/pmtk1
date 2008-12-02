@@ -95,8 +95,8 @@ classdef DiscreteDist  < ParamDist
            end
         end
         
-        if(isemtpy(suffStat) || ~isfield(suffStat,'counts'))
-           suffStat = makeSuffStat(model,X);
+        if(~isstruct(suffStat) || ~isfield(suffStat,'counts'))
+           suffStat = mkSuffStat(model,X);
         end
       
         switch lower(method)
@@ -164,7 +164,7 @@ classdef DiscreteDist  < ParamDist
         obj.mu = exp(logprob(obj, obj.support));
     end
     
-    function SS = makeSuffStat(obj,X,weights)
+    function SS = mkSuffStat(obj,X,weights)
     % Construct sufficient statistics from X in a format that fit() will understand. 
     % Use of the weights is optional, e.g. for computing expected sufficient
     % statistics. Each element of X is considered a data point and so the
@@ -185,6 +185,7 @@ classdef DiscreteDist  < ParamDist
             for i=1:numel(SS.support)
                 SS.counts(i) = sum(weights(X == SS.support(i)));
             end
+            SS.counts = SS.counts;
        else
             SS.counts = histc(X,model.support);
        end

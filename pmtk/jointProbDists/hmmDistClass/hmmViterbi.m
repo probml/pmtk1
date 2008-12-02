@@ -16,14 +16,14 @@ psi = zeros(K,T);
 path = zeros(1,T);
 
 t=1;
-delta(:,t) = normalise(prior(:) .* obslik(:,t));
+delta(:,t) = normalize(prior(:) .* obslik(:,t));
 psi(:,t) = 0; % arbitrary value, since there is no predecessor to t=1
 for t=2:T
   for j=1:K
     [delta(j,t), psi(j,t)] = max(delta(:,t-1) .* transmat(:,j));
     delta(j,t) = delta(j,t) * obslik(j,t);
   end
-  delta(:,t) = normalise(delta(:,t));
+  delta(:,t) = normalize(delta(:,t));
 end
 
 % Traceback

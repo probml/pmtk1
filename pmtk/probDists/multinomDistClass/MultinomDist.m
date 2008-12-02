@@ -79,7 +79,7 @@ classdef MultinomDist < DiscreteDist
        % method -  'map' or 'mle' or 'bayesian'
        [X, suffStat, method,prior] = process_options(...
          varargin, 'data', [], 'suffStat', [], 'method', 'mle','prior',[]);
-       if isempty(suffStat), suffStat = MultinomDist.mkSuffStat(X); end
+       if isempty(suffStat), suffStat = mkSuffStat(MultinomDist(),X); end
        switch method
          case 'mle'
            obj.mu =  suffStat.counts / suffStat.N;
@@ -107,22 +107,17 @@ classdef MultinomDist < DiscreteDist
            error(['unknown method ' method])
        end
      end
-
      
-     
-  end
-
-
-
-  %% static
-  methods(Static = true)
-      function SS = mkSuffStat(X)
+     function SS = mkSuffStat(obj,X)
        SS.counts = sum(X,2);
        n = size(X,1);
        SS.N = sum(X(:));
-      end
-       
+     end
   end
+
+
+
+  
   
   %% Private methods
   methods(Access = 'protected')
@@ -141,7 +136,7 @@ classdef MultinomDist < DiscreteDist
        % suffStat - SS.counts(j), SS.N = total amount of data
        [X, suffStat] = process_options(...
          varargin, 'data', [], 'suffStat', []);
-       if isempty(suffStat), suffStat = MultinomDist.mkSuffStat(X); end
+       if isempty(suffStat), suffStat = mkSuffStat(MultinomDist(),X); end
        switch class(obj.mu)
          case 'DirichletDist'
            obj.mu = DirichletDist(obj.mu.alpha + suffStat.counts);

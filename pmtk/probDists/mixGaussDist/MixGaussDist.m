@@ -93,7 +93,7 @@ classdef MixGaussDist < ParamDist
         varargin, 'data', [], 'suffStat', [], 'method', 'mle');
       hasMissingData =  any(isnan(X(:)));
       assert(~hasMissingData)
-      if isempty(SS), SS = MvnDist.mkSuffStat(X); end
+      if isempty(SS), SS = mkSuffStat(MvnDist(),X); end
       switch method
         case 'mle'
           obj.mu = SS.xbar;

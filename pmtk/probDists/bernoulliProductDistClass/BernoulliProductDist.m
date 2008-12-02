@@ -52,7 +52,7 @@ classdef BernoulliProductDist < ProductDist
             end
             
             if(isempty(suffStat))
-                suffStat = makeSuffStat(obj,X);  
+                suffStat = mkSuffStat(obj,X);  
             end
             obj.ndistributions = numel(suffStat.on);
 
@@ -91,7 +91,7 @@ classdef BernoulliProductDist < ProductDist
             
         end
         
-        function SS = makeSuffStat(obj,X,weights)
+        function SS = mkSuffStat(obj,X,weights)
             X = double(logical(X));      % make sure X is binary
             if(nargin < 2)
                 SS.on  = sum(X,1)';

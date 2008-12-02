@@ -190,7 +190,7 @@ classdef MvnDist < ParamDist
     %
     % 'data'     -        data(i,:) is case i
     % 'suffStat' -        the sufficient statistics of the data made via
-    %                     SS = MvnDist.mkSuffStat(data). If not specified, this
+    %                     SS = mkSuffStat(MvnDist(),data). If not specified, this
     %                     is automatically calculated.
     %
     % 'method'   -        If either obj.mu or obj.Sigma is an object, 
@@ -249,21 +249,29 @@ classdef MvnDist < ParamDist
         end
     end
     
-  end % methods
-
-  %% Demos
-  methods(Static = true)
-    function suffStat = mkSuffStat(X)
+     function suffStat = mkSuffStat(obj,X,weights)
       % SS.n
       % SS.xbar = 1/n sum_i X(i,:)'
       % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k)
+      if(nargin > 2)
+         X = bsxfun(@times,X,weights); 
+      end
       n = size(X,1);
       suffStat.n = n;
       %suffStat.X = sum(X,1)'; % column vector
       suffStat.xbar = sum(X,1)'/n; % column vector
-      Xc = (X-repmat(suffStat.xbar',n,1));
-      suffStat.XX = (Xc'*Xc)/n;
+      
+      %Xc = (X-repmat(suffStat.xbar',n,1));
+      %suffStat.XX = (Xc'*Xc)/n;
+      X = bsxfun(@minus,X,suffStat.xbar');
+      suffStat.XX = (X'*X)/n;
     end
+    
+  end % methods
+
+  %% Demos
+  methods(Static = true)
+   
  
        
     function plot2dMarginalFigure()
@@ -299,7 +307,7 @@ classdef MvnDist < ParamDist
         varargin, 'data', [], 'suffStat', [], 'method', 'mle');
       hasMissingData =  any(isnan(X(:)));
       assert(~hasMissingData)
-      if isempty(SS), SS = MvnDist.mkSuffStat(X); end
+      if isempty(SS), SS = mkSuffStat(MvnDist,X); end
       switch method
         case 'mle'
           obj.mu = SS.xbar;
@@ -330,7 +338,7 @@ classdef MvnDist < ParamDist
          obj = infer(obj.paramInfEng, obj, X);
          return;
        end
-       if isempty(SS), SS = MvnDist.mkSuffStat(X); end
+       if isempty(SS), SS = mkSuffStat(MvnDist(),X); end
        if SS.n == 0, return; end
        done = false;
        switch class(obj.mu)

@@ -58,6 +58,19 @@ classdef ProbDist
             stdErr = std(score,0,2)/sqrt(n);
         end
         
+        function bool = isTied(obj)
+        % Should return true if any of the parameters are tied.    
+           bool = false; 
+        end
+        
+        function obj = clampTied(obj)
+        % Clamp all tied parameters    
+        end
+        
+        function obj = unclampTied(obj)
+        % Unclamp all tied parameters    
+        end
+        
         function cellArray = copy(obj,varargin)
         % Create a cell array of copies of a probability distribution. Uses
         % repmat semantics - e.g. copy(obj,3) or copy(obj,3,5) or

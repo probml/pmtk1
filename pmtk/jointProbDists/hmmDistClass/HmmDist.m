@@ -1,10 +1,6 @@
 classdef HmmDist < ParamDist
 % This class represents a Hidden Markov Model. 
 %
-% NOTATION: y - observed data, y(t) is the t-th observation
-%           S - hidden state , S(t) is the hidden state corresponding to the
-%                                   t-th observation.
-    
     properties                           
         nstates;                    % number of hidden states
 
@@ -13,10 +9,6 @@ classdef HmmDist < ParamDist
         transitionMatrix;           % matrix of size nstates-by-nstates
                                     % transitionMatrix(i,j) = p( S(t) = j | S(t-1) = i), 
                                     
-                                    
-        observationModel;           % The PMTK class name of the distributions 
-                                    % that make up the observation model, i.e. 
-                                    % 'DiscreteDist', 'MvnDist', etc. 
        
         stateConditionalDensities;  % the observation model - one object per 
                                     % hidden state stored as a cell array. 
@@ -24,7 +16,7 @@ classdef HmmDist < ParamDist
                                     % support fit() via sufficient statistics 
                                     % with the name, 'suffStat', i.e.
                                     % fit(obj,'suffStat',SS) as well as
-                                    % makeSuffStat(obj,X,weights), which
+                                    % mkSuffStat(obj,X,weights), which
                                     % computes weighted (expected) sufficient
                                     % statistics in a format recognized by
                                     % fit(). Tied parameters, if any, are
@@ -32,13 +24,10 @@ classdef HmmDist < ParamDist
                                     % pointers to a shared data source).
         verbose = true;             
         
-        
     end
     
     properties(GetAccess = 'private', SetAccess = 'private')
         obsDims;   % the dimensionality of an observation at a single time point t. 
-        nsymbols;  % if observation model is discrete, this is the number of output symbols.
-        
     end
     
     methods
@@ -50,11 +39,27 @@ classdef HmmDist < ParamDist
         %            model = HmmDist('name1',val1,'name2',val2,...)
         %
         % INPUT:   
-        %           'nstates' - the number of hidden states
+        %           'nstates'           - the number of hidden states
+        
+        %
+        % - optional
+        % 
+        %           'pi'                           - the distribution initial hidden states
+        %           'transitionMatrix'             - the transition matrix
+        %           'stateConditionalDensities'    - see property above
+        %           'ndimensions'                  - the dimensionality of an observation
+        %                                            at a single time step
+        %           'verbose'   
+        %                                            
         %
         % OUTPUT:   'model'   - the constructed HMM object
         %
-            model.nstates = process_options(varargin,'nstates',[]);
+            [model.nstates,model.pi,model.transitionMatrix,model.stateConditionalDensities,model.obsDims,model.verbose]...
+                = process_options(varargin,'nstates',[],'pi',[],'transitionMatrix',[],'stateConditionalDensities',{},'ndimensions',1,'verbose',true);
+            
+            if(isempty(model.nstates))
+                model.nstates = numel(model.stateConditionalDensities);
+            end
         end
         
         
@@ -74,16 +79,22 @@ classdef HmmDist < ParamDist
         %                      that data{ex}{i,j} is the ith dimension at time
         %                      step j in example ex.
         %
+        %
+        % 'stateConditionalDensities - a cell array of the state conditional
+        %                              densities - one per state, initialized to 
+        %                              a starting guess. 
+        %
+        % 'pi0'                      - an initialization for the pi parameter, if
+        %                              not specified, a random starting point is chosen. 
+        %
+        % 'transitionMatrix0'        - an initialization for the transition
+        %                              matrix; if not specified, a random stochastic 
+        %                              matrix is used instead. 
+        % 
+        %
         % 'latentValues'     - optional values for the latent variables in the 
         %                      case of fully observable data.
         %                     
-        %
-        % 'observationModel' - the exact case sensitive name of the PMTK class
-        %                      to be used for the observation model. For
-        %                      instance, if you want each state conditional
-        %                      density to be an MvnDist, this parameter must be
-        %                      'MvnDist'. This can also be an object of the
-        %                      class, e.g. MvnDist(). 
         %
         % 'method'           - ['map'] | 'mle' | 'bayesian'
         %
@@ -109,24 +120,30 @@ classdef HmmDist < ParamDist
         % used to initialize the fitting algorithm. Similarly for model.pi and
         % model.transitionMatrix.
             
-             [data,latentValues,method,algorithm,observationModel,transitionPrior,observationPrior,options] = process_options(varargin,...
+             [data,latentValues,method,algorithm,stateConditionalDensities,...
+              model.pi,model.transitionMatrix,transitionPrior,observationPrior,options]...
+              = process_options(varargin,...
                  'data'             ,[]         ,...
                  'latentValues'     ,[]         ,...
                  'method'           ,'map'      ,...
                  'algorithm'        ,'em'       ,...
-                 'observationModel' ,''         ,...
+                 'stateConditionalDensities' ,{},...
+                 'pi0'              ,[]         ,...
+                 'transitionMatrix0',[]         ,...
                  'transitionPrior'  ,[]         ,...
                  'observationPrior' ,[]         );
              
-             model.observationModel = observationModel;    
-             if(~isempty(latentValues)),error('fully observable data case not yet implemented');end
              
+             if(~isempty(latentValues)),error('fully observable data case not yet implemented');end
+             if(~isempty(stateConditionalDensities))
+                 model.stateConditionalDensities = stateConditionalDensities;
+             end
              data = checkData(model,data);
-             model = checkObservationModel(model,observationModel);
+             
              
              switch lower(algorithm)
                  case 'em'
-                     model = emUpdate(model,data,method,transitionPrior,observationPrior,options{:});
+                     model = emUpdate(model,data,transitionPrior,observationPrior,options{:});
                  otherwise
                      error('%s is not a valid mle/map algorithm',algorithm);
              end
@@ -134,20 +151,31 @@ classdef HmmDist < ParamDist
         end
 
         function logp = logprob(model,X)
-         
-            [junk,n] = model.getObservation(X,1);
+        % logp(i) = log p(X{i} | model)
+            n = nobservations(model,X);                              
             logp = zeros(n,1);
             for i=1:n
-                [alpha,logp(i)] = hmmFilter(model.pi,model.transitionMatrix,makeLocalEvidence(model,getObservation(X,i)));
+                logp(i) = logprob(predict(model,getObservation(model,X,i)));
+                %[alpha,logp(i)] = hmmFilter(model.pi,model.transitionMatrix,makeLocalEvidence(model,getObservation(X,i)));
             end
         end
         
         
+        function [observed,hidden] = sample(model,nsamples,length)
+            hidden = mc_sample(model.pi,model.transitionMatrix,length,nsamples);
+            observed = zeros(model.ndimensions,length,nsamples);
+            for n=1:nsamples
+               for t=1:length
+                   observed(:,t,n) = rowvec(sample(model.stateConditionalDensities{hidden(n,t)}));
+               end
+            end    
+        end
+        
         function trellis = predict(model,observation)
         % not yet vectorized, call with a single observation  
-            [junk,n] = getObservation(model,observation);
+            n = nobservations(model,observation);  
             if(n > 1), error('Sorry, predict is not yet vectorized - please pass in each observation one at a time in a for loop. In future versions, calling predict with multiple observations will return a TrellisProductDist.');end
-            trellis = TrellisDist(model.pi,model.transitionMatrix,makeLocalEvidence(observation));
+            trellis = TrellisDist(model.pi,model.transitionMatrix,makeLocalEvidence(model,observation));
         end
             
         function d = ndimensions(model)
@@ -158,7 +186,7 @@ classdef HmmDist < ParamDist
     
     methods(Access = 'protected')
          
-        function emUpdate(model,data,transitionPrior,observationPrior,varargin)
+        function model = emUpdate(model,data,transitionPrior,observationPrior,varargin)
         % Update the transition matrix, the state conditional densities and pi,
         % the distribution over starting hidden states, using em.
         
@@ -166,92 +194,124 @@ classdef HmmDist < ParamDist
                [optTol,maxIter,clampPi,clampObs,clampTrans] = ...
                    process_options(varargin ,...
                    'optTol'                ,1e-4   ,...
-                   'maxIter'               ,20     ,...
-                   'clamp_pi'               ,false  ,...
-                   'clamp_obs'              ,false  ,...
-                   'clamp_trans'            ,false  );
+                   'maxIter'               ,100    ,...
+                   'clampPi'               ,false  ,...
+                   'clampObs'              ,false  ,...
+                   'clampTrans'            ,false  );
            
-                              
-               loglikelihood = -inf;       
+               if(clampPi && clampObs && clampTrans),return;end % nothing to do
+               
+               loglikelihood = 0;       
                iter = 1;
                converged = false;
-               [junk,nobservations] = getObservation(model,data,1);
+               nobs = nobservations(model,data);  
+               model = initializeParams(model,data);
+               if(~clampPi),essPi = zeros(model.nstates,1);end                     % The expected number of visits to state one - needed to update pi
+               if(~clampTrans),essTrans   = zeros(model.nstates,model.nstates);end % The expected number of transitions from S(i) to S(j) - needed to update transmatrix 
                
-               essPi      = zeros(model.nstates,1);                    % The expected number of visits to state one - needed to update pi
-               essTrans   = zeros(model.nstates,model.nstates);        % The expected number of transitions from S(i) to S(j) - needed to update transmatrix 
-               [stackedData,seqndx] = HmmDist.stackData(data);
-               weightingMatrix = zeros(size(stackedData,1),1);
+               [stackedData,seqndx] = HmmDist.stackObservations(data);
+               if(~clampObs), weightingMatrix = zeros(size(stackedData,1),model.nstates);end
                
                while(iter < maxIter && ~converged)
                    
                    prevLL = loglikelihood;
-                   essPi(:) = 0; essTrans(:) = 0; weightingMatrix(:) = 0;
+                   loglikelihood = 0;
+                   if(~clampPi),essPi(:) = 0;end
+                   if(~clampTrans),essTrans(:) = 0;end
+                   if(~clampObs),weightingMatrix(:) = 0;end
                    %% E Step
-                   for j=1:nobservations
-                       trellis = precompute(predict(model,getObservation(model,data,j)));
-                       essPi = essPi + colvec(marginal(trellis,1));
-                       essTrans = essTrans +  marginal(trellis);                 % marginal(trellis) = two slice marginal xi
+                   for j=1:nobs
+                       trellis = predict(model,getObservation(model,data,j));
+                   
+                       if(~clampPi),essPi = essPi + colvec(marginal(trellis,1));end
+                       if(~clampTrans),essTrans = essTrans +  marginal(trellis);end  % marginal(trellis) = two slice marginal xi
                        
-                       weight = colvec(sum(marginal(trellis,':'),2));            % marginal(trellis,':') = gamma
-                       weightingMatrix(seqndx(j):seqndx(j)+size(weight,1)-1) = weight;
-                       loglikelihood = loglikelihood + current_ll;
+                       if(~clampObs)
+                                
+                           
+                           %weight = bsxfun(@times,colvec(sum(marginal(trellis,':'),2)),log(trellis.B));                    % marginal(trellis,':') = gamma
+                           %weightingMatrix(seqndx(j):seqndx(j)+size(weight,2)-1,:) = weight'; 
+                           
+%                            for s=1:model.nstates
+%                                gamma = marginal(trellis,':')';
+%                               
+%                                weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,s) = weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,s) + gamma(:,s);
+%                            end
+                             gamma = marginal(trellis,':')';
+                             weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,:) = weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,:) + gamma;
+                           
+                           
+                        
+                       end
+                       loglikelihood = loglikelihood + logprob(trellis); 
+                       
+                       
                    end
-                   essObs = cell(model.nstates,1);                               % observation model expected sufficient statistics
-                   for i=1:model.nstates
-                       essObs{i} = makeSuffStat(model.stateConditionalDensities{i},stackedData,weightingMatrix);
+                   if(~clampObs)
+                       essObs = cell(model.nstates,1);                               % observation model expected sufficient statistics
+                       for i=1:model.nstates
+                           essObs{i} = mkSuffStat(model.stateConditionalDensities{i},stackedData,weightingMatrix(:,i)); 
+                       end
                    end
                    
-                   %% M Step
-                   model.pi = normalize(essPi);    
-                   if(isempty(transitionPrior))
-                       model.transitionMatrix = normalize(essTrans,2);
-                   else
-                       if(numel(transitionPrior) == 1)
-                           if(iscell(transitionPrior))
-                               transitionPrior = transitionPrior{:};
-                           end
-                           switch class(transitionPrior)
-                               case 'DirichletDist'
-                                   model.transitionMatrix = normalize(bsxfun(@plus,essTrans,rowvec(transitionPrior.alpha)),2);
-                               otherwise
-                                   error('%s is an unsupported prior on the transition matrix.',class(transitionPrior));
-                           end
-                       elseif(numel(transitionPrior) == model.nstates)
-                           alpha = zeros(size(model.transitionMatrix));
-                           for i=1:numel(transitionPrior)
-                               prior = transitionPrior{i};
-                               if(~isa(prior,'DirichletDist'))
-                                   error('%s is not a supported prior on a row of the transition matrix',class(prior));
-                               end
-                               alpha(i,:) = rowvec(prior.alpha);
-                           end
-                           model.transitionMatrix = normalize(essTrans + alpha - 1,2);
+                   %% M Step PI
+                   if(~clampPi),model.pi = normalize(essPi);end
+                   %% M Step Transition Matrix
+                   if(~clampTrans)
+                       if(isempty(transitionPrior))
+                           model.transitionMatrix = normalize(essTrans,2);
                        else
-                           error('Inconsistent number of prior distributions on the transition matrix: must be 1 or nstates');
+                           if(numel(transitionPrior) == 1)
+                               if(iscell(transitionPrior))
+                                   transitionPrior = transitionPrior{:};
+                               end
+                               switch class(transitionPrior)
+                                   case 'DirichletDist'
+                                       model.transitionMatrix = normalize(bsxfun(@plus,essTrans,rowvec(transitionPrior.alpha)),2);
+                                   otherwise
+                                       error('%s is an unsupported prior on the transition matrix.',class(transitionPrior));
+                               end
+                           elseif(numel(transitionPrior) == model.nstates)
+                               alpha = zeros(size(model.transitionMatrix));
+                               for i=1:numel(transitionPrior)
+                                   prior = transitionPrior{i};
+                                   if(~isa(prior,'DirichletDist'))
+                                       error('%s is not a supported prior on a row of the transition matrix',class(prior));
+                                   end
+                                   alpha(i,:) = rowvec(prior.alpha);
+                               end
+                               model.transitionMatrix = normalize(essTrans + alpha - 1,2);
+                           else
+                               error('Inconsistent number of prior distributions on the transition matrix: must be 1 or nstates');
+                           end
                        end
                    end
-               
-                   if(isempty(observationPrior))
-                       for i=1:model.nstates
-                           model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'suffStat',essObs{i});
-                       end
-                   else
-                       for i=1:model.nstates
-                           model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'suffStat',expSSobs,'prior',observationPrior);
+                   %% M Step Observation Model
+                   if(~clampObs)
+                       if(isTied(model.stateConditionalDensities{i}))
+                           model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'suffStat',essObs{i},'prior',observationPrior);
+                           for i=2:model.nstates
+                               model.stateConditionalDensities{i} = unclampTied(fit(clampTied(model.stateConditionalDensities{i}),'suffStat',essObs{i},'prior',observationPrior));
+                           end
+                       else
+                           for i=1:model.nstates
+                               model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'suffStat',essObs{i},'prior',observationPrior);
+                           end
                        end
                    end
-                   
+            
                    %% Test Convergence
+                   if(model.verbose)
+                      fprintf('\nlog likelihood = %f\n',loglikelihood); 
+                   end
                    iter = iter + 1;
-                   converged = (abs(loglikelihood - prevLL) / (abs(loglikelihood) + abs(prev_ll) + eps)/2) < optTol;
+                   converged = (abs(loglikelihood - prevLL) / (abs(loglikelihood) + abs(prevLL) + eps)/2) < optTol;
                end % end of em loop
+
                
         end % end of emUpdate method
-        
-        
-        
-        
-        function initializeParams(model,X)
+ 
+        function model = initializeParams(model,X)                                          %#ok
         % Initialize parameters to starting states in preperation for EM.
            
             if(isempty(model.transitionMatrix))
@@ -260,27 +320,16 @@ classdef HmmDist < ParamDist
             if(isempty(model.pi))
                model.pi = normalize(ones(1,model.nstates)); 
             end
-             
-           % init state conditional densities here    
-        end
-        
-        
-        function [nsym,sym] = noutputSymbols(model,X)
-        % Helper method to determine the number of output symbols in the case of 
-        % a discrete observation model. 
-            assert(strcmpi(model.observationModel,'DiscreteDist'));
-            [junk,n] = getObervation(model,X,1);
-            unq = [];
-            for i=1:n
-                unq = union(unq,unique(getObservation(model,X,i)));
+            
+            if(isempty(model.stateConditionalDensities))
+               error('You must specify the state conditional densities - i.e. the observation model'); 
             end
-            nsym = numel(unq);
-            sym = unq;
+            
+            
         end
-        
         
          function data = checkData(model,data)
-        % basic checks to make sure the data is in the right format
+         % basic checks to make sure the data is in the right format
            if(isempty(data))
                error('You must specify data to fit this object');
            end
@@ -318,107 +367,37 @@ classdef HmmDist < ParamDist
                otherwise
                    error('Data must be either a matrix of double values or a cell array');
            end
+           model.obsDims = d;
         end % end of checkData method
         
         
-        function [obs,n] = getObservation(model,X,i)
+        function [obs,n] = getObservation(model,X,i)                            %#ok
         % Get the ith observation/example from X.     
             switch class(X)
                 case 'cell'
                     n = numel(X);
                     obs = X{i};
                 case 'double'
-                    if(ndims(X) == 3)
-                        n = size(X,3);
-                        obs = X(:,:,i);
-                    else
-                        n = size(X,1);
-                        obs = X(i,:);
-                    end
- 
-            end
-            
+                   n = size(X,3);
+                   obs = X(:,:,i);
+                
+            end    
+        end
+        
+        function n = nobservations(model,X)
+           [junk,n] = getObservation(model,X,1); %#ok
         end
         
         function localEvidence = makeLocalEvidence(model,obs)
-        % localEvidence(i,t) = p(y(t) | S(t)=i)   
+        % the probability of the observed sequence under each state conditional density. 
+        % localEvidence(i,t) = p(y(t) | S(t)=i)
             
             localEvidence = zeros(model.nstates,size(obs,2));     
             for j = 1:model.nstates
-                localEvidence(j,:) = exp(logprob(model.stateConditionalDensities{j},obs));
+                localEvidence(j,:) = exp(logprob(model.stateConditionalDensities{j},obs'));
             end
             
         end
-        
-        
-        function model = checkObservationModel(model,observationModel)
-        % Basic check on the specified observation model - make sure its at least 
-        % a PMTK class.
-            switch(class(obserevationModel))
-                case 'char'
-                    obsmod = obseervationModel;
-                otherwise
-                    obsmod = class(observationModel);
-            end
-            
-            try
-                meta = metaclass(observationModel);
-                
-            catch
-               error('%s is not a valid observation model. Make sure it names a valid PMTK distribution',obsmod);
-            end
-            model.observationModel = obsmod;
-            
-        end
-        
-        
-        
-        
-            
-            
-            
-            
-            
-        
-        
-%         function SS = expectedSSobservation(model,data,gamma)
-%         % Compute the expected sufficient statistics for the observation model. 
-%         
-%         switch lower(model.observationModel)
-%             case 'discrete'
-%                 
-%                 ss = zeros(model.nstates,model.noutputsymbols);
-%                 for ex=1:numex
-%                     obs = model.getObservation(data,ex);
-%                     T = length(obs);  
-%                     % loop over whichever is shorter
-%                     if T < O
-%                         for t=1:T
-%                             o = obs(t);
-%                             ss(:,o) = ss(:,o) + gamma(:,t);
-%                         end
-%                     else
-%                         for o=1:O
-%                             ndx = find(obs==o);
-%                             if ~isempty(ndx)
-%                                 ss(:,o) = ss(:,o) + sum(gamma(:, ndx), 2);
-%                             end
-%                         end
-%                     end
-%                 end
-%             SS = struct('counts',{},'N',{});
-%             for i=1:model.nstates
-%                SS(i).counts = ss(i,:);
-%                SS(i).N = N;
-%             end
-%             case 'mvn'
-%                 
-%             case 'mvnmix'
-%                 
-%         end
-%         
-%         end
-        
         
     end % end of protected methods
     
@@ -442,9 +421,54 @@ classdef HmmDist < ParamDist
                 ndx = ndx(1:end-1);
             else
                 X = reshape(data,[],size(data,1));
-                ndx = size(data,2)*ones(1,size(data,2)*size(data,3));
+                ndx = cumsum([1,size(data,2)*ones(1,size(data,3))]);
+                ndx = ndx(1:end-1);
             end
         end
     end
+    
+    methods(Static = true)
+        
+        function testClass()
+            trueObsModel = {DiscreteDist(ones(1,6)./6);DiscreteDist([ones(1,5)./10,0.5])};
+            trueTransmat = [0.95,0.05;0.1,0.90];
+            truePi = [0.5,0.5];
+            truth = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel);
+            nsamples = 100; length = 13;
+            [observed,trueHidden] = sample(truth,nsamples,length);
+            
+            obsModel0 = {DiscreteDist(normalize(rand(1,6)));DiscreteDist(normalize(rand(1,6)))};
+            model = HmmDist('stateConditionalDensities',obsModel0);
+            model = fit(model,'data',observed,'transitionMatrix0',normalize(rand(2),2),'pi0',normalize(rand(1,2)));
+            
+            trellis = predict(model,observed(:,:,1));
+            postSample = mode(sample(trellis,1000),2)'
+            viterbi  = mode(trellis)
+            maxmarg = maxidx(marginal(trellis,':'))
+            %% MVN
+            setSeed(1);
+            trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
+            trueTransmat  = [0.8,0.2;0.3,0.7];
+            truePi       = [0.8,0.2];
+            truth = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel,'ndimensions',10);
+            nsamples = 100; length = 13;
+            [observed,trueHidden] = sample(truth,nsamples,length);
+            
+            obsModel0 = {MvnDist(randn(1,10),randpd(10));MvnDist(randn(1,10),randpd(10))};
+            model = HmmDist('stateConditionalDensities',obsModel0);
+            model = fit(model,'data',observed);
+            
+            
+        end
+        
+      
+        
+    end
+    
+    
+    
+    
+    
+    
 end % end of class
 

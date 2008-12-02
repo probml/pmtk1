@@ -7,7 +7,7 @@ function [xi_summed, xi] = hmmComputeTwoSlice(alpha, beta, transmat, obslik)
 %
 % OUTPUT:
 % xi(i,j,t)  = p(Q(t)=i, Q(t+1)=j | y(1:T)) , t=1:T-1
-% xi_summed(i,j) = sum_{t=2}^{T} xi(i,j,t) 
+% xi_summed(i,j) = sum_{t=1}^{T-1} xi(i,j,t) 
 
 [K T] = size(obslik);
 if nargout < 2
