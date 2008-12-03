@@ -159,7 +159,6 @@ classdef HmmDist < ParamDist
             logp = zeros(n,1);
             for i=1:n
                 logp(i) = logprob(predict(model,getObservation(model,X,i)));
-                %[alpha,logp(i)] = hmmFilter(model.pi,model.transitionMatrix,makeLocalEvidence(model,getObservation(X,i)));
             end
         end
         
@@ -223,12 +222,12 @@ classdef HmmDist < ParamDist
                    %% E Step
                    for j=1:nobs
                        trellis = predict(model,getObservation(model,data,j));
-                       if(~clampPi)     ,essPi    = essPi    +  colvec(marginal(trellis,1));end
+                       if(~clampPi)     ,essPi    = essPi    +  colvec(marginal(trellis,1));end  % marginal(trellis,1) is one slice marginal at t=1
                        if(~clampTrans)  ,essTrans = essTrans +  marginal(trellis)          ;end  % marginal(trellis) = two slice marginal xi
                        if(~clampObs)
-                           gamma = marginal(trellis,':')';
-                           weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,:) =...
-                             weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,:) + gamma;
+                           gamma = marginal(trellis,':');
+                           weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) =...
+                             weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) + gamma';
                        end
                        loglikelihood = loglikelihood + logprob(trellis);
                    end
@@ -265,7 +264,10 @@ classdef HmmDist < ParamDist
                    end
                    %% M Step Observation Model
                    if(~clampObs)
-                       if(isTied(model.stateConditionalDensities{i}))
+                       if(isTied(model.stateConditionalDensities{i})) % update the shared parameters first and then clamp them before updating the rest
+                           % since the state conditional densitity will know if
+                           % its tied or not, it can return appropriate suff
+                           % stats.
                            model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'suffStat',essObs{i},'prior',observationPrior);
                            for i=2:model.nstates
                                model.stateConditionalDensities{i} = unclampTied(fit(clampTied(model.stateConditionalDensities{i}),'suffStat',essObs{i},'prior',observationPrior));
@@ -288,7 +290,7 @@ classdef HmmDist < ParamDist
         function model = initializeParams(model,X)                                          %#ok
         % Initialize parameters to starting states in preperation for EM.
             if(isempty(model.transitionMatrix))
-               model.transitionMatrix = normalize(rand(model.nstates,model.nstates),2); 
+               model.transitionMatrix = normalize(rand(model.nstates),2); 
             end
             if(isempty(model.pi))
                model.pi = normalize(ones(1,model.nstates)); 
@@ -361,8 +363,8 @@ classdef HmmDist < ParamDist
         % the probability of the observed sequence under each state conditional density. 
         % localEvidence(i,t) = p(y(t) | S(t)=i)
             localEvidence = zeros(model.nstates,size(obs,2));     
-            for j = 1:model.nstates
-                localEvidence(j,:) = exp(logprob(model.stateConditionalDensities{j},obs'));
+            for i = 1:model.nstates
+                localEvidence(i,:) = exp(logprob(model.stateConditionalDensities{i},obs'));
             end
             
         end
@@ -410,7 +412,7 @@ classdef HmmDist < ParamDist
             
             obsModel0 = {DiscreteDist(normalize(rand(1,6)));DiscreteDist(normalize(rand(1,6)))};
             model = HmmDist('stateConditionalDensities',obsModel0);
-            model = fit(model,'data',observed,'transitionMatrix0',normalize(rand(2),2),'pi0',normalize(rand(1,2)));
+            model = fit(model,'data',observed,'transitionMatrix0',normalize(rand(2,2),2),'pi0',normalize(rand(1,2)));
             
             trellis = predict(model,observed{1}');
             postSample = mode(sample(trellis,1000),2)'
@@ -430,6 +432,48 @@ classdef HmmDist < ParamDist
             
         end
         
+        function seqalign()
+            load data45;
+            nstates   = 5;
+            obsdims   = 13;
+
+            for i=1:nstates;
+               obsModel{i} = MvnDist(rand(obsdims,1),diag(ones(obsdims,1)));
+            end
+            
+            pi0 = [1,0,0,0,0];
+            transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
+            model = HmmDist('nstates',5,'stateConditionalDensities',obsModel);
+            
+            model4  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train4,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
+            model5  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train5,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
+            
+         
+            logp4 = logprob(model4,test45);
+            logp5 = logprob(model5,test45);
+            [val,yhat] = max([logp4,logp5],[],2);
+            yhat(yhat == 1) = 4;
+            yhat(yhat == 2) = 5;
+            nerrs = sum(yhat ~= labels');
+            
+            if(exist('specgram','file'))
+                subplot(2,2,1);
+                specgram(signal1); 
+               
+                subplot(2,2,2)
+                specgram(signal2);
+              
+                subplot(2,2,3);
+                plot(mode(predict(model5,mfcc1)));
+                subplot(2,2,4);
+                plot(mode(predict(model5,mfcc2)));
+                maximizeFigure;
+                
+            end 
+            
+            
+            
+        end
       
         
     end

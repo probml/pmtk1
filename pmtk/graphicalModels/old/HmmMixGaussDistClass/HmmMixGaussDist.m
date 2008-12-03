@@ -1,4 +1,4 @@
-classdef HmmMixGaussDist < HmmDist
+classdef HmmMixGaussDist
     
     properties
         transmat;
@@ -111,7 +111,7 @@ classdef HmmMixGaussDist < HmmDist
             pi0 = [1,0,0,0,0]';
             mu0 = randn(obsdims,nstates,nmix);
             Sigma0 = repmat(eye(obsdims),[1 1 nstates]);
-            transmat0 = mk_stochastic(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1)); 
+            transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2); 
             model4 = HmmMixGaussDist('nstates',5,'nmixtures',nmix);
             model4 = fit(model4,'X',train4,'pi0',pi0,'mu0',mu0,'Sigma0',Sigma0,'transmat0',transmat0,'max_iter',20);
             

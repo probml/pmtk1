@@ -26,17 +26,15 @@ classdef TrellisDist < NonParamDist
       gamma;    % gamma(i,t) = p(S(t)=i | y(1:T))      (smoothing) forwards/backwards
       gamma2;
       xi;       % two slice marginal distribution 
-    
-    end
-    
-    properties(GetAccess = 'protected' , SetAccess = 'protected')
-                
-      viterbiPath; % the most likely sequence of hidden states given model and 
+      
+       viterbiPath; % the most likely sequence of hidden states given model and 
                    % local evidence.
                    
-      logp;        % The log probability of the local evidence             
-                   
+      logp;        % The log probability of the local evidence            
+    
     end
+    
+   
     
     
     methods
@@ -96,8 +94,8 @@ classdef TrellisDist < NonParamDist
         % 
         % [m,trellis] = marginal(trellis) - return all of the two slice
         %                                   marginals, i.e. xi where
-        % xi_full(i,j,t)  = p(S(t)=i, S(t+1)=j | y(1:T)) , t=1:T-1
-        % xi(i,j)         = sum_{t=1}^{T-1} xi_full(i,j,t) 
+        % xi_full(i,j,t)  = p(S(t)=i, S(t+1)=j | y(1:T)) , t=2:T
+        % xi(i,j)         = sum_{t=2}^{T} xi_full(i,j,t) 
         %
         % [m,trellis] = marginal(trellis,':') return all of the one slice
         % marginals, (smoothed)

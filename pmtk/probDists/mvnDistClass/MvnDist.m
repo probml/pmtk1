@@ -66,6 +66,7 @@ classdef MvnDist < ParamDist
           case 'MvnDist'
               mu = rowvec(mean(obj.mu));
           case 'MvnInvWishartDist'
+              % should call logprob on MvnInvWishartDist instead
               mu = rowvec(mean(marginal(obj.mu,'mu')));
               Sigma = mean(marginal(obj.mu,'mu'));
           otherwise
@@ -73,12 +74,13 @@ classdef MvnDist < ParamDist
       end
       
       if(isa(obj.Sigma,'InvWishartDist'))
-         Sigma = mean(obj.Sigma); 
+         Sigma = mode(obj.Sigma); 
+         
       end
       if(isempty(Sigma))
           Sigma = obj.Sigma;
       end
-        
+      
       % L(i) = log p(X(i,:) | params)
       if nargin < 3, normalize = true; end
       %mu = obj.mu(:)'; % ensure row vector
@@ -291,21 +293,26 @@ classdef MvnDist < ParamDist
     end
     
      function suffStat = mkSuffStat(obj,X,weights)
-      % SS.n
-      % SS.xbar = 1/n sum_i X(i,:)'
-      % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k)
-      if(nargin > 2)
-         X = bsxfun(@times,X,weights); 
-      end
-      n = size(X,1);
-      suffStat.n = n;
-      %suffStat.X = sum(X,1)'; % column vector
-      suffStat.xbar = sum(X,1)'/n; % column vector
-      
-      %Xc = (X-repmat(suffStat.xbar',n,1));
-      %suffStat.XX = (Xc'*Xc)/n;
-      X = bsxfun(@minus,X,suffStat.xbar');
-      suffStat.XX = (X'*X)/n;
+         % SS.n
+         % SS.xbar = 1/n sum_i X(i,:)'
+         % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k)
+         if(nargin > 2)
+            
+             suffStat.n = sum(weights);
+             suffStat.xbar = sum(bsxfun(@times,X,weights),1)'/suffStat.n;
+             X = bsxfun(@minus,X,suffStat.xbar');
+             suffStat.XX = (bsxfun(@times,X,weights)'*X)./suffStat.n;
+         else
+             n = size(X,1);
+             suffStat.n = n;
+             %suffStat.X = sum(X,1)'; % column vector
+             suffStat.xbar = sum(X,1)'/n; % column vector
+             
+             %Xc = (X-repmat(suffStat.xbar',n,1));
+             %suffStat.XX = (Xc'*Xc)/n;
+             X = bsxfun(@minus,X,suffStat.xbar');
+             suffStat.XX = (X'*X)/n;
+         end
     end
     
   end % methods
