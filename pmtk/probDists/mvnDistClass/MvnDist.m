@@ -17,7 +17,7 @@ classdef MvnDist < ParamDist
         mu = []; Sigma = [];
       end
       if nargin < 3, domain = 1:length(mu); end
-      m.mu  = mu;
+      m.mu  = colvec(mu);
       m.Sigma = Sigma;
       m.domain = domain;
     end
@@ -46,14 +46,42 @@ classdef MvnDist < ParamDist
     end
 
     function logZ = lognormconst(obj)
+      if(isempty(obj.Sigma) && isa(obj.mu,'MvnInvWishartDist'))
+         Sigma = mean(marginal(obj.mu,'Sigma'));
+      elseif(isa(obj.Sigma,'InvWishartDist'))
+          Sigma = mean(obj.Sigma);
+      else
+         Sigma = obj.Sigma; 
+      end
+        
       d = ndimensions(obj);
-      logZ = (d/2)*log(2*pi) + 0.5*logdet(obj.Sigma);
+      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
     end
     
     function L = logprob(obj, X, normalize)
+      
+      % probably a more principled way  
+      Sigma = [];
+      switch class(obj.mu)
+          case 'MvnDist'
+              mu = rowvec(mean(obj.mu));
+          case 'MvnInvWishartDist'
+              mu = rowvec(mean(marginal(obj.mu,'mu')));
+              Sigma = mean(marginal(obj.mu,'mu'));
+          otherwise
+              mu = rowvec(obj.mu);
+      end
+      
+      if(isa(obj.Sigma,'InvWishartDist'))
+         Sigma = mean(obj.Sigma); 
+      end
+      if(isempty(Sigma))
+          Sigma = obj.Sigma;
+      end
+        
       % L(i) = log p(X(i,:) | params)
       if nargin < 3, normalize = true; end
-      mu = obj.mu(:)'; % ensure row vector
+      %mu = obj.mu(:)'; % ensure row vector
       if length(mu)==1
         X = X(:); % ensure column vector
       end
@@ -64,10 +92,10 @@ classdef MvnDist < ParamDist
       %if statsToolboxInstalled
       %  L1 = log(mvnpdf(X, obj.mu, obj.Sigma));
       M = repmat(mu, N, 1); % replicate the mean across rows
-      if obj.Sigma==0
+      if Sigma==0
         L = repmat(NaN,N,1);
       else
-        mahal = sum(((X-M)*inv(obj.Sigma)).*(X-M),2);
+        mahal = sum(((X-M)*inv(Sigma)).*(X-M),2);
         if normalize
           L = -0.5*mahal - lognormconst(obj);
         else
@@ -201,8 +229,21 @@ classdef MvnDist < ParamDist
     %
     % obj        -         the fitted object. 
     
-        [data,suffStat,method] = process_options(varargin,...
-            'data',[],'suffStat',[],'method','default');                        %#ok
+        [data,suffStat,method,prior] = process_options(varargin,...
+            'data',[],'suffStat',[],'method','default','prior',[]);                        %#ok
+        
+        if(~isempty(prior))
+           switch(class(prior))
+               case 'MvnDist'
+                   obj.mu = prior;
+               case 'MvnInvWishartDist'
+                   obj.mu = prior;
+               case 'InvWishartDist'
+                   obj.Sigma = prior;
+               otherwise
+                   error('%s is not a supported prior',class(prior));
+           end
+        end
         
         if(strcmp(method,'default'))
            
@@ -303,8 +344,8 @@ classdef MvnDist < ParamDist
       %   large-scale covariance matrix estimation and implications
       %   for functional genomics. Statist. Appl. Genet. Mol. Biol. 4:32.
 
-      [X, SS, method] = process_options(...
-        varargin, 'data', [], 'suffStat', [], 'method', 'mle');
+      [X, SS, method,prior] = process_options(...
+        varargin, 'data', [], 'suffStat', [], 'method', 'mle','prior',[]);
       hasMissingData =  any(isnan(X(:)));
       assert(~hasMissingData)
       if isempty(SS), SS = mkSuffStat(MvnDist,X); end
@@ -331,8 +372,8 @@ classdef MvnDist < ParamDist
       % data, we compute the posterior exactly. Otherwise we call
       % m = infer(m.paramInfEng, m, data) to deal with it.
       %
-       [X, SS] = process_options(...
-         varargin, 'data', [], 'suffStat', []);
+       [X, SS,prior] = process_options(...
+         varargin, 'data', [], 'suffStat', [],'prior',[]);
        hasMissingData =  any(isnan(X(:)));
        if hasMissingData
          obj = infer(obj.paramInfEng, obj, X);

@@ -100,6 +100,8 @@ classdef HmmDist < ParamDist
         %
         % 'algorithm'        -  ['em']  the fitting algorithm to use
         %
+        % 'piPrior'          - a DirichletDist object
+        %
         % 'transitionPrior'  - either a single DirichletDist object used as a
         %                      prior for each row of the transition matrix or a
         %                      cell array of DirichletDist objects, one for each
@@ -121,7 +123,7 @@ classdef HmmDist < ParamDist
         % model.transitionMatrix.
             
              [data,latentValues,method,algorithm,stateConditionalDensities,...
-              model.pi,model.transitionMatrix,transitionPrior,observationPrior,options]...
+              model.pi,model.transitionMatrix,piPrior,transitionPrior,observationPrior,options]...
               = process_options(varargin,...
                  'data'             ,[]         ,...
                  'latentValues'     ,[]         ,...
@@ -130,6 +132,7 @@ classdef HmmDist < ParamDist
                  'stateConditionalDensities' ,{},...
                  'pi0'              ,[]         ,...
                  'transitionMatrix0',[]         ,...
+                 'piPrior'          ,[]         ,...
                  'transitionPrior'  ,[]         ,...
                  'observationPrior' ,[]         );
              
@@ -143,7 +146,7 @@ classdef HmmDist < ParamDist
              
              switch lower(algorithm)
                  case 'em'
-                     model = emUpdate(model,data,transitionPrior,observationPrior,options{:});
+                     model = emUpdate(model,data,piPrior,transitionPrior,observationPrior,options{:});
                  otherwise
                      error('%s is not a valid mle/map algorithm',algorithm);
              end
@@ -186,7 +189,7 @@ classdef HmmDist < ParamDist
     
     methods(Access = 'protected')
          
-        function model = emUpdate(model,data,transitionPrior,observationPrior,varargin)
+        function model = emUpdate(model,data,piPrior,transitionPrior,observationPrior,varargin)
         % Update the transition matrix, the state conditional densities and pi,
         % the distribution over starting hidden states, using em.
         
@@ -200,62 +203,49 @@ classdef HmmDist < ParamDist
                    'clampTrans'            ,false  );
            
                if(clampPi && clampObs && clampTrans),return;end % nothing to do
-               
                loglikelihood = 0;       
                iter = 1;
                converged = false;
-               nobs = nobservations(model,data);  
+               nobs  = nobservations(model,data);  
                model = initializeParams(model,data);
-               if(~clampPi),essPi = zeros(model.nstates,1);end                     % The expected number of visits to state one - needed to update pi
-               if(~clampTrans),essTrans   = zeros(model.nstates,model.nstates);end % The expected number of transitions from S(i) to S(j) - needed to update transmatrix 
+               if(~clampPi)     ,essPi      = zeros(model.nstates,1)            ;end % The expected number of visits to state one - needed to update pi
+               if(~clampTrans)  ,essTrans   = zeros(model.nstates,model.nstates);end % The expected number of transitions from S(i) to S(j) - needed to update transmatrix 
                
                [stackedData,seqndx] = HmmDist.stackObservations(data);
                if(~clampObs), weightingMatrix = zeros(size(stackedData,1),model.nstates);end
                
                while(iter < maxIter && ~converged)
-                   
                    prevLL = loglikelihood;
                    loglikelihood = 0;
-                   if(~clampPi),essPi(:) = 0;end
-                   if(~clampTrans),essTrans(:) = 0;end
-                   if(~clampObs),weightingMatrix(:) = 0;end
+                   if(~clampPi)     ,essPi(:)           = 0;end
+                   if(~clampTrans)  ,essTrans(:)        = 0;end
+                   if(~clampObs)    ,weightingMatrix(:) = 0;end
                    %% E Step
                    for j=1:nobs
                        trellis = predict(model,getObservation(model,data,j));
-                   
-                       if(~clampPi),essPi = essPi + colvec(marginal(trellis,1));end
-                       if(~clampTrans),essTrans = essTrans +  marginal(trellis);end  % marginal(trellis) = two slice marginal xi
-                       
+                       if(~clampPi)     ,essPi    = essPi    +  colvec(marginal(trellis,1));end
+                       if(~clampTrans)  ,essTrans = essTrans +  marginal(trellis)          ;end  % marginal(trellis) = two slice marginal xi
                        if(~clampObs)
-                                
-                           
-                           %weight = bsxfun(@times,colvec(sum(marginal(trellis,':'),2)),log(trellis.B));                    % marginal(trellis,':') = gamma
-                           %weightingMatrix(seqndx(j):seqndx(j)+size(weight,2)-1,:) = weight'; 
-                           
-%                            for s=1:model.nstates
-%                                gamma = marginal(trellis,':')';
-%                               
-%                                weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,s) = weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,s) + gamma(:,s);
-%                            end
-                             gamma = marginal(trellis,':')';
-                             weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,:) = weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,:) + gamma;
-                           
-                           
-                        
+                           gamma = marginal(trellis,':')';
+                           weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,:) =...
+                             weightingMatrix(seqndx(j):seqndx(j)+size(gamma,1)-1,:) + gamma;
                        end
-                       loglikelihood = loglikelihood + logprob(trellis); 
-                       
-                       
+                       loglikelihood = loglikelihood + logprob(trellis);
                    end
                    if(~clampObs)
-                       essObs = cell(model.nstates,1);                               % observation model expected sufficient statistics
+                       essObs = cell(model.nstates,1);                          % observation model expected sufficient statistics
                        for i=1:model.nstates
                            essObs{i} = mkSuffStat(model.stateConditionalDensities{i},stackedData,weightingMatrix(:,i)); 
                        end
                    end
-                   
                    %% M Step PI
-                   if(~clampPi),model.pi = normalize(essPi);end
+                   if(~clampPi)
+                       if(isempty(piPrior))
+                            model.pi = normalize(essPi);
+                       else
+                            model.pi = mean(DirichletDist(essPi + colvec(piPrior.alpha)));
+                       end
+                   end
                    %% M Step Transition Matrix
                    if(~clampTrans)
                        if(isempty(transitionPrior))
@@ -265,24 +255,11 @@ classdef HmmDist < ParamDist
                                if(iscell(transitionPrior))
                                    transitionPrior = transitionPrior{:};
                                end
-                               switch class(transitionPrior)
-                                   case 'DirichletDist'
-                                       model.transitionMatrix = normalize(bsxfun(@plus,essTrans,rowvec(transitionPrior.alpha)),2);
-                                   otherwise
-                                       error('%s is an unsupported prior on the transition matrix.',class(transitionPrior));
-                               end
-                           elseif(numel(transitionPrior) == model.nstates)
-                               alpha = zeros(size(model.transitionMatrix));
-                               for i=1:numel(transitionPrior)
-                                   prior = transitionPrior{i};
-                                   if(~isa(prior,'DirichletDist'))
-                                       error('%s is not a supported prior on a row of the transition matrix',class(prior));
-                                   end
-                                   alpha(i,:) = rowvec(prior.alpha);
-                               end
-                               model.transitionMatrix = normalize(essTrans + alpha - 1,2);
+                               model.transitionMatrix = normalize(bsxfun(@plus,essTrans,rowvec(transitionPrior.alpha)),2);
                            else
-                               error('Inconsistent number of prior distributions on the transition matrix: must be 1 or nstates');
+                               for i=1:size(model.transitionMatrix,1)
+                                  model.transitionMatrix(i,:) = rowvec(mean(DirichletDist(essTrans(i,:) + transitionPrior{i}.alpha))); 
+                               end
                            end
                        end
                    end
@@ -299,33 +276,26 @@ classdef HmmDist < ParamDist
                            end
                        end
                    end
-            
                    %% Test Convergence
                    if(model.verbose)
-                      fprintf('\nlog likelihood = %f\n',loglikelihood); 
+                      fprintf('\niteration %d, loglik = %f\n',iter,loglikelihood); 
                    end
                    iter = iter + 1;
                    converged = (abs(loglikelihood - prevLL) / (abs(loglikelihood) + abs(prevLL) + eps)/2) < optTol;
                end % end of em loop
-
-               
         end % end of emUpdate method
  
         function model = initializeParams(model,X)                                          %#ok
         % Initialize parameters to starting states in preperation for EM.
-           
             if(isempty(model.transitionMatrix))
                model.transitionMatrix = normalize(rand(model.nstates,model.nstates),2); 
             end
             if(isempty(model.pi))
                model.pi = normalize(ones(1,model.nstates)); 
             end
-            
             if(isempty(model.stateConditionalDensities))
                error('You must specify the state conditional densities - i.e. the observation model'); 
             end
-            
-            
         end
         
          function data = checkData(model,data)
@@ -336,6 +306,7 @@ classdef HmmDist < ParamDist
            
            switch class(data)
                case 'cell'
+                   data = rowvec(data);
                    n = numel(data);
                    d = size(data{1},1);
                    transpose = false;
@@ -362,8 +333,7 @@ classdef HmmDist < ParamDist
                    if(model.verbose)
                        [d,t,n] = size(data);
                        fprintf('\nInterpreting data as %d observation sequences,\nwhere each sequence is comprised of %d\n%d-dimensional observations.\n',n,t,d);
-                   end
-                   
+                   end    
                otherwise
                    error('Data must be either a matrix of double values or a cell array');
            end
@@ -380,7 +350,6 @@ classdef HmmDist < ParamDist
                 case 'double'
                    n = size(X,3);
                    obs = X(:,:,i);
-                
             end    
         end
         
@@ -391,7 +360,6 @@ classdef HmmDist < ParamDist
         function localEvidence = makeLocalEvidence(model,obs)
         % the probability of the observed sequence under each state conditional density. 
         % localEvidence(i,t) = p(y(t) | S(t)=i)
-            
             localEvidence = zeros(model.nstates,size(obs,2));     
             for j = 1:model.nstates
                 localEvidence(j,:) = exp(logprob(model.stateConditionalDensities{j},obs'));
@@ -434,29 +402,30 @@ classdef HmmDist < ParamDist
             trueTransmat = [0.95,0.05;0.1,0.90];
             truePi = [0.5,0.5];
             truth = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel);
-            nsamples = 100; length = 13;
-            [observed,trueHidden] = sample(truth,nsamples,length);
+            nsamples = 100; length1 = 13; length2 = 7;
+            [observed1,hidden1] = sample(truth,nsamples/2,length1);
+            [observed2,hidden2] = sample(truth,nsamples/2,length2);
+            observed = [num2cell(squeeze(observed1),1)';num2cell(squeeze(observed2),1)'];
+            
             
             obsModel0 = {DiscreteDist(normalize(rand(1,6)));DiscreteDist(normalize(rand(1,6)))};
             model = HmmDist('stateConditionalDensities',obsModel0);
             model = fit(model,'data',observed,'transitionMatrix0',normalize(rand(2),2),'pi0',normalize(rand(1,2)));
             
-            trellis = predict(model,observed(:,:,1));
+            trellis = predict(model,observed{1}');
             postSample = mode(sample(trellis,1000),2)'
             viterbi  = mode(trellis)
             maxmarg = maxidx(marginal(trellis,':'))
             %% MVN
-            setSeed(1);
             trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
             trueTransmat  = [0.8,0.2;0.3,0.7];
-            truePi       = [0.8,0.2];
+            truePi       = [0.5,0.5];
             truth = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel,'ndimensions',10);
             nsamples = 100; length = 13;
             [observed,trueHidden] = sample(truth,nsamples,length);
-            
             obsModel0 = {MvnDist(randn(1,10),randpd(10));MvnDist(randn(1,10),randpd(10))};
             model = HmmDist('stateConditionalDensities',obsModel0);
-            model = fit(model,'data',observed);
+            model = fit(model,'data',observed,'observationPrior',InvWishartDist(10,diag(2*ones(1,10))),'transitionPrior',DirichletDist([1,1]),'PiPrior',DirichletDist([1,1]));
             
             
         end
