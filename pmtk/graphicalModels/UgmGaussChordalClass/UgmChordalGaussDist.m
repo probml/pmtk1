@@ -6,8 +6,8 @@ classdef UgmChordalGaussDist < UgmDist
 
   %%  Main methods
   methods
-    function obj = GgmDecomposableDist(G, mu, Sigma)
-      % obj = GgmDecomposableDist(G, HiwDist(...), []) uses a prior of the form
+    function obj = UgmChordalGaussDist(G, mu, Sigma)
+      % obj = UgmChordalGaussDist(G, HiwDist(...), []) uses a prior of the form
       % p(mu) propto 1, p(Sigma) = hiw(G)
        if nargin == 0
          G = []; mu = []; Sigma = [];
