@@ -299,9 +299,13 @@ classdef MvnDist < ParamDist
          if(nargin > 2)
             
              suffStat.n = sum(weights);
-             suffStat.xbar = sum(bsxfun(@times,X,weights),1)'/suffStat.n;
+             X = bsxfun(@times,X,weights);
+             suffStat.xbar = sum(X)'/suffStat.n;
              X = bsxfun(@minus,X,suffStat.xbar');
-             suffStat.XX = (bsxfun(@times,X,weights)'*X)./suffStat.n;
+             suffStat.XX = X'*X/suffStat.n;
+             %suffStat.xbar = sum(bsxfun(@times,X,weights),1)'/suffStat.n;
+             %X = bsxfun(@minus,X,suffStat.xbar');
+             %suffStat.XX = (bsxfun(@times,X,weights)'*X)./suffStat.n;
          else
              n = size(X,1);
              suffStat.n = n;

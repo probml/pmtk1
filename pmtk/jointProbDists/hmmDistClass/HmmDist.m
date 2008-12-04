@@ -465,7 +465,7 @@ classdef HmmDist < ParamDist
         end
         
         function seqalign()
-            setSeed(99);
+            setSeed(10);
             load data45;
             nstates   = 5;
             obsdims   = 13;
@@ -478,8 +478,8 @@ classdef HmmDist < ParamDist
             transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
             model = HmmDist('nstates',5,'stateConditionalDensities',obsModel);
             
-            model4  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train4);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
-            model5  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train5);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
+            model4  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train4,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
+            model5  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train5,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
 
             logp4 = logprob(model4,test45);
             logp5 = logprob(model5,test45);
