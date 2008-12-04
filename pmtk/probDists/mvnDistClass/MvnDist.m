@@ -60,13 +60,13 @@ classdef MvnDist < ParamDist
     
     function L = logprob(obj, X, normalize)
       
-      % probably a more principled way  
+     
       Sigma = [];
       switch class(obj.mu)
           case 'MvnDist'
               mu = rowvec(mean(obj.mu));
           case 'MvnInvWishartDist'
-              % should call logprob on MvnInvWishartDist instead
+              % call logprob on MvnInvWishartDist instead?
               mu = rowvec(mean(marginal(obj.mu,'mu')));
               Sigma = mean(marginal(obj.mu,'mu'));
           otherwise

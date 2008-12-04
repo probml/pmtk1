@@ -73,7 +73,7 @@ classdef DiscreteDist  < ParamDist
     %
     %
     %
-        [X,suffStat,method,prior] = process_options(varargin,'X',[],'suffStat',[],'method',[],'prior',[]);
+        [X,suffStat,method,prior] = process_options(varargin,'data',[],'suffStat',[],'method',[],'prior',[]);
         
         if(isempty(X) && (isempty(suffStat) || ~isfield(suffStat,'counts')))
             error('You must specify either data or the sufficient statistics to fit.');
@@ -187,7 +187,10 @@ classdef DiscreteDist  < ParamDist
             end
             SS.counts = SS.counts;
        else
-            SS.counts = histc(X,model.support);
+            if(isempty(obj.support))
+               model.support = rowvec(unique(X)); 
+            end
+            SS.counts = histc(X,obj.support);
        end
     end
     

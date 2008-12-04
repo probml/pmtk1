@@ -9,6 +9,14 @@ classdef HmmDist < ParamDist
         transitionMatrix;           % matrix of size nstates-by-nstates
                                     % transitionMatrix(i,j) = p( S(t) = j | S(t-1) = i), 
                                     
+        observationModel            % The observation model to use - an empty 
+                                    % object, e.g. MvnDist() or DiscreteDist()
+                                    % that will be used as a template in
+                                    % constructing all of the state conditional
+                                    % densities. Alternatively, you can specify
+                                    % the pre-initialized densities directly by
+                                    % passing these into
+                                    % stateConditionalDensities, below. 
        
         stateConditionalDensities;  % the observation model - one object per 
                                     % hidden state stored as a cell array. 
@@ -54,11 +62,14 @@ classdef HmmDist < ParamDist
         %
         % OUTPUT:   'model'   - the constructed HMM object
         %
-            [model.nstates,model.pi,model.transitionMatrix,model.stateConditionalDensities,model.obsDims,model.verbose]...
-                = process_options(varargin,'nstates',[],'pi',[],'transitionMatrix',[],'stateConditionalDensities',{},'ndimensions',1,'verbose',true);
+            [model.nstates,model.pi,model.transitionMatrix,model.stateConditionalDensities,model.obsDims,model.verbose,model.observationModel]...
+                = process_options(varargin,'nstates',[],'pi',[],'transitionMatrix',[],'stateConditionalDensities',{},'ndimensions',1,'verbose',true,'observationModel',[]);
             
             if(isempty(model.nstates))
                 model.nstates = numel(model.stateConditionalDensities);
+            end
+            if(model.nstates == 0)
+                error('Please specify the number of hidden states');
             end
         end
         
@@ -287,7 +298,7 @@ classdef HmmDist < ParamDist
                end % end of em loop
         end % end of emUpdate method
  
-        function model = initializeParams(model,X)                                          %#ok
+        function model = initializeParams(model,X)                                        
         % Initialize parameters to starting states in preperation for EM.
             if(isempty(model.transitionMatrix))
                model.transitionMatrix = normalize(rand(model.nstates),2); 
@@ -295,9 +306,31 @@ classdef HmmDist < ParamDist
             if(isempty(model.pi))
                model.pi = normalize(ones(1,model.nstates)); 
             end
-            if(isempty(model.stateConditionalDensities))
-               error('You must specify the state conditional densities - i.e. the observation model'); 
+            if(~isempty(model.stateConditionalDensities))
+                if(isempty(model.observationModel))
+                    model.observationModel = feval(class(model.stateConditionalDensities{1}));
+                end
+                return;
             end
+            
+            if(isempty(model.observationModel))
+               error('Please specify an observation model or the state conditional densities directly'); 
+            end
+            if(isempty(model.nstates) || model.nstates == 0)
+                error('Please specify the number of hidden states');
+            end
+            model.stateConditionalDensities = copy(model.observationModel,model.nstates,1);
+            
+            % to init state conditional densities we treat the data as iid and
+            % fit each density to a bootstrap sample of the data. 
+           
+            data = HmmDist.stackObservations(X);
+            n = size(data,1);
+            for i=1:model.nstates
+                ndx = floor(n*rand(n,1) + 1);
+                model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'data',data(ndx,:));
+            end
+            
         end
         
          function data = checkData(model,data)
@@ -404,35 +437,35 @@ classdef HmmDist < ParamDist
             trueTransmat = [0.95,0.05;0.1,0.90];
             truePi = [0.5,0.5];
             truth = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel);
-            nsamples = 100; length1 = 13; length2 = 7;
+            nsamples = 200; length1 = 13; length2 = 30;
             [observed1,hidden1] = sample(truth,nsamples/2,length1);
             [observed2,hidden2] = sample(truth,nsamples/2,length2);
             observed = [num2cell(squeeze(observed1),1)';num2cell(squeeze(observed2),1)'];
             
-            
-            obsModel0 = {DiscreteDist(normalize(rand(1,6)));DiscreteDist(normalize(rand(1,6)))};
-            model = HmmDist('stateConditionalDensities',obsModel0);
-            model = fit(model,'data',observed,'transitionMatrix0',normalize(rand(2,2),2),'pi0',normalize(rand(1,2)));
-            
+            model = HmmDist('observationModel',DiscreteDist(),'nstates',2);
+            model = fit(model,'data',observed);
             trellis = predict(model,observed{1}');
-            postSample = mode(sample(trellis,1000),2)'
-            viterbi  = mode(trellis)
-            maxmarg = maxidx(marginal(trellis,':'))
+            
+            postSample = mode(sample(trellis,1000),2)' %#ok
+            viterbi  = mode(trellis)                   %#ok
+            maxmarg = maxidx(marginal(trellis,':'))    %#ok
             %% MVN
             trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
             trueTransmat  = [0.8,0.2;0.3,0.7];
             truePi       = [0.5,0.5];
-            truth = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel,'ndimensions',10);
-            nsamples = 100; length = 13;
-            [observed,trueHidden] = sample(truth,nsamples,length);
-            obsModel0 = {MvnDist(randn(1,10),randpd(10));MvnDist(randn(1,10),randpd(10))};
-            model = HmmDist('stateConditionalDensities',obsModel0);
-            model = fit(model,'data',observed,'observationPrior',InvWishartDist(10,diag(2*ones(1,10))),'transitionPrior',DirichletDist([1,1]),'PiPrior',DirichletDist([1,1]));
+            trueModel = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel,'ndimensions',10);
+            nsamples = 200; length = 20;
+            [observed,trueHidden] = sample(trueModel,nsamples,length);
+
+            
+            model = HmmDist('observationModel',MvnDist(),'nstates',2);
+            model = fit(model,'data',observed,'observationPrior',InvWishartDist(10,diag(0.1*ones(1,10))),'transitionPrior',DirichletDist([0.1,0.1]),'PiPrior',DirichletDist([0.1,0.1]));
             
             
         end
         
         function seqalign()
+            setSeed(99);
             load data45;
             nstates   = 5;
             obsdims   = 13;
@@ -445,13 +478,12 @@ classdef HmmDist < ParamDist
             transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
             model = HmmDist('nstates',5,'stateConditionalDensities',obsModel);
             
-            model4  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train4,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
-            model5  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train5,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
-            
-         
+            model4  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train4);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
+            model5  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train5);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
+
             logp4 = logprob(model4,test45);
             logp5 = logprob(model5,test45);
-            [val,yhat] = max([logp4,logp5],[],2);
+            yhat = maxidx([logp4,logp5],[],2);
             yhat(yhat == 1) = 4;
             yhat(yhat == 2) = 5;
             nerrs = sum(yhat ~= labels');
@@ -464,9 +496,9 @@ classdef HmmDist < ParamDist
                 specgram(signal2);
               
                 subplot(2,2,3);
-                plot(mode(predict(model5,mfcc1)));
+                plot(mode(predict(model4,mfcc1)));
                 subplot(2,2,4);
-                plot(mode(predict(model5,mfcc2)));
+                plot(mode(predict(model4,mfcc2)));
                 maximizeFigure;
                 
             end 

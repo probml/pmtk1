@@ -18,6 +18,7 @@ fair = 1; loaded = 2;
 % We will use a discrete observation model, one DiscreteDist object per hidden
 % state of which there are two. We store these state conditional densities in a
 % cell array.
+    setSeed(0);
     obsModel = {DiscreteDist([1/6 , 1/6 , 1/6 , 1/6 , 1/6 , 1/6  ]);...   % fair die
                 DiscreteDist([1/10, 1/10, 1/10, 1/10, 1/10, 5/10 ])};     % loaded die
 %% Transition Matrix
@@ -39,23 +40,49 @@ fair = 1; loaded = 2;
     trellis = predict(model,rolls);
     viterbiPath = mode(trellis);
 %%
+% This is different than the sequence of most likely states, which we can obtain
+% by calling marginal() on the trellis and taking the max. The ':' returns the
+% entire path rather than values at specific points in the sequence. These are
+% the smoothed estimates, we can also obtain the filtered estimates for comparison.
+% The method also supports two slice marginals, hence the []. 
+   maxmarg = maxidx(marginal(trellis,':'));
+   maxmargF = maxidx(marginal(trellis,':',[],'filtered'));
+%%
+% We can also sample from the posterior and compare the mode of these
+% samples to the predictions above. 
+   postSamp = mode(sample(trellis,500),2)';
+%%
 % We now display the rolls, the corresponding die used and the Viterbi 
 % prediction. 
     dielabel = repmat('F',size(die));
     dielabel(die == 2) = 'L';
     vitlabel = repmat('F',size(viterbiPath));
     vitlabel(viterbiPath == 2) = 'L';
+    maxmarglabel = repmat('F',size(maxmarg));
+    maxmarglabel(maxmarg == 2) = 'L';
+    postsamplabel = repmat('F',size(postSamp));
+    postsamplabel(postSamp == 2) = 'L';
     rollLabel = num2str(rolls);
     rollLabel(rollLabel == ' ') = [];
     for i=1:60:300
-        fprintf('Rolls:\t %s\n',rollLabel(i:i+59));
-        fprintf('Die:\t %s\n',dielabel(i:i+59));
-        fprintf('Viterbi: %s\n\n',vitlabel(i:i+59));
+        fprintf('Rolls:\t  %s\n',rollLabel(i:i+59));
+        fprintf('Die:\t  %s\n',dielabel(i:i+59));
+        fprintf('Viterbi:  %s\n',vitlabel(i:i+59));
+        fprintf('MaxMarg:  %s\n',maxmarglabel(i:i+59));
+        fprintf('PostSamp: %s\n\n',postsamplabel(i:i+59));
     end
+%% 
+viterbiErr  =  sum(viterbiPath ~= die);
+maxMargSErr =  sum(maxmarg ~= die);
+maxMargFErr =  sum(maxmargF~=die);
+postSampErr    =  sum(postSamp ~= die);
+fprintf('\nNumber of Errors\n');
+fprintf('Viterbi:\t\t\t\t%d/%d\n',viterbiErr,300);
+fprintf('Max Marginal Smoothed:  %d/%d\n',maxMargSErr,300);
+fprintf('Max Marginal Filtered:  %d/%d\n',maxMargFErr,300);
+fprintf('Mode Posterior Samples: %d/%d\n',postSampErr,300);
+
 %% Marginals 
-% We can obtain filtered, (forwards only) and smoothed, (forwards/backwards) 
-% estimates by calling marginal on the trellis. We specify ':' to return the
-% entire path rather than values at specific points in the sequence.
     filtered = marginal(trellis,':',[],'filtered'); % filtered(i,t) = p(S(t)=i | y(1:t))
     smoothed = marginal(trellis,':',[],'smoothed'); % smoothed(i,t) = p(S(t)=i | y(1:T))
 %% 
