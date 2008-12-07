@@ -1,18 +1,49 @@
 classdef GenerativeClassifierDist < ProbDist
-% This is an abstract super class for Generative Classifiers. Subclasses must 
-% implement two protected methods: fitClassConditional() and logProbCCD().
     
     properties
         nclasses;                       % classes in 1:K
-        classConditionalDensities;      % a cell array 
+        classConditionalDensities;      % a cell array of distributions 1 per class
         classPosterior;                 % a Dirichlet distribution
-        defaultFeaturePrior;            % default feature prior used if the user does not specify one.
-                                        % This must be set by subclasses
         classSupport;                   % the support of the class labels, e.g. 1:10
-        transformer;                    % a data transformer object
+        transformer;                    % a data transformer object, (e.g. pcaTransformer)
     end
     
     methods
+        
+        function obj = GenerativeClassifierDist(varargin)
+            [nclasses,obj.transformer,classConditionals,classSupport] = process_options(varargin,...
+                'nclasses'              ,[],...
+                'transformer'           ,[],...
+                'classConditionals'     ,[],...
+                'classSupport'          ,[]);
+            
+            if(isempty(nclasses) && ~iscell(classConditionals))
+                error('Please specify the number of classes');
+            end
+            
+            if(isempty(nclasses))
+                nclasses = numel(classConditionals);
+            end
+            obj.nclasses = nclasses;
+            
+            if(isempty(classSupport))
+                classSupport = 1:nclasses;
+            end
+            obj.classSupport = classSupport; 
+            
+            if(iscell(classConditionals))
+                if(numel(classConditionals) ~= nclasses)
+                    error('The number of classes, %d, and the number of specified class conditionals, %d, do not match',nclasses,numel(classConditionals));
+                end
+                obj.classConditionalDensities = classConditionals;
+            else
+                obj.classConditionalDensities = copy(classConditionals,nclasses,1); 
+            end
+            
+            
+        end
+        
+        
         
         function obj = fit(obj,varargin)
         % Fit the classifier
@@ -20,20 +51,24 @@ classdef GenerativeClassifierDist < ProbDist
         % FORMAT:
         %           obj = fit(obj,'name1',val1,'name2',val2,...)
         % INPUT:
-        %           'X'            - the training examples, X(i,:) is the ith case
+        %           'dataObs'            - the training examples, dataObs(i,:) is the ith case
         %
-        %           'y'            - the training labels
+        %           'dataHid'            - the training labels
         %
-        %           'classPrior'   - a DirichletDist, if not specified, an
-        %                            uninformative prior is used instead, e.g. all ones.
+        %           'classPrior'         - a DirichletDist, if not specified, an
+        %                                 uninformative prior is used instead, e.g. all ones.
         %
-        %           'featurePrior' - the distribution type depends on the implementing
-        %                            subclass.
+        %           'featurePrior'       - the distribution type depends on the implementing
+        %                                 subclass.
+        %           
+        %           'featureFitMethod'   - 'mle', 'map', 'bayesian' 
+        %
+        %
         % OUTPUT:
         %           obj            - the fitted model
         %           
-            [X,y,classPrior,featurePrior] = process_options(varargin,...
-                'X',[],'y',[],'classPrior',[],'featurePrior',[]);
+            [X,y,classPrior,featurePrior,featureFitMethod] = process_options(varargin,...
+                'dataObs',[],'dataHid',[],'classPrior',[],'featurePrior',[],'featureFitMethod','map');
             
             if(isempty(obj.nclasses))
                 obj.nclasses = numel(unique(y));
@@ -43,10 +78,7 @@ classdef GenerativeClassifierDist < ProbDist
                 classPrior = DirichletDist(ones(1,obj.nclasses)); %uninformative prior
             end
             
-            if(isempty(featurePrior))
-               featurePrior = obj.defaultFeaturePrior; 
-            end
-            
+         
             [y,classSupport] = canonizeLabels(y);
             if(isempty(obj.classSupport)),obj.classSupport = classSupport;end
             
@@ -58,28 +90,27 @@ classdef GenerativeClassifierDist < ProbDist
             end
             
             for c=1:obj.nclasses
-                obj.classConditionalDensities{c} = fitClassConditional(obj,X,y,c,featurePrior);
+                obj.classConditionalDensities{c} = fit(obj.classConditionalDensities{c},'data',X(y==c,:),'prior',featurePrior,'method',featureFitMethod);
             end
             
         end
         
         function pred = predict(obj,X)
         % Return a predictive distribution over class labels, (one for each 
-        % training case in X, vectorized into a single DiscreteDist object).
+        % training case in X, vectorized into a single DiscreteProductDist object).
             if(~isempty(obj.transformer))
-               X = train(obj.transformer,X); 
+               X = test(obj.transformer,X); 
             end
-            logprobs = logprob(obj,X);
-            probs = exp(logprobs);
-            pred = DiscreteDist(probs,obj.classSupport);
+            pred = DiscreteProductDist(exp(logprob(obj,X)),obj.classSupport);
         end
         
         function L = logprob(obj,X)
-        % log probability of the data under the full posterior.    
+        % log probability of the data under the full posterior.
             logpy = log(mean(obj.classPosterior));  
             L = zeros(size(X,1),obj.nclasses);
+            
             for c=1:obj.nclasses
-                L(:,c) = logprobCCD(obj,X,c) + logpy(c);
+                L(:,c) = logprob(obj.classConditionalDensities{c},X) + logpy(c);
             end
             p = exp(L);
             L = log(bsxfun(@rdivide,p,sum(p,2)));   % normalize
@@ -112,17 +143,21 @@ classdef GenerativeClassifierDist < ProbDist
         
     end
     
-    methods(Access = 'protected', Abstract = true)
-    % These methods must be implemented by subclasses     
+    methods(Static = true)
         
-        ccd = fitClassConditional(obj,X,y,c,prior);
-        % Fit and return the class conditional density for class
+        function testClass()
+            
+            [Xtrain,Xtest,ytrain,ytest] = setupMnist(true);
+            model = GenerativeClassifierDist('nclasses',10,'classConditionals',BernoulliProductDist('ndistributions',28*28),'classSupport',0:9);
+            model = fit(model,'dataObs',Xtrain,'dataHid',ytrain,'ClassPrior',DirichletDist(ones(1,10)));
+            pred  = predict(model,Xtest);
+            errorRate = mean(mode(pred) ~= ytest);
+            
+            
+        end
         
-        logp = logprobCCD(obj,X,c);
-        % Return the log probability of the data X under the class conditional
-        % density for class c. 
     end
     
-    
+  
 end
 

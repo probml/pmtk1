@@ -181,7 +181,7 @@ classdef LogregDist < CondProbDist
         function p = logprob(obj, X, y)
         % p(i) = log p(y(i) | X(i,:), obj.w), y(i) in 1...C
             pred = predict(obj,'X',X,'method','plugin');
-            P = pred.probs;
+            P = pred.mu;
             Y = oneOfK(y, obj.nclasses);
             p =  sum(sum(Y.*log(P)));
         end
@@ -300,7 +300,7 @@ classdef LogregDist < CondProbDist
             mL2 = LogregDist('nclasses', C);
             mL2 = fit(mL2, 'X', X, 'y', y,'method','bayesian');
             predMAPL2 = predict(mL2, 'X',X);                                                %#ok
-            [predMCL2,samplesL2]  = predict(mL2,'X',X,'method','mc','nsamples',2000);       %#ok
+            [predMCL2]  = predict(mL2,'X',X,'method','mc','nsamples',2000);       %#ok
             predExactL2 = predict(mL2,'X',X,'method','integral');                           %#ok
             llL2 = logprob(mL2, X, y);                                                      %#ok
             %%

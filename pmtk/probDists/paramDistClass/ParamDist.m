@@ -7,7 +7,10 @@ classdef ParamDist < ProbDist
     
     methods
       
-         function p = getParams(obj,name)
+         function p = getParams(obj,name,pointEstimate)
+           if(nargin < 3)
+               pointEstimate = '';
+           end
            if(nargin < 1)
                p = obj.params;
            else
@@ -15,6 +18,14 @@ classdef ParamDist < ProbDist
                     p = eval(['obj.params',name]);
                catch
                     p = eval(['obj.',name]);
+               end
+               if(strcmpi(pointEstimate,'point'))
+                  try
+                      m = mode(p);
+                  catch
+                      return;
+                  end
+                  p = m;
                end
            end
          end

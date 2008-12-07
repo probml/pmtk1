@@ -184,7 +184,7 @@ model = fit(model,'X',X,'y',Y);
 [nrows,ncols] = size(X1grid);
 testData = [X1grid(:),X2grid(:)];
 pred = predict(model,'X',testData);
-pclass1 = pred.probs(:,1);
+pclass1 = pred.mu(:,1);
 probGrid = reshape(pclass1,nrows,ncols);
 figure; hold on;
 surf(X1grid,X2grid,probGrid);

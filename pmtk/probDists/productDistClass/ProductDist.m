@@ -1,4 +1,4 @@
-classdef ProductDist < ParamDist
+classdef ProductDist < ProbDist
 % This class represents a product of independent probability distributions. For
 % efficiency purposes, subclasses will restrict these distributions to be of the
 % same type and vectorize many of the operations. While mathematically, the
@@ -116,6 +116,17 @@ classdef ProductDist < ParamDist
             names = fieldnames(obj.map);
         end
         
+        function c = copy(obj,n,m)
+           if(nargin < 3), m = n;end 
+           c = cell(n,m);
+           for i=1:n
+               for j=1:m
+                   c{i,j} = obj;
+               end
+           end
+            
+        end
+        
         function obj = setNames(obj,names)
         % set all of the names of the component distributions. The order of the 
         % names in cell array must correspond to the order of the distributions.
@@ -151,6 +162,10 @@ classdef ProductDist < ParamDist
             if(iscell(subs))
                 subs = subs{1};
             end
+            if(ischar(subs) && ismember(subs,properties(obj)))
+                dist = builtin('subsref',obj,S);
+                return;
+            end
             switch S(1).type
                 case {'()','{}'}
                     
@@ -178,28 +193,32 @@ classdef ProductDist < ParamDist
             end
         end
         
-        function obj = subsasgn(obj, S, value)
-        % Allows direct assignment of distributions, e.g. obj(1) = MvnDist    
-           name = S(1).subs;
-           if(iscell(name))
-              name = name{:};
-           end
-          if(numel(S) == 1)
-              if(~isa(value,'ProbDist'))
-                  error('ProductDist only support probability distributions. You are trying to assign a value of class %s',class(value));
-              end
-              
-              obj = setDist(obj,name,value);
-          else 
-              if(numel(S) > 1)
-                dist = marginal(obj,name);  
-                obj = builtin('subsasgn',dist,S(2:end),value);
-              else
-                obj = builtin('subsasgn',obj,S,value);
-              end
-          end
-            
-        end
+%         function obj = subsasgn(obj, S, value)
+%         % Allows direct assignment of distributions, e.g. obj(1) = MvnDist    
+%            name = S(1).subs;
+%            if(iscell(name))
+%                name = name{:};
+%            end
+%            if(numel(S) == 1)
+%                if(ischar(name) && ismember(name,properties(obj)))
+%                    obj = builtin('subsasgn',obj,S,value);
+%                else
+%                    if(~isa(value,'ProbDist'))
+%                        error('ProductDist only support probability distributions. You are trying to assign a value of class %s',class(value));
+%                    else
+%                        obj = setDist(obj,name,value);
+%                    end
+%                end
+%            else
+%                try
+%                    obj = builtin('subsasgn',obj,S,value);
+%                catch
+%                     dist = marginal(obj,name);
+%                     obj = builtin('subsasgn',dist,S(2:end),value);             
+%                end
+%            end
+%            
+%         end
         
         function display(obj)
         % custom display of the object    
