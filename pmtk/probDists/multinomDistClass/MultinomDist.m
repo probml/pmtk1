@@ -21,7 +21,6 @@ classdef MultinomDist < DiscreteDist
     end
  
     function m = mean(obj)
-     checkParamsAreConst(obj)
       m = obj.N * obj.mu;
     end
     
@@ -35,8 +34,8 @@ classdef MultinomDist < DiscreteDist
     
    
     function X = sample(obj, n)
-       % X(i,:) = random vector (of length ndimensions) of ints that sums to N, for i=1:n
-       checkParamsAreConst(obj)
+       % X(i,:) = random vector (of length ndimensions) of ints that sums to N,
+       % for i=1:n
        if nargin < 2, n = 1; end
        if statsToolboxInstalled
           X = mnrnd(obj.N, obj.mu, n);
@@ -48,7 +47,7 @@ classdef MultinomDist < DiscreteDist
     
      function logp = logprob(obj, X)
        % p(i) = log p(X(i,:))
-       checkParamsAreConst(obj)
+     
        n = size(X,1);
        p = repmat(obj.mu,n,1);
        xlogp = sum(X .* log(p), 2);
@@ -65,7 +64,7 @@ classdef MultinomDist < DiscreteDist
      
      function mm = marginal(m, queryVars)
       % p(Q)
-      checkParamsAreConst(obj)
+     
       dims = queryVars;
       mm = MultinomDist(m.N, m.mu(dims));
      end
@@ -77,32 +76,46 @@ classdef MultinomDist < DiscreteDist
        % data - data(i,:) = vector of counts for trial i
        % suffStat - SS.counts(j), SS.N = total amount of data
        % method -  'map' or 'mle' or 'bayesian'
-       [X, suffStat, method,prior] = process_options(...
-         varargin, 'data', [], 'suffStat', [], 'method', 'mle','prior',[]);
-       if isempty(suffStat), suffStat = mkSuffStat(MultinomDist(),X); end
+       [X, suffStat, method,prior] = process_options(varargin,...
+           'data'       , [],...
+           'suffStat'   , [],...
+           'method'     , 'mle',...
+           'prior'      , []);
+       
+       if isempty(suffStat), suffStat = mkSuffStat(obj,X); end
+       if(isempty(prior))
+          if(~isa(obj.params,'ConstDist'))
+              prior = obj.params;
+          end
+       end
+       
        switch method
          case 'mle'
            obj.mu =  suffStat.counts / suffStat.N;
          case 'map'
-           switch class(obj.mu)
-             case 'DirichletDist'
-               d = ndimensions(obj);
-               obj.mu  = (suffStat.counts + obj.mu.alpha - 1) / (suffStat.N + sum(obj.mu.alpha) - d);
-               case 'double'
-               if(isempty(prior))
-                  error('No prior specified, cannot do map estimation'); 
-               end
-               switch(class(prior))
-                   case 'DirichletDist'
-                       obj.mu  = (suffStat.counts + prior.alpha - 1) / (suffStat.N + sum(prior.alpha) - ndimensions(obj));
-                   otherwise
-                        error(['cannot handle prior of type ' class(prior)])
-               end
-             otherwise
-               error(['cannot handle mu of type ' class(obj.mu)])
-           end
+             if(isempty(prior))
+                 error('No prior specified, cannot do map estimation');
+             end
+             switch class(prior)
+                 case 'DirichletDist'
+                     d = ndimensions(obj);
+                     obj.mu  = (suffStat.counts + prior.alpha - 1) / (suffStat.N + sum(prior.alpha) - d);
+                 case 'BetaDist'
+                     if(numel(obj.mu) ~= 2)
+                         error('BetaDist prior only supported for binary outcomes - use a DirichletDist prior instead');
+                     end
+                     ab = rowvec(colvec(suffStat.counts) + [prior.a;prior.b]);
+                     obj.mu = mode(BetaDist(ab(1),ab(2)));
+                 otherwise
+                     error(['cannot handle mu of type ' class(obj.mu)])
+             end
          case 'bayesian'
-             obj = fitBayesian(obj,varargin{:});
+             if(isempty(prior))
+                 error('No prior specified, cannot do bayesian estimation'); 
+             else
+                 obj.params = prior;
+             end
+             obj = fitBayesian(obj,'data',X,'SuffStat',suffStat);
          otherwise
            error(['unknown method ' method])
        end
@@ -110,7 +123,6 @@ classdef MultinomDist < DiscreteDist
      
      function SS = mkSuffStat(obj,X)
        SS.counts = sum(X,2);
-       n = size(X,1);
        SS.N = sum(X(:));
      end
   end
@@ -122,12 +134,7 @@ classdef MultinomDist < DiscreteDist
   %% Private methods
   methods(Access = 'protected')
    
-    function checkParamsAreConst(obj)
-      p = isa(obj.mu, 'double') && isa(obj.N, 'double');
-      if ~p
-        error('parameters must be constants')
-      end
-    end
+   
     
     function obj = fitBayesian(obj, varargin)
        % m = fitBayesian(model, 'name1', val1, 'name2', val2, ...)
@@ -137,9 +144,15 @@ classdef MultinomDist < DiscreteDist
        [X, suffStat] = process_options(...
          varargin, 'data', [], 'suffStat', []);
        if isempty(suffStat), suffStat = mkSuffStat(MultinomDist(),X); end
-       switch class(obj.mu)
+       switch class(obj.params)
          case 'DirichletDist'
            obj.mu = DirichletDist(obj.mu.alpha + suffStat.counts);
+         case 'BetaDist'
+            if(numel(obj.mu) ~= 2)
+                error('BetaDist is a valid prior only when numel(obj.mu) == 2');
+            end
+            ab = rowvec(colvec(suffStat.counts) + [obj.params.a;obj.params.b]);
+            obj.mu = BetaDist(ab(1),ab(2));
          otherwise
            error(['cannot handle mu of type ' class(obj.mu)])
        end

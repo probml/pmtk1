@@ -1,4 +1,4 @@
-%% Example of parameter updating in a Beta-Bernoulli model. 
+%% Example of parameter updating in a Beta-Binomial model. 
 
 data(1).a = 2;      data(2).a = 5;
 data(1).b = 2;      data(2).b = 2;
@@ -13,13 +13,15 @@ for i = 1:numel(data)
     N = N1+N0;
     m = BinomDist(N, BetaDist(a,b));
     %m = BernoulliDist(BetaDist(a,b));
-    prior = m.mu; % BetaDist
-    m = fit(m, 'suffStat', [N1 N],'method','bayesian');
-    post = m.mu; % BetaDist
+    prior = m.params; % BetaDist
+    suffStat.counts = N1;
+    suffStat.N = N;
+    m = fit(m, 'suffStat', suffStat,'method','bayesian');
+    post = m.params; % BetaDist
     % The likelihood is the prior with a flat prior
     m2 = BinomDist(N, BetaDist(1,1));
-    m2 = fit(m2, 'suffStat', [N1 N],'method','bayesian');
-    lik = m2.mu; % BetaDist
+    m2 = fit(m2, 'suffStat', suffStat,'method','bayesian');
+    lik = m2.params; % BetaDist
     figure;
     h = plot(prior, 'plotArgs', {'r-', 'linewidth', 3});
     legendstr{1} = sprintf('prior Be(%2.1f, %2.1f)', prior.a, prior.b);

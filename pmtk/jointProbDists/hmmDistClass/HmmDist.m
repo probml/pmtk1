@@ -319,18 +319,15 @@ classdef HmmDist < ParamDist
             if(isempty(model.nstates) || model.nstates == 0)
                 error('Please specify the number of hidden states');
             end
+        
             model.stateConditionalDensities = copy(model.observationModel,model.nstates,1);
-            
-            % to init state conditional densities we treat the data as iid and
-            % fit each density to a bootstrap sample of the data. 
-           
             data = HmmDist.stackObservations(X);
             n = size(data,1);
             for i=1:model.nstates
-                ndx = floor(n*rand(n,1) + 1);
+                ndx = floor(ceil(n/2)*rand(ceil(n/2),1) + 1);
                 model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'data',data(ndx,:));
             end
-            
+        
         end
         
          function data = checkData(model,data)
@@ -433,8 +430,9 @@ classdef HmmDist < ParamDist
     methods(Static = true)
         
         function testClass()
+            setSeed(0);
             trueObsModel = {DiscreteDist(ones(1,6)./6);DiscreteDist([ones(1,5)./10,0.5])};
-            trueTransmat = [0.95,0.05;0.1,0.90];
+            trueTransmat = [0.8,0.2;0.1,0.90];
             truePi = [0.5,0.5];
             truth = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel);
             nsamples = 200; length1 = 13; length2 = 30;
@@ -478,8 +476,8 @@ classdef HmmDist < ParamDist
             transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
             model = HmmDist('nstates',5,'stateConditionalDensities',obsModel);
             
-            model4  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train4,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
-            model5  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train5,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
+            model4  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train4);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
+            model5  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train5);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
 
             logp4 = logprob(model4,test45);
             logp5 = logprob(model5,test45);

@@ -154,7 +154,7 @@ classdef LogregDist < CondProbDist
                 case 'plugin'
                     if(isa(w,'ConstDist')),w = w.point; end
                     if(isa(w,'MvnDist')),w = w.mu;end
-                    pred = DiscreteDist(multiSigmoid(X,w(:)),obj.classSupport);  %#ok
+                    pred = DiscreteProductDist(multiSigmoid(X,w(:)),obj.classSupport);  %#ok
                 case 'mc'
                     if(~isa(w,'MvnDist')),
                         error('w must be an MvnDist object to draw Monte Carlo samples. Either specify p(w|D) as an mvnDist or call fit with ''prior'' = ''l2'', ''method'' = ''bayesian''');
@@ -172,7 +172,7 @@ classdef LogregDist < CondProbDist
                     end
                     p = sigmoidTimesGauss(X, w.mu(:), w.Sigma);
                     p = p(:);
-                    pred = DiscreteDist([p,1-p],obj.classSupport);
+                    pred = DiscreteProductDist([p,1-p],obj.classSupport);
                 otherwise
                     error('%s is an unsupported prediction method',method); 
             end        

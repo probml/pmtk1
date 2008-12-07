@@ -71,10 +71,20 @@ classdef DiscreteProductDist  < ProductDist
 
     function y = mode(obj)
       % y(i) = arg max probs(i,:)
-      [junk, ndx] = max(obj.probs,[],2);
+      [junk, ndx] = max(obj.mu,[],2);
       y = obj.support(ndx);
     end
+    
+    function m = marginal(obj,ndx)
+        error('not yet implemented');
+    end
+    
+   
+    
+    
   end
+  
+  
 
  
   

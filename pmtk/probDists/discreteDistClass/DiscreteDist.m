@@ -1,42 +1,70 @@
 classdef DiscreteDist  < ParamDist
-% This class represents a distribution over a discrete support, e.g. a
-% distribution over a single dice role. For a product of discrete distributions,
-% see DiscreteProductDist. See also MultinomDist.
+% This class represents a distribution over a discrete support. For a product of 
+% discrete distributions,  see DiscreteProductDist. 
+%
+% This is a scalar distribution - each data point is a scalar value representing
+% the actual outcome of an event not the counts as with the MultinomDist class.
+% Here N, (e.g. the number of dice rolls) is always one. To illustrate this
+% difference, suppose we roll a die exactly once, (N=1) and see a 5. The
+% DiscreteDist models this directly, i.e. the input to the fit function is the 
+% data point 5 itself, whereas the input to the MultinomDist.fit method would be
+% the vector of counts [0 0 0 0 1 0]. If we rolled the dice twice and recieved a
+% 5 and then a 6, the DiscreteDist is only capable of modeling this as two
+% seperate trials, e.g. [5;6] where as the MultinomDist input would be the
+% single data point vector [0 0 0 0 1 1]. 
+%
+%% PARAMETER ACCESS
+% obj.mu always returns a point estimate of mu
+% obj.params always returns a distribution over mu, (although this may be a
+% ConstDist).
     
   properties
     support;            % the support of the distribution, e.g. 1:6
-    mu;                 % the probabilities - e.g. [0.1 0.4 0.2 0.05 0.1 0.05]
   end
-
   
+  properties 
+  %     place holders for point estimate access such as obj.mu
+  %     - actual parameters stored in params field    
+  
+     mu;                 % the probabilities - e.g. [0.1 0.4 0.2 0.05 0.1 0.05]
+  end
+  
+ 
   methods
     function obj = DiscreteDist(mu, support)
     % Construct a new discrete distribution with the specified probabilities,
     % mu, and support. 
+    %
+    % mu can be vector or one of 'DirichletDist', 'BetaDist', 'ConstDist'
        
       if nargin == 0, mu = []; end
-      if(size(mu,1) > 1)
-          mu = mu';
-      end
-      if(size(mu,1) > 1)
-          error('Only a single distribution supported - use DiscreteProductDist instead');
+      checkmu(obj,mu);   
+      if nargin < 2
+          if(isnumeric(mu)),
+              support = 1:length(mu);
+          else
+              support = 1:ndimensions(mu); 
+          end
       end
       
-      if nargin < 2, support = 1:length(mu); end
-      if(~isempty(mu)),mu = normalize(mu);end
-      obj.mu = mu;
+      if(isnumeric(mu))
+          obj.params = ConstDist(mu);
+      else
+          obj.params = mu;
+      end
       obj.support = support;
     end
 
     function m = mean(obj)
+    % Point estimate of mu    
        m = obj.mu; 
     end
     
-    function d = ndimensions(obj)
+    function d = ndimensions(obj)    
        d = numel(obj.mu); 
     end
     
-    function v = var(obj)
+    function v = var(obj)   
         v = obj.mu.*(1-obj.mu);
     end
   
@@ -62,29 +90,35 @@ classdef DiscreteDist  < ParamDist
     % Fit the discrete distribution by counting.
     %
     % FORMAT:
-    %             model = fit(model,'name1',val1,'name2',val2,...)
+    %              model = fit(model,'name1',val1,'name2',val2,...)
     %
     % INPUT:    
-    %   'X'       The raw data, not the counts. Each entry in X is considered a
-    %             data point so the dimensions are ignored. 
+    %   'data'     The raw data, not the counts. Each entry in X is considered a
+    %              data point so the dimensions are ignored. 
     %
-    %   'suffStat' This can be specified instead of 'X'.
-    %              A struct with the field 'counts' 
+    %   'suffStat' This can be specified instead of 'data'.
+    %              A struct with the fields 'counts' and 'support'.
+    % 
+    %   'method'   One of 'mle' | 'map' | 'bayesian'
     %
-    %
+    %   'prior'    A prior on mu, e.g. a DirichletDist or BetaDist if
+    %              size(obj.mu) == 2
     %
         [X,suffStat,method,prior] = process_options(varargin,'data',[],'suffStat',[],'method',[],'prior',[]);
         
-        if(isempty(X) && (isempty(suffStat) || ~isfield(suffStat,'counts')))
-            error('You must specify either data or the sufficient statistics to fit.');
-        end
-        
+               
         if(isempty(method))
-           if(isempty(prior))
+           if(isempty(prior) && isa(model.params,'ConstDist'))
                method = 'mle';
            else
-               method = 'map';
+               method = 'bayesian';
            end
+        end
+        
+        if(~isempty(prior))
+            model.params = prior;
+        else
+           prior = model.params; 
         end
         
         if(isempty(model.support))
@@ -98,25 +132,27 @@ classdef DiscreteDist  < ParamDist
         if(~isstruct(suffStat) || ~isfield(suffStat,'counts'))
            suffStat = mkSuffStat(model,X);
         end
-      
+        
         switch lower(method)
             case 'mle'
                 model.mu = normalize(suffStat.counts);
-            case 'map'
+            case {'map','bayesian'}
                 switch class(prior)
                     case 'DirichletDist'
-                        model.mu = normalize(suffStat.counts + colvec(prior.alpha) - 1);
+                        model.params = DirichletDist(rowvec(suffStat.counts + colvec(prior.alpha)));
+                        if(strcmpi(method,'map')),model.params = model.mu;end
+                    case 'BetaDist'
+                        if(size(model.mu) ~= 2),error('Use a DirichletDist instead of a BetaDist when size(model.mu) > 2');end
+                        ab = rowvec(suffStat.counts + [prior.b;prior.a]);
+                        model.params = BetaDist(ab(1),ab(2));
+                        if(strcmpi(method,'map')),model.params = model.mu;end
+                    case 'BernoulliDist'
+                        model.params = BernoulliDist(normalize(prior.mu.*model.mu));
+                    case 'DiscreteDist'
+                        model.params = DiscreteDist(normalize(prior.mu.*model.mu),model.support);
                     otherwise
                         error('%s is not a supported prior',class(prior));
                 end
-            case 'bayesian'
-                switch class(prior)
-                    case 'DirichletDist'
-                        model.mu = normalize(suffStat.counts + colvec(prior.alpha));
-                    otherwise
-                        error('%s is not a supported prior',class(prior));
-                end
-
             otherwise
                 error('%s is an unsupported fit method',method);
             
@@ -134,29 +170,28 @@ classdef DiscreteDist  < ParamDist
       x = obj.support(y);
     end
     
-     function h=plot(obj, varargin)
-      % plot a probability mass function as a histogram
-      % handle = plot(pmf, 'name1', val1, 'name2', val2, ...)
-      % Arguments are
-      % plotArgs - args to pass to the plotting routine, default {}
-      %
-      % eg. plot(p,  'plotArgs', 'r')
-      [plotArgs] = process_options(...
-        varargin, 'plotArgs' ,{});
-      if ~iscell(plotArgs), plotArgs = {plotArgs}; end
-      if isempty(obj.mu), obj = computemu(obj); end
-      if isvector(obj.mu), obj.mu = obj.mu(:)'; end % 1 distributin
-      n = size(obj.mu, 1);
-      for i=1:n
-        h=bar(obj.mu(i,:), plotArgs{:});
-        set(gca,'xticklabel',obj.support);
-      end
+    function h=plot(obj, varargin)
+        % plot a probability mass function as a histogram
+        % handle = plot(pmf, 'name1', val1, 'name2', val2, ...)
+        % Arguments are
+        % plotArgs - args to pass to the plotting routine, default {}
+        %
+        % eg. plot(p,  'plotArgs', 'r')
+        [plotArgs] = process_options(...
+            varargin, 'plotArgs' ,{});
+        if ~iscell(plotArgs), plotArgs = {plotArgs}; end
+        if isempty(obj.mu), obj = computemu(obj); end
+        if isvector(obj.mu), obj.mu = obj.mu(:)'; end % 1 distributin
+        n = size(obj.mu, 1);
+        for i=1:n
+            h=bar(obj.mu(i,:), plotArgs{:});
+            set(gca,'xticklabel',obj.support);
+        end
     end
     
     function y = mode(obj)
       % y(i) = arg max mu(i,:)
-      [junk, ndx] = max(obj.mu,[],2);
-      y = obj.support(ndx);
+      y = obj.support(maxidx(obj.mu,[],2));
     end
     
     function obj = computeProbs(obj)
@@ -176,27 +211,65 @@ classdef DiscreteDist  < ParamDist
        else
            SS.support = rowvec(obj.support);
        end
+       [support,perm] = sort(SS.support);
        if(nargin > 2)
             if(numel(X) ~= numel(weights))
                 error('The number of weights, %d, does not equal the number of data points %d',numel(weights),numel(X));
             end
-            SS.counts = zeros(numel(SS.support),1);
+            SS.counts = zeros(numel(support),1);
             weights = weights(:);
-            for i=1:numel(SS.support)
-                SS.counts(i) = sum(weights(X == SS.support(i)));
+            for i=1:numel(support)
+                SS.counts(i) = sum(weights(X == support(i))); %#ok
             end
-            SS.counts = SS.counts;
+            SS.counts = SS.counts(perm);
        else
             if(isempty(obj.support))
-               model.support = rowvec(unique(X)); 
+               obj.support = rowvec(unique(X)); 
             end
-            SS.counts = histc(X,obj.support);
+            counts = histc(X,support);
+            SS.counts = counts(perm);
        end
     end
     
   end
 
+  %% Getters and Setters
+  methods
+      
+      function m = get.mu(obj)
+          m = mode(obj.params);
+      end
+      
+      function obj = set.mu(obj,val)
+          if(isnumeric(val))
+              val = ConstDist(val);
+          end
+          obj.params = val;
+      end 
+  end
   
+  
+  
+  
+  methods(Access = 'protected')
+      
+      function checkmu(obj,mu)
+          switch class(mu)
+              case 'double'
+                  if(size(mu,1) > 1 && size(mu,2) > 1)
+                     error('Use DiscreteProductDist to represent a vectorized product of DiscreteDists, here mu must be a vector'); 
+                  end
+              case {'ConstDist','DirichletDist','BetaDist'}
+                  
+              otherwise
+                  error('%s is not a supported class type/prior for mu',class(mu));
+          end
+          
+          
+      end
+      
+      
+  end
   
   
   

@@ -1,7 +1,7 @@
 %% Demo of inferrring 2d covariance given fixed mean 
 doSave = false;
 folder = 'C:\kmurphy\PML\pdfFigures';
-seed = 0; randn('state', seed); rand('twister', seed);
+setSeed(0);
 muTrue = [0 0]'; Ctrue = 0.1*[2 1; 1 1];
 mtrue = MvnDist(muTrue, Ctrue);
 xrange = 2*[-1 1 -1 1];
@@ -37,7 +37,7 @@ for i=1:length(ns)
     n = ns(i);
     m = MvnDist(muTrue, prior);
     m = fit(m, 'data', X(1:n,:));
-    post = m.Sigma;
+    post = m.params.Sigma;
     plotMarginals(post);
     suplabel(sprintf('post after %d obs', n));
     fname = fullfile(folder, sprintf('MVNcovDemoPost%dMarg.pdf', n));

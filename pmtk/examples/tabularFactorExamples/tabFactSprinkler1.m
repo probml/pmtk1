@@ -1,5 +1,5 @@
 %% Sprinkler Example 1
-
+%#broken
 [G, CPD, joint, nodes] = makeSprinklerBN;
 C = nodes.C; R = nodes.R; S = nodes.S; W = nodes.W;
 fac{C} = TabularFactor(CPD{C}, [C]);

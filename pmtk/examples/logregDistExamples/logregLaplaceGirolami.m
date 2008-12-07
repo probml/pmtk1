@@ -31,7 +31,7 @@ figure;
 m = fit(LogregDist, 'X', X, 'y', y+1);
 pred = predict(m,'X',grid);
 
-contour(x1,x2,reshape(pred.probs(:,2),[nx,nx]),30);
+contour(x1,x2,reshape(pred.mu(:,2),[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
@@ -83,7 +83,7 @@ figure;
 subplot(2,2,1)
 pred = predict(m,'X',grid,'method','plugin');
 
-contour(x1,x2,reshape(pred.probs(:,2),[nx,nx]),30);
+contour(x1,x2,reshape(pred.mu(:,2),[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
@@ -116,7 +116,7 @@ title('MC approx of p(y=1|x)')
 subplot(2,2,4)
 pred = predict(m,'X',grid,'method','integral');
 
-contour(x1,x2,reshape(pred.probs(:,2),[nx,nx]),30);
+contour(x1,x2,reshape(pred.mu(:,2),[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');

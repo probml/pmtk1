@@ -1,4 +1,5 @@
 %% Inference Demo
+%#broken
 d = 10;
 G = UndirectedGraph('type', 'loop', 'nnodes', d);
 obj = GgmDist(G, [], []);

@@ -4,7 +4,7 @@ mutrue = 5; Ctrue = 10;
 mtrue = MvnDist(mutrue, Ctrue);
 n = 500;
 X = sample(mtrue, n);
-ns = [0 2 5 50]
+ns = [0 2 5 50 ]
 figure; hold on;
 pmax = -inf;
 [styles, colors, symbols] =  plotColors();
@@ -13,7 +13,7 @@ for i=1:length(ns)
     prior = MvnDist(0, 1/k);
     n = ns(i);
     m = fit(MvnDist(prior, Ctrue), 'data', X(1:n));
-    post = m.mu;
+    post = m.params.mu;
     [h(i), p]= plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, 'xrange', [0 10]);
     legendstr{i} = sprintf('n=%d', n);
     pmax = max(pmax, max(p));

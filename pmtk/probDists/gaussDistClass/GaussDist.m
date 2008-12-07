@@ -14,7 +14,7 @@ classdef GaussDist < ParamDist
       % mu and sigma2 can be vectors; in this case, the result is a MVN with a
       % diagonal covariance matrix (product of independent 1d Gaussians).
       if nargin < 2
-        sigma2 = [];
+        sigma2 = []; mu = [];
       end
       m.mu  = mu;
       m.sigma2 = sigma2;

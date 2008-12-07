@@ -1,7 +1,10 @@
 %% Run Every Demo
 
+%% UgmChordalGaussDist
+%demoPostModelsExhaustive - broken!
+pause(2); close('all'); clear('all');
+
 %% bernoulliDist
-bernoulliBayesianUpdatingDiscretePrior
 bernoulliSequentialUpdate
 pause(2); close('all'); clear('all');
 
@@ -43,22 +46,16 @@ pause(2); close('all'); clear('all');
 gaussMixPlot
 pause(2); close('all'); clear('all');
 
-%% ggmDecomposable
-demoPostModelsExhaustive
-pause(2); close('all'); clear('all');
-
-%% ggm
-ggmBICdemo
-ggmDemo
-ggmInferDemo
-pause(2); close('all'); clear('all');
-
 %% graph
 graphClassDemo
 pause(2); close('all'); clear('all');
 
 %% hiwDist
 sampleHIWdemo
+pause(2); close('all'); clear('all');
+
+%% hmmDist
+casinoDemo
 pause(2); close('all'); clear('all');
 
 %% invGammaDist
@@ -99,10 +96,11 @@ logregVisualizePredictive
 %LRvsSVM - slow!
 pause(2); close('all'); clear('all');
 
-%% mcmcInfer
-mcmcConvDiagGmm
-mcmcGmmBurnin
-mcmcGmmProposal
+%% mcmc
+mcmcMvn2d
+mcmcMvn2dConditioning
+%mhGmmDemo - broken!
+%mhMissouriCancer - broken!
 pause(2); close('all'); clear('all');
 
 %% modelSelection
@@ -115,8 +113,6 @@ multinomPlotDemo
 pause(2); close('all'); clear('all');
 
 %% mvnDist
-demoNumericalIntMvn
-mvnCondition
 mvnCondition2D
 mvnHeightWeight
 mvnImputationDemo
@@ -135,17 +131,8 @@ pause(2); close('all'); clear('all');
 mvnInvWIplotDemo
 pause(2); close('all'); clear('all');
 
-%% mvnMcmcInfer
-mvnMCMCexample1D
-mvnMCMCexample2D
-pause(2); close('all'); clear('all');
-
 %% mvtDist
 mvtPlotDemo
-pause(2); close('all'); clear('all');
-
-%% naiveBayesBernoulliDist
-%NBmnistDemo - slow!
 pause(2); close('all'); clear('all');
 
 %% normalInvGammaDist
@@ -171,6 +158,12 @@ pause(2); close('all'); clear('all');
 %% tabularFactor
 tabFactSprinkler1
 tabFactSprinkler2
+pause(2); close('all'); clear('all');
+
+%% ugmGaussDist
+ggmBICdemo
+ggmDemo
+ggmInferDemo
 pause(2); close('all'); clear('all');
 
 %% wishartDist

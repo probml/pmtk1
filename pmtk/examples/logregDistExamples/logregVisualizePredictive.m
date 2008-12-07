@@ -91,7 +91,7 @@ testData = [X1grid(:),X2grid(:)];
 % labels. We extract the probabilities of each test point belonging to class 1
 % and reshape the vector for plotting purposes.
 pred = predict(model,'X',testData);              % pred is an object - a discrete distribution
-pclass1 = pred.probs(:,1);
+pclass1 = pred.mu(:,1);
 probGrid = reshape(pclass1,nrows,ncols);
 %% Plot the Predictive Distribution
 % We can now make use of Matlab's excellent plotting capabilities and plot the
@@ -148,7 +148,7 @@ model = fit(model,'prior','l1','lambda',lambdaL1,'X',X,'y',Y);
 [nrows,ncols] = size(X1grid);
 testData = [X1grid(:),X2grid(:)];
 pred = predict(model,'X',testData);              % pred is an object - a discrete distribution
-pclass1 = pred.probs(:,1);
+pclass1 = pred.mu(:,1);
 probGrid = reshape(pclass1,nrows,ncols);
 %% Plot the Predictive Distribution L1
 figure; hold on;

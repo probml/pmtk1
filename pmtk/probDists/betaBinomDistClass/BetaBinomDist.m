@@ -1,9 +1,10 @@
-classdef BetaBinomDist < DiscreteDist
+classdef BetaBinomDist < ParamDist
   
   properties
     a;
     b;
-    N
+    N;
+    support;
   end
  
   %% Main methods
@@ -58,7 +59,20 @@ classdef BetaBinomDist < DiscreteDist
         varargin, 'data', [], 'suffStat', [], 'method', 'fixedpoint');
       alphas = polya_fit_simple(X);
       obj.a = alphas(1); obj.b = alphas(2);
-    end
+     end
+    
+     
+     function h=plot(obj, varargin)
+         
+         [plotArgs] = process_options( varargin, 'plotArgs' ,{});
+         if ~iscell(plotArgs), plotArgs = {plotArgs}; end
+         h=bar(exp(logprob(obj,obj.support)), plotArgs{:});
+         set(gca,'xticklabel',obj.support);
+         
+     end
+     
+     
+     
   end
     
 end

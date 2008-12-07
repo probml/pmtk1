@@ -1,7 +1,8 @@
-classdef PoissonDist < DiscreteDist
+classdef PoissonDist < ParamDist
   
   properties
     lambda;
+    support;
   end
  
   
@@ -64,6 +65,21 @@ classdef PoissonDist < DiscreteDist
        logZ = -obj.lambda;
      end
         
+     function h=plot(obj, varargin)
+         % plot a probability mass function as a histogram
+         % handle = plot(pmf, 'name1', val1, 'name2', val2, ...)
+         % Arguments are
+         % plotArgs - args to pass to the plotting routine, default {}
+         %
+         % eg. plot(p,  'plotArgs', 'r')
+         [plotArgs] = process_options(...
+             varargin, 'plotArgs' ,{});
+         if ~iscell(plotArgs), plotArgs = {plotArgs}; end
+         mu = rowvec(exp(logprob(obj,obj.support)));
+         h=bar(mu, plotArgs{:});
+         set(gca,'xticklabel',obj.support);
+    end
+     
      
 
   end

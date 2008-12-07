@@ -1,4 +1,5 @@
 function demoPostModelsExhaustive(varargin)
+%#broken
     % Examples
     % demoExhaustive('n',10,'d',5,'graphType','chain')
     % demoExhaustive('n',100,'d',4,'graphType','loop')

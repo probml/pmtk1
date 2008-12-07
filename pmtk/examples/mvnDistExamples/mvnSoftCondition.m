@@ -10,6 +10,6 @@ py = MvnDist(zeros(2*n,1), kron(eye(n), Ctrue));
 data = X'; y = data(:);
 postMu = softCondition(prior, py, A, y);
 m = MvnDist(prior, Ctrue);
-m = fit(m, 'data', X(1:n,:));
-assert(approxeq(postMu.mu, m.mu.mu))
-assert(approxeq(postMu.Sigma, m.mu.Sigma))
+m = fit(m, 'data', X(1:n,:),'method','bayesian');
+assert(approxeq(postMu.mu, m.mu))
+assert(approxeq(postMu.Sigma, m.params.mu.Sigma))

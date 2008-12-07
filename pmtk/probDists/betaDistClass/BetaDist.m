@@ -24,6 +24,7 @@ classdef BetaDist < ParamDist
 
     function m = mean(obj)
       m = obj.a ./(obj.a + obj.b);
+      m = [m,1-m];
     end
 
     function m = mode(obj)
@@ -32,6 +33,7 @@ classdef BetaDist < ParamDist
 %       m = NaN*ones(1,d);
 %       m(valid) = (obj.a(valid)  - 1) ./ (obj.a(valid) + obj.b(valid) - 2);
         m = (obj.a-1)/(obj.a + obj.b -2);  
+        m = [m,1-m];
         if(isinf(m)), m = NaN; end
     end
 

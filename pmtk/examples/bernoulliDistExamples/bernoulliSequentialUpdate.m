@@ -10,7 +10,7 @@ for i=1:length(ns)
     n = ns(i);
     mm = BernoulliDist(BetaDist(1,1));
     mm = fit(mm, 'data', X(1:n),'method','bayesian');
-    plot(mm.mu, 'plotArgs', {styles{i}, 'linewidth', 2});
+    plot(mm.params, 'plotArgs', {styles{i}, 'linewidth', 2});
     legendstr{i} = sprintf('n=%d', n);
 end
 legend(legendstr,'Location','NorthWest');

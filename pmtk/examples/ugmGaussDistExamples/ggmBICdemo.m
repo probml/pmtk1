@@ -1,4 +1,5 @@
 %% BIC Demo
+%#broken
 setSeed(0);
 d = 4;
 G = UndirectedGraph('type', 'loop', 'nnodes', d);

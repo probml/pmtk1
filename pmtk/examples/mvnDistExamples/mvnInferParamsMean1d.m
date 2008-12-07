@@ -7,12 +7,12 @@ for i=1:numel(priorVars)
     m = MvnDist(prior, sigma2);
     x = 3;
     m = fit(m, 'data', x);
-    post = m.mu;
+    post = m.params.mu;
     % The likelihood is proportional to the posterior when we use a flat prior
     priorBroad = MvnDist(0, 1e10);
     m2 = MvnDist(priorBroad, sigma2);
     m2 = fit(m2, 'data', x);
-    lik = m2.mu;
+    lik = m2.params.mu;
     % Now plot
     figure;
     xrange = [-5 5];
@@ -23,7 +23,7 @@ for i=1:numel(priorVars)
     legendstr{2} = 'lik';
     plot(post, 'xrange', xrange,'plotArgs', {'b-.', 'linewidth', 2});
     legendstr{3} = 'post';
-    legend(legendstr)
+    legend(legendstr,'Location','NorthWest')
     title(sprintf('prior variance = %3.2f', priorVar))
 end
 

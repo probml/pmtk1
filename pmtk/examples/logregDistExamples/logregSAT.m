@@ -27,7 +27,7 @@ m = fit(m, 'X', X, 'y', y,'method','map');   % MLE performed if no prior specifi
 %% Classify Training Examples
 pred = predict(m,'X', X,'method','plugin');  % predict on the training examples using MLE
 yhat = mode(pred);                           % most probable class labels 
-yprob = pred.probs(:,2);                     % probability of passing given SAT score and fitted weights
+yprob = pred.mu(:,2);                     % probability of passing given SAT score and fitted weights
 %% Plot MLE
 figure; hold on
 plot(X, y , 'ko', 'linewidth', 3,   'markersize', 12);    

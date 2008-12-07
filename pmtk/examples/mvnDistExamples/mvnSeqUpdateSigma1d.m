@@ -11,10 +11,10 @@ fig2 = figure;
 pmax = -inf;
 [styles, colors, symbols] =  plotColors();
 for i=1:length(ns)
-    prior = invWishartDist(nu, S);
+    prior = InvWishartDist(nu, S);
     n = ns(i);
     m = fit(MvnDist(mutrue, prior), 'data', X(1:n));
-    post = m.Sigma;
+    post = m.params.Sigma;
     mean(post);
     figure(fig1);
     [h(i), p]= plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, 'xrange', [0 15]);
