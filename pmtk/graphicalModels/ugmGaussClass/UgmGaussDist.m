@@ -1,4 +1,4 @@
-classdef UgmGaussDist < UgmDist
+classdef UgmGaussDist < GmDist
   % undirected gaussian graphical model 
   
   properties
@@ -8,14 +8,14 @@ classdef UgmGaussDist < UgmDist
 
   %%  Main methods
   methods
-    function obj = GgmDist(G, mu, Sigma)
+    function obj = UgmGaussDist(G, mu, Sigma)
       % GgmDist(G, mu, Sigma) where G is of type graph
       % mu and Sigma can be [] and set later.
       if nargin < 1, G = []; end
       if nargin < 2, mu = []; end
       if nargin < 3, Sigma = []; end
       obj.G = G; obj.mu = mu; obj.Sigma = Sigma;
-      obj.stateInfEng = MvnExactInfer; % ignores graph structure
+      %obj.stateInfEng = MvnExactInfer; % ignores graph structure
     end
 
     function params = getModelParams(obj)

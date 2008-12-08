@@ -1,7 +1,9 @@
-classdef UgmChordalGaussDist < UgmDist
+classdef UgmChordalGaussDist < GmDist
   % gaussian graphical model on decomposable graphs
   
   properties
+      mu;
+      Sigma;
   end
 
   %%  Main methods
@@ -45,7 +47,7 @@ classdef UgmChordalGaussDist < UgmDist
       nnodes = size(Phi,1);
       Gs = mkAllChordal(ChordalGraph, nnodes, true);
       for i=1:length(Gs)
-        objs{i} = GgmDecomposableDist(Gs{i}, HiwDist(Gs{i}, delta, Phi), []);
+        objs{i} = UgmChordalGaussDist(Gs{i}, HiwDist(Gs{i}, delta, Phi), []);
       end
     end
     

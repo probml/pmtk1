@@ -1,9 +1,9 @@
 function demoPostModelsExhaustive(varargin)
 %#broken
     % Examples
-    % demoExhaustive('n',10,'d',5,'graphType','chain')
-    % demoExhaustive('n',100,'d',4,'graphType','loop')
-    % demoExhaustive('n',100,'d',4,'graphType','aline4')
+    % demoPostModelsExhaustive('n',10,'d',5,'graphType','chain')
+    % demoPostModelsExhaustive('n',100,'d',4,'graphType','loop')
+    % demoPostModelsExhaustive('n',100,'d',4,'graphType','aline4')
     [doPrint, n, d, graphType] = process_options(...
         varargin, 'doPrint', false, 'n', 10, 'd', 4, 'graphType', 'chain');
     seeds = 1:3;
@@ -24,14 +24,14 @@ function [loss, nll, names] = helperPostModelsExhaustive(varargin)
     Phi = 0.1*eye(d); delta = 5; % hyper-params
     setSeed(seed);
     Gtrue = UndirectedGraph('type', graphType, 'nnodes', d);
-    truth = GgmDist(Gtrue, [], []);
+    truth = UgmGaussDist(Gtrue, [], []);
     Atrue = Gtrue.adjMat;
     truth = mkRndParams(truth);
     Y = sample(truth, n);
 
     prec{1} = inv(truth.Sigma); names{1} = 'truth';
     prec{2} = inv(cov(Y)); names{2} = 'emp';
-    obj = GgmDecomposableDist([], HiwDist([], delta, Phi), []);
+    obj = UgmChordalGaussDist([], HiwDist([], delta, Phi), []);
     [logpostG, GGMs, mapG, mapPrec, postG, postMeanPrec, postMeanG] = ...
         computePostAllModelsExhaustive(obj, Y);
     prec{3} = postMeanPrec; names{3} = 'mean';
