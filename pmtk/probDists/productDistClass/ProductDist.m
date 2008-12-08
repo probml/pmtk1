@@ -193,32 +193,32 @@ classdef ProductDist < ProbDist
             end
         end
         
-%         function obj = subsasgn(obj, S, value)
-%         % Allows direct assignment of distributions, e.g. obj(1) = MvnDist    
-%            name = S(1).subs;
-%            if(iscell(name))
-%                name = name{:};
-%            end
-%            if(numel(S) == 1)
-%                if(ischar(name) && ismember(name,properties(obj)))
-%                    obj = builtin('subsasgn',obj,S,value);
-%                else
-%                    if(~isa(value,'ProbDist'))
-%                        error('ProductDist only support probability distributions. You are trying to assign a value of class %s',class(value));
-%                    else
-%                        obj = setDist(obj,name,value);
-%                    end
-%                end
-%            else
-%                try
-%                    obj = builtin('subsasgn',obj,S,value);
-%                catch
-%                     dist = marginal(obj,name);
-%                     obj = builtin('subsasgn',dist,S(2:end),value);             
-%                end
-%            end
-%            
-%         end
+        function obj = subsasgn(obj, S, value)
+        % Allows direct assignment of distributions, e.g. obj(1) = MvnDist    
+           name = S(1).subs;
+           if(iscell(name))
+               name = name{:};
+           end
+           if(numel(S) == 1)
+               if(ischar(name) && ismember(name,properties(obj)))
+                   obj = builtin('subsasgn',obj,S,value);
+               else
+                   if(~isa(value,'ProbDist'))
+                       error('ProductDist only support probability distributions. You are trying to assign a value of class %s',class(value));
+                   else
+                       obj = setDist(obj,name,value);
+                   end
+               end
+           else
+               try
+                   obj = builtin('subsasgn',obj,S,value);
+               catch
+                    dist = marginal(obj,name);
+                    obj = builtin('subsasgn',dist,S(2:end),value);             
+               end
+           end
+           
+        end
         
         function display(obj)
         % custom display of the object    
