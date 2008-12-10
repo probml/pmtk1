@@ -6,6 +6,8 @@ classdef ParamDist < ProbDist
     end
     
     methods
+        
+       
       
          function p = getParams(obj,name,pointEstimate)
            if(nargin < 3)
@@ -69,6 +71,26 @@ classdef ParamDist < ProbDist
             end
             obj.params = val;
          end
+         
+         
+         
+%          function display(obj)
+%              fprintf('\n%s: \n',class(obj));
+%            
+%              if(isa(obj.params,'ProductDist'))
+%                 modelNames = fieldnames(obj.params.map)';
+%                 propNames = setDiff(properties(obj),modelNames);
+%              else
+%                  modelNames = class(obj.params);
+%                  propNames = properties(obj);
+%              end
+%              fprintf('Properties: \n');
+%              disp(propNames);
+%              fprintf('\nModel Parameters:\n');
+%              disp(modelNames);
+%              
+%              
+%          end
          
         
         

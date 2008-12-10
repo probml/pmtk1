@@ -68,9 +68,7 @@ classdef HmmDist < ParamDist
             if(isempty(model.nstates))
                 model.nstates = numel(model.stateConditionalDensities);
             end
-            if(model.nstates == 0)
-                error('Please specify the number of hidden states');
-            end
+           
         end
         
         
@@ -338,6 +336,9 @@ classdef HmmDist < ParamDist
            
            switch class(data)
                case 'cell'
+                   if(numel(data) == 1 && iscell(data{1}))
+                       data = data{:};
+                   end
                    data = rowvec(data);
                    n = numel(data);
                    d = size(data{1},1);
@@ -463,22 +464,30 @@ classdef HmmDist < ParamDist
         end
         
         function seqalign()
-            setSeed(10);
-            load data45;
-            nstates   = 5;
-            obsdims   = 13;
-
-            for i=1:nstates;
-               obsModel{i} = MvnDist(rand(obsdims,1),diag(ones(obsdims,1)));
-            end
-            
+            setSeed(0);
+            load data45; nstates = 5; obsdims = 13;
             pi0 = [1,0,0,0,0];
             transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
-            model = HmmDist('nstates',5,'stateConditionalDensities',obsModel);
+            
+            condDensity = HmmDist('nstates',5,'observationModel',MvnDist());
+            
+            model = GenerativeClassifierDist('classConditionals',condDensity,'nclasses',2,'classSupport',4:5);
+            obsData = {train4,train5}; 
+            hidData = [4,5];
+            fitOptions = {'transitionMatrix0',transmat0,'pi0',pi0};
+            model = fit(model,'dataObs',obsData,'dataHid',hidData,'fitOptions',fitOptions);
+            pred = predict(model,test45);
+            yhat = mode(pred);
+            
+            
             
             model4  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train4);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
             model5  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train5);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
 
+            
+            
+            
+            
             logp4 = logprob(model4,test45);
             logp5 = logprob(model5,test45);
             yhat = maxidx([logp4,logp5],[],2);

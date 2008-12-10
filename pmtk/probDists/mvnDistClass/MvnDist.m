@@ -25,12 +25,17 @@ classdef MvnDist < ParamDist
     domain;
   end
   
-  properties
+  properties(Hidden = true)
      %     place holders for point estimate access such as obj.mu
      %     - actual parameters stored in params field
      mu;      
      Sigma;
   end
+  
+  properties(GetAccess = 'private', SetAccess = 'private')
+     d;      
+  end
+  
   
   %% main methods
   methods
@@ -41,16 +46,21 @@ classdef MvnDist < ParamDist
       if nargin == 0
         mu = []; Sigma = [];
       end
+      
       if nargin < 3, domain = 1:length(mu); end
       
       if(isa(mu,'MvnInvWishartDist'))
           m.params = mu;
+          m.d = ndimensions(mu);
       else
          if(isnumeric(mu))
+             m.d = length(mu);
              mu = ConstDist(colvec(mu));
+             
          end
          if(isnumeric(Sigma))
              Sigma = ConstDist(Sigma);
+             m.d = size(Sigma,2);
          end
           m.params = ProductDist({mu,Sigma},{'mu','Sigma'});
       end
@@ -70,17 +80,17 @@ classdef MvnDist < ParamDist
     end
     
     function d = ndimensions(m)
-      if isa(m.mu, 'double')
-        d = length(m.mu);
-      else
-        d = ndimensions(m.mu);
-      end
+%       if isa(m.mu, 'double')
+%         d = length(m.mu);
+%       else
+        d = m.d;
+      %end
     end
 
     function logZ = lognormconst(obj)
       
       d = ndimensions(obj);
-      logZ = (d/2)*log(2*pi) + 0.5*logdet(obj.Sigma);
+      logZ = (obj.d/2)*log(2*pi) + 0.5*logdet(obj.Sigma);
     end
     
     function L = logprob(obj, X, normalize)
@@ -270,7 +280,11 @@ classdef MvnDist < ParamDist
                otherwise
                    error('%s is not a supported prior',class(prior));
            end
+           if(isempty(obj.d))
+                m.d = ndimensions(prior);
+           end
         end
+        
         
         if(strcmp(method,'default'))
             if(isa(obj.params,'ProductDist') && allConst(obj.params))

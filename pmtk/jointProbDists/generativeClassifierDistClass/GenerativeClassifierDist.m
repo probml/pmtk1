@@ -63,12 +63,17 @@ classdef GenerativeClassifierDist < ProbDist
         %           
         %           'featureFitMethod'   - 'mle', 'map', 'bayesian' 
         %
+        %           'fitOptions'         - a cell array of additional arguments
+        %                                  to pass to the fit method of each 
+        %                                  state conditional density.
+        %                                  
+        %
         %
         % OUTPUT:
         %           obj            - the fitted model
         %           
-            [X,y,classPrior,featurePrior,featureFitMethod] = process_options(varargin,...
-                'dataObs',[],'dataHid',[],'classPrior',[],'featurePrior',[],'featureFitMethod','map');
+            [X,y,classPrior,featurePrior,featureFitMethod,fitOptions] = process_options(varargin,...
+                'dataObs',[],'dataHid',[],'classPrior',[],'featurePrior',[],'featureFitMethod','map','fitOptions',{});
             
             if(isempty(obj.nclasses))
                 obj.nclasses = numel(unique(y));
@@ -89,8 +94,17 @@ classdef GenerativeClassifierDist < ProbDist
                [X,obj.transformer] = train(obj.transformer,X); 
             end
             
-            for c=1:obj.nclasses
-                obj.classConditionalDensities{c} = fit(obj.classConditionalDensities{c},'data',X(y==c,:),'prior',featurePrior,'method',featureFitMethod);
+            if(isvector(X))
+                X = colvec(X);
+            end
+            if(isempty(fitOptions))
+                for c=1:obj.nclasses
+                    obj.classConditionalDensities{c} = fit(obj.classConditionalDensities{c},'data',X(y==c,:),'prior',featurePrior,'method',featureFitMethod);
+                end
+            else
+                for c=1:obj.nclasses
+                    obj.classConditionalDensities{c} = fit(obj.classConditionalDensities{c},'data',X(y==c,:),fitOptions{:});
+                end
             end
             
         end
@@ -101,19 +115,27 @@ classdef GenerativeClassifierDist < ProbDist
             if(~isempty(obj.transformer))
                X = test(obj.transformer,X); 
             end
-            pred = DiscreteProductDist(exp(logprob(obj,X)),obj.classSupport);
+            pred = DiscreteProductDist(exp(normalize(logprob(obj,X,false),2)),obj.classSupport);
         end
         
-        function L = logprob(obj,X)
+        function L = logprob(obj,X,normalize)
         % log probability of the data under the full posterior.
+            if(nargin < 3), normalize = true;end
             logpy = log(mean(obj.classPosterior));  
-            L = zeros(size(X,1),obj.nclasses);
+            if(isvector(X))
+                n = length(X);
+            else
+                n = size(X,1);
+            end
+            L = zeros(n,obj.nclasses);
             
             for c=1:obj.nclasses
                 L(:,c) = logprob(obj.classConditionalDensities{c},X) + logpy(c);
             end
-            p = exp(L);
-            L = log(bsxfun(@rdivide,p,sum(p,2)));   % normalize
+            if(normalize)
+                p = exp(L);
+                L = log(bsxfun(@rdivide,p,sum(p,2)));   % normalize
+            end
         end
         
         function X = sample(obj,c,n)
