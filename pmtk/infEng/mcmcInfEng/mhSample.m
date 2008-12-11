@@ -1,15 +1,9 @@
-function [X, naccept] = mcmcSample(varargin)
-% method - one of {'gibbs', 'metrop', 'mh'}
-%
-% Gibbs only:
-% fullCond - fc{i}(x) returns a distribution which can be sampled
-%
-% Metrop/mh only
+function [X, naccept] = mhSample(varargin)
+% Metropolis Hastings algorithm
+% method - 'metrop' if symmetric proposal, 'mh' if asymmetric
 % target - if method=metrop or mh, logp = target(x)
 % proposal - if method=metrop, xprime = proposal(x)
 %          - if method=mh, [xprime, probnew] = proposal(x)
-%
-% Both
 % Nsamples
 % Nburnin
 % thin
@@ -18,18 +12,13 @@ function [X, naccept] = mcmcSample(varargin)
 % OUTPUT
 % X(s,:) = samples at step s
 
-[method, fullCond, target, proposal, Nsamples, Nburnin, thin, xinit] = ...
-  process_options(varargin, 'method', [], 'fullCond', [], 'target', [], ...
+[method, target, proposal, Nsamples, Nburnin, thin, xinit] = ...
+  process_options(varargin, 'method', [], 'target', [], ...
   'proposal', [], 'Nsamples', 1000, 'Nburnin', 100, 'thin', 1, 'xinit', []);
 
 keep = 1;
 x = xinit;
-if strcmpi(method, 'mh') || strcmpi(method, 'metrop')
-  logpx = target(x);
-  methodNum = 1;
-else
-  methodNum = 2;
-end
+logpx = target(x);
 if strcmpi(method, 'mh')
   symmetric = false;
 else
@@ -41,23 +30,13 @@ X = zeros(Nsamples, d);
 u = rand(S,1); % move outside main loop to speedup MH
 naccept = 0;
 for iter=1:S
-  if methodNum == 1
-    [x, accept, logpx] = mhUpdate(x, logpx, u(iter), proposal, target, symmetric);
-    naccept = naccept + accept;
-  else
-    x = gibbsUpdate(x, fullCond);
-  end  
+  [x, accept, logpx] = mhUpdate(x, logpx, u(iter), proposal, target, symmetric); 
   if (iter > Nburnin) && (mod(iter, thin)==0)
     X(keep,:) = x; keep = keep + 1;
   end
 end
 end
 
-function x = gibbsUpdate(x, fullCond)
-for i=1:length(x)
-  x(i) = sample(fullCond{i}(x)); 
-end
-end
 
 function [xnew, accept, logpNew] = mhUpdate(x, logpOld, u, proposal, target, symmetric)
 if symmetric

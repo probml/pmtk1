@@ -23,6 +23,7 @@ for i=1:2
         if plotCov
             pgauss = fit(MvnDist, 'data',X, 'method', 'mle');
             gaussPlot2d(pgauss.mu, pgauss.Sigma);
+            L = logprob(pgauss, X);
         end
     end
     xlabel('height')

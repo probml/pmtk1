@@ -5,6 +5,7 @@ classdef DgmDist < GmDist
     CPDs;
     infEng;
     infMethod;
+    % G field is in parent class
   end
 
   
@@ -18,7 +19,7 @@ classdef DgmDist < GmDist
       obj.CPDs = CPDs;
       obj.infMethod = infMethod;
       if ~isempty(CPDs) && ~isempty(infMethod)
-        obj = initInfEng(obj, infMethod);
+        obj = initInfEng(obj);
       end
     end
 
@@ -37,11 +38,12 @@ classdef DgmDist < GmDist
         ndx = find(~interventionMask(:,j));
         obj.CPDs{j} = fit(obj.CPDs{j}, 'X', X(ndx, pa), 'y', X(ndx,j));
       end
+      obj = initInfEng(obj);
     end
     
     function X = sample(obj, n)
       % X(i,:) = i'th forwards (ancestral) sample
-      X = sample(obj.infEng, n);
+      X = sample(obj.infEng, n); % not necessary to use joint!!
     end
     
     function postQuery = marginal(obj, queryVars)
@@ -105,11 +107,14 @@ classdef DgmDist < GmDist
     function obj = initInfEng(obj, infMethod)
       % "Freeze" the CPDs and graph structure and compile into an engine
       if nargin < 2, infMethod = obj.infMethod; end
+      if isempty(infMethod), return; end % silently return
       switch lower(infMethod)
         case 'enumeration'
-          obj.infEng = dgmDiscreteToTable(obj);
-        case 'jointgauss'
-          obj.infEng = dgmGaussToMvn(obj);
+          T =  dgmDiscreteToTable(obj);
+          obj.infEng = EnumInfEng(T);
+        case 'gauss'
+          [mu, Sigma] = dgmGaussToMvn(obj);
+          obj.infEng = GaussInfEng(mu, Sigma);
         otherwise
           error(['unrecognized method ' infMethod])
       end
@@ -132,6 +137,7 @@ classdef DgmDist < GmDist
             error(['unknown type ' CPDtype])
         end
       end
+      dgm = initInfEng(dgm);
     end
     
     function T = dgmDiscreteToTable(obj)
@@ -148,12 +154,13 @@ classdef DgmDist < GmDist
           dom = [parents(obj.G, j), j];
           Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom);
         end
-        Tfac = TabularFactor.multiplyFactors(Tfacs);
-        T = TableJointDist(Tfac.T);
       end
+      Tfac = TabularFactor.multiplyFactors(Tfacs);
+      T = Tfac.T;
+      %T = TableJointDist(Tfac.T);
     end
     
-    function mvn = dgmGaussToMvn(dgm)
+    function [mu, Sigma] = dgmGaussToMvn(dgm)
       % Koller and Friedman p233
       d = nnodes(dgm.G);
       mu = zeros(d,1);
@@ -175,7 +182,7 @@ classdef DgmDist < GmDist
         Sigma(1:j-1,j) = s;
         Sigma(j,1:j-1) = s';
       end
-      mvn = MvnDist(mu,Sigma);
+      %mvn = MvnDist(mu,Sigma);
     end
     
   end
@@ -274,7 +281,9 @@ classdef DgmDist < GmDist
         % Display joint
         joint = dgmDiscreteToTable(dgm);
         lab=cellfun(@(x) {sprintf('%d ',x)}, num2cell(ind2subv([2 2 2 2],1:16),2));
-        figure;bar(joint.T(:))
+        figure;
+        %bar(joint.T(:))
+        bar(joint(:))
         set(gca,'xtick',1:16);
         xticklabelRot(lab, 90, 10, 0.01)
         title('joint distribution of water sprinkler DGM')
@@ -284,10 +293,11 @@ classdef DgmDist < GmDist
         % Use model from Koller & Friedman p233
         G = zeros(3,3);
         G(1,2) = 1; G(2,3)=1;
+        % LinGaussCPD(w, w0, sigma2)
         CPDs{1} = LinGaussCPD([], 1, 4);
         CPDs{2} = LinGaussCPD(0.5, -5, 4);
         CPDs{3} = LinGaussCPD(-1, 4, 3);
-        dgm = DgmDist(G, 'CPDs', CPDs, 'infMethod', 'jointGauss');
+        dgm = DgmDist(G, 'CPDs', CPDs, 'infMethod', 'gauss');
         p = predict(dgm, 2, -3.1, [1 3]);
         X = sample(dgm, 1000);
         dgm2 = DgmDist(G);

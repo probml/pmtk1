@@ -1,14 +1,15 @@
-classdef UgmChordalGaussDist < GmDist
+classdef UgmGaussChordalDist < UgmGaussDist
   % gaussian graphical model on decomposable graphs
   
   properties
-      mu;
-      Sigma;
+      %mu;
+      %Sigma;
+      %G;
   end
 
   %%  Main methods
   methods
-    function obj = UgmChordalGaussDist(G, mu, Sigma)
+    function obj = UgmGaussChordalDist(G, mu, Sigma)
       % obj = UgmChordalGaussDist(G, HiwDist(...), []) uses a prior of the form
       % p(mu) propto 1, p(Sigma) = hiw(G)
        if nargin == 0

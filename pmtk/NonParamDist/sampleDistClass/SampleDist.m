@@ -105,8 +105,11 @@ classdef SampleDist < NonParamDist
     end
     
     function s = sample(obj,n)
-        ndx = randi(size(obj.samples,1),n,1);
-        s = obj.samples(ndx);
+      NN = size(obj.samples, 1);
+      if n > NN, error('requesting too many samples'); end
+      perm = randperm(NN);
+      ndx = perm(1:n); % randi(NN,n,1);
+      s = obj.samples(ndx,:);
     end
     
     function l = logprob(obj,varargin)

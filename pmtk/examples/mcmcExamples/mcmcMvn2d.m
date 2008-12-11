@@ -4,22 +4,33 @@
 
 Sigma = [1 -0.5; -0.5 1];
 mu = [1; 1];
-m = MvnDist(mu, Sigma);
+m = MvnDist(mu, Sigma, 'infEng', GaussInfEng());
 for i=1:2
-  margExact{i} = marginal(m, i);
+  margExact{i} = marginal(m, i); %#ok
 end
+N = 500; 
+
+
+% directly call mcmc sampler
 targetFn = @(x) logprob(m,x,false); % unnormalized distribution
 fc = makeFullConditionals(m);
 
-N = 500;
 xinit = mvnrnd(mu, Sigma);
-mcmc{1} = McmcDist('method', 'gibbs', 'fullcond', fc,  'xinit', xinit, 'Nsamples', N);
-mcmc{2} = McmcDist('method', 'metrop', 'target', targetFn, 'xinit', xinit, ...
-  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 1*eye(2)));
-mcmc{3} = McmcDist('method', 'metrop', 'target', targetFn, 'xinit', xinit, ...
-  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 0.01*eye(2)));
-     
-names= {'gibbs', 'mh I', 'mh 0.01 I'};
+% [obj.samples, naccept] = mcmcSample(varargin{:});
+mcmc{1} = SampleDist(gibbsSample(fc,  xinit,  N));
+
+%{
+mcmc{2} = SampleDist(mhSample('method', 'metrop', 'target', targetFn, 'xinit', xinit, ...
+  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 1*eye(2))));
+mcmc{3} = SampleDist(mhSample('method', 'metrop', 'target', targetFn, 'xinit', xinit, ...
+  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 0.01*eye(2))));
+  %}
+
+% Embed MCMC inside MVN object
+mcmc{2} = MvnDist(mu, Sigma, 'infEng', GibbsInfEng('Nsamples', N));
+
+names= {'gibbs',  'gibbs'};
+%names= {'gibbs', 'mh I', 'mh 0.01 I', 'gibbs'};
 
 for j=1:length(mcmc)
     ms = mcmc{j};
@@ -46,7 +57,7 @@ for j=1:length(mcmc)
     suptitle(ttl);
     
     figure;
-    X = ms.samples;
+    X = sample(ms, N); % ms.samples;
     for i=1:2
       subplot(1,2,i);
       stem(acf(X(:,i), 30));

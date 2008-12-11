@@ -1,6 +1,6 @@
 % Plot the contours of a 2d Gaussian as well corresponding 1d marginal and
 % conditional Gaussians. Written by Matthew Dunham
-function gauss2dMargCond
+function plotGauss2dMargCond
 
 fig = figure('Color','w');
 mu = [0.5 0.5];

@@ -6,7 +6,7 @@ setSeed(0);
 d = 5;
 Sigma = randpd(d);
 mu = randn(d,1);
-mFull = MvnDist(mu, Sigma);
+mFull = MvnDist(mu, Sigma, 'infMethod', 'exact');
 V = 3:d;
 data = randn(1,length(V));
 mCond = predict(mFull, V, data); % p(h|V=v) is a 2d Gaussian

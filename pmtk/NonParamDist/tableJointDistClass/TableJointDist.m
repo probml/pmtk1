@@ -10,8 +10,12 @@ classdef TableJointDist < NonParamDist
   %% main methods
   methods
     function m = TableJointDist(T, domain)
-      m.T  = T;
-      if nargin < 2, domain = 1:ndims(T); end
+      if nargin == 0
+        T = []; domain = [];
+      elseif nargin < 2
+        domain = 1:ndims(T); 
+      end
+      m.T = T;
       m.domain = domain;
     end
 

@@ -90,7 +90,7 @@ classdef UgmGaussDist < GmDist
       function testClass
           d = 10;
           G = UndirectedGraph('type', 'loop', 'nnodes', d);
-          obj = GgmDist(G, [], []);
+          obj = UgmGaussDist(G, [], []);
           obj = mkRndParams(obj);
           V = 1:2; H = mysetdiff(1:d, V); xv = randn(2,1);
           obj = enterEvidence(obj, V, xv);
