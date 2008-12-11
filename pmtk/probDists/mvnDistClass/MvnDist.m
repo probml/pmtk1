@@ -22,6 +22,7 @@ classdef MvnDist < ParamDist
 % obj.params.Sigma - same rules as obj.params.mu
   
   properties
+    infEng;
     domain;
   end
   
@@ -39,24 +40,22 @@ classdef MvnDist < ParamDist
   
   %% main methods
   methods
-    function m = MvnDist(mu, Sigma, domain)
+    function m = MvnDist(mu, Sigma,  varargin)
     % MvnDist(mu, Sigma)
     % mu can be a matrix or a pdf, eg. 
     % MvnDist(MvnInvWishDist(...), [])
       if nargin == 0
         mu = []; Sigma = [];
       end
-      
-      if nargin < 3, domain = 1:length(mu); end
-      
+      [m.infEng, m.domain] = process_options(varargin, ...
+        'infEng', GaussInfEng(), 'domain', 1:numel(mu));
       if(isa(mu,'MvnInvWishartDist'))
           m.params = mu;
           m.d = ndimensions(mu);
       else
          if(isnumeric(mu))
              m.d = length(mu);
-             mu = ConstDist(colvec(mu));
-             
+             mu = ConstDist(colvec(mu));        
          end
          if(isnumeric(Sigma))
              Sigma = ConstDist(Sigma);
@@ -64,140 +63,34 @@ classdef MvnDist < ParamDist
          end
           m.params = ProductDist({mu,Sigma},{'mu','Sigma'});
       end
-      m.domain = domain;
     end
 
-
+    %{
+    function obj = initInfEng(obj, infMethod)
+      % "Freeze" the parameters and compile into an engine
+      if nargin < 2, infMethod = obj.infMethod; end
+      switch lower(infMethod)
+        case 'exact'
+          obj.infEng = GaussInfEng(obj.mu, obj.Sigma, obj.domain);
+        case 'gibbs'
+          fc = makeFullConditionals(obj);
+          xinit = mvnrnd(obj.mu, obj.Sigma);
+           obj.infEng = McmcInfEng('method', 'gibbs', ...
+             'fullcond', fc,  'xinit', xinit, 'Nsamples', N);
+        otherwise
+          error(['unrecognized method ' infMethod])
+      end
+    end
+    %}
+    
+    %{
     function objS = convertToScalarDist(obj)
       if ndimensions(obj) ~= 1, error('cannot convert to scalarDst'); end
       objS = GaussDist(obj.mu, obj.Sigma);
     end
+  %}
     
-    function obj = mkRndParams(obj, d)
-      if nargin < 2, d = ndimensions(obj); end
-      obj.mu = randn(d,1);
-      obj.Sigma = randpd(d);
-    end
-    
-    function d = ndimensions(m)
-%       if isa(m.mu, 'double')
-%         d = length(m.mu);
-%       else
-        d = m.d;
-      %end
-    end
-
-    function logZ = lognormconst(obj)
-      
-      d = ndimensions(obj);
-      logZ = (obj.d/2)*log(2*pi) + 0.5*logdet(obj.Sigma);
-    end
-    
-    function L = logprob(obj, X, normalize)
-    % L(i) = log p(X(i,:) | params)
-        if nargin < 3, normalize = true; end
-        if numel(obj.mu)==1
-            X = X(:); % ensure column vector
-        end
-        [N d] = size(X);
-        if length(obj.mu) ~= d
-            error('X should be N x d')
-        end
-        if obj.Sigma==0
-            L = repmat(NaN,N,1);
-            return;
-        end
-        X = bsxfun(@minus,X,obj.mu');
-        L =-0.5*sum((X*inv(obj.Sigma)).*X,2);
-        if normalize
-            L = L - lognormconst(obj);
-        end
-        if(0 && statsToolboxInstalled) % sanity check
-            Lstats = log(mvnpdf(bsxfun(@plus,X,obj.mu'),obj.mu',obj.Sigma));
-            assert(approxeq(L,Lstats))
-        end
-        
-    end
-    
-    %{
-    function h=plotContour2d(obj, varargin)
-      % Plot an ellipse representing the 95% contour of a Gaussian
-      % eg figure; plotContour2d(mvnDist([0 0], [2 1; 1 1]))
-      checkParamsAreConst(obj)
-      if ndimensions(obj) ~= 2
-        error('only works for 2d')
-      end
-      h = gaussPlot2d(obj.mu, obj.Sigma);
-    end
-     %}
-  
-    function mu = mean(m)
-      checkParamsAreConst(m)
-      mu = m.mu;
-    end
-
-    function mu = mode(m)
-      mu = mean(m);
-    end
-
-    function C = cov(m)
-      checkParamsAreConst(m)
-      C = m.Sigma;
-    end
-  
-    function v = var(obj)
-      v = diag(cov(obj));
-    end
-    
-    
-    function samples = sample(obj,n)
-      % Sample n times from this distribution: samples is of size
-      % nsamples-by-ndimensions
-      checkParamsAreConst(obj);
-      if(nargin < 2), n = 1; end;
-      A = chol(obj.Sigma,'lower');
-      Z = randn(length(obj.mu),n);
-      samples = bsxfun(@plus,obj.mu(:), A*Z)';
-    end
-    
-     function [postQuery] = marginal(obj, queryVars)
-     % prob = sum_h p(Query,h)
-       checkParamsAreConst(obj);
-       if(isempty(obj.domain))
-           obj.domain = 1:numel(obj.mu);
-       end
-       Q = lookupIndices(queryVars, obj.domain);
-       postQuery = MvnDist(obj.mu(Q), obj.Sigma(Q,Q), queryVars);
-     end
-     
-     function prob = predict(obj, visVars, visValues, queryVars)
-     %prob =  sum_h p(query,h|visVars=visValues)
-         H = mysetdiff(obj.domain, visVars);
-         checkParamsAreConst(obj);
-         [muHgivenV, SigmaHgivenV] = gaussianConditioning(...
-             obj.mu, obj.Sigma, visVars, visValues);
-         prob = MvnDist(muHgivenV, SigmaHgivenV, H);
-         if nargin >= 4
-             prob = marginal(prob, queryVars);
-         end
-     end
-   
-     function Xc = impute(obj, X)
-         % Fill in NaN entries of X using posterior mode on each row
-         checkParamsAreConst(obj);
-         [n d] = size(X);
-         Xc = X;
-         for i=1:n
-             hidNodes = find(isnan(X(i,:)));
-             if isempty(hidNodes), continue, end;
-             visNodes = find(~isnan(X(i,:)));
-             visValues = X(i,visNodes);
-             postH = predict(obj, visNodes, visValues);
-             Xc(i,hidNodes) = rowvec(mode(postH));
-         end
-     end
-      
-     function fc = makeFullConditionals(obj, visVars, visVals)
+    function fc = makeFullConditionals(obj, visVars, visVals)
          d = length(obj.mu);
          if nargin < 2
              % Sample from the unconditional distribution
@@ -221,6 +114,108 @@ classdef MvnDist < ParamDist
          p = GaussDist(muAgivenB, SigmaAgivenB);
      end
     
+    
+    function obj = mkRndParams(obj, d)
+      if nargin < 2, d = ndimensions(obj); end
+      obj.mu = randn(d,1);
+      obj.Sigma = randpd(d);
+      %obj = initInfEng(obj);
+    end
+    
+    function d = ndimensions(m)
+%       if isa(m.mu, 'double')
+%         d = length(m.mu);
+%       else
+        d = m.d;
+      %end
+    end
+
+
+    function mu = mean(m)
+      checkParamsAreConst(m)
+      mu = m.mu;
+    end
+
+    function mu = mode(m)
+      mu = mean(m);
+    end
+
+    function C = cov(m)
+      checkParamsAreConst(m)
+      C = m.Sigma;
+    end
+  
+    function v = var(obj)
+      v = diag(cov(obj));
+    end
+    
+    
+    %% Methods that need an inference engine
+    function logZ = lognormconst(obj)
+      %logZ = lognormconst(obj.infEng, obj);
+       mu = obj.mu; Sigma = obj.Sigma;
+      d = length(mu);
+      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
+    end
+
+    
+    function L = logprob(obj, X, normalize)
+      % L(i) = log p(X(i,:) | params)
+      if nargin < 3, normalize = true; end
+      %L = logprob(obj.infEng, obj, X, normalize);
+      
+      % since plot calls logprob, and Gibbs does not support it,
+      % we use this hack
+        mu = obj.mu; Sigma = obj.Sigma;
+        if numel(mu)==1
+            X = X(:); % ensure column vector
+        end
+        [N d] = size(X);
+        if length(mu) ~= d
+            error('X should be N x d')
+        end
+        if det(Sigma)==0
+          L = repmat(NaN,N,1);
+          return;
+        end
+        X = bsxfun(@minus,X,mu');
+        L =-0.5*sum((X*inv(Sigma)).*X,2);
+        if normalize
+            L = L - lognormconst(obj, model);
+        end
+    end
+    
+    
+    function samples = sample(obj,n)
+      samples = sample(obj.infEng, obj, n);
+    end
+    
+     function postQuery = marginal(obj, queryVars)
+       postQuery = marginal(obj.infEng, obj, queryVars);
+     end
+     
+     function prob = predict(obj, visVars, visValues, queryVars)
+       if nargin < 4, queryVars = []; end
+       prob = predict(obj.infEng, obj, visVars, visValues, queryVars);
+     end
+    
+     %% Other
+     function Xc = impute(obj, X)
+         % Fill in NaN entries of X using posterior mode on each row
+         checkParamsAreConst(obj);
+         [n] = size(X,1);
+         Xc = X;
+         for i=1:n
+             hidNodes = find(isnan(X(i,:)));
+             if isempty(hidNodes), continue, end;
+             visNodes = find(~isnan(X(i,:)));
+             visValues = X(i,visNodes);
+             postH = predict(obj, visNodes, visValues);
+             Xc(i,hidNodes) = rowvec(mode(postH));
+         end
+     end
+      
+   
      
       
     function obj = fit(obj,varargin)
@@ -300,6 +295,8 @@ classdef MvnDist < ParamDist
             otherwise
                 obj = fitMLE(obj,varargin{:});
         end
+        
+        %obj = initInfEng(obj);
     end
    
     
@@ -364,17 +361,7 @@ classdef MvnDist < ParamDist
     
   end % methods
 
-  %% Demos
-  methods(Static = true)
-   
  
-       
-    function plot2dMarginalFigure()
-      plotGauss2dMargCond;
-    end
-
-  end
-
 
   %% Private methods
   methods(Access = 'protected')
@@ -385,6 +372,7 @@ classdef MvnDist < ParamDist
       end
     end
     
+      
      function obj = fitMLE(obj, varargin)
       % Point estimate of parameters
       % m = fit(model, 'name1', val1, 'name2', val2, ...)
