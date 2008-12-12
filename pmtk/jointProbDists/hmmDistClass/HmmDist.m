@@ -202,7 +202,7 @@ classdef HmmDist < ParamDist
         % the distribution over starting hidden states, using em.
         
         %% INIT
-               [optTol,maxIter,clampPi,clampObs,clampTrans] = ...
+               [optTol,maxIter,clampPi,clampObs,clampTrans,other] = ...
                    process_options(varargin ,...
                    'optTol'                ,1e-4   ,...
                    'maxIter'               ,100    ,...
@@ -222,7 +222,7 @@ classdef HmmDist < ParamDist
                [stackedData,seqndx] = HmmDist.stackObservations(data);
                if(~clampObs), weightingMatrix = zeros(size(stackedData,1),model.nstates);end
                
-               while(iter < maxIter && ~converged)
+               while(iter <= maxIter && ~converged)
                    prevLL = loglikelihood;
                    loglikelihood = 0;
                    if(~clampPi)     ,essPi(:)           = 0;end
@@ -317,15 +317,10 @@ classdef HmmDist < ParamDist
             if(isempty(model.nstates) || model.nstates == 0)
                 error('Please specify the number of hidden states');
             end
-        
-            model.stateConditionalDensities = copy(model.observationModel,model.nstates,1);
+            
             data = HmmDist.stackObservations(X);
-            n = size(data,1);
-            for i=1:model.nstates
-                ndx = floor(ceil(n/2)*rand(ceil(n/2),1) + 1);
-                model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'data',data(ndx,:));
-            end
-        
+            template = fit(model.observationModel,'data',data);
+            model.stateConditionalDensities = copy(template,model.nstates,1);
         end
         
          function data = checkData(model,data)
@@ -462,50 +457,37 @@ classdef HmmDist < ParamDist
             
             
         end
+      
         
         function seqalign()
-            setSeed(0);
-            load data45; nstates = 5; obsdims = 13;
+            setSeed(10);
+            load data45; nstates = 5; 
             pi0 = [1,0,0,0,0];
             transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
-            
             condDensity = HmmDist('nstates',5,'observationModel',MvnDist());
-            
             model = GenerativeClassifierDist('classConditionals',condDensity,'nclasses',2,'classSupport',4:5);
             obsData = {train4,train5}; 
             hidData = [4,5];
-            fitOptions = {'transitionMatrix0',transmat0,'pi0',pi0};
+            fitOptions = {'transitionMatrix0',transmat0,'pi0',pi0,'maxIter',5};
+            
             model = fit(model,'dataObs',obsData,'dataHid',hidData,'fitOptions',fitOptions);
             pred = predict(model,test45);
             yhat = mode(pred);
-            
-            
-            
-            model4  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train4);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
-            model5  = fit(model,'transitionMatrix0',transmat0,'pi0',pi0,'data',train5);%,'observationPrior',InvWishartDist(obsdims,diag(0.1*ones(1,obsdims)))); 
-
-            
-            
-            
-            
-            logp4 = logprob(model4,test45);
-            logp5 = logprob(model5,test45);
-            yhat = maxidx([logp4,logp5],[],2);
-            yhat(yhat == 1) = 4;
-            yhat(yhat == 2) = 5;
-            nerrs = sum(yhat ~= labels');
+            nerrors = sum(yhat ~= labels');
+            display(nerrors);
             
             if(exist('specgram','file'))
+                model4  = model.classConditionalDensities{1};
                 subplot(2,2,1);
                 specgram(signal1); 
-               
                 subplot(2,2,2)
                 specgram(signal2);
-              
                 subplot(2,2,3);
                 plot(mode(predict(model4,mfcc1)));
+                set(gca,'YTick',1:5);
                 subplot(2,2,4);
                 plot(mode(predict(model4,mfcc2)));
+                set(gca,'YTick',1:5);
                 maximizeFigure;
                 
             end 

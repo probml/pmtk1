@@ -115,7 +115,14 @@ classdef GenerativeClassifierDist < ProbDist
             if(~isempty(obj.transformer))
                X = test(obj.transformer,X); 
             end
-            pred = DiscreteProductDist(exp(normalize(logprob(obj,X,false),2)),obj.classSupport);
+            logp = logprob(obj,X,false);
+            maxl = maxidx(logp,[],2);
+            
+            
+            p = normalize(exp(logp),2);
+            underflow = sum(p,2) == 0;
+            p(underflow,maxl(underflow)) = 1;
+            pred = DiscreteProductDist(p,obj.classSupport);
         end
         
         function L = logprob(obj,X,normalize)

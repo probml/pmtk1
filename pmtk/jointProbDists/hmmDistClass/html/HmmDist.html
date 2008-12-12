@@ -1,0 +1,1099 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>HmmDist</title>
+      <meta name="generator" content="MATLAB 7.7">
+      <meta name="date" content="2008-12-11">
+      <meta name="m-file" content="HmmDist"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#3">INIT</a></li>
+               <li><a href="#5">E Step</a></li>
+               <li><a href="#6">M Step PI</a></li>
+               <li><a href="#7">M Step Transition Matrix</a></li>
+               <li><a href="#8">M Step Observation Model</a></li>
+               <li><a href="#9">Test Convergence</a></li>
+               <li><a href="#13">MVN</a></li>
+            </ul>
+         </div><pre class="codeinput"><span class="keyword">classdef</span> HmmDist &lt; ParamDist
+<span class="comment">% This class represents a Hidden Markov Model.</span>
+<span class="comment">%</span>
+    <span class="keyword">properties</span>
+        nstates;                    <span class="comment">% number of hidden states</span>
+
+        pi;                         <span class="comment">% initial/starting distribution over hidden states</span>
+
+        transitionMatrix;           <span class="comment">% matrix of size nstates-by-nstates</span>
+                                    <span class="comment">% transitionMatrix(i,j) = p( S(t) = j | S(t-1) = i),</span>
+
+        observationModel            <span class="comment">% The observation model to use - an empty</span>
+                                    <span class="comment">% object, e.g. MvnDist() or DiscreteDist()</span>
+                                    <span class="comment">% that will be used as a template in</span>
+                                    <span class="comment">% constructing all of the state conditional</span>
+                                    <span class="comment">% densities. Alternatively, you can specify</span>
+                                    <span class="comment">% the pre-initialized densities directly by</span>
+                                    <span class="comment">% passing these into</span>
+                                    <span class="comment">% stateConditionalDensities, below.</span>
+
+        stateConditionalDensities;  <span class="comment">% the observation model - one object per</span>
+                                    <span class="comment">% hidden state stored as a cell array.</span>
+                                    <span class="comment">% Each state conditional density must</span>
+                                    <span class="comment">% support fit() via sufficient statistics</span>
+                                    <span class="comment">% with the name, 'suffStat', i.e.</span>
+                                    <span class="comment">% fit(obj,'suffStat',SS) as well as</span>
+                                    <span class="comment">% mkSuffStat(obj,X,weights), which</span>
+                                    <span class="comment">% computes weighted (expected) sufficient</span>
+                                    <span class="comment">% statistics in a format recognized by</span>
+                                    <span class="comment">% fit(). Tied parameters, if any, are</span>
+                                    <span class="comment">% represented as SharedParam objects, (i.e.</span>
+                                    <span class="comment">% pointers to a shared data source).</span>
+        verbose = true;
+
+    <span class="keyword">end</span>
+
+    <span class="keyword">properties</span>(GetAccess = <span class="string">'private'</span>, SetAccess = <span class="string">'private'</span>)
+        obsDims;   <span class="comment">% the dimensionality of an observation at a single time point t.</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span>
+
+        <span class="keyword">function</span> model = HmmDist(varargin)
+        <span class="comment">% Construct a new HMM with the specified number of hidden states.</span>
+        <span class="comment">%</span>
+        <span class="comment">% FORMAT:</span>
+        <span class="comment">%            model = HmmDist('name1',val1,'name2',val2,...)</span>
+        <span class="comment">%</span>
+        <span class="comment">% INPUT:</span>
+        <span class="comment">%           'nstates'           - the number of hidden states</span>
+
+        <span class="comment">%</span>
+        <span class="comment">% - optional</span>
+        <span class="comment">%</span>
+        <span class="comment">%           'pi'                           - the distribution initial hidden states</span>
+        <span class="comment">%           'transitionMatrix'             - the transition matrix</span>
+        <span class="comment">%           'stateConditionalDensities'    - see property above</span>
+        <span class="comment">%           'ndimensions'                  - the dimensionality of an observation</span>
+        <span class="comment">%                                            at a single time step</span>
+        <span class="comment">%           'verbose'</span>
+        <span class="comment">%</span>
+        <span class="comment">%</span>
+        <span class="comment">% OUTPUT:   'model'   - the constructed HMM object</span>
+        <span class="comment">%</span>
+            [model.nstates,model.pi,model.transitionMatrix,model.stateConditionalDensities,model.obsDims,model.verbose,model.observationModel]<span class="keyword">...</span>
+                = process_options(varargin,<span class="string">'nstates'</span>,[],<span class="string">'pi'</span>,[],<span class="string">'transitionMatrix'</span>,[],<span class="string">'stateConditionalDensities'</span>,{},<span class="string">'ndimensions'</span>,1,<span class="string">'verbose'</span>,true,<span class="string">'observationModel'</span>,[]);
+
+            <span class="keyword">if</span>(isempty(model.nstates))
+                model.nstates = numel(model.stateConditionalDensities);
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+
+        <span class="keyword">function</span> model = fit(model,varargin)
+        <span class="comment">% Learn the parameters of the HMM from data.</span>
+        <span class="comment">%</span>
+        <span class="comment">% FORMAT:</span>
+        <span class="comment">%           model = fit(model,'name1',val1,'name2',val2,...)</span>
+        <span class="comment">%</span>
+        <span class="comment">% INPUT:</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'data'             - a set of observation sequences - let 'n' be the</span>
+        <span class="comment">%                      number of observed sequences, and 'd' be the</span>
+        <span class="comment">%                      dimensionality of these sequences. If they are</span>
+        <span class="comment">%                      all of the same length, 't', then data is of size</span>
+        <span class="comment">%                      d-by-t-by-n, otherwise, data is a cell array such</span>
+        <span class="comment">%                      that data{ex}{i,j} is the ith dimension at time</span>
+        <span class="comment">%                      step j in example ex.</span>
+        <span class="comment">%</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'stateConditionalDensities - a cell array of the state conditional</span>
+        <span class="comment">%                              densities - one per state, initialized to</span>
+        <span class="comment">%                              a starting guess.</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'pi0'                      - an initialization for the pi parameter, if</span>
+        <span class="comment">%                              not specified, a random starting point is chosen.</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'transitionMatrix0'        - an initialization for the transition</span>
+        <span class="comment">%                              matrix; if not specified, a random stochastic</span>
+        <span class="comment">%                              matrix is used instead.</span>
+        <span class="comment">%</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'latentValues'     - optional values for the latent variables in the</span>
+        <span class="comment">%                      case of fully observable data.</span>
+        <span class="comment">%</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'method'           - ['map'] | 'mle' | 'bayesian'</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'algorithm'        -  ['em']  the fitting algorithm to use</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'piPrior'          - a DirichletDist object</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'transitionPrior'  - either a single DirichletDist object used as a</span>
+        <span class="comment">%                      prior for each row of the transition matrix or a</span>
+        <span class="comment">%                      cell array of DirichletDist objects, one for each</span>
+        <span class="comment">%                      row.</span>
+        <span class="comment">%</span>
+        <span class="comment">% 'observationPrior' - a single object acting as the prior for each</span>
+        <span class="comment">%                      stateConditionalDensity. This must be a supported</span>
+        <span class="comment">%                      prior distribution, i.e. the fit method of the</span>
+        <span class="comment">%                      state conditional density must know what to do</span>
+        <span class="comment">%                      with it in the call</span>
+        <span class="comment">%                      fit(obj,'prior',observationPrior);</span>
+        <span class="comment">%</span>
+        <span class="comment">%</span>
+        <span class="comment">% Any additional arguments are passed directly to the implementation of the</span>
+        <span class="comment">% fit algorithm.</span>
+        <span class="comment">%</span>
+        <span class="comment">% If model.stateConditionalDensities is non-empty, these objects are</span>
+        <span class="comment">% used to initialize the fitting algorithm. Similarly for model.pi and</span>
+        <span class="comment">% model.transitionMatrix.</span>
+
+             [data,latentValues,method,algorithm,stateConditionalDensities,<span class="keyword">...</span>
+              model.pi,model.transitionMatrix,piPrior,transitionPrior,observationPrior,options]<span class="keyword">...</span>
+              = process_options(varargin,<span class="keyword">...</span>
+                 <span class="string">'data'</span>             ,[]         ,<span class="keyword">...</span>
+                 <span class="string">'latentValues'</span>     ,[]         ,<span class="keyword">...</span>
+                 <span class="string">'method'</span>           ,<span class="string">'map'</span>      ,<span class="keyword">...</span>
+                 <span class="string">'algorithm'</span>        ,<span class="string">'em'</span>       ,<span class="keyword">...</span>
+                 <span class="string">'stateConditionalDensities'</span> ,{},<span class="keyword">...</span>
+                 <span class="string">'pi0'</span>              ,[]         ,<span class="keyword">...</span>
+                 <span class="string">'transitionMatrix0'</span>,[]         ,<span class="keyword">...</span>
+                 <span class="string">'piPrior'</span>          ,[]         ,<span class="keyword">...</span>
+                 <span class="string">'transitionPrior'</span>  ,[]         ,<span class="keyword">...</span>
+                 <span class="string">'observationPrior'</span> ,[]         );
+
+
+             <span class="keyword">if</span>(~isempty(latentValues)),error(<span class="string">'fully observable data case not yet implemented'</span>);<span class="keyword">end</span>
+             <span class="keyword">if</span>(~isempty(stateConditionalDensities))
+                 model.stateConditionalDensities = stateConditionalDensities;
+             <span class="keyword">end</span>
+             data = checkData(model,data);
+
+
+             <span class="keyword">switch</span> lower(algorithm)
+                 <span class="keyword">case</span> <span class="string">'em'</span>
+                     model = emUpdate(model,data,piPrior,transitionPrior,observationPrior,options{:});
+                 <span class="keyword">otherwise</span>
+                     error(<span class="string">'%s is not a valid mle/map algorithm'</span>,algorithm);
+             <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> logp = logprob(model,X)
+        <span class="comment">% logp(i) = log p(X{i} | model)</span>
+            n = nobservations(model,X);
+            logp = zeros(n,1);
+            <span class="keyword">for</span> i=1:n
+                logp(i) = logprob(predict(model,getObservation(model,X,i)));
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+
+        <span class="keyword">function</span> [observed,hidden] = sample(model,nsamples,length)
+            hidden = mc_sample(model.pi,model.transitionMatrix,length,nsamples);
+            observed = zeros(model.ndimensions,length,nsamples);
+            <span class="keyword">for</span> n=1:nsamples
+               <span class="keyword">for</span> t=1:length
+                   observed(:,t,n) = rowvec(sample(model.stateConditionalDensities{hidden(n,t)}));
+               <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> trellis = predict(model,observation)
+        <span class="comment">% not yet vectorized, call with a single observation</span>
+            n = nobservations(model,observation);
+            <span class="keyword">if</span>(n &gt; 1), error(<span class="string">'Sorry, predict is not yet vectorized - please pass in each observation one at a time in a for loop. In future versions, calling predict with multiple observations will return a TrellisProductDist.'</span>);<span class="keyword">end</span>
+            trellis = TrellisDist(model.pi,model.transitionMatrix,makeLocalEvidence(model,observation));
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> d = ndimensions(model)
+            d = model.obsDims;
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span>(Access = <span class="string">'protected'</span>)
+
+        <span class="keyword">function</span> model = emUpdate(model,data,piPrior,transitionPrior,observationPrior,varargin)
+</pre><pre class="codeinput">        <span class="comment">% Update the transition matrix, the state conditional densities and pi,</span>
+        <span class="comment">% the distribution over starting hidden states, using em.</span>
+</pre><h2>INIT<a name="3"></a></h2><pre class="codeinput">               [optTol,maxIter,clampPi,clampObs,clampTrans,other] = <span class="keyword">...</span>
+                   process_options(varargin ,<span class="keyword">...</span>
+                   <span class="string">'optTol'</span>                ,1e-4   ,<span class="keyword">...</span>
+                   <span class="string">'maxIter'</span>               ,100    ,<span class="keyword">...</span>
+                   <span class="string">'clampPi'</span>               ,false  ,<span class="keyword">...</span>
+                   <span class="string">'clampObs'</span>              ,false  ,<span class="keyword">...</span>
+                   <span class="string">'clampTrans'</span>            ,false  );
+
+               <span class="keyword">if</span>(clampPi &amp;&amp; clampObs &amp;&amp; clampTrans),<span class="keyword">return</span>;<span class="keyword">end</span> <span class="comment">% nothing to do</span>
+               loglikelihood = 0;
+               iter = 1;
+               converged = false;
+               nobs  = nobservations(model,data);
+               model = initializeParams(model,data);
+               <span class="keyword">if</span>(~clampPi)     ,essPi      = zeros(model.nstates,1)            ;<span class="keyword">end</span> <span class="comment">% The expected number of visits to state one - needed to update pi</span>
+               <span class="keyword">if</span>(~clampTrans)  ,essTrans   = zeros(model.nstates,model.nstates);<span class="keyword">end</span> <span class="comment">% The expected number of transitions from S(i) to S(j) - needed to update transmatrix</span>
+
+               [stackedData,seqndx] = HmmDist.stackObservations(data);
+               <span class="keyword">if</span>(~clampObs), weightingMatrix = zeros(size(stackedData,1),model.nstates);<span class="keyword">end</span>
+
+               <span class="keyword">while</span>(iter &lt;= maxIter &amp;&amp; ~converged)
+</pre><pre class="codeinput">                   prevLL = loglikelihood;
+                   loglikelihood = 0;
+                   <span class="keyword">if</span>(~clampPi)     ,essPi(:)           = 0;<span class="keyword">end</span>
+                   <span class="keyword">if</span>(~clampTrans)  ,essTrans(:)        = 0;<span class="keyword">end</span>
+                   <span class="keyword">if</span>(~clampObs)    ,weightingMatrix(:) = 0;<span class="keyword">end</span>
+</pre><h2>E Step<a name="5"></a></h2><pre class="codeinput">                   <span class="keyword">for</span> j=1:nobs
+                       trellis = predict(model,getObservation(model,data,j));
+                       <span class="keyword">if</span>(~clampPi)     ,essPi    = essPi    +  colvec(marginal(trellis,1));<span class="keyword">end</span>  <span class="comment">% marginal(trellis,1) is one slice marginal at t=1</span>
+                       <span class="keyword">if</span>(~clampTrans)  ,essTrans = essTrans +  marginal(trellis)          ;<span class="keyword">end</span>  <span class="comment">% marginal(trellis) = two slice marginal xi</span>
+                       <span class="keyword">if</span>(~clampObs)
+                           gamma = marginal(trellis,<span class="string">':'</span>);
+                           weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) =<span class="keyword">...</span>
+                             weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) + gamma';
+                       <span class="keyword">end</span>
+                       loglikelihood = loglikelihood + logprob(trellis);
+                   <span class="keyword">end</span>
+                   <span class="keyword">if</span>(~clampObs)
+                       essObs = cell(model.nstates,1);                          <span class="comment">% observation model expected sufficient statistics</span>
+                       <span class="keyword">for</span> i=1:model.nstates
+                           essObs{i} = mkSuffStat(model.stateConditionalDensities{i},stackedData,weightingMatrix(:,i));
+                       <span class="keyword">end</span>
+                   <span class="keyword">end</span>
+</pre><h2>M Step PI<a name="6"></a></h2><pre class="codeinput">                   <span class="keyword">if</span>(~clampPi)
+                       <span class="keyword">if</span>(isempty(piPrior))
+                            model.pi = normalize(essPi);
+                       <span class="keyword">else</span>
+                            model.pi = mean(DirichletDist(essPi + colvec(piPrior.alpha)));
+                       <span class="keyword">end</span>
+                   <span class="keyword">end</span>
+</pre><h2>M Step Transition Matrix<a name="7"></a></h2><pre class="codeinput">                   <span class="keyword">if</span>(~clampTrans)
+                       <span class="keyword">if</span>(isempty(transitionPrior))
+                           model.transitionMatrix = normalize(essTrans,2);
+                       <span class="keyword">else</span>
+                           <span class="keyword">if</span>(numel(transitionPrior) == 1)
+                               <span class="keyword">if</span>(iscell(transitionPrior))
+                                   transitionPrior = transitionPrior{:};
+                               <span class="keyword">end</span>
+                               model.transitionMatrix = normalize(bsxfun(@plus,essTrans,rowvec(transitionPrior.alpha)),2);
+                           <span class="keyword">else</span>
+                               <span class="keyword">for</span> i=1:size(model.transitionMatrix,1)
+                                  model.transitionMatrix(i,:) = rowvec(mean(DirichletDist(essTrans(i,:) + transitionPrior{i}.alpha)));
+                               <span class="keyword">end</span>
+                           <span class="keyword">end</span>
+                       <span class="keyword">end</span>
+                   <span class="keyword">end</span>
+</pre><h2>M Step Observation Model<a name="8"></a></h2><pre class="codeinput">                   <span class="keyword">if</span>(~clampObs)
+                       <span class="keyword">if</span>(isTied(model.stateConditionalDensities{i})) <span class="comment">% update the shared parameters first and then clamp them before updating the rest</span>
+                           <span class="comment">% since the state conditional densitity will know if</span>
+                           <span class="comment">% its tied or not, it can return appropriate suff</span>
+                           <span class="comment">% stats.</span>
+                           model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},<span class="string">'suffStat'</span>,essObs{i},<span class="string">'prior'</span>,observationPrior);
+                           <span class="keyword">for</span> i=2:model.nstates
+                               model.stateConditionalDensities{i} = unclampTied(fit(clampTied(model.stateConditionalDensities{i}),<span class="string">'suffStat'</span>,essObs{i},<span class="string">'prior'</span>,observationPrior));
+                           <span class="keyword">end</span>
+                       <span class="keyword">else</span>
+                           <span class="keyword">for</span> i=1:model.nstates
+                               model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},<span class="string">'suffStat'</span>,essObs{i},<span class="string">'prior'</span>,observationPrior);
+                           <span class="keyword">end</span>
+                       <span class="keyword">end</span>
+                   <span class="keyword">end</span>
+</pre><h2>Test Convergence<a name="9"></a></h2><pre class="codeinput">                   <span class="keyword">if</span>(model.verbose)
+                      fprintf(<span class="string">'\niteration %d, loglik = %f\n'</span>,iter,loglikelihood);
+                   <span class="keyword">end</span>
+                   iter = iter + 1;
+                   converged = (abs(loglikelihood - prevLL) / (abs(loglikelihood) + abs(prevLL) + eps)/2) &lt; optTol;
+</pre><pre class="codeinput">               <span class="keyword">end</span> <span class="comment">% end of em loop</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span> <span class="comment">% end of emUpdate method</span>
+
+        <span class="keyword">function</span> model = initializeParams(model,X)
+        <span class="comment">% Initialize parameters to starting states in preperation for EM.</span>
+            <span class="keyword">if</span>(isempty(model.transitionMatrix))
+               model.transitionMatrix = normalize(rand(model.nstates),2);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span>(isempty(model.pi))
+               model.pi = normalize(ones(1,model.nstates));
+            <span class="keyword">end</span>
+            <span class="keyword">if</span>(~isempty(model.stateConditionalDensities))
+                <span class="keyword">if</span>(isempty(model.observationModel))
+                    model.observationModel = feval(class(model.stateConditionalDensities{1}));
+                <span class="keyword">end</span>
+                <span class="keyword">return</span>;
+            <span class="keyword">end</span>
+
+            <span class="keyword">if</span>(isempty(model.observationModel))
+               error(<span class="string">'Please specify an observation model or the state conditional densities directly'</span>);
+            <span class="keyword">end</span>
+            <span class="keyword">if</span>(isempty(model.nstates) || model.nstates == 0)
+                error(<span class="string">'Please specify the number of hidden states'</span>);
+            <span class="keyword">end</span>
+
+            data = HmmDist.stackObservations(X);
+            template = fit(model.observationModel,<span class="string">'data'</span>,data);
+            model.stateConditionalDensities = copy(template,model.nstates,1);
+        <span class="keyword">end</span>
+
+         <span class="keyword">function</span> data = checkData(model,data)
+         <span class="comment">% basic checks to make sure the data is in the right format</span>
+           <span class="keyword">if</span>(isempty(data))
+               error(<span class="string">'You must specify data to fit this object'</span>);
+           <span class="keyword">end</span>
+
+           <span class="keyword">switch</span> class(data)
+               <span class="keyword">case</span> <span class="string">'cell'</span>
+                   <span class="keyword">if</span>(numel(data) == 1 &amp;&amp; iscell(data{1}))
+                       data = data{:};
+                   <span class="keyword">end</span>
+                   data = rowvec(data);
+                   n = numel(data);
+                   d = size(data{1},1);
+                   transpose = false;
+                   <span class="keyword">for</span> i=2:n
+                      <span class="keyword">if</span>(size(data{i},1) ~= d)
+                          transpose = true;
+                          <span class="keyword">break</span>;
+                      <span class="keyword">end</span>
+                   <span class="keyword">end</span>
+                   <span class="keyword">if</span>(transpose)
+                      d = size(data{1},2);
+                      data{1} = data{1}';
+                      <span class="keyword">for</span> i=2:n
+                        data{i} = data{i}';
+                        <span class="keyword">if</span>(size(data{i},1) ~= d)
+                           error(<span class="string">'Observations must be of the same dimensionality.'</span>);
+                        <span class="keyword">end</span>
+                      <span class="keyword">end</span>
+                   <span class="keyword">end</span>
+                   <span class="keyword">if</span>(model.verbose)
+                       fprintf(<span class="string">'\nInterpreting data as %d observation sequences,\nwhere each sequence is comprised of a variable\nnumber of %d-dimensional observations.\n'</span>,n,d);
+                   <span class="keyword">end</span>
+               <span class="keyword">case</span> <span class="string">'double'</span>
+                   <span class="keyword">if</span>(model.verbose)
+                       [d,t,n] = size(data);
+                       fprintf(<span class="string">'\nInterpreting data as %d observation sequences,\nwhere each sequence is comprised of %d\n%d-dimensional observations.\n'</span>,n,t,d);
+                   <span class="keyword">end</span>
+               <span class="keyword">otherwise</span>
+                   error(<span class="string">'Data must be either a matrix of double values or a cell array'</span>);
+           <span class="keyword">end</span>
+           model.obsDims = d;
+        <span class="keyword">end</span> <span class="comment">% end of checkData method</span>
+
+
+        <span class="keyword">function</span> [obs,n] = getObservation(model,X,i)                            <span class="comment">%#ok</span>
+        <span class="comment">% Get the ith observation/example from X.</span>
+            <span class="keyword">switch</span> class(X)
+                <span class="keyword">case</span> <span class="string">'cell'</span>
+                    n = numel(X);
+                    obs = X{i};
+                <span class="keyword">case</span> <span class="string">'double'</span>
+                   n = size(X,3);
+                   obs = X(:,:,i);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> n = nobservations(model,X)
+           [junk,n] = getObservation(model,X,1); <span class="comment">%#ok</span>
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> localEvidence = makeLocalEvidence(model,obs)
+        <span class="comment">% the probability of the observed sequence under each state conditional density.</span>
+        <span class="comment">% localEvidence(i,t) = p(y(t) | S(t)=i)</span>
+            localEvidence = zeros(model.nstates,size(obs,2));
+            <span class="keyword">for</span> i = 1:model.nstates
+                localEvidence(i,:) = exp(logprob(model.stateConditionalDensities{i},obs'));
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span> <span class="comment">% end of protected methods</span>
+
+    methods(Static = true)
+
+        <span class="keyword">function</span> [X,ndx] = stackObservations(data)
+        <span class="comment">% data is a cell array of sequences of different length but with the</span>
+        <span class="comment">% same dimensionality. X is a matrix of all of these sequences stacked</span>
+        <span class="comment">% together in an n-by-d matrix where n is the sum of the lengths of all</span>
+        <span class="comment">% of the sequences and d is the shared dimensionality. Within each cell</span>
+        <span class="comment">% of data, the first dimension is d and the second is the length of the</span>
+        <span class="comment">% observation. ndx stores the indices into X corresponding to the start</span>
+        <span class="comment">% of each new sequence.</span>
+        <span class="comment">%</span>
+        <span class="comment">% Alternatively, if data is a 3d matrix of size d-t-n, data is simply</span>
+        <span class="comment">% reshaped into size []-d and ndx is evenly spaced.</span>
+
+            <span class="keyword">if</span>(iscell(data))
+                X = cell2mat(data)';
+                ndx = cumsum([1,cell2mat(cellfun(@(seq)size(seq,2),data,<span class="string">'UniformOutput'</span>,false))]);
+                ndx = ndx(1:end-1);
+            <span class="keyword">else</span>
+                X = reshape(data,[],size(data,1));
+                ndx = cumsum([1,size(data,2)*ones(1,size(data,3))]);
+                ndx = ndx(1:end-1);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    methods(Static = true)
+
+        <span class="keyword">function</span> testClass()
+</pre><pre class="codeinput">            setSeed(0);
+            trueObsModel = {DiscreteDist(ones(1,6)./6);DiscreteDist([ones(1,5)./10,0.5])};
+            trueTransmat = [0.8,0.2;0.1,0.90];
+            truePi = [0.5,0.5];
+            truth = HmmDist(<span class="string">'pi'</span>,truePi,<span class="string">'transitionMatrix'</span>,trueTransmat,<span class="string">'stateConditionalDensities'</span>,trueObsModel);
+            nsamples = 200; length1 = 13; length2 = 30;
+            [observed1,hidden1] = sample(truth,nsamples/2,length1);
+            [observed2,hidden2] = sample(truth,nsamples/2,length2);
+            observed = [num2cell(squeeze(observed1),1)';num2cell(squeeze(observed2),1)'];
+
+            model = HmmDist(<span class="string">'observationModel'</span>,DiscreteDist(),<span class="string">'nstates'</span>,2);
+            model = fit(model,<span class="string">'data'</span>,observed);
+            trellis = predict(model,observed{1}');
+
+            postSample = mode(sample(trellis,1000),2)' <span class="comment">%#ok</span>
+            viterbi  = mode(trellis)                   <span class="comment">%#ok</span>
+            maxmarg = maxidx(marginal(trellis,<span class="string">':'</span>))    <span class="comment">%#ok</span>
+</pre><h2>MVN<a name="13"></a></h2><pre class="codeinput">            trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
+            trueTransmat  = [0.8,0.2;0.3,0.7];
+            truePi       = [0.5,0.5];
+            trueModel = HmmDist(<span class="string">'pi'</span>,truePi,<span class="string">'transitionMatrix'</span>,trueTransmat,<span class="string">'stateConditionalDensities'</span>,trueObsModel,<span class="string">'ndimensions'</span>,10);
+            nsamples = 200; length = 20;
+            [observed,trueHidden] = sample(trueModel,nsamples,length);
+
+
+            model = HmmDist(<span class="string">'observationModel'</span>,MvnDist(),<span class="string">'nstates'</span>,2);
+            model = fit(model,<span class="string">'data'</span>,observed,<span class="string">'observationPrior'</span>,InvWishartDist(10,diag(0.1*ones(1,10))),<span class="string">'transitionPrior'</span>,DirichletDist([0.1,0.1]),<span class="string">'PiPrior'</span>,DirichletDist([0.1,0.1]));
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+
+
+        <span class="keyword">function</span> seqalign()
+            setSeed(10);
+            load <span class="string">data45</span>; nstates = 5;
+            pi0 = [1,0,0,0,0];
+            transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
+            condDensity = HmmDist(<span class="string">'nstates'</span>,5,<span class="string">'observationModel'</span>,MvnDist());
+            model = GenerativeClassifierDist(<span class="string">'classConditionals'</span>,condDensity,<span class="string">'nclasses'</span>,2,<span class="string">'classSupport'</span>,4:5);
+            obsData = {train4,train5};
+            hidData = [4,5];
+            fitOptions = {<span class="string">'transitionMatrix0'</span>,transmat0,<span class="string">'pi0'</span>,pi0,<span class="string">'maxIter'</span>,5};
+
+            model = fit(model,<span class="string">'dataObs'</span>,obsData,<span class="string">'dataHid'</span>,hidData,<span class="string">'fitOptions'</span>,fitOptions);
+            pred = predict(model,test45);
+            yhat = mode(pred);
+            nerrors = sum(yhat ~= labels');
+            display(nerrors);
+
+            <span class="keyword">if</span>(exist(<span class="string">'specgram'</span>,<span class="string">'file'</span>))
+                model4  = model.classConditionalDensities{1};
+                subplot(2,2,1);
+                specgram(signal1);
+                subplot(2,2,2)
+                specgram(signal2);
+                subplot(2,2,3);
+                plot(mode(predict(model4,mfcc1)));
+                set(gca,<span class="string">'YTick'</span>,1:5);
+                subplot(2,2,4);
+                plot(mode(predict(model4,mfcc2)));
+                set(gca,<span class="string">'YTick'</span>,1:5);
+                maximizeFigure;
+
+            <span class="keyword">end</span>
+
+
+
+        <span class="keyword">end</span>
+
+
+    <span class="keyword">end</span>
+
+
+
+
+
+
+<span class="keyword">end</span> <span class="comment">% end of class</span>
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.7<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+classdef HmmDist < ParamDist
+% This class represents a Hidden Markov Model. 
+%
+    properties                           
+        nstates;                    % number of hidden states
+
+        pi;                         % initial/starting distribution over hidden states 
+
+        transitionMatrix;           % matrix of size nstates-by-nstates
+                                    % transitionMatrix(i,j) = p( S(t) = j | S(t-1) = i), 
+                                    
+        observationModel            % The observation model to use - an empty 
+                                    % object, e.g. MvnDist() or DiscreteDist()
+                                    % that will be used as a template in
+                                    % constructing all of the state conditional
+                                    % densities. Alternatively, you can specify
+                                    % the pre-initialized densities directly by
+                                    % passing these into
+                                    % stateConditionalDensities, below. 
+       
+        stateConditionalDensities;  % the observation model - one object per 
+                                    % hidden state stored as a cell array. 
+                                    % Each state conditional density must
+                                    % support fit() via sufficient statistics 
+                                    % with the name, 'suffStat', i.e.
+                                    % fit(obj,'suffStat',SS) as well as
+                                    % mkSuffStat(obj,X,weights), which
+                                    % computes weighted (expected) sufficient
+                                    % statistics in a format recognized by
+                                    % fit(). Tied parameters, if any, are
+                                    % represented as SharedParam objects, (i.e.
+                                    % pointers to a shared data source).
+        verbose = true;             
+        
+    end
+    
+    properties(GetAccess = 'private', SetAccess = 'private')
+        obsDims;   % the dimensionality of an observation at a single time point t. 
+    end
+    
+    methods
+        
+        function model = HmmDist(varargin)
+        % Construct a new HMM with the specified number of hidden states. 
+        %
+        % FORMAT: 
+        %            model = HmmDist('name1',val1,'name2',val2,...)
+        %
+        % INPUT:   
+        %           'nstates'           - the number of hidden states
+        
+        %
+        % - optional
+        % 
+        %           'pi'                           - the distribution initial hidden states
+        %           'transitionMatrix'             - the transition matrix
+        %           'stateConditionalDensities'    - see property above
+        %           'ndimensions'                  - the dimensionality of an observation
+        %                                            at a single time step
+        %           'verbose'   
+        %                                            
+        %
+        % OUTPUT:   'model'   - the constructed HMM object
+        %
+            [model.nstates,model.pi,model.transitionMatrix,model.stateConditionalDensities,model.obsDims,model.verbose,model.observationModel]...
+                = process_options(varargin,'nstates',[],'pi',[],'transitionMatrix',[],'stateConditionalDensities',{},'ndimensions',1,'verbose',true,'observationModel',[]);
+            
+            if(isempty(model.nstates))
+                model.nstates = numel(model.stateConditionalDensities);
+            end
+           
+        end
+        
+        
+        function model = fit(model,varargin)
+        % Learn the parameters of the HMM from data.  
+        %
+        % FORMAT: 
+        %           model = fit(model,'name1',val1,'name2',val2,...)
+        %
+        % INPUT:   
+        %
+        % 'data'             - a set of observation sequences - let 'n' be the
+        %                      number of observed sequences, and 'd' be the
+        %                      dimensionality of these sequences. If they are
+        %                      all of the same length, 't', then data is of size
+        %                      d-by-t-by-n, otherwise, data is a cell array such
+        %                      that data{ex}{i,j} is the ith dimension at time
+        %                      step j in example ex.
+        %
+        %
+        % 'stateConditionalDensities - a cell array of the state conditional
+        %                              densities - one per state, initialized to 
+        %                              a starting guess. 
+        %
+        % 'pi0'                      - an initialization for the pi parameter, if
+        %                              not specified, a random starting point is chosen. 
+        %
+        % 'transitionMatrix0'        - an initialization for the transition
+        %                              matrix; if not specified, a random stochastic 
+        %                              matrix is used instead. 
+        % 
+        %
+        % 'latentValues'     - optional values for the latent variables in the 
+        %                      case of fully observable data.
+        %                     
+        %
+        % 'method'           - ['map'] | 'mle' | 'bayesian'
+        %
+        % 'algorithm'        -  ['em']  the fitting algorithm to use
+        %
+        % 'piPrior'          - a DirichletDist object
+        %
+        % 'transitionPrior'  - either a single DirichletDist object used as a
+        %                      prior for each row of the transition matrix or a
+        %                      cell array of DirichletDist objects, one for each
+        %                      row. 
+        %
+        % 'observationPrior' - a single object acting as the prior for each
+        %                      stateConditionalDensity. This must be a supported
+        %                      prior distribution, i.e. the fit method of the
+        %                      state conditional density must know what to do
+        %                      with it in the call
+        %                      fit(obj,'prior',observationPrior);
+        %                      
+        %
+        % Any additional arguments are passed directly to the implementation of the
+        % fit algorithm.
+        %
+        % If model.stateConditionalDensities is non-empty, these objects are
+        % used to initialize the fitting algorithm. Similarly for model.pi and
+        % model.transitionMatrix.
+            
+             [data,latentValues,method,algorithm,stateConditionalDensities,...
+              model.pi,model.transitionMatrix,piPrior,transitionPrior,observationPrior,options]...
+              = process_options(varargin,...
+                 'data'             ,[]         ,...
+                 'latentValues'     ,[]         ,...
+                 'method'           ,'map'      ,...
+                 'algorithm'        ,'em'       ,...
+                 'stateConditionalDensities' ,{},...
+                 'pi0'              ,[]         ,...
+                 'transitionMatrix0',[]         ,...
+                 'piPrior'          ,[]         ,...
+                 'transitionPrior'  ,[]         ,...
+                 'observationPrior' ,[]         );
+             
+             
+             if(~isempty(latentValues)),error('fully observable data case not yet implemented');end
+             if(~isempty(stateConditionalDensities))
+                 model.stateConditionalDensities = stateConditionalDensities;
+             end
+             data = checkData(model,data);
+             
+             
+             switch lower(algorithm)
+                 case 'em'
+                     model = emUpdate(model,data,piPrior,transitionPrior,observationPrior,options{:});
+                 otherwise
+                     error('%s is not a valid mle/map algorithm',algorithm);
+             end
+             
+        end
+
+        function logp = logprob(model,X)
+        % logp(i) = log p(X{i} | model)
+            n = nobservations(model,X);                              
+            logp = zeros(n,1);
+            for i=1:n
+                logp(i) = logprob(predict(model,getObservation(model,X,i)));
+            end
+        end
+        
+        
+        function [observed,hidden] = sample(model,nsamples,length)
+            hidden = mc_sample(model.pi,model.transitionMatrix,length,nsamples);
+            observed = zeros(model.ndimensions,length,nsamples);
+            for n=1:nsamples
+               for t=1:length
+                   observed(:,t,n) = rowvec(sample(model.stateConditionalDensities{hidden(n,t)}));
+               end
+            end    
+        end
+        
+        function trellis = predict(model,observation)
+        % not yet vectorized, call with a single observation  
+            n = nobservations(model,observation);  
+            if(n > 1), error('Sorry, predict is not yet vectorized - please pass in each observation one at a time in a for loop. In future versions, calling predict with multiple observations will return a TrellisProductDist.');end
+            trellis = TrellisDist(model.pi,model.transitionMatrix,makeLocalEvidence(model,observation));
+        end
+            
+        function d = ndimensions(model)
+            d = model.obsDims;
+        end
+ 
+    end
+    
+    methods(Access = 'protected')
+         
+        function model = emUpdate(model,data,piPrior,transitionPrior,observationPrior,varargin)
+        % Update the transition matrix, the state conditional densities and pi,
+        % the distribution over starting hidden states, using em.
+        
+        %% INIT
+               [optTol,maxIter,clampPi,clampObs,clampTrans,other] = ...
+                   process_options(varargin ,...
+                   'optTol'                ,1e-4   ,...
+                   'maxIter'               ,100    ,...
+                   'clampPi'               ,false  ,...
+                   'clampObs'              ,false  ,...
+                   'clampTrans'            ,false  );
+           
+               if(clampPi && clampObs && clampTrans),return;end % nothing to do
+               loglikelihood = 0;       
+               iter = 1;
+               converged = false;
+               nobs  = nobservations(model,data);  
+               model = initializeParams(model,data);
+               if(~clampPi)     ,essPi      = zeros(model.nstates,1)            ;end % The expected number of visits to state one - needed to update pi
+               if(~clampTrans)  ,essTrans   = zeros(model.nstates,model.nstates);end % The expected number of transitions from S(i) to S(j) - needed to update transmatrix 
+               
+               [stackedData,seqndx] = HmmDist.stackObservations(data);
+               if(~clampObs), weightingMatrix = zeros(size(stackedData,1),model.nstates);end
+               
+               while(iter <= maxIter && ~converged)
+                   prevLL = loglikelihood;
+                   loglikelihood = 0;
+                   if(~clampPi)     ,essPi(:)           = 0;end
+                   if(~clampTrans)  ,essTrans(:)        = 0;end
+                   if(~clampObs)    ,weightingMatrix(:) = 0;end
+                   %% E Step
+                   for j=1:nobs
+                       trellis = predict(model,getObservation(model,data,j));
+                       if(~clampPi)     ,essPi    = essPi    +  colvec(marginal(trellis,1));end  % marginal(trellis,1) is one slice marginal at t=1
+                       if(~clampTrans)  ,essTrans = essTrans +  marginal(trellis)          ;end  % marginal(trellis) = two slice marginal xi
+                       if(~clampObs)
+                           gamma = marginal(trellis,':');
+                           weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) =...
+                             weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) + gamma';
+                       end
+                       loglikelihood = loglikelihood + logprob(trellis);
+                   end
+                   if(~clampObs)
+                       essObs = cell(model.nstates,1);                          % observation model expected sufficient statistics
+                       for i=1:model.nstates
+                           essObs{i} = mkSuffStat(model.stateConditionalDensities{i},stackedData,weightingMatrix(:,i)); 
+                       end
+                   end
+                   %% M Step PI
+                   if(~clampPi)
+                       if(isempty(piPrior))
+                            model.pi = normalize(essPi);
+                       else
+                            model.pi = mean(DirichletDist(essPi + colvec(piPrior.alpha)));
+                       end
+                   end
+                   %% M Step Transition Matrix
+                   if(~clampTrans)
+                       if(isempty(transitionPrior))
+                           model.transitionMatrix = normalize(essTrans,2);
+                       else
+                           if(numel(transitionPrior) == 1)
+                               if(iscell(transitionPrior))
+                                   transitionPrior = transitionPrior{:};
+                               end
+                               model.transitionMatrix = normalize(bsxfun(@plus,essTrans,rowvec(transitionPrior.alpha)),2);
+                           else
+                               for i=1:size(model.transitionMatrix,1)
+                                  model.transitionMatrix(i,:) = rowvec(mean(DirichletDist(essTrans(i,:) + transitionPrior{i}.alpha))); 
+                               end
+                           end
+                       end
+                   end
+                   %% M Step Observation Model
+                   if(~clampObs)
+                       if(isTied(model.stateConditionalDensities{i})) % update the shared parameters first and then clamp them before updating the rest
+                           % since the state conditional densitity will know if
+                           % its tied or not, it can return appropriate suff
+                           % stats.
+                           model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'suffStat',essObs{i},'prior',observationPrior);
+                           for i=2:model.nstates
+                               model.stateConditionalDensities{i} = unclampTied(fit(clampTied(model.stateConditionalDensities{i}),'suffStat',essObs{i},'prior',observationPrior));
+                           end
+                       else
+                           for i=1:model.nstates
+                               model.stateConditionalDensities{i} = fit(model.stateConditionalDensities{i},'suffStat',essObs{i},'prior',observationPrior);
+                           end
+                       end
+                   end
+                   %% Test Convergence
+                   if(model.verbose)
+                      fprintf('\niteration %d, loglik = %f\n',iter,loglikelihood); 
+                   end
+                   iter = iter + 1;
+                   converged = (abs(loglikelihood - prevLL) / (abs(loglikelihood) + abs(prevLL) + eps)/2) < optTol;
+               end % end of em loop
+        end % end of emUpdate method
+ 
+        function model = initializeParams(model,X)                                        
+        % Initialize parameters to starting states in preperation for EM.
+            if(isempty(model.transitionMatrix))
+               model.transitionMatrix = normalize(rand(model.nstates),2); 
+            end
+            if(isempty(model.pi))
+               model.pi = normalize(ones(1,model.nstates)); 
+            end
+            if(~isempty(model.stateConditionalDensities))
+                if(isempty(model.observationModel))
+                    model.observationModel = feval(class(model.stateConditionalDensities{1}));
+                end
+                return;
+            end
+            
+            if(isempty(model.observationModel))
+               error('Please specify an observation model or the state conditional densities directly'); 
+            end
+            if(isempty(model.nstates) || model.nstates == 0)
+                error('Please specify the number of hidden states');
+            end
+            
+            data = HmmDist.stackObservations(X);
+            template = fit(model.observationModel,'data',data);
+            model.stateConditionalDensities = copy(template,model.nstates,1);
+        end
+        
+         function data = checkData(model,data)
+         % basic checks to make sure the data is in the right format
+           if(isempty(data))
+               error('You must specify data to fit this object');
+           end
+           
+           switch class(data)
+               case 'cell'
+                   if(numel(data) == 1 && iscell(data{1}))
+                       data = data{:};
+                   end
+                   data = rowvec(data);
+                   n = numel(data);
+                   d = size(data{1},1);
+                   transpose = false;
+                   for i=2:n
+                      if(size(data{i},1) ~= d)
+                          transpose = true;
+                          break;
+                      end
+                   end
+                   if(transpose)
+                      d = size(data{1},2);
+                      data{1} = data{1}';
+                      for i=2:n
+                        data{i} = data{i}';
+                        if(size(data{i},1) ~= d)
+                           error('Observations must be of the same dimensionality.');
+                        end
+                      end
+                   end
+                   if(model.verbose)
+                       fprintf('\nInterpreting data as %d observation sequences,\nwhere each sequence is comprised of a variable\nnumber of %d-dimensional observations.\n',n,d);
+                   end
+               case 'double'
+                   if(model.verbose)
+                       [d,t,n] = size(data);
+                       fprintf('\nInterpreting data as %d observation sequences,\nwhere each sequence is comprised of %d\n%d-dimensional observations.\n',n,t,d);
+                   end    
+               otherwise
+                   error('Data must be either a matrix of double values or a cell array');
+           end
+           model.obsDims = d;
+        end % end of checkData method
+        
+        
+        function [obs,n] = getObservation(model,X,i)                            %#ok
+        % Get the ith observation/example from X.     
+            switch class(X)
+                case 'cell'
+                    n = numel(X);
+                    obs = X{i};
+                case 'double'
+                   n = size(X,3);
+                   obs = X(:,:,i);
+            end    
+        end
+        
+        function n = nobservations(model,X)
+           [junk,n] = getObservation(model,X,1); %#ok
+        end
+        
+        function localEvidence = makeLocalEvidence(model,obs)
+        % the probability of the observed sequence under each state conditional density. 
+        % localEvidence(i,t) = p(y(t) | S(t)=i)
+            localEvidence = zeros(model.nstates,size(obs,2));     
+            for i = 1:model.nstates
+                localEvidence(i,:) = exp(logprob(model.stateConditionalDensities{i},obs'));
+            end
+            
+        end
+        
+    end % end of protected methods
+    
+    methods(Static = true)
+        
+        function [X,ndx] = stackObservations(data)
+        % data is a cell array of sequences of different length but with the
+        % same dimensionality. X is a matrix of all of these sequences stacked
+        % together in an n-by-d matrix where n is the sum of the lengths of all
+        % of the sequences and d is the shared dimensionality. Within each cell
+        % of data, the first dimension is d and the second is the length of the
+        % observation. ndx stores the indices into X corresponding to the start
+        % of each new sequence. 
+        %
+        % Alternatively, if data is a 3d matrix of size d-t-n, data is simply
+        % reshaped into size []-d and ndx is evenly spaced.
+            
+            if(iscell(data))
+                X = cell2mat(data)';
+                ndx = cumsum([1,cell2mat(cellfun(@(seq)size(seq,2),data,'UniformOutput',false))]);
+                ndx = ndx(1:end-1);
+            else
+                X = reshape(data,[],size(data,1));
+                ndx = cumsum([1,size(data,2)*ones(1,size(data,3))]);
+                ndx = ndx(1:end-1);
+            end
+        end
+    end
+    
+    methods(Static = true)
+        
+        function testClass()
+            setSeed(0);
+            trueObsModel = {DiscreteDist(ones(1,6)./6);DiscreteDist([ones(1,5)./10,0.5])};
+            trueTransmat = [0.8,0.2;0.1,0.90];
+            truePi = [0.5,0.5];
+            truth = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel);
+            nsamples = 200; length1 = 13; length2 = 30;
+            [observed1,hidden1] = sample(truth,nsamples/2,length1);
+            [observed2,hidden2] = sample(truth,nsamples/2,length2);
+            observed = [num2cell(squeeze(observed1),1)';num2cell(squeeze(observed2),1)'];
+            
+            model = HmmDist('observationModel',DiscreteDist(),'nstates',2);
+            model = fit(model,'data',observed);
+            trellis = predict(model,observed{1}');
+            
+            postSample = mode(sample(trellis,1000),2)' %#ok
+            viterbi  = mode(trellis)                   %#ok
+            maxmarg = maxidx(marginal(trellis,':'))    %#ok
+            %% MVN
+            trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
+            trueTransmat  = [0.8,0.2;0.3,0.7];
+            truePi       = [0.5,0.5];
+            trueModel = HmmDist('pi',truePi,'transitionMatrix',trueTransmat,'stateConditionalDensities',trueObsModel,'ndimensions',10);
+            nsamples = 200; length = 20;
+            [observed,trueHidden] = sample(trueModel,nsamples,length);
+
+            
+            model = HmmDist('observationModel',MvnDist(),'nstates',2);
+            model = fit(model,'data',observed,'observationPrior',InvWishartDist(10,diag(0.1*ones(1,10))),'transitionPrior',DirichletDist([0.1,0.1]),'PiPrior',DirichletDist([0.1,0.1]));
+            
+            
+        end
+      
+        
+        function seqalign()
+            setSeed(10);
+            load data45; nstates = 5; 
+            pi0 = [1,0,0,0,0];
+            transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
+            condDensity = HmmDist('nstates',5,'observationModel',MvnDist());
+            model = GenerativeClassifierDist('classConditionals',condDensity,'nclasses',2,'classSupport',4:5);
+            obsData = {train4,train5}; 
+            hidData = [4,5];
+            fitOptions = {'transitionMatrix0',transmat0,'pi0',pi0,'maxIter',5};
+            
+            model = fit(model,'dataObs',obsData,'dataHid',hidData,'fitOptions',fitOptions);
+            pred = predict(model,test45);
+            yhat = mode(pred);
+            nerrors = sum(yhat ~= labels');
+            display(nerrors);
+            
+            if(exist('specgram','file'))
+                model4  = model.classConditionalDensities{1};
+                subplot(2,2,1);
+                specgram(signal1); 
+                subplot(2,2,2)
+                specgram(signal2);
+                subplot(2,2,3);
+                plot(mode(predict(model4,mfcc1)));
+                set(gca,'YTick',1:5);
+                subplot(2,2,4);
+                plot(mode(predict(model4,mfcc2)));
+                set(gca,'YTick',1:5);
+                maximizeFigure;
+                
+            end 
+            
+            
+            
+        end
+      
+        
+    end
+    
+    
+    
+    
+    
+    
+end % end of class
+
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

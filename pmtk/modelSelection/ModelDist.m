@@ -1,41 +1,5 @@
-classdef ModelSelection
-% This is a general purpose model selection class. It can be used to perform any
-% score based model selection such as cross validation, bic, aic, etc. This
-% generality is achieved by modularizing the model selection process and
-% allowing the user to specify custom functions, which are executed at the
-% the appropriate points. Default built in functions exist for many of these. 
-%
-% See modelSelect1D and modelSelect2D under the PMTK/examples/modelSelect
-% directory for a number of examples and read the constructor documentation below. 
-%
-% Here is a schematic of the model selection process. The arrows represent
-% parameter passing. 
-%
-%                  ____________________________________________________________
-%                 |                                                            |
-%                 |                         ____________________________       |
-%                 |                        |                            |      |
-%   __________    |  __________       _____V____      _________      ___|___   |
-%  |  select  |<--- |  search  |<--- |  score   |--->| predict |--->| loss  |  |
-%  |__________|   | |__________|---> |__________|    |_________|    |_______|  |
-%                 |                                                            |
-%                 |                search until stopping criteria reached      |
-%                 |____________________________________________________________|
-% 
-%
-% The search function proposes a model and asks the score function to score it;
-% this score is returned to search and the process repeated until search decides
-% to stop. Search then passes the results to select, which may choose say the
-% model with the best score or the simplest within one standard error of best,
-% etc. 
-%
-% Score has at its disposal two additional functions, which it can optionally
-% use: predict and loss. Suppose that the scoring function were cross
-% validation, then a possible loss function would be mean squared error and the
-% predict function would take in Xtrain,ytrain,Xtest, and the model parameters,
-% and return predictions, which would be passed to loss. In the case of cv, the
-% scoring function would perform nfold loops before returning the score for a
-% single model. 
+classdef ModelDist < ProbDist
+% This class represents a distribution over models. 
 
 
     properties(GetAccess = 'public',SetAccess = 'private')  % Input Properties
@@ -66,7 +30,7 @@ classdef ModelSelection
 
     methods
         
-        function obj = ModelSelection(varargin)
+        function obj = ModelDist(varargin)
         % Constructing an object of this class with the right inputs 
         % automatically performs model selection. 
         %
@@ -232,7 +196,7 @@ classdef ModelSelection
                 'CVnfolds'       ,5                               ,...
                 'verbose'        ,true                            ,...
                 'doplot'         ,true                            ,...
-                'doplotDist'     ,false                           );
+                'doplotDist'     ,true                           );
             
             %% ERROR CHECK
             if(isempty(obj.models)),error('You must specify models to do model selection');end
@@ -249,6 +213,11 @@ classdef ModelSelection
             end
             %% SET DEFAULT SCORE TRANSFORMER
             obj.scoreTransformer = @(x) normalize(exp(1./(x./max(x))));
+            
+        end
+        
+        
+        function obj = fit(obj)
             %% SETUP PROGRESS BAR
             if(obj.verbose)
                 obj.progressBar = waitbar(0,'Model Selection Progress');
@@ -267,12 +236,12 @@ classdef ModelSelection
             end
             
             if(obj.verbose)
-               fprintf('Best Model = ');
-               display(obj.bestModel); 
+                fprintf('Best Model = ');
+                display(obj.bestModel);
             end
-            %%
         end
         
+                
         function best = get.bestModel(obj)
         % Intercept requests for the best model so that we can return the actual
         % best model when requested, not just its index.

@@ -12,14 +12,16 @@ function [A, z] = normalize(A, dim)
 
 if(nargin < 2)               
    z = sum(A(:)); 
-   s = z + (z==0);          % Set any zeros to one before dividing.
+   z(z==0) = 1;
+   %s = z + (z==0);          % Set any zeros to one before dividing.
                             % This is valid, since s=0 iff all A(i)=0, so we
                             % will get 0/1=0
-   A = A./s;
+   A = A./z;
 else
     z = sum(A,dim);
-    s = z + (z==0);
-    A = bsxfun(@rdivide,A,s);
+    %s = z + (z==0);
+    z(z==0) = 1;
+    A = bsxfun(@rdivide,A,z);
 end
 
 

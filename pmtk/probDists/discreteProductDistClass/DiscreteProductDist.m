@@ -120,7 +120,6 @@ classdef DiscreteProductDist  < ProductDist
         
         function m = mode(obj)
             m = obj.support(maxidx(obj.mu,[],2))';
-            
         end
         
     end
