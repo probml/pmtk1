@@ -43,6 +43,11 @@ classdef MvnInvWishartDist < ParamDist
       L = logprob(pgauss, X(:,1)) + logprob(piw, X(:,2));
     end
       
+    function m = mode(obj)
+      % Returns a structure
+      m.mu = obj.mu;
+      m.Sigma = obj.Sigma; % this may be the wrong formula...
+    end
     
     function mm = marginal(obj, queryVar)
       % marginal(obj, 'Sigma') or marginal(obj, 'mu')

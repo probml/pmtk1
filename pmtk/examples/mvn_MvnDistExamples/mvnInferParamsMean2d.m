@@ -1,4 +1,5 @@
-%% MVN Infer Mean 2D Demo
+%% Bayesian inference of Mean of a 2D MVN with fixed Sigma
+
 setSeed(0);
 muTrue = [0.5 0.5]'; Ctrue = 0.1*[2 1; 1 1];
 mtrue = MvnDist(muTrue, Ctrue);
@@ -22,9 +23,9 @@ subplot(nr,nc,3); plot(prior, 'xrange', xrange, 'useContour', useContour);
 title('prior'); grid on; axis square
 for i=1:length(ns)
     n = ns(i);
-    m = MvnDist(prior, Ctrue);
+    m = MvnMvnDist(prior, Ctrue);
     m = fit(m, 'data', X(1:n,:));
-    post = m.params.mu;
+    post = m.muDist; 
     subplot(nr,nc,i+3); plot(post, 'xrange', xrange, 'useContour', useContour, 'npoints', 150);
     title(sprintf('post after %d obs', n)); grid on; axis square
 end

@@ -19,8 +19,8 @@ muRange = [0 20]; sigmaRange  = [1 30];
 nr = 3; nc = 3;
 figure;
 for i=1:3
-    m = fit(MvnDist(),'prior',prior{i}, 'data', X);
-    post{i} = m.params;
+  m = fit(MvnMvnInvWishartDist(prior{i}), 'data', X);
+  post{i} = m.muSigmaDist; %paramDist(m);
     pmuPost = marginal(post{i}, 'mu');
     pSigmaPost = marginal(post{i}, 'Sigma');
     pmuPrior = marginal(prior{i}, 'mu');

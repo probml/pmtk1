@@ -18,4 +18,5 @@ h = plot(z(1, :), z(2, :), color, 'linewidth', 2);
 hold on
 hh=plot(mu(1), mu(2),  'x');
 set(hh,'color',color, 'linewidth', 2,  'markersize', 13);
+hold off
 %axis('equal');           

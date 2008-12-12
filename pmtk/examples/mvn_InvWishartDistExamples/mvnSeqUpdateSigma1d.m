@@ -1,4 +1,4 @@
-%% Sequential Updating of Sigma
+%% Sequential Updating of Sigma in 1d given fixed mean
 nu = 0.001; S = 0.001; 
 setSeed(1);
 mutrue = 5; Ctrue = 10;
@@ -13,8 +13,8 @@ pmax = -inf;
 for i=1:length(ns)
     prior = InvWishartDist(nu, S);
     n = ns(i);
-    m = fit(MvnDist(mutrue, prior), 'data', X(1:n));
-    post = m.params.Sigma;
+    m = fit(Mvn_InvWishartDist(mutrue, prior), 'data', X(1:n));
+    post = m.SigmaDist;
     mean(post);
     figure(fig1);
     [h(i), p]= plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, 'xrange', [0 15]);
@@ -28,6 +28,7 @@ for i=1:length(ns)
     XX = sample(post,100);
     hist(XX)
     title(legendstr{i})
+    suptitle('samples from X');
 end
 figure(fig1);
 legend(h,legendstr);

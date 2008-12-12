@@ -1,4 +1,4 @@
-%% Sequential Updating of mu
+%% Sequential Updating of mu for fixed sigma
 setSeed(1);
 mutrue = 5; Ctrue = 10;
 mtrue = MvnDist(mutrue, Ctrue);
@@ -12,8 +12,8 @@ for i=1:length(ns)
     k = 0.001;
     prior = MvnDist(0, 1/k);
     n = ns(i);
-    m = fit(MvnDist(prior, Ctrue), 'data', X(1:n));
-    post = m.params.mu;
+    m = fit(MvnMvnDist(prior, Ctrue), 'data', X(1:n));
+    post = m.muDist; 
     [h(i), p]= plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, 'xrange', [0 10]);
     legendstr{i} = sprintf('n=%d', n);
     pmax = max(pmax, max(p));

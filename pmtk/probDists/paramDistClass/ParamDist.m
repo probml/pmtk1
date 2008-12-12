@@ -1,10 +1,11 @@
 classdef ParamDist < ProbDist
    
-    
+    %{
     properties(GetAccess = 'public', SetAccess = 'protected')
         params;
     end
-    
+    %}
+  
     methods
         
       function Xc = impute(obj, X)
@@ -21,7 +22,7 @@ classdef ParamDist < ProbDist
         end
       end
 
-     
+     %{
           %% Get/Set
           
          function p = getParams(obj,name,pointEstimate)
@@ -87,7 +88,7 @@ classdef ParamDist < ProbDist
             obj.params = val;
          end
          
-         
+         %}
          
 %          function display(obj)
 %              fprintf('\n%s: \n',class(obj));

@@ -1,6 +1,4 @@
-%% Demo of inferrring 2d covariance given fixed mean 
-doSave = false;
-folder = 'C:\kmurphy\PML\pdfFigures';
+%% Demo of inferrring 2d MVN covariance given fixed mean 
 setSeed(0);
 muTrue = [0 0]'; Ctrue = 0.1*[2 1; 1 1];
 mtrue = MvnDist(muTrue, Ctrue);
@@ -16,36 +14,27 @@ hold on
 %plotContour2d(mtrue);
 gaussPlot2d(mtrue.mu, mtrue.Sigma);
 title('truth'); grid on;
-fname = fullfile(folder, sprintf('MVNcovDemoData.pdf'));
-if doSave, pdfcrop; print(gcf, '-dpdf', fname); end
 
 %prior = invWishartDist(10, Ctrue); % cheat!
 prior = InvWishartDist(2, eye(2));
 plotMarginals(prior);
 %set(gcf, 'name', 'prior');
 suplabel('prior');
-fname = fullfile(folder, sprintf('MVNcovDemoPriorMarg.pdf'));
-if doSave, pdfcrop; print(gcf, '-dpdf', fname); end
 
 plotSamples2d(prior, 9);
 subplot(3,3,1); gaussPlot2d(mtrue.mu, mtrue.Sigma);  title('truth');
 suplabel('prior');
-fname = fullfile(folder, sprintf('MVNcovDemoPriorSamples.pdf'));
-if doSave, pdfcrop; print(gcf, '-dpdf', fname); end
 
 for i=1:length(ns)
     n = ns(i);
-    m = MvnDist(muTrue, prior);
+    m = Mvn_InvWishartDist(muTrue, prior);
     m = fit(m, 'data', X(1:n,:));
-    post = m.params.Sigma;
+    post = m.SigmaDist;
     plotMarginals(post);
     suplabel(sprintf('post after %d obs', n));
-    fname = fullfile(folder, sprintf('MVNcovDemoPost%dMarg.pdf', n));
-    if doSave, pdfcrop; print(gcf, '-dpdf', fname); end
 
     plotSamples2d(post, 9);
+    hold off
     subplot(3,3,1); gaussPlot2d(mtrue.mu, mtrue.Sigma); title('truth');
     suplabel(sprintf('post after %d obs', n));
-    fname = fullfile(folder, sprintf('MVNcovDemoPost%dSamples.pdf', n));
-    if doSave, pdfcrop; print(gcf, '-dpdf', fname); end
 end

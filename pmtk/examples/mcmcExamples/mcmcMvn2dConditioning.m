@@ -6,7 +6,7 @@ setSeed(0);
 d = 5;
 Sigma = randpd(d);
 mu = randn(d,1);
-mFull = MvnDist(mu, Sigma, 'infMethod', 'exact');
+mFull = MvnDist(mu, Sigma);
 H = 1:2;
 V = 3:d;
 data = randn(1,length(V));
@@ -30,7 +30,8 @@ for j=1:1%length(mcmc)
     figure;
     plot(mCond, 'useContour', 'true');
     hold on
-    plot(ms);
+     S = sample(ms, N); % runs sampler
+    plot(S(:,1), S(:,2), '.');
     title(ttl)
     
     figure;
@@ -49,10 +50,9 @@ for j=1:1%length(mcmc)
     suptitle(ttl);
     
     figure;
-    X = ms.samples;
     for i=1:2
       subplot(1,2,i);
-      stem(acf(X(:,i), 30));
+      stem(acf(S(:,i), 30));
       title(ttl)
     end
 end
