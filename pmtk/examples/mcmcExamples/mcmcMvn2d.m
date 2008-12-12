@@ -37,7 +37,7 @@ for j=1:length(mcmc)
     title(ttl)
     
     figure;
-    % marginal reruns sampler; for speed, we extract all the marginals at once
+    % calling marginal re-runs sampler; for speed, we extract all the marginals at once
     % rather than calling marginal every time
     margApprox = marginal(ms, {[1],[2]});
     for i=1:2

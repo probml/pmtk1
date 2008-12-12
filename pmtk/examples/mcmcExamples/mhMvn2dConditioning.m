@@ -2,29 +2,35 @@
 % We use a N(0, sigma*eye(2)) proposal and see the effect of changing sigma
 % We also compare to Gibbs sampling
 
+% This code calls mcmc sampling directly, not via inference engines.
+% See mcmcMvn2dConditioning for the simpler infengine version.
+
 setSeed(0);
 d = 5;
 Sigma = randpd(d);
 mu = randn(d,1);
-mFull = MvnDist(mu, Sigma, 'infMethod', 'exact');
-H = 1:2;
+mFull = MvnDist(mu, Sigma);
 V = 3:d;
 data = randn(1,length(V));
 mCond = predict(mFull, V, data); % p(h|V=v) is a 2d Gaussian
-margExact = marginal(mCond, {1, 2});
+for i=1:2
+  margExact{i} = marginal(mCond, i);
+end
+% target is logprob of hidden vars augmeneted with visible data
+targetFn = @(x) logprob(mFull,[x data],false); % unnormalized distribution
+fc = makeFullConditionals(mFull, V, data);
 
 N = 500;
-
-mcmc{1} = MvnDist(mu, Sigma, 'infEng', GibbsInfEng('Nsamples', N));
-h = length(H); % num hidden
-mcmc{2} = MvnDist(mu, Sigma, 'infEng', ...
-  MhInfEng('Nsamples', N, 'proposal', @(x) mvnrnd(x, 1*eye(h))));
-mcmc{3} = MvnDist(mu, Sigma, 'infEng', ...
-  MhInfEng('Nsamples', N, 'proposal', @(x) mvnrnd(x, 0.01*eye(h))));
+xinit = randn(1,2); % only sample hidden nodes
+mcmc{1} = SampleDist(gibbsSample(fc, xinit, N));
+mcmc{2} = SampleDist(mhSample('target', targetFn, 'xinit', xinit, ...
+  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 1*eye(2))));
+mcmc{3} = SampleDist(mhSample('target', targetFn, 'xinit', xinit, ...
+  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 0.01*eye(2))));
      
 names= {'gibbs', 'mh I', 'mh 0.01 I'};
 
-for j=1:1%length(mcmc)
+for j=1:length(mcmc)
     ms = mcmc{j};
     ttl = names{j};
     figure;
@@ -49,7 +55,7 @@ for j=1:1%length(mcmc)
     suptitle(ttl);
     
     figure;
-    X = ms.samples;
+    X = ms.samples; 
     for i=1:2
       subplot(1,2,i);
       stem(acf(X(:,i), 30));

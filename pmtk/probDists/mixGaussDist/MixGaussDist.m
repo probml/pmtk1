@@ -17,10 +17,11 @@ classdef MixGaussDist < ParamDist
      m.K = K; m.mu = mu; m.Sigma = Sigma; m.mixweights = mixweights;
     end
 
-    function objScalar = convertToScalarDist(obj);
+    %{
+    function objScalar = convertToScalarDist(obj)
       objScalar = obj;
     end
-    
+    %}
     function obj = mkRndParams(obj, d, K)
       obj.mu = randn(d,K);
       for k=1:K
@@ -77,33 +78,7 @@ classdef MixGaussDist < ParamDist
  
     
     function obj = fit(obj, varargin)
-      % Point estimate of parameters
-      % m = fit(model, 'name1', val1, 'name2', val2, ...)
-      % Arguments are
-      % data - data(i,:) = case i
-      % suffStat -
-      % method - one of {map, mle, covshrink}
-      %
-      % For covshrink: we use the Ledoit-Wolf formula to estimate srhinkage amount
-      %  See  J. Schaefer and K. Strimmer.  2005.  A shrinkage approach to
-      %   large-scale covariance matrix estimation and implications
-      %   for functional genomics. Statist. Appl. Genet. Mol. Biol. 4:32.
-
-      [X, SS, method] = process_options(...
-        varargin, 'data', [], 'suffStat', [], 'method', 'mle');
-      hasMissingData =  any(isnan(X(:)));
-      assert(~hasMissingData)
-      if isempty(SS), SS = mkSuffStat(MvnDist(),X); end
-      switch method
-        case 'mle'
-          obj.mu = SS.xbar;
-          obj.Sigma = SS.XX;
-        case 'covshrink',
-          obj.mu =  mean(X);
-          obj.Sigma =  covshrinkFit(X);
-        otherwise
-          error(['bad method ' method])
-      end
+      error('have not yet implemented EM')
     end
     
     function xrange = plotRange(obj, sf)

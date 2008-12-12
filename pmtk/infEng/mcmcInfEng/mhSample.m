@@ -1,4 +1,4 @@
-function [X, naccept] = mhSample(varargin)
+function [X, acceptRatio] = mhSample(varargin)
 % Metropolis Hastings algorithm
 % symmetric - true or false
 % target - logp = target(x)
@@ -28,8 +28,10 @@ for iter=1:S
   [x, accept, logpx] = mhUpdate(x, logpx, u(iter), proposal, target, symmetric); 
   if (iter > Nburnin) && (mod(iter, thin)==0)
     X(keep,:) = x; keep = keep + 1;
+    naccept = naccept + accept;
   end
 end
+acceptRatio = naccept/(keep-1);
 end
 
 
