@@ -113,7 +113,7 @@ classdef ProbDist
             if ~iscell(plotArgs), plotArgs = {plotArgs}; end
             if ndimensions(obj)==1
                 xs = linspace(xrange(1), xrange(2), npoints);
-                p = logprob(obj, xs);
+                p = logprob(obj, xs(:));
                 if ~useLog
                     p = exp(p);
                 end

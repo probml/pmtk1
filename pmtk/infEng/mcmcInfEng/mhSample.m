@@ -1,9 +1,9 @@
 function [X, naccept] = mhSample(varargin)
 % Metropolis Hastings algorithm
-% method - 'metrop' if symmetric proposal, 'mh' if asymmetric
-% target - if method=metrop or mh, logp = target(x)
-% proposal - if method=metrop, xprime = proposal(x)
-%          - if method=mh, [xprime, probnew] = proposal(x)
+% symmetric - true or false
+% target - logp = target(x)
+% proposal - if symmetric=true, xprime = proposal(x)
+%          - if symmetric = false, [xprime, probOldToNew, probNewToOld] =proposal(x)
 % Nsamples
 % Nburnin
 % thin
@@ -12,18 +12,13 @@ function [X, naccept] = mhSample(varargin)
 % OUTPUT
 % X(s,:) = samples at step s
 
-[method, target, proposal, Nsamples, Nburnin, thin, xinit] = ...
-  process_options(varargin, 'method', [], 'target', [], ...
+[symmetric, target, proposal, Nsamples, Nburnin, thin, xinit] = ...
+  process_options(varargin, 'symmetric', true, 'target', [], ...
   'proposal', [], 'Nsamples', 1000, 'Nburnin', 100, 'thin', 1, 'xinit', []);
 
 keep = 1;
 x = xinit;
 logpx = target(x);
-if strcmpi(method, 'mh')
-  symmetric = false;
-else
-  symmetric = true;
-end
 S = (Nsamples*thin + Nburnin);
 d = length(x);
 X = zeros(Nsamples, d);

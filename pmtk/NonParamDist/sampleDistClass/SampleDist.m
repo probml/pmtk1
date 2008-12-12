@@ -10,14 +10,25 @@ classdef SampleDist < NonParamDist
              % multiple pdfs may be represented in a single object where the
              % sth sample for the dth dimension of the ith pdf is stored in 
              % samples(s,d,i)
+    domain; 
+    
+    %{
+    % We need to remember which dimension corresponds to which variable,
+    % since when we marginalize down, we extract a subset of the variables.
+    Consider this example
+    X=rand(2,4);    S=sampleDist(X);
+    m23 = marginal(S,[2 3]); m2 = marginal(m23, 2);
+    m2Direct = marginal(S,2); assert(isequal(m2, m2Direct))
+    %}
   end
 
   %%  Main methods
   methods
-    function m = SampleDist(X)
-    % Constructor    
+    function m = SampleDist(X, domain)
       if nargin < 1, X = []; end
       m.samples = X;
+      if nargin < 2, domain = 1:size(X,2); end
+      m.domain = domain;
     end
     
     function mu = mean(obj) 
@@ -58,10 +69,12 @@ classdef SampleDist < NonParamDist
     end
     
     function mm = marginal(m, queryVars)    
-    % mm is of size nsamples-by-numel(queryVars)-by-npdfs    
-      mm = SampleDist(m.samples(:,queryVars,:));
+    % mm is of size nsamples-by-numel(queryVars)-by-npdfs  
+    Q = lookupIndices(queryVars, m.domain);
+      mm = SampleDist(m.samples(:,Q,:), m.domain(Q));
     end
     
+    %{
     function mm = extractDist(m,ndx)
     % mm is a SampleDist object of size nsamples-by-ndimensions-by-numel(ndx)    
     % When this object represents multiple distributions, you can extract one or
@@ -76,6 +89,7 @@ classdef SampleDist < NonParamDist
     % object. If numel(sampleNDX) = 1, the size is just ndimensions-by-npdfs
        s = squeeze(m.samples(sampleNDX,:,:));
     end
+    %}
     
     function [l,u] = credibleInterval(obj, p,distNDX)
     % Obtain a credible interval for a single distribution, specified by distNDX.

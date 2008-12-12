@@ -5,45 +5,43 @@
 Sigma = [1 -0.5; -0.5 1];
 mu = [1; 1];
 m = MvnDist(mu, Sigma, 'infEng', GaussInfEng());
+assert(ndimensions(m)==2)
 for i=1:2
   margExact{i} = marginal(m, i); %#ok
 end
+margExact2 = marginal(m, {[1],[2]});
+assert(isequal(margExact,margExact2))
+ 
 N = 500; 
 
+% In this code, we use the PMTK object system.
+% See mhMvn2d for how to call mhSample directly.
+% (One can also call gibbsSample directly, but it gets tricky...)
 
-% directly call mcmc sampler
-targetFn = @(x) logprob(m,x,false); % unnormalized distribution
-fc = makeFullConditionals(m);
+mcmc{1} = MvnDist(mu, Sigma, 'infEng', GibbsInfEng('Nsamples', N));
+mcmc{2} = MvnDist(mu, Sigma, 'infEng', ...
+  MhInfEng('Nsamples', N, 'proposal', @(x) mvnrnd(x, 1*eye(2))));
+mcmc{3} = MvnDist(mu, Sigma, 'infEng', ...
+  MhInfEng('Nsamples', N, 'proposal', @(x) mvnrnd(x, 0.01*eye(2))));
 
-xinit = mvnrnd(mu, Sigma);
-% [obj.samples, naccept] = mcmcSample(varargin{:});
-mcmc{1} = SampleDist(gibbsSample(fc,  xinit,  N));
-
-%{
-mcmc{2} = SampleDist(mhSample('method', 'metrop', 'target', targetFn, 'xinit', xinit, ...
-  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 1*eye(2))));
-mcmc{3} = SampleDist(mhSample('method', 'metrop', 'target', targetFn, 'xinit', xinit, ...
-  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 0.01*eye(2))));
-  %}
-
-% Embed MCMC inside MVN object
-mcmc{2} = MvnDist(mu, Sigma, 'infEng', GibbsInfEng('Nsamples', N));
-
-names= {'gibbs',  'gibbs'};
-%names= {'gibbs', 'mh I', 'mh 0.01 I', 'gibbs'};
+names= {'gibbs', 'mh I', 'mh 0.01 I', 'gibbs'};
 
 for j=1:length(mcmc)
     ms = mcmc{j};
+    S = sample(ms, N); % runs sampler
     ttl = names{j};
     figure;
     plot(m, 'useContour', 'true');
     hold on
-    plot(ms);
+    plot(S(:,1), S(:,2), '.');
     title(ttl)
     
     figure;
+    % marginal reruns sampler; for speed, we extract all the marginals at once
+    % rather than calling marginal every time
+    margApprox = marginal(ms, {[1],[2]});
     for i=1:2
-      margApprox{i} = marginal(ms,i);
+      %margApprox{i} = marginal(ms,i);
       subplot2(2,2,i,1);
       [h, histArea] = plot(margApprox{i}, 'useHisto', true);
       hold on
@@ -57,10 +55,9 @@ for j=1:length(mcmc)
     suptitle(ttl);
     
     figure;
-    X = sample(ms, N); % ms.samples;
     for i=1:2
       subplot(1,2,i);
-      stem(acf(X(:,i), 30));
+      stem(acf(S(:,i), 30));
       title(ttl)
     end
 end

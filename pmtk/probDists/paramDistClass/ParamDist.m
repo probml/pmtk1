@@ -7,8 +7,23 @@ classdef ParamDist < ProbDist
     
     methods
         
-       
-      
+      function Xc = impute(obj, X)
+        % Fill in NaN entries of X using posterior mode on each row
+        [n] = size(X,1);
+        Xc = X;
+        for i=1:n
+          hidNodes = find(isnan(X(i,:)));
+          if isempty(hidNodes), continue, end;
+          visNodes = find(~isnan(X(i,:)));
+          visValues = X(i,visNodes);
+          postH = predict(obj, visNodes, visValues);
+          Xc(i,hidNodes) = rowvec(mode(postH));
+        end
+      end
+
+     
+          %% Get/Set
+          
          function p = getParams(obj,name,pointEstimate)
            if(nargin < 3)
                pointEstimate = '';

@@ -34,7 +34,8 @@ classdef MvnDist < ParamDist
   end
   
   properties(GetAccess = 'private', SetAccess = 'private')
-     d;      
+     %d;
+     ndims;
   end
   
   
@@ -51,45 +52,21 @@ classdef MvnDist < ParamDist
         'infEng', GaussInfEng(), 'domain', 1:numel(mu));
       if(isa(mu,'MvnInvWishartDist'))
           m.params = mu;
-          m.d = ndimensions(mu);
+          m.ndims = ndimensions(mu);
       else
          if(isnumeric(mu))
-             m.d = length(mu);
+             m.ndims = length(mu);
              mu = ConstDist(colvec(mu));        
          end
          if(isnumeric(Sigma))
-             Sigma = ConstDist(Sigma);
-             m.d = size(Sigma,2);
+           m.ndims = size(Sigma,2);
+           Sigma = ConstDist(Sigma); 
          end
           m.params = ProductDist({mu,Sigma},{'mu','Sigma'});
       end
     end
 
-    %{
-    function obj = initInfEng(obj, infMethod)
-      % "Freeze" the parameters and compile into an engine
-      if nargin < 2, infMethod = obj.infMethod; end
-      switch lower(infMethod)
-        case 'exact'
-          obj.infEng = GaussInfEng(obj.mu, obj.Sigma, obj.domain);
-        case 'gibbs'
-          fc = makeFullConditionals(obj);
-          xinit = mvnrnd(obj.mu, obj.Sigma);
-           obj.infEng = McmcInfEng('method', 'gibbs', ...
-             'fullcond', fc,  'xinit', xinit, 'Nsamples', N);
-        otherwise
-          error(['unrecognized method ' infMethod])
-      end
-    end
-    %}
-    
-    %{
-    function objS = convertToScalarDist(obj)
-      if ndimensions(obj) ~= 1, error('cannot convert to scalarDst'); end
-      objS = GaussDist(obj.mu, obj.Sigma);
-    end
-  %}
-    
+   
     function fc = makeFullConditionals(obj, visVars, visVals)
          d = length(obj.mu);
          if nargin < 2
@@ -105,6 +82,7 @@ classdef MvnDist < ParamDist
      end
       
      function p = fullCond(obj, xh, i, H, x)
+       assert(length(xh)==length(H))
          x(H) = xh; % insert sampled hidden values into hidden slot
          x(i) = []; % remove value for i'th node, which will be sampled
          d = length(obj.mu);
@@ -114,6 +92,20 @@ classdef MvnDist < ParamDist
          p = GaussDist(muAgivenB, SigmaAgivenB);
      end
     
+     function xinit = mcmcInitSample(model, visVars, visVals) %#ok
+       if nargin < 2
+         xinit = mvnrnd(model.mu, model.Sigma);
+         return;
+       end
+       % Ideally we would draw an initial sample conditional on the
+       % observed data.
+       % Instead we sample the hidden nodes from their prior
+       domain = model.domain;
+       hidVars = mysetdiff(domain, visVars);
+       V = lookupIndices(visVars, domain);
+       H = lookupIndices(hidVars, domain);
+       xinit = mvnrnd(model.mu(H), model.Sigma(H,H)); 
+     end
     
     function obj = mkRndParams(obj, d)
       if nargin < 2, d = ndimensions(obj); end
@@ -126,7 +118,8 @@ classdef MvnDist < ParamDist
 %       if isa(m.mu, 'double')
 %         d = length(m.mu);
 %       else
-        d = m.d;
+        %d = m.d;
+         d= m.ndims;
       %end
     end
 
@@ -150,22 +143,15 @@ classdef MvnDist < ParamDist
     end
     
     
-    %% Methods that need an inference engine
-    function logZ = lognormconst(obj)
-      %logZ = lognormconst(obj.infEng, obj);
-       mu = obj.mu; Sigma = obj.Sigma;
-      d = length(mu);
-      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
-    end
-
-    
+   
+   
     function L = logprob(obj, X, normalize)
       % L(i) = log p(X(i,:) | params)
       if nargin < 3, normalize = true; end
+      % Technically we should make the inf engines compute this
+      % but since this function is needed for plotting,
+      % we include it here (since eg Gibbs cannot compute logprob)
       %L = logprob(obj.infEng, obj, X, normalize);
-      
-      % since plot calls logprob, and Gibbs does not support it,
-      % we use this hack
         mu = obj.mu; Sigma = obj.Sigma;
         if numel(mu)==1
             X = X(:); % ensure column vector
@@ -174,23 +160,34 @@ classdef MvnDist < ParamDist
         if length(mu) ~= d
             error('X should be N x d')
         end
-        if det(Sigma)==0
-          L = repmat(NaN,N,1);
-          return;
-        end
+        %if det(Sigma)==0
+        %  L = repmat(NaN,N,1);
+        %  return;
+        %end
         X = bsxfun(@minus,X,mu');
         L =-0.5*sum((X*inv(Sigma)).*X,2);
         if normalize
-            L = L - lognormconst(obj, model);
+            L = L - lognormconst(obj);
         end
     end
     
+    function logZ = lognormconst(obj)
+      %logZ = lognormconst(obj.infEng, obj);
+      % In general, computing this can be hard...
+      mu = obj.mu; Sigma = obj.Sigma;
+      d = length(mu);
+      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
+    end
     
+     %% Methods that need an inference engine
     function samples = sample(obj,n)
       samples = sample(obj.infEng, obj, n);
     end
     
      function postQuery = marginal(obj, queryVars)
+       % postQuery = p(queryVars)
+       % If queryVars is a cell array, we have
+       % postQuery{i} = p(queryVars{i})
        postQuery = marginal(obj.infEng, obj, queryVars);
      end
      
@@ -200,24 +197,8 @@ classdef MvnDist < ParamDist
      end
     
      %% Other
-     function Xc = impute(obj, X)
-         % Fill in NaN entries of X using posterior mode on each row
-         checkParamsAreConst(obj);
-         [n] = size(X,1);
-         Xc = X;
-         for i=1:n
-             hidNodes = find(isnan(X(i,:)));
-             if isempty(hidNodes), continue, end;
-             visNodes = find(~isnan(X(i,:)));
-             visValues = X(i,visNodes);
-             postH = predict(obj, visNodes, visValues);
-             Xc(i,hidNodes) = rowvec(mode(postH));
-         end
-     end
-      
-   
+  
      
-      
     function obj = fit(obj,varargin)
     % Fit the distribution via the specified method
     %
@@ -279,7 +260,6 @@ classdef MvnDist < ParamDist
                 m.d = ndimensions(prior);
            end
         end
-        
         
         if(strcmp(method,'default'))
             if(isa(obj.params,'ProductDist') && allConst(obj.params))
