@@ -293,7 +293,7 @@ classdef Graphlayout < handle
      
         function createWindow(obj)
         % Create the main window
-            obj.fig = figure(10101);
+            obj.fig = figure(floor(1000*rand) + 1000);
             set(obj.fig,'Name','GraphLayout',...
                         'NumberTitle' ,'off',...
                         'Color','w'   ,'Toolbar','none');
