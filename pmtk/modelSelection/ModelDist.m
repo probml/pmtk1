@@ -1,4 +1,4 @@
-classdef ModelDist < ProbDist
+classdef ModelDist 
 % This class represents a distribution over models. 
 
 
@@ -23,9 +23,10 @@ classdef ModelDist < ProbDist
         progressBar;
     end
     
-    properties(GetAccess = 'public',SetAccess = 'private')  
+    properties  
         sortedResults;   
-        bestModel;   
+        mapEstimate;  
+        indexRanking;
     end
 
     methods
@@ -57,7 +58,7 @@ classdef ModelDist < ProbDist
         %                   also update the progress bar each iteration. Note 
         %                   the 'model' field stores the index into obj.models. 
         %
-        % scoreFunction   - By default, the built in cvScore function, (for
+        % scoreFunction   - By default, the built in crossvalScore function, (for
         %                   cross validation) is used and this does not have to 
         %                   be specified. The CVnfolds property stores the
         %                   number of folds to perform. 
@@ -98,8 +99,8 @@ classdef ModelDist < ProbDist
         %                    to be overridden. By default, mean squared error is
         %                    used if Ydata ~= round(Ydata), otherwise, zero-one
         %                    loss is used. If you want to use the default
-        %                    cvScore function but your own lossFunction, note
-        %                    that cvScore will pass it three inputs in this
+        %                    crossvalScore function but your own lossFunction, note
+        %                    that crossvalScore will pass it three inputs in this
         %                    order: (1) the output from predictFunction, (2) Xtest,
         %                    (3) ytest. Your function must take these three
         %                    inputs even if it doesn't use them all. For
@@ -113,7 +114,7 @@ classdef ModelDist < ProbDist
         %                    decision as to the best model. The default function
         %                    simply chooses the model with the lowest score. Its
         %                    interface is as follows:
-        %                    [bestModel,sortedResults] =  selector(obj,results)
+        %                    [mapEstimate,sortedResults] =  selector(obj,results)
         %                    where obj is the ModelSelection object and results
         %                    is an array of structs with the fields,
         %                    'model','score', and 'stdErr'. It returns the same
@@ -159,7 +160,7 @@ classdef ModelDist < ProbDist
         %
         % obj      - the model selection object, after it has run to completion.
         %
-        %            obj.bestModel stores the best model. (In actual fact it
+        %            obj.mapEstimate stores the best model. (In actual fact it
         %            stores the index to the best model but when queried, it 
         %            automatically returns the best model). 
         %           
@@ -184,7 +185,7 @@ classdef ModelDist < ProbDist
                 obj.doplotDist          ] =  ...
                 process_options(varargin ,...
                 'searchFunction' ,@exhaustiveSearch               ,...
-                'scoreFunction'  ,@cvScore                        ,...
+                'scoreFunction'  ,@crossvalScore                        ,...
                 'predictFunction',@(varargin)varargin{:}          ,...
                 'lossFunction'   ,[]                              ,...
                 'selectFunction' ,@bestSelector                   ,...
@@ -226,7 +227,7 @@ classdef ModelDist < ProbDist
             %% RUN
             results = obj.searchFunction(obj);
             %% SELECT
-            [obj.bestModel,obj.sortedResults] = obj.selectFunction(obj,results);
+            [obj.mapEstimate,obj.sortedResults,obj.indexRanking] = obj.selectFunction(obj,results);
             %% DISPLAY
             if(obj.verbose)
                 close(obj.progressBar);
@@ -234,18 +235,21 @@ classdef ModelDist < ProbDist
             if(obj.doplot)
                 plot(obj,results);
             end
+            if(obj.doplotDist)
+                plotModelDist(obj,results);
+            end
             
             if(obj.verbose)
-                fprintf('Best Model = ');
-                display(obj.bestModel);
+                %fprintf('Best Model = ');
+                %display(obj.mapEstimate);
             end
         end
         
                 
-        function best = get.bestModel(obj)
+        function best = get.mapEstimate(obj)
         % Intercept requests for the best model so that we can return the actual
         % best model when requested, not just its index.
-            best = obj.models{obj.bestModel};
+            best = obj.models{obj.mapEstimate};
         end
         
     end
@@ -253,7 +257,7 @@ classdef ModelDist < ProbDist
     methods(Access = 'protected')
     %% Built in default functions 
         
-        function [bestModel,sortedResults] = bestSelector(obj,results)
+        function [mapEstimate,sortedResults,indexRanking] = bestSelector(obj,results)
         % Default built in model selector - it simply selects the model with the 
         % lowest score. 
         %
@@ -263,8 +267,9 @@ classdef ModelDist < ProbDist
         % results  - the results struct with fields: 'model','score', and
         %            'stdErr'. Note that 'model' stores indices into obj.models
             [val,perm] = sort([results.score],obj.ordering);
+            indexRanking = perm;
             sortedResults = results(perm);
-            bestModel = sortedResults(1).model;
+            mapEstimate = sortedResults(1).model;
         end
         
         function results = exhaustiveSearch(obj)
@@ -303,7 +308,7 @@ classdef ModelDist < ProbDist
             pause(0.5);
         end
         
-        function [score,stdErr] = cvScore(obj,model)
+        function [score,stdErr] = crossvalScore(obj,model)
         % Default built in scoring function, which returns the cross validation
         % score of a single model evaluated using the test and loss functions
         % stored in obj. 
@@ -338,25 +343,24 @@ classdef ModelDist < ProbDist
         
     end
     
-    methods(Access = 'protected')
+    methods
         
         function plotModelDist(obj,results)
         % Plot the induced distribution over models as a histogram    
             figure;
             scores = obj.scoreTransformer(vertcat(results.score));    
-            bar(scores);
+            h = bar(scores);
             title('Distribution over models');
             xlabel('model number');
             ylabel('p(model | data)');
+            colorbars(h,obj.indexRanking(1),'-r');
             axis tight;
         end
         
          
         function plot(obj,results)
         % Plot the model selection results.    
-            if(obj.doplotDist)
-                plotModelDist(obj,results);
-            end
+           
             is2d = true;
             is3d = true;
             for i=1:size(obj.models,1)
@@ -373,7 +377,7 @@ classdef ModelDist < ProbDist
                plot3d(obj,results); 
             end
             catch
-                close;
+                %close;
             end
         end 
         
@@ -388,7 +392,7 @@ classdef ModelDist < ProbDist
            xlabel('Model');
            ylabel('Score');
            ax = axis;
-           line([obj.bestModel{1},obj.bestModel{1}],[ax(3),ax(4)],'LineStyle','--','Color','r');
+           line([obj.mapEstimate{1},obj.mapEstimate{1}],[ax(3),ax(4)],'LineStyle','--','Color','r');
            box on;
            axis tight;
            if(isequal(logspace(log10(min(models)),log10(max(models)),numel(models))',models))
@@ -412,7 +416,7 @@ classdef ModelDist < ProbDist
            colorbar;
            xlabel('first model param');
            ylabel('second model param');
-           title(sprintf('Color Denotes Score\nVal1: %f\nVal2: %f',obj.bestModel{1},obj.bestModel{2}));
+           title(sprintf('Color Denotes Score\nVal1: %f\nVal2: %f',obj.mapEstimate{1},obj.mapEstimate{2}));
            axis tight;    
            box on;
            warning('off','MATLAB:Axes:NegativeDataInLogAxis');
