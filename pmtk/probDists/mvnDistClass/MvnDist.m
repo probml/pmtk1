@@ -117,7 +117,7 @@ classdef MvnDist < ParamDist
         %  L = repmat(NaN,N,1);
         %  return;
         %end
-        X = bsxfun(@minus,X,mu');
+        X = bsxfun(@minus,X,rowvec(mu));
         L =-0.5*sum((X*inv(Sigma)).*X,2);
         if normalize
             L = L - lognormconst(obj);

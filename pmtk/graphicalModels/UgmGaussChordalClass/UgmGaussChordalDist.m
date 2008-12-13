@@ -48,7 +48,7 @@ classdef UgmGaussChordalDist < UgmGaussDist
       nnodes = size(Phi,1);
       Gs = mkAllChordal(ChordalGraph, nnodes, true);
       for i=1:length(Gs)
-        objs{i} = UgmChordalGaussDist(Gs{i}, HiwDist(Gs{i}, delta, Phi), []);
+        objs{i} = UgmGaussChordalDist(Gs{i}, HiwDist(Gs{i}, delta, Phi), []);
       end
     end
     

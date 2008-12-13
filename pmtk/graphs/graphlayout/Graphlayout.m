@@ -293,9 +293,10 @@ classdef Graphlayout < handle
      
         function createWindow(obj)
         % Create the main window
-            obj.fig = figure('Name'        ,'GraphLayout',...
-                             'NumberTitle' ,'off',...
-                             'Color','w'   ,'Toolbar','none');
+            obj.fig = figure(10101);
+            set(obj.fig,'Name','GraphLayout',...
+                        'NumberTitle' ,'off',...
+                        'Color','w'   ,'Toolbar','none');
             obj.createAxes();
             ssize = get(0,'ScreenSize');
             pos = [ssize(3)/2,50,-20+ssize(3)/2,ssize(4)-200];
