@@ -10,7 +10,7 @@ classdef ProbDist
     % var()
     % sample()
         %logprob();
-        ndimensions();
+        %ndimensions();
     end
     
     %%  Main methods

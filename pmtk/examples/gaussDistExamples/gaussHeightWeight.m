@@ -14,7 +14,7 @@ for f=1:2
     for c=1:2
         X = data.X(classNdx{c}, f);
         pgauss(f,c) = GaussDist;
-        pgauss(f,c) = fit(pgauss(f,c), 'data', X, 'method', 'mle');
+        pgauss(f,c) = fit(pgauss(f,c), 'data', X);
         subplot2(2,2,f,c);
         plot(pgauss(f,c), 'xrange', xrange);
         title(sprintf('%s, %s', fnames{f}, classNames{c}));

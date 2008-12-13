@@ -1,7 +1,5 @@
 classdef MvnDist < ParamDist 
 % multivariate normal p(X|mu,Sigma) 
-% 
-
 
   properties
     infEng;
@@ -151,7 +149,6 @@ classdef MvnDist < ParamDist
        prob = predict(obj.infEng, obj, visVars, visValues, queryVars);
      end
     
-     %% Other
   
      
      function obj = fit(obj,varargin)
@@ -197,7 +194,7 @@ classdef MvnDist < ParamDist
                error(['unknown prior ' prior])
            end
          case 'MvnInvWishartDist'  % MAP estimation
-           m = MvnMvnInvWishartDist(prior);
+           m = Mvn_MvnInvWishartDist(prior);
            m = fit(m, 'data', X);
            post = paramDist(m); % NIW
            m = mode(post);

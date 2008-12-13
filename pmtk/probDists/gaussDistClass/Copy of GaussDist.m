@@ -3,10 +3,7 @@ classdef GaussDist < ParamDist
   properties
     mu;
     sigma2;
-  end
-  
-  properties(SetAccess = 'private')
-     ndims;
+    clampedMu = false; clampedSigma = false;
   end
   
   %% Main methods
@@ -23,11 +20,9 @@ classdef GaussDist < ParamDist
       m.sigma2 = sigma2;
      end
      
-     %{
      function d = ndimensions(obj)
        d = length(obj.mu);
      end
-     %}
      
      function obj = mkRndParams(obj, d)
        % Set mu(j) and sigma(j) to random values, for j=1:d.
@@ -37,7 +32,7 @@ classdef GaussDist < ParamDist
      end
      
      function mu = mean(m)
-       mu = m.mu;
+       mu = m.mu(:);
      end
      
      function mu = mode(m)
@@ -67,7 +62,7 @@ classdef GaussDist < ParamDist
      function X = sample(m, n)
        % X(i,j) = sample from gauss(m.mu(j), m.sigma(j)) for i=1:n
        if nargin < 2, n  = 1; end
-       d = m.ndims;
+       d = ndimensions(m);
        X = randn(n,d) .* repmat(sqrt(m.sigma2), n, 1) + repmat(m.mu, n, 1);
      end
 
@@ -77,7 +72,7 @@ classdef GaussDist < ParamDist
      
      function p = logprob(obj, X)
        % p(i,j) = log p(X(i) | params(j))
-       d = m.ndims;
+       d = ndimensions(obj);
        n = length(X);
        p = zeros(n,d);
        logZ = lognormconst(obj);
@@ -90,31 +85,60 @@ classdef GaussDist < ParamDist
       % m = fit(model, 'name1', val1, 'name2', val2, ...)
       % Arguments are
       % data - data(i) = case i
-      % prior - 'none' or NormInvGammDist
-      % clampedMu - set to true to not update the mean
-      % clampedSigma - set to true to not update the variance
-      [X, prior, clampedMu, clampedSigma] = process_options(varargin, ...
-        'data',[],'prior', 'none', 'clampedMu', false, 'clampedSigma',false);
-      switch class(prior)
-        case 'char'
-          switch prior
-            case 'none'
-              if ~clampedMu, obj.mu = mean(X); end
-              if ~clampedSigma, obj.sigma2 = var(X,1); end
-            otherwise
-              error(['unknown prior ' prior])
-          end
-        case 'NormInvGammaDist' % MAP estimation
-           m = Gauss_NormInvGammaDist(prior);
-           m = fit(m, 'data', X);
-           post = m.muSigmaDist;
-           m = mode(post);
-           obj.mu = m.mu;
-           obj.sigma2 = m.sigma2;
-         otherwise
-           error(['unknown prior '])
+      % method - must be one of { mle, bayesian }.
+      if isa(varargin{1}, 'double')
+        X = varargin{1};
+        method = 'default';
+      else
+        [X, suffStat, method] = process_options(...
+          varargin, 'data', [], 'suffStat', [], 'method', 'default');
       end
-     end
+      if any(isnan(X(:)))
+        error('cannot handle missing data')
+      end
+      if(strcmp(method,'default'))
+        if(isa(obj.mu,'double') && isa(obj.sigma2,'double'))
+          method = 'mle';
+        else
+          method = 'bayesian';
+        end
+      end
+      switch lower(method)
+        case 'mle'
+          if ~obj.clampedMu, obj.mu = mean(X); end
+          if ~obj.clampedSigma, obj.sigma2 = var(X,1); end
+        case 'bayesian'
+          xbar = mean(X); n = size(X,1);
+          switch class(obj.mu)
+            case 'GaussDist'
+              if ~isa(obj.sigma2, 'double'), error('Sigma must be a constant'); end
+              sigma2 = obj.sigma2; tau0 = obj.mu.sigma2; mu0 = obj.mu.mu; 
+              taun = (sigma2 * tau0) / (n*tau0 + sigma2);
+              mun = taun*(mu0/tau0 + (n*xbar)/sigma2);
+              obj.mu = GaussDist(mun, taun);
+            case 'NormInvGammaDist'
+              m0 = obj.mu.mu; k0 = obj.mu.k; a0 = obj.mu.a; b0 = obj.mu.b;
+              kn = k0 + n;
+              mn = (k0*m0 + n*xbar)/kn;
+              an = a0 + n/2;
+              bn = b0 + 0.5*sum((X-xbar).^2) + 0.5*n*k0*(m0-xbar)^2/(k0+n);
+              obj.mu = NormInvGammaDist('mu', mn, 'k', kn, 'a', an, 'b', bn);
+            case 'double'
+             if ~isa(obj.sigma2, 'InvGammaDist'), error('sigma must be IG'); end
+             a0 = obj.sigma2.a; b0 = obj.sigma2.b;
+             an = a0 +  n/2;
+             bn = b0 + 0.5*sum((X-obj.mu).^2);
+             obj.sigma2 = InvGammaDist(an, bn);
+            otherwise
+              error(['unrecognized prior ' class(obj.mu)])
+          end
+        otherwise
+          error(['unrecognized method ' method])
+      end
+    end
+  end
+  
+  methods
       
       function xrange = plotRange(obj, sf)
           if nargin < 2, sf = 2; end
@@ -124,12 +148,5 @@ classdef GaussDist < ParamDist
       
   end
  
-   %% Getters and Setters
-  methods
-      function obj = set.mu(obj, mu)
-          obj.mu = mu;
-          obj.ndims = length(mu);
-      end 
-  end
   
 end

@@ -1,4 +1,5 @@
 %% Demo of inferring mu and sigma for a 1d Gaussian
+% Compare to mvnInferMuSigma1d in Mvn_MvnInvWishartDistExamples
 setSeed(1);
 muTrue = 5; varTrue = 10;
 X = sample(GaussDist(muTrue, varTrue), 500);
@@ -11,8 +12,8 @@ h = zeros(length(ns),1);
 for i=1:length(ns)
     prior2 = NormInvGammaDist('mu', 0, 'k', 0.001, 'a', 0.001, 'b', 0.001);
     n = ns(i);
-    m2 = fit(GaussDist(prior2, []), 'data', X(1:n));
-    post2 = m2.mu;
+    m2 = fit(Gauss_NormInvGammaDist(prior2), 'data', X(1:n));
+    post2 = m2.muSigmaDist;
     plot(post2, 'plotArgs', {styles{i}, 'linewidth', 2}, ...
         'xrange', [muRange sigmaRange], 'useContour', true);
     legendstr{i} = sprintf('n=%d', n);

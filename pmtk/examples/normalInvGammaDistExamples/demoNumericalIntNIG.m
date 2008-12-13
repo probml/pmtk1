@@ -1,13 +1,14 @@
 %% Demo of computing posterior moments of NIG using numerical integration
 
-function demoNumericalInt()
+function demoNumericalIntNIG()
 
 setSeed(1);
 muTrue = 5; varTrue = 10;
 X = sample(GaussDist(muTrue, varTrue), 5);
 m0 = 0; k0 = 0.001; a0 = 0.001; b0 = 0.001;
 prior = NormInvGammaDist('mu', m0, 'k', k0, 'a', a0, 'b', b0);
-post = fit(GaussDist(prior, []), 'data', X);
+m = fit(Gauss_NormInvGammaDist(prior), 'data', X);
+post = m.muSigmaDist; % NIG
 logZ = lognormconst(post)
 Zexact = exp(logZ)
 %Zapprox = dblquad(@postJoint, -inf, inf, 0, inf)
