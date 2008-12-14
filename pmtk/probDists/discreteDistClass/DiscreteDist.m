@@ -125,37 +125,6 @@ classdef DiscreteDist  < ParamDist
         obj.mu = exp(logprob(obj, obj.support));
     end
     
-    function SS = mkSuffStat(obj,X,weights)
-    % Construct sufficient statistics from X in a format that fit() will understand. 
-    % Use of the weights is optional, e.g. for computing expected sufficient
-    % statistics. Each element of X is considered a data point and so the
-    % dimensions are ignored. The number of weights, if specified, must equal
-    % the number of data points. 
-       X = X(:);
-       if(isempty(obj.support))
-          SS.support = rowvec(unique(X)); 
-       else
-           SS.support = rowvec(obj.support);
-       end
-       [support,perm] = sort(SS.support);
-       if(nargin > 2)
-            if(numel(X) ~= numel(weights))
-                error('The number of weights, %d, does not equal the number of data points %d',numel(weights),numel(X));
-            end
-            SS.counts = zeros(numel(support),1);
-            weights = weights(:);
-            for i=1:numel(support)
-                SS.counts(i) = sum(weights(X == support(i))); %#ok
-            end
-            SS.counts = SS.counts(perm);
-       else
-            if(isempty(obj.support))
-               obj.support = rowvec(unique(X)); 
-            end
-            counts = histc(X,support);
-            SS.counts = counts(perm);
-       end
-    end
     
   end
 
@@ -168,7 +137,6 @@ classdef DiscreteDist  < ParamDist
       end
       SS.counts = counts;
     end
-  end
     
     function testClass()
       p=DiscreteDist([0.3 0.2 0.5], [-1 0 1]);
