@@ -1,8 +1,7 @@
 classdef Mvn_MvnInvWishartDist < ParamDist 
-% p(X|alpha) = int_m int_S N(X|m,S) NIW(m,S|alpha) 
-% NIW(m,S|alpha) = N(m|mu, 1/k * S) IW(S| dof, Sigma)
-% where alpha = (mu, Sigma, dof, k)
-% Note that mu, Sigma are parameters of NIW, not parameters of Mvn
+% p(X,m,s|alpha) = N(X|m,S) NIW(m,S|alpha) 
+% where NIW(m,S|alpha) = N(m|mu, 1/k * S) IW(S| dof, Sigma)
+% and alpha = (mu, Sigma, dof, k)
   properties
     muSigmaDist;
   end
@@ -48,12 +47,14 @@ classdef Mvn_MvnInvWishartDist < ParamDist
       obj.muSigmaDist = MvnInvWishartDist('mu', mn, 'Sigma', Sn, 'dof', vn, 'k', kn);
     end
    
+    %{
     function p = paramDist(obj)
       % Return current distribution over parameters, p(mu,Sigma) = NIW()
       %p = MvnInvWishartDist('mu', obj.mu, 'Sigma', obj.Sigma, 'dof', obj.dof, 'k', obj.k);
       p = obj.muSigmaDist;
     end
-         
+      %}
+    
   end % methods
 
 end

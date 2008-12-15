@@ -10,44 +10,48 @@ classdef BetaBinomDist < ParamDist
   %% Main methods
   methods 
     function obj =  BetaBinomDist(N,a,b)
-      % betabinomdist(N, a, b) where args are scalars
+      % betabinomdist(N, a, b) 
       if nargin == 0
         N = []; a = []; b = [];
       end
       obj.a = a;
       obj.b = b;
       obj.N = N;
-      obj.support = 0:N;
+      obj.support = 0:N(1);
     end
  
+    %{
     function d = ndimensions(obj)
       d = length(obj.a);
     end
+    %}
     
     function m = mean(obj)
       m = obj.N * (obj.a ./(obj.a + obj.b));
     end
     
      function m = var(obj)
-       a = obj.a; b = obj.b; n = obj.N;
+       a = obj.a; b = obj.b; N = obj.N;
        m = (N .* a .* b .* (a + b + N)) ./ ( (a+b).^2 .* (a+b+1) );
      end  
      
    
-     function p = logprob(obj, X, paramNdx)
+     function p = logprob(obj, X)
        % p(i,j) = log p(x(i) | params(j))
-       if nargin < 3, paramNdx = 1:ndimensions(obj); end
+       ndistrib = length(obj.a);
        x = X(:);
        p = zeros(length(x),length(paramNdx));
-       for jj=1:length(paramNdx)
-         j = paramNdx(jj);
+       for j=1:ndistrib
          a = obj.a(j); b = obj.b(j); n = obj.N(j);
-         p(:,jj) = betaln(x+a, n-x+b) - betaln(a,b) + nchoosekln(n, x);
+         p(:,j) = betaln(x+a, n-x+b) - betaln(a,b) + nchoosekln(n, x);
        end
      end
        
      function logZ = lognormconst(obj)
-       logZ = betaln(obj.a, obj.b);
+        ndistrib = length(obj.a);
+        for j=1:ndistrib
+          logZ(j) = betaln(obj.a, obj.b);
+        end
      end
      
      function obj = fit(obj, varargin)
@@ -63,15 +67,13 @@ classdef BetaBinomDist < ParamDist
     
      
      function h=plot(obj, varargin)
-         
-         [plotArgs] = process_options( varargin, 'plotArgs' ,{});
-         if ~iscell(plotArgs), plotArgs = {plotArgs}; end
-         h=bar(exp(logprob(obj,obj.support)), plotArgs{:});
-         set(gca,'xticklabel',obj.support);
-         
-     end
-     
-     
+       ndistrib = length(obj.a);
+       if ndistrib > 1, error('can only plot 1 distribution'); end
+       [plotArgs] = process_options( varargin, 'plotArgs' ,{});
+       if ~iscell(plotArgs), plotArgs = {plotArgs}; end
+       h=bar(exp(logprob(obj,obj.support)), plotArgs{:});
+       set(gca,'xticklabel',obj.support);
+     end     
      
   end
     
