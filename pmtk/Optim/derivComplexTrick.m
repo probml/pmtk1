@@ -39,7 +39,8 @@
 % DBE 2006.07.31
 
 %#url http://www.mathworks.com/matlabcentral/files/11870/deriv.m
-%#author Daniel Ellis www.stanford.edu/~dbe
+%#author Daniel Ellis 
+%www.stanford.edu/~dbe
 
 function dfdx=derivComplexTrick(f,x,h,method)
 

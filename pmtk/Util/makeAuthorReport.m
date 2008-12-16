@@ -8,9 +8,12 @@ function report = makeAuthorReport(fname)
     
     
     if(nargin < 1)
-        location = 'C:\PMTKdocs\';
+        location = 'C:\PMTKdocs\authors\';
     end
     fname = 'authors.html';
+    
+    makeDestinationDir();
+    
     
     report = formatReport(generateReport());
     publishReport(report);
@@ -19,7 +22,7 @@ function report = makeAuthorReport(fname)
     function report = generateReport()
     % Generate the actual report as a struct
         report = createStruct(searchNames);
-        [info,mfiles] = mfilelist(PMTKroot());
+        [info,mfiles] = mfilelist(PMTKroot());          %#ok
         counter = 1;
         for i=1:numel(mfiles)
             file = mfiles{i};
@@ -52,7 +55,7 @@ function report = makeAuthorReport(fname)
         emptyNDX = find(cell2mat(cellfun(@(x)isempty(x),sortvals,'UniformOutput',false)));
         emptyReport = report(emptyNDX);
         report(emptyNDX) = [];
-        [val,perm] = sortrows(strvcat(report.(searchNames{sortKey})));
+        [val,perm] = sortrows(strvcat(report.(searchNames{sortKey})));          %#ok
         freport = [report(perm),emptyReport];
     end
     
@@ -67,7 +70,7 @@ function report = makeAuthorReport(fname)
         fprintf(fid,'</head>\n');
         fprintf(fid,'<body>\n\n');
         fprintf(fid,'<br>\n');
-        setupTable(fid,{'AUTHOR','URL','FILE'},[45,10,45]);
+        setupTable(fid,{'AUTHOR','FILE','SOURCE URL'},[45,45,10]);
         hprintf = @(txt)fprintf(fid,'\t<td> %s               </td>\n',txt);
         lprintf = @(link,name)fprintf(fid,'\t<td> <a href="%s"> %s </td>\n',link,name);
         for i=1:numel(report)
@@ -75,17 +78,22 @@ function report = makeAuthorReport(fname)
             author = report(i).author;
             url    = report(i).url;
             file   = report(i).file;
+            try
+                system(sprintf('copy %s %s',which(file),location));
+            catch
+               fprintf('\nCould not copy %s',file); 
+            end
             if(isequal(author,' ') || isempty(author))
                 hprintf('&nbsp;');
             else
                 hprintf(author);
             end
+            lprintf(['./',file],file);
             if(isequal(url,' ') || isempty(url))
                 hprintf('&nbsp;');
             else
                lprintf(url,'website');
             end
-            hprintf(file);
             fprintf(fid,'</tr>\n'); 
         end
         fprintf(fid,'</table>');
@@ -102,5 +110,15 @@ function report = makeAuthorReport(fname)
              fprintf(fid,'\t<th width="%d%%">%s</th>\n',widths(i),names{i});
          end
          fprintf(fid,'</tr>\n');
+    end
+    
+    function makeDestinationDir()
+        try cd(location)   % See if it already exists
+        catch                  % if not, create it
+            err = system(['mkdir ',location]);
+            if(err)            % if could not create it, error
+                error('Unable to create destination directory at %s',destination);
+            end
+        end
     end
 end

@@ -13,7 +13,7 @@ function complete_subgraphs = maximalCliques( X )
 %   The function returns all the sub-graphs in a cell-array, where each
 %   row denotes a new sub-graph
 
-%#author Ahmad
+%#author Ahmad Humyn
 %#url http://www.mathworks.com/matlabcentral/fx_files/19889/1/maximalCliques.m
 
 %TEST CASES

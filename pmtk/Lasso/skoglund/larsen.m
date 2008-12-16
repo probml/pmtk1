@@ -21,9 +21,9 @@ function beta = larsen(X, y, lambda2, stop, trace)
 % Reference: 'Regularization and Variable Selection via the Elastic Net' by
 % Hui Zou and Trevor Hastie, 2005.
 
-%#author Karl Skoglund, IMM, DTU, kas@imm.dtu.dk
+%#author Karl Skoglund
 %#url http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3897
-
+%  IMM, DTU, kas@imm.dtu.dk
 
 
 

@@ -118,7 +118,8 @@ function makeDocumentation(destination)
 
     function destRoot =  makeDestinationDirectory()
     % Create the root directory for the documentation.
-        try(cd(destination))   % See if it already exists
+        try
+            cd(destination);   % See if it already exists
         catch                  % if not, create it
             err = system(['mkdir ',destination]);
             if(err)            % if could not create it, error

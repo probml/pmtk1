@@ -4,7 +4,7 @@ function [precMat, covMat] = glassoR(X, varargin)
 % For instructions on calling R from Matlab, see
 % http://www.cs.ubc.ca/~mdunham/tutorial/external.html#21
 
-%#author Tibshirani 
+%#author Rob Tibshirani 
 %#url  http://www-stat.stanford.edu/~tibs/glasso/
 %#modified Kevin Murphy
 

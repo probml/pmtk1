@@ -32,7 +32,8 @@ function pagerankDemo
 % I suggest single-stepping a dozen times or so to see the link traversal in
 % process, and then type "1000".  Hit control-C to quit.
 
-%#author Tim Davis, University of Florida
+%#author Tim Davis
+% University of Florida
 
 % Modifed by Kevin Murphy 26 Nov 97: I just changed the node names
 % to numbers, for brevity and ease of comparison to entries in the matrix/vector

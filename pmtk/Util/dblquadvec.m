@@ -10,7 +10,7 @@ function q = dblquadvec(f, varargin)
 %   See also
 %     DBLQUAD
 
-%#author Vehtari 
+%#author Aki Vehtari 
 %#url http://www.lce.hut.fi/teaching/S-114.2601/ex/dblquadvec.m
 
 % Based on quadvec by Loren Shure

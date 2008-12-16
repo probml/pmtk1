@@ -20,7 +20,7 @@ function [re_index_cliques, cliques]=chordal_to_ripcliques_cell(g, order)
 % ordering of the adjacency matrix, and not the perfect numbering. 
 
 %#author Helen Armstrong
-%#url www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf 
+%#url http://www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf 
 
 p=size(g,1);
 pa=cell(1,p); 

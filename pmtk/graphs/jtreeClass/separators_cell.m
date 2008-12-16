@@ -11,7 +11,7 @@ function [sepsize, seps]=separators_cell(cliques, jtree)
 %           in which seps{i,j}=cliques{i} intersect cliques{j}.
 
 %#author Helen Armstrong
-%#url www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf 
+%#url http://www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf 
 
 t=size(cliques,2);
 sepsize=zeros(size(jtree)); % =num_cliques x num_cliques

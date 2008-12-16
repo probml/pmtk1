@@ -11,7 +11,7 @@ function [seps, resids, hists]=seps_resids_hists_cell(cliques)
  
 
 %#author Helen Armstrong
-%#url www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf 
+%#url http://www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf 
 
 num_cliques=size(cliques,2); 
 num_seps=num_cliques; 
