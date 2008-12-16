@@ -49,7 +49,7 @@ function [hess,err] = hessian(fun,x0)
 
 
 %#url
-%#Author: John D'Errico
+%#author John D'Errico
 % e-mail: woodchips@rochester.rr.com
 % Release: 1.0
 % Release date: 2/10/2007
