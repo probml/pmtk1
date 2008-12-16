@@ -20,11 +20,11 @@ classdef BetaBinomDist < ParamDist
       obj.support = 0:N(1);
     end
  
-    %{
-    function d = ndimensions(obj)
+    
+    function d = ndistrib(obj)
       d = length(obj.a);
     end
-    %}
+    
     
     function m = mean(obj)
       m = obj.N * (obj.a ./(obj.a + obj.b));
@@ -37,19 +37,19 @@ classdef BetaBinomDist < ParamDist
      
    
      function p = logprob(obj, X)
-       % p(i,j) = log p(x(i) | params(j))
-       ndistrib = length(obj.a);
+       % p(i,j) = log p(x(i) | params(j)), x(i) in 0:N
+       d = ndistrib(obj);
        x = X(:);
-       p = zeros(length(x),length(paramNdx));
-       for j=1:ndistrib
+       p = zeros(length(x),d);
+       for j=1:d
          a = obj.a(j); b = obj.b(j); n = obj.N(j);
          p(:,j) = betaln(x+a, n-x+b) - betaln(a,b) + nchoosekln(n, x);
        end
      end
        
      function logZ = lognormconst(obj)
-        ndistrib = length(obj.a);
-        for j=1:ndistrib
+        d = ndistrib(obj);
+        for j=1:d
           logZ(j) = betaln(obj.a, obj.b);
         end
      end
@@ -57,10 +57,10 @@ classdef BetaBinomDist < ParamDist
      function obj = fit(obj, varargin)
       % m = fit(model, 'name1', val1, 'name2', val2, ...)
       % Arguments are
-      % data - data(i) = case i
-      % method - currently must be fixedpoint
-      [X, suffStat, method] = process_options(...
-        varargin, 'data', [], 'suffStat', [], 'method', 'fixedpoint');
+      % data - data(i,1)  = num of successes, data(i,2) = nu, failures
+      % Uses Tom Minka's fixedpoint method
+      [X] = process_options(...
+        varargin, 'data', []);
       alphas = polya_fit_simple(X);
       obj.a = alphas(1); obj.b = alphas(2);
      end

@@ -5,9 +5,6 @@ classdef GaussDist < ParamDist
     sigma2;
   end
   
-  properties(SetAccess = 'private')
-     ndims;
-  end
   
   %% Main methods
   methods 
@@ -23,15 +20,15 @@ classdef GaussDist < ParamDist
       m.sigma2 = sigma2;
      end
      
-     %{
-     function d = ndimensions(obj)
+     
+     function d = ndistrib(obj)
        d = length(obj.mu);
      end
-     %}
+     
      
      function obj = mkRndParams(obj, d)
        % Set mu(j) and sigma(j) to random values, for j=1:d.
-       if nargin < 2, d = length(obj.mu); end
+       if nargin < 2, d = ndistrib(obj); end
        obj.mu = randn(1,d);
        obj.sigma2 = rand(1,d);
      end
@@ -64,11 +61,11 @@ classdef GaussDist < ParamDist
        v = normcdf(x, obj.mu, sqrt(obj.sigma2));
      end
      
-     function X = sample(m, n)
+     function X = sample(model, n)
        % X(i,j) = sample from gauss(m.mu(j), m.sigma(j)) for i=1:n
        if nargin < 2, n  = 1; end
-       d = m.ndims;
-       X = randn(n,d) .* repmat(sqrt(m.sigma2), n, 1) + repmat(m.mu, n, 1);
+       d = ndistrib(model);
+       X = randn(n,d) .* repmat(sqrt(model.sigma2), n, 1) + repmat(model.mu, n, 1);
      end
 
      function logZ = lognormconst(obj)
@@ -76,13 +73,14 @@ classdef GaussDist < ParamDist
      end
      
      function p = logprob(obj, X)
-       % p(i,j) = log p(X(i) | params(j))
-       d = m.ndims;
-       n = length(X);
+       % p(i,j) = log p(X(i) | params(j));
+       x = X(:);
+       n = length(x);
+       d = ndistrib(obj);
        p = zeros(n,d);
        logZ = lognormconst(obj);
-       for j=1:d
-         p(:,j) = (-0.5/obj.sigma2(j) * (obj.mu(j) - X).^2) - logZ(j);
+       for j=1:d % can be vectorized
+         p = (-0.5/obj.sigma2(j) .* (obj.mu(j) - x).^2) - logZ(j);
        end
      end
 
@@ -125,11 +123,12 @@ classdef GaussDist < ParamDist
   end
  
    %% Getters and Setters
+  %{
   methods
       function obj = set.mu(obj, mu)
           obj.mu = mu;
           obj.ndims = length(mu);
       end 
   end
-  
+  %}
 end

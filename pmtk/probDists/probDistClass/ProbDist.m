@@ -143,16 +143,18 @@ classdef ProbDist
     methods
         function xrange = plotRange(obj, sf)
             if nargin < 2, sf = 3; end
-            %if ndimensions(obj) ~= 2, error('can only plot in 2d'); end
-            mu = mean(obj); C = cov(obj);
-            s1 = sqrt(C(1,1));
-            x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
-            if ndimensions(obj)==2
-                s2 = sqrt(C(2,2));
-                x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
-                xrange = [x1min x1max x2min x2max];
+            mu = mean(obj);
+            if ndimensions(obj)==1
+              s1 = sqrt(var(obj));
+              x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
+              xrange = [x1min x1max];
             else
-                xrange = [x1min x1max];
+              C = cov(obj);
+              s1 = sqrt(C(1,1));
+              s2 = sqrt(C(2,2));
+              x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
+              x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
+              xrange = [x1min x1max x2min x2max];
             end
         end
     end

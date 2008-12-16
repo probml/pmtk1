@@ -18,10 +18,9 @@ classdef StudentDist < ParamDist
       m.sigma2 = sigma2;
     end
 
-    function d = ndimensions(m)
+    function d = ndistrib(m)
       d = length(m.mu);
     end
-    
     
     function [l,u] = credibleInterval(obj, p)
       if nargin < 2, p = 0.95; end
@@ -34,31 +33,32 @@ classdef StudentDist < ParamDist
     end
     
     function logZ = lognormconst(obj)
-      d = ndimensions(obj);
       v = obj.dof;
-      logZ = -gammaln(v/2 + 1/2) + gammaln(v/2) + 0.5 * log(v * pi .* obj.sigma2); 
+      logZ = -gammaln(v/2 + 1/2) + gammaln(v/2) + 0.5 * log(v * pi .* obj.sigma2);
     end
     
     
     function L = logprob(obj, X)
       % L(i,j) = log p(X(i) | params(j))
-      [N d] = size(X);
-      d = ndimensions(obj);
-      if d==1, X = X(:); end
+      d = ndistrib(obj);
+      x = X(:);
+      N = length(x);
+      L = zeros(N,d);
       logZ = lognormconst(obj);
-      for j=1:d
-        v = obj.dof(j); mu = obj.mu(j); s2 = obj.sigma2(j); x = X(:,j);
-        L(:,j) = (-(v+1)/2) * log(1 + (1/v)*( (x-mu).^2 / s2 ) ) - logZ(j);
-      end
+      v = obj.dof; mu = obj.mu; s2 = obj.sigma2;
+      L = (-(v+1)/2) .* log(1 + (1/v).*( (x-mu).^2 ./ s2 ) ) - logZ;
+      %for j=1:d
+      %  v = obj.dof(j); mu = obj.mu(j); s2 = obj.sigma2(j); 
+      %  L(:,j) = (-(v+1)/2) * log(1 + (1/v)*( (x-mu).^2 / s2 ) ) - logZ(j);
+      %end
     end
-    
    
    
      function X = sample(obj, n)
       % X(i,j) = sample ffrom params(j) i=1:n
-      checkParamsAreConst(obj)
-      d = ndimensions(obj);
-      assert(statsToolboxInstalled);
+      d = ndistrib(obj);
+      assert(statsToolboxInstalled); %#statsToolbox
+      X = zeros(n, d);
       for j=1:d
         mu = repmat(obj.mu(j), n, 1);
         X(:,j) = mu + sqrt(obj.sigma2(j))*trnd(obj.dof(j), n, 1);
@@ -66,69 +66,35 @@ classdef StudentDist < ParamDist
     end
 
     function mu = mean(obj)
-      checkParamsAreConst(obj)
       mu = obj.mu;
     end
 
     function mu = mode(m)
-      checkParamsAreConst(m)
       mu = mean(m);
     end
 
-    function C = var(obj)
-      checkParamsAreConst(obj)
-      C = (obj.dof/(obj.dof-2))*obj.sigma2;
+    function v = var(obj)
+      v = (obj.dof./(obj.dof-2))*obj.sigma2;
     end
    
     function obj = fit(obj, varargin)
       % m = fit(model, 'name1', val1, 'name2', val2, ...)
+      % Finds the MLE. Needs stats toolbox.
       % Arguments are
       % data - data(i) = case i
-      % method - currently must be mle
+      % 
       [X, suffStat, method] = process_options(...
         varargin, 'data', [], 'suffStat', [], 'method', 'mle');
-      hasMissingData =  any(isnan(X(:)));
-      if any(isnan(X(:)))
-        error('cannot handle missing data')
-      end
-      if ~statsToolboxInstalled
-        error('need stats toolbox')
-      end
-      if ~strcmp(lower(method), 'mle')
-        error('can only handle mle')
-      end
+      assert(statsToolboxInstalled); %#statsToolbox
       params = mle(X, 'distribution', 'tlocationscale');
       obj.mu = params(1);
       obj.sigma2 = params(2);
       obj.dof = params(3);
     end
-    
-    function c = cov(obj)
-       c = obj.sigma2; 
-    end
-    
+      
      
   end % methods
 
-  methods(Static = true)
-    
-
-    function studentVsGaussianRobustnessToOutliersFigure()
-      % Illustrate the robustness of the t-distribution compared to the Gaussian.
-      % Written by Matthew Dunham
-      gaussVsToutlierDemo;
-    end
-    
-  end
   
-  %% Private methods
-  methods(Access = 'protected')
-    function checkParamsAreConst(obj)
-      p = isa(obj.mu, 'double') && isa(obj.sigma2, 'double') && isa(obj.dof, 'double');
-      if ~p
-        error('params must be constant')
-      end
-    end
-  end
   
 end

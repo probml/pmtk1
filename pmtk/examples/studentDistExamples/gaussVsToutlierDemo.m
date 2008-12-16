@@ -31,8 +31,8 @@ function plotHist(data,nbins,norm)
 end
 %
 function plotPDFs(data)
-  pgauss = fit(GaussDist, 'data', data, 'method', 'mle');
-  pstudent = fit(StudentDist, 'data', data, 'method', 'mle');
+  pgauss = fit(GaussDist, 'data', data);
+  pstudent = fit(StudentDist, 'data', data);
   xrange = [-5 10];
   h(1) = plot(pgauss, 'xrange', xrange, 'plotArgs', {'b:', 'linewidth', 3});
   hold on

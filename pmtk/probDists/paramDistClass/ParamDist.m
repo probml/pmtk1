@@ -8,6 +8,13 @@ classdef ParamDist < ProbDist
   
     methods
         
+      function d = ndimensions(obj)
+        % By default, we asssume the distribution is over a scalar rv
+        % If the class defines a vector rv, it should over-ride this
+        % method.
+        d = 1;
+      end
+      
       function Xc = impute(obj, X)
         % Fill in NaN entries of X using posterior mode on each row
         [n] = size(X,1);
