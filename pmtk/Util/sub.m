@@ -3,5 +3,9 @@ function a = sub(b,ndx)
 % storing the result. e.g. mean(rand(10),2)(3) is not allowed in matlab you have
 % to go tmp = mean(rand(10),2); result = tmp(3); With this function, you can go
 % sub(mean(rand(10),2),3). Use subc for {} indexing. 
-   a = b(ndx); 
+    if(ischar(ndx))
+        a = eval(['b(',ndx,')']);
+    else
+        a = b(ndx);
+    end
 end
