@@ -16,6 +16,7 @@ classdef MvnInvWishartDist < ParamDist
       d = length(mu);
       if isempty(k), k = d; end
       m.mu = mu; m.Sigma = Sigma; m.dof = dof; m.k = k;
+      if dof < d, warning('dof should be bigger than dimensionality'); end
     end
     
     function d = ndimensions(obj)

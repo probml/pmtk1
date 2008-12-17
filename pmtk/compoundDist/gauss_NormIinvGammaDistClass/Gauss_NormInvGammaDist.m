@@ -14,21 +14,27 @@ classdef Gauss_NormInvGammaDist < CompoundDist
      function obj = fit(obj, varargin)
        [X, SS] = process_options(...
          varargin, 'data', [], 'suffStat', []);
-       xbar = mean(X); n = size(X,1);
+       xbar = mean(X);
+       [n d] = size(X);
        m0 = obj.muSigmaDist.mu;
        k0 = obj.muSigmaDist.k;
        a0 = obj.muSigmaDist.a;
        b0 = obj.muSigmaDist.b;
-       kn = k0 + n;
+       kn = k0 + n; 
        mn = (k0*m0 + n*xbar)/kn;
        an = a0 + n/2;
-       bn = b0 + 0.5*sum((X-xbar).^2) + 0.5*n*k0*(m0-xbar)^2/(k0+n);
+       XC = X - repmat(xbar,n,1);
+       bn = b0 + 0.5*sum(XC.^2) + 0.5*n*k0*(m0-xbar).^2./(k0+n);
+       if d>1 && isscalar(an)
+         an = repmat(an, 1, d);
+         kn = repmat(kn, 1, d);
+       end
        obj.muSigmaDist = NormInvGammaDist('mu', mn, 'k', kn, 'a', an, 'b', bn);
      end
   
      function m = marginal(obj)
        a = obj.muSigmaDist.a; b = obj.muSigmaDist.b; m = obj.muSigmaDist.mu; k = obj.muSigmaDist.k;
-       m = StudentDist(2*a, m, b*(1+k)/a); 
+       m = StudentDist(2*a, m, b.*(1+k)./a); 
      end
      
   end

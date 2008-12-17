@@ -73,14 +73,15 @@ classdef GaussDist < ParamDist
      end
      
      function p = logprob(obj, X)
-       % p(i,j) = log p(X(i) | params(j));
-       x = X(:);
-       n = length(x);
+       % p(i,j) = log p(X(i) | params(j)) or log p(X(i,j) | params(j));
+       n = size(X,1);
        d = ndistrib(obj);
+       if size(X,2) == 1, X = repmat(X, n, d); end
        p = zeros(n,d);
        logZ = lognormconst(obj);
        for j=1:d % can be vectorized
-         p = (-0.5/obj.sigma2(j) .* (obj.mu(j) - x).^2) - logZ(j);
+         xj = X(:,j);
+         p = (-0.5/obj.sigma2(j) .* (obj.mu(j) - xj).^2) - logZ(j);
        end
      end
 

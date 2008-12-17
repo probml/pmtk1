@@ -9,6 +9,10 @@ classdef CompoundDist < ParamDist
    function p = logprob(obj, X)
      p = logprob(marginal(obj), X);
    end
+   
+     function p = predict(obj)
+      p = predict(marginal(obj));
+     end
     
      function X = sample(obj, n)
         X = sample(marginal(obj), n);
@@ -26,9 +30,6 @@ classdef CompoundDist < ParamDist
         m = mode(marginal(obj));
       end
       
-      function pp = predict(obj)
-        pp = marginal(obj);
-      end
       
   end % methods
 

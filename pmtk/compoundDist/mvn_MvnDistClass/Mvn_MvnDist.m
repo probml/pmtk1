@@ -1,12 +1,8 @@
-classdef Mvn_MvnDist < ParamDist 
+classdef Mvn_MvnDist < Compound_Dist 
 % p(X|mu,mu_Sigma,Sigma) = int_m N(X|m,Sigma) N(m|mu,mu_Sigma) 
   properties
     muDist;
     Sigma;
-  end
-  
-  properties(SetAccess = 'private')
-     ndims;
   end
   
   
@@ -16,13 +12,19 @@ classdef Mvn_MvnDist < ParamDist
       % MvnMvnDist(muPrior, Sigma) where muPrior is of type MnvDist 
       model.muDist = muPrior;
       model.Sigma = Sigma;
-      model.ndims  = length(muPrior.mu);
+      %model.ndims  = length(muPrior.mu);
     end
    
     function d = ndimensions(m)
-      d= m.ndims;
+      d= size(m.Sigma, 1); % m.ndims;
     end
      
+    function pp = marginal(model)
+      % integrate out mu
+      mu = muDist.mu; Sigma = muDist.Sigma;
+      pp = MvnDist(mu, Sigma + model.Sigma);
+    end
+    
     function obj = fit(obj,varargin)
       % Update hyper-parameters
       % INPUT:
@@ -41,11 +43,7 @@ classdef Mvn_MvnDist < ParamDist
       obj.muDist = MvnDist(Sn*(n*Sinv*SS.xbar + S0inv*mu0), Sn);
     end
    
-    function p = paramDist(obj)
-      % Return current distribution over parameters
-      p = ProductDist({obj.muDist, ConstDist(obj.Sigma)}, {'mu', 'Sigma'});
-    end
-    
+   
   end % methods
 
 end

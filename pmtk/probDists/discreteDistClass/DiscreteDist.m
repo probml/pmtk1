@@ -23,8 +23,9 @@ classdef DiscreteDist  < ParamDist
         support = 1:nstates;
       end
       obj.mu = mu;
-       obj.support = support;
-       obj.prior = prior;
+      if isempty(support), error('must specify support'); end
+      obj.support = support;
+      obj.prior = prior;
     end
 
     function d = ndistrib(obj)
@@ -32,7 +33,7 @@ classdef DiscreteDist  < ParamDist
     end
     
     function K = nstates(obj)
-      K = size(obj.mu, 1);
+      K = length(obj.support); % size(obj.mu, 1);
     end
     
     function m = mean(obj)
@@ -44,18 +45,25 @@ classdef DiscreteDist  < ParamDist
     end
   
     function L = logprob(obj,X)
-      %L(i,j) = logprob(X(i,j) | mu(j))
+      %L(i,j) = logprob(X(i) | mu(j)) or logprob(X(i,j) | mu(j)) for X(i,j)
+      %in support
       n = size(X,1); 
       d = ndistrib(obj);
+      if size(X,2) == 1, X = repmat(X, n, d); end
       L = zeros(n,d);
       for j=1:d
         XX = canonizeLabels(X(:,j),obj.support);
         L(:,j) = log(obj.mu(XX,j)); % requires XX to be in 1..K
       end
     end
-
+    
+    function p = predict(obj)
+      % p(j) = p(X=j)
+      p = obj.mu;
+    end
+    
     function SS = mkSuffStat(obj, X)
-      K = nstates(obj); d = ndistrib(obj);
+      K = nstates(obj); d = size(X,2); 
       counts = zeros(K, d);
       for j=1:d
         counts(:,j) = colvec(histc(X(:,j), obj.support));
@@ -133,8 +141,9 @@ classdef DiscreteDist  < ParamDist
     end
     
     function y = mode(obj)
-      % y(i) = arg max mu(:,i)
-      y = obj.support(maxidx(obj.mu,[],1));
+      % y(i) = arg max mu(i,:)
+      y = obj.support(maxidx(obj.mu,[],2));
+      y = y(:);
     end
     
   end

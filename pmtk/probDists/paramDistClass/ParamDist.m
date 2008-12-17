@@ -15,6 +15,13 @@ classdef ParamDist < ProbDist
         d = 1;
       end
       
+      function d = ndistrib(obj)
+        % By default, we asssume the distribution is a single distribution
+        % not a product/set.
+        d = 1;
+      end
+      
+      
       function Xc = impute(obj, X)
         % Fill in NaN entries of X using posterior mode on each row
         [n] = size(X,1);

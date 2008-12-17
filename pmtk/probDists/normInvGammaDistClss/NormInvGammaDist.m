@@ -11,7 +11,8 @@ classdef NormInvGammaDist < ParamDist
   methods
     function m = NormInvGammaDist(varargin)
       if nargin == 0, varargin = {}; end
-      if ~isempty(varargin) & isa(varargin{1}, 'double')
+      if ~isempty(varargin) && isa(varargin{1}, 'double')
+        % NormInvGammaDist(mu, k, a, b)
        mu =  varargin{1}; k = varargin{2}; a= varargin{3};  b = varargin{4};
       else
         [mu, k, a, b] = process_options(...

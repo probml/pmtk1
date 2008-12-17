@@ -39,11 +39,12 @@ classdef BetaBinomDist < ParamDist
      function p = logprob(obj, X)
        % p(i,j) = log p(x(i) | params(j)), x(i) in 0:N
        d = ndistrib(obj);
-       x = X(:);
-       p = zeros(length(x),d);
+       n = size(X,1);
+       if size(X,2) == 1, X = repmat(X, n, d); end
+       p = zeros(n,d);
        for j=1:d
          a = obj.a(j); b = obj.b(j); n = obj.N(j);
-         p(:,j) = betaln(x+a, n-x+b) - betaln(a,b) + nchoosekln(n, x);
+         p(:,j) = betaln(X(:,j)+a, n-X(:,j)+b) - betaln(a,b) + nchoosekln(n, X(:,j));
        end
      end
        

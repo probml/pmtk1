@@ -26,11 +26,11 @@ classdef Discrete_DirichletDist < CompoundDist
     
     function m = marginal(obj)
       % This may not be correct...
-      m =  DiscreteDist(normalize(obj.alpha));
+      m =  DiscreteDist('mu', normalize(obj.muDist.alpha));
     end
 
      function SS = mkSuffStat(obj, X)
-      K = nstates(obj); d = ndistrib(obj);
+      K = nstates(obj); d = size(X,2); % ndistrib(obj);
       counts = zeros(K, d);
       for j=1:d
         counts(:,j) = colvec(histc(X(:,j), obj.support));
@@ -50,13 +50,20 @@ classdef Discrete_DirichletDist < CompoundDist
            'data'       , [],...
            'suffStat'   , []);
        if isempty(SS), SS = mkSuffStat(obj,X); end
-       obj.muDist = DirichletDist(obj.alpha + SS.counts);
+       d = size(X,2);
+       pseudoCounts = repmat(obj.muDist.alpha, 1, d);
+       obj.muDist = DirichletDist(pseudoCounts + SS.counts);
      end
            
   end
   
   methods(Static = true)
     function testClass()
+      prior = DirichletDist(0.1*ones(1,3));
+      X = sampleDiscrete([0.1 0.3 0.6]', 5, 2);
+      m = Discrete_DirichletDist(prior);
+      m = fit(m, 'data', X);
+      v = var(m);
     end
   end
   

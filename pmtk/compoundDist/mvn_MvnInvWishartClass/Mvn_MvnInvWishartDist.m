@@ -1,4 +1,4 @@
-classdef Mvn_MvnInvWishartDist < ParamDist 
+classdef Mvn_MvnInvWishartDist < CompoundDist 
 % p(X,m,s|alpha) = N(X|m,S) NIW(m,S|alpha) 
 % where NIW(m,S|alpha) = N(m|mu, 1/k * S) IW(S| dof, Sigma)
 % and alpha = (mu, Sigma, dof, k)
@@ -7,24 +7,29 @@ classdef Mvn_MvnInvWishartDist < ParamDist
   end
   
   
-  properties(SetAccess = 'private')
-     ndims;
-  end
-  
   
   %% main methods
   methods
     function model = Mvn_MvnInvWishartDist(prior)
       % MvnMvnInvWishartDist(prior) where prior is of type MnvInvWishartDist 
       model.muSigmaDist = prior;
-      model.ndims  = length(prior.mu);
+      %model.ndims  = length(prior.mu);
     end
     
    
     function d = ndimensions(m)
-      d= m.ndims;
+      d= length(m.muSigmaDist.mu); % m.ndims;
     end
      
+    function pp = marginal(model)
+      % integrate out mu and Sigma
+      muSigmaDist = model.muSigmaDist;
+      mu = muSigmaDist.mu; T = muSigmaDist.Sigma; dof = muSigmaDist.dof; k = muSigmaDist.k;
+      d = ndimensions(model);
+      pp = MvtDist(dof - d + 1, mu, T*(k+1)/(k*(dof-d+1)));
+      assert(isposdef(pp.Sigma))
+    end
+    
     function obj = fit(obj,varargin)
       % Update hyper-parameters
       % INPUT:
@@ -47,13 +52,7 @@ classdef Mvn_MvnInvWishartDist < ParamDist
       obj.muSigmaDist = MvnInvWishartDist('mu', mn, 'Sigma', Sn, 'dof', vn, 'k', kn);
     end
    
-    %{
-    function p = paramDist(obj)
-      % Return current distribution over parameters, p(mu,Sigma) = NIW()
-      %p = MvnInvWishartDist('mu', obj.mu, 'Sigma', obj.Sigma, 'dof', obj.dof, 'k', obj.k);
-      p = obj.muSigmaDist;
-    end
-      %}
+  
     
   end % methods
 

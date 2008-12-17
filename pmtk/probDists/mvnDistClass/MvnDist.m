@@ -4,16 +4,18 @@ classdef MvnDist < ParamDist
   properties
     infEng;
     mu; Sigma;
+    prior;
   end
   
   properties(Hidden = true)
     domain;
   end
   
+  %{
   properties(SetAccess = 'private')
      ndims;
   end
-  
+  %}
   
   %% main methods
   methods
@@ -21,10 +23,10 @@ classdef MvnDist < ParamDist
       if nargin == 0
         mu = []; Sigma = [];
       end
-      [m.infEng, m.domain] = process_options(varargin, ...
-        'infEng', GaussInfEng(), 'domain', 1:numel(mu));
+      [m.infEng, m.domain, m.prior] = process_options(varargin, ...
+        'infEng', GaussInfEng(), 'domain', 1:numel(mu), 'prior', 'none');
       m.mu = mu; m.Sigma = Sigma;
-      m.ndims = length(mu);
+      %m.ndims = length(mu);
     end
 
    
@@ -69,7 +71,7 @@ classdef MvnDist < ParamDist
      end
     
     function obj = mkRndParams(obj, d)
-      if nargin < 2, d = obj.ndims; end
+      if nargin < 2, d = ndimensions(obj); end
       obj.mu = randn(d,1);
       obj.Sigma = randpd(d);
       obj.ndims = d;
@@ -77,7 +79,7 @@ classdef MvnDist < ParamDist
     end
     
     function d = ndimensions(m)
-         d= m.ndims;
+         d= length(m.mu); % m.ndims;
     end
 
 
@@ -176,7 +178,7 @@ classdef MvnDist < ParamDist
        [X,SS,prior,covtype] = process_options(varargin,...
          'data'              ,[]         ,...
          'suffStat'          ,[]         ,...
-         'prior'             ,'none'         ,...
+         'prior'             ,obj.prior         ,...
          'covtype'           ,'full');
        
        if(~strcmpi(covtype,'full')),error('Restricted covtypes not yet implemnted');end
@@ -196,12 +198,12 @@ classdef MvnDist < ParamDist
          case 'MvnInvWishartDist'  % MAP estimation
            m = Mvn_MvnInvWishartDist(prior);
            m = fit(m, 'data', X);
-           post = paramDist(m); % NIW
+           post = m.muSigmaDist; % paramDist(m); % NIW
            m = mode(post);
            obj.mu = m.mu;
            obj.Sigma = m.Sigma;
          otherwise
-           error(['unknown prior '])
+           error('unknown prior ')
        end
      end
 

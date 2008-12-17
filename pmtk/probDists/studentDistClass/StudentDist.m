@@ -39,14 +39,18 @@ classdef StudentDist < ParamDist
     
     
     function L = logprob(obj, X)
-      % L(i,j) = log p(X(i) | params(j))
-      d = ndistrib(obj);
-      x = X(:);
-      N = length(x);
-      L = zeros(N,d);
+      % L(i,j) = log p(X(i) | params(j)) or log p(X(i,j) | params(j))
+      N  = size(X,1);
+      d=ndistrib(obj);
+      if size(X,2) == 1, X = repmat(X, N, d); end
+      %L = zeros(N,d);
       logZ = lognormconst(obj);
       v = obj.dof; mu = obj.mu; s2 = obj.sigma2;
-      L = (-(v+1)/2) .* log(1 + (1/v).*( (x-mu).^2 ./ s2 ) ) - logZ;
+      M = repmat(mu, N, 1);
+      S2 = repmat(s2, N, 1);
+      V = repmat(v, N, 1);
+      LZ = repmat(logZ, N, 1);
+      L = (-(V+1)/2) .* log(1 + (1./V).*( (X-M).^2 ./ S2 ) ) - LZ;
       %for j=1:d
       %  v = obj.dof(j); mu = obj.mu(j); s2 = obj.sigma2(j); 
       %  L(:,j) = (-(v+1)/2) * log(1 + (1/v)*( (x-mu).^2 / s2 ) ) - logZ(j);

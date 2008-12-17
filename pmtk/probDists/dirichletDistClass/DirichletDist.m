@@ -9,6 +9,7 @@ classdef DirichletDist < ParamDist
   methods
     function obj =  DirichletDist(alpha)
       if nargin == 0, alpha = []; end
+      if isvector(alpha), alpha = alpha(:); end % 1 distribution
       obj.alpha = alpha;
     end
     
