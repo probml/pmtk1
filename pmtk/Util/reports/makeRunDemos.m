@@ -8,8 +8,8 @@ function makeRunDemos()
     slowTag    = '%#slow';
     brokenTag  = '%#broken';
 
-    utilDir = fileparts(which('makeRunDemos'));
-    cd(utilDir);  cd ..;
+    reportDir = fileparts(which('makeRunDemos'));
+    cd(reportDir);  cd ..;cd ..;
     
     if(exist('runDemos.m','file'))
         if(exist('runDemos.old','file'))

@@ -1,7 +1,9 @@
 %% Run Every Demo
 
 %% UgmChordalGaussDist
-%demoPostModelsExhaustive - broken!
+demoPostModelsExhaustive
+kpm-demoPostModelsExhaustive
+UGMmodelSelection
 pause(2); close('all'); clear('all');
 
 %% bernoulliDist
@@ -38,12 +40,15 @@ pause(2); close('all'); clear('all');
 %% gaussDist
 gaussCVfitDemo
 gaussHeightWeight
-gaussInferMuSigmaDemo
 gaussPlotDemo
 pause(2); close('all'); clear('all');
 
 %% gaussMixDist
 gaussMixPlot
+pause(2); close('all'); clear('all');
+
+%% gauss_NormInvGammaDist
+gaussInferMuSigmaDemo
 pause(2); close('all'); clear('all');
 
 %% graph
@@ -56,6 +61,7 @@ pause(2); close('all'); clear('all');
 
 %% hmmDist
 casinoDemo
+seqClassification
 pause(2); close('all'); clear('all');
 
 %% invGammaDist
@@ -99,8 +105,10 @@ pause(2); close('all'); clear('all');
 %% mcmc
 mcmcMvn2d
 mcmcMvn2dConditioning
-%mhGmmDemo - broken!
+mhGmmDemo
 %mhMissouriCancer - broken!
+mhMvn2d
+mhMvn2dConditioning
 pause(2); close('all'); clear('all');
 
 %% modelSelection
@@ -108,27 +116,32 @@ modelSelect1D
 modelSelect2D
 pause(2); close('all'); clear('all');
 
-%% multinomDist
-multinomPlotDemo
-pause(2); close('all'); clear('all');
-
 %% mvnDist
 mvnCondition2D
 mvnHeightWeight
 mvnImputationDemo
-mvnInferParamsMean1d
-mvnInferParamsMean2d
-mvnInferParamsMuSigma1dPriors
-mvnInferParamsSigma2d
 mvnPlot2Ddemo
-mvnSeqlUpdateMuSigma1D
-mvnSeqUpdateMu1d
-mvnSeqUpdateSigma1d
 mvnSoftCondition
 pause(2); close('all'); clear('all');
 
 %% mvnInvWishartDist
 mvnInvWIplotDemo
+pause(2); close('all'); clear('all');
+
+%% mvn_InvWishartDist
+mvnInferParamsSigma2d
+mvnSeqUpdateSigma1d
+pause(2); close('all'); clear('all');
+
+%% mvn_MvnDist
+mvnInferParamsMean1d
+mvnInferParamsMean2d
+mvnSeqUpdateMu1d
+pause(2); close('all'); clear('all');
+
+%% mvn_MvnInvWishartDist
+mvnInferMuSigma1D
+mvnSeqlUpdateMuSigma1D
 pause(2); close('all'); clear('all');
 
 %% mvtDist
@@ -148,6 +161,7 @@ sampleDistDemo
 pause(2); close('all'); clear('all');
 
 %% studentDist
+gaussVsToutlierDemo
 studentVSGauss
 pause(2); close('all'); clear('all');
 
