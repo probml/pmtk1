@@ -2,7 +2,7 @@ classdef DirichletDist < ParamDist
 
 
   properties
-    alpha;
+    alpha; % K states by d distributions
   end
 
   %% Main methods
@@ -13,8 +13,13 @@ classdef DirichletDist < ParamDist
     end
     
     function d = ndimensions(obj)
-       d = numel(obj.alpha); 
+       d = size(obj.alpha,1); 
     end
+    
+     function d = ndistrib(obj)
+       d = size(obj.alpha,2); 
+     end
+    
 
     function m = mean(obj)
       a = sum(obj.alpha);

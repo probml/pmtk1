@@ -100,6 +100,10 @@ classdef BinomDist < ParamDist
            m = Binom_BetaDist(obj.N, prior);
            m = fit(m, 'suffStat', SS);
            obj.mu = mode(m.muDist);
+           
+           a = prior.a; b = prior.b;
+           mm = (SS.nsucc + a - 1) ./ (SS.nsucc + SS.nfail + a + b - 2);
+           assert(approxeq(mm, obj.mu))
          otherwise
             error('unknown prior ')
        end
