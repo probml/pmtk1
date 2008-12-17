@@ -8,28 +8,33 @@ classdef DiscreteDist  < ParamDist
     support;
   end
   
-  %{
-  properties(SetAccess = 'private')
-     nstates;
-     ndistrib;
-  end 
- %}
   
   methods
-    function obj = DiscreteDist(mu, support, prior)     
-      % mu is K*d, for K states and d distributions.
+    function obj = DiscreteDist(varargin)  
+      % 'mu' - mu is K*d, for K states and d distributions.
       % Each *column* of mu represents a different discrete distribution. 
-      % Support is a set of K numbers, defining the domain.
+      % 'support' - Support is a set of K numbers, defining the domain.
       % Each distribution has the same support.
-      % Prior is 'none' or DirichletDist. Same prior is used for each distribution.
-      if nargin == 0, mu = []; end
+      % 'prior' - 'none' or DirichletDist. Same prior is used for each distribution.
+      [mu, support, prior] = process_options(varargin, ...
+        'mu', [], 'support', [], 'prior', 'none');
+      if isempty(support) && ~isempty(mu)
+        [nstates] = size(mu,1);
+        support = 1:nstates;
+      end
       obj.mu = mu;
-      if nargin < 2, support = 1:size(mu,1); end
-      obj.support = support;
-      if nargin < 3, prior = 'none'; end
-      obj.prior = prior;
+       obj.support = support;
+       obj.prior = prior;
     end
 
+    function d = ndistrib(obj)
+      d = size(obj.mu, 2);
+    end
+    
+    function K = nstates(obj)
+      K = size(obj.mu, 1);
+    end
+    
     function m = mean(obj)
        m = obj.mu; 
     end
@@ -41,19 +46,19 @@ classdef DiscreteDist  < ParamDist
     function L = logprob(obj,X)
       %L(i,j) = logprob(X(i,j) | mu(j))
       n = size(X,1); 
-      ndistrib = size(obj.mu, 2);
-      L = zeros(n,ndistrib);
-      for j=1:ndistrib
+      d = ndistrib(obj);
+      L = zeros(n,d);
+      for j=1:d
         XX = canonizeLabels(X(:,j),obj.support);
         L(:,j) = log(obj.mu(XX,j)); % requires XX to be in 1..K
       end
     end
 
     function SS = mkSuffStat(obj, X)
-      [nstates ndistrib] = size(obj.mu);
-      counts = zeros(nstates, ndistrib);
-      for j=1:ndistrib
-        counts(:,j) = colvec(histc(X(:,j)), obj.support);
+      K = nstates(obj); d = ndistrib(obj);
+      counts = zeros(K, d);
+      for j=1:d
+        counts(:,j) = colvec(histc(X(:,j), obj.support));
       end
       SS.counts = counts;
     end
@@ -65,32 +70,32 @@ classdef DiscreteDist  < ParamDist
     %              model = fit(model,'name1',val1,'name2',val2,...)
     %
     % INPUT:    
-    %   'data'     X(i,j)  is the i'th value of variable j
+    %   'data'     X(i,j)  is the i'th value of variable j, in obj.support
     %
-    %   'suffStat' This can be specified instead of 'data'.
-    %              A struct with the fields 'counts' 
+    %   'suffStat' - A struct with the fields 'counts'. Each column j is
+    %   histogram over states for distribution j.
     % 
     %   'prior'    - {'none', 'dirichlet' } or DirichletDist
     %   'priorStrength' - magnitude of Dirichlet parameter
     %        (same value applied to each state/ distribution)
     %
     [X,SS,prior,priorStrength] = process_options(varargin,'data',[],'suffStat',[],...
-      'prior',model.prior, 'priorStrength', model.priorStrength);
+      'prior', model.prior, 'priorStrength', 0);
     if(isempty(model.support))
       model.support = unique(X(:));
     end
     if isempty(SS), SS = mkSuffStat(model, X); end
-    [nstates ndistrib] = size(model.mu);
+    K = nstates(model); d = ndistrib(model);
     switch class(prior)
       case 'DirichletDist'
-        pseudoCounts = repmat(prior.alpha(:),1,ndistrib);
+        pseudoCounts = repmat(prior.alpha(:),1,d);
         model.mu = normalize(SS.counts + pseudoCounts, 1);
       case 'char'
         switch lower(prior)
           case 'none',
             model.mu = normalize(SS.counts);
           case 'dirichlet'
-            pseudoCounts = repmat(priorStrength,nstates,ndistrib);
+            pseudoCounts = repmat(priorStrength,K,d);
             model.mu = normalize(SS.counts + pseudoCounts);
           otherwise
             error(['unknown prior %s ' prior])
@@ -103,9 +108,9 @@ classdef DiscreteDist  < ParamDist
     function x = sample(obj, n)
       % x(i,j) in support for i=1:n, j=1:ndistrib
       if nargin < 2, n = 1; end
-      [nstates ndistrib] = size(obj.mu);
-      x = zeros(n, ndistrib);
-      for j=1:ndistrib
+      K = nstates(obj); d = ndistrib(obj);
+      x = zeros(n, d);
+      for j=1:d
         p = obj.mu(:,j); cdf = cumsum(p);
         [dum, y] = histc(rand(n,1),[0 ;cdf]);
         x(:,j) = obj.support(y);
@@ -119,12 +124,9 @@ classdef DiscreteDist  < ParamDist
         % plotArgs - args to pass to the plotting routine, default {}
         %
         % eg. plot(p,  'plotArgs', 'r')
-        [nstates ndistrib] = size(obj.mu);
-        if ndistrib > 1
-          error('cannot plot more than 1 distribution');
-        end
-        [plotArgs] = process_options(...
-            varargin, 'plotArgs' ,{});
+        d = ndistrib(obj);
+        if d > 1, error('cannot plot more than 1 distribution'); end
+        [plotArgs] = process_options(varargin, 'plotArgs' ,{});
         if ~iscell(plotArgs), plotArgs = {plotArgs}; end
         h=bar(obj.mu, plotArgs{:});
         set(gca,'xticklabel',obj.support);
@@ -138,14 +140,12 @@ classdef DiscreteDist  < ParamDist
   end
 
   methods(Static = true)
-   
-    
     function testClass()
-      p=DiscreteDist([0.3 0.2 0.5]', [-1 0 1]);
+      p=DiscreteDist('mu', [0.3 0.2 0.5]', 'support', [-1 0 1]);
       X=sample(p,1000);
       logp = logprob(p,[0;1;1;1;0;1;-1;0;-1]);
       nll  = negloglik(p,[0;1;1;1;0;1;-1;0;-1]);
-      hist(X,[-1 0 1])    
+      p = fit(p, 'data', X, 'prior', 'dirichlet', 'priorStrength', 2);
     end
   end
   

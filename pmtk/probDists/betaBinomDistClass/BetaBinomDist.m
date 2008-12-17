@@ -17,7 +17,7 @@ classdef BetaBinomDist < ParamDist
       obj.a = a;
       obj.b = b;
       obj.N = N;
-      obj.support = 0:N(1);
+      if ~isempty(N), obj.support = 0:N(1); end
     end
  
     
@@ -57,7 +57,7 @@ classdef BetaBinomDist < ParamDist
      function obj = fit(obj, varargin)
       % m = fit(model, 'name1', val1, 'name2', val2, ...)
       % Arguments are
-      % data - data(i,1)  = num of successes, data(i,2) = nu, failures
+      % data - data(i,1)  = num of successes, data(i,2) = num failures
       % Uses Tom Minka's fixedpoint method
       [X] = process_options(...
         varargin, 'data', []);

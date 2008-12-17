@@ -5,6 +5,7 @@ classdef BinomDist < ParamDist
     mu;
     N;
     prior;
+    support;
   end
   
   %% Main methods
@@ -18,7 +19,7 @@ classdef BinomDist < ParamDist
       end
       obj.mu = mu;
       obj.N = N;
-      %obj.support = 0:N;
+      obj.support = 0:N;
       if nargin < 3, prior = 'none'; end
       obj.prior = prior;
     end
@@ -71,17 +72,16 @@ classdef BinomDist < ParamDist
      end
     
       function SS = mkSuffStat(obj,X) %#ok
-        % X(i,1) is number of successes, X(i,2) is number of failures
-        % We require sum(X(i,:)) = N
-       SS.counts = sum(X,1);
-       SS.N = sum(X(:));
+       SS.nsucc = sum(X,1);
+       ntrials = size(X,1);
+       SS.nfail = ntrials*obj.N - SS.nsucc;
       end
 
      function obj = fit(obj, varargin)
        % m = fit(model, 'name1', val1, 'name2', val2, ...)
        % Arguments are
-       % data - X(i,1) is number of successes, X(i,2) is number of failures
-       % suffStat - SS.counts(j), SS.N = total amount of data
+       % data - X(i,1) is number of successes out of N
+       % suffStat - struct with nsucc, nfail
        % 'prior' - 'none' or BetaDist [obj.prior]
        [X, SS, prior] = process_options(varargin,...
            'data'       , [],...
@@ -92,7 +92,7 @@ classdef BinomDist < ParamDist
          case 'char'
            switch prior
              case 'none'
-               obj.mu = SS.counts ./ SS.N;
+               obj.mu = SS.nsucc ./ (SS.nsucc + SS.nfail);
              otherwise
                error(['unknown prior ' prior])
            end

@@ -11,17 +11,16 @@ for i = 1:numel(data)
     N0 = data(i).N0;
     N1 = data(i).N1;
     N = N1+N0;
-    m = BinomDist(N, BetaDist(a,b));
-    %m = BernoulliDist(BetaDist(a,b));
-    prior = m.params; % BetaDist
-    suffStat.counts = N1;
-    suffStat.N = N;
-    m = fit(m, 'suffStat', suffStat,'method','bayesian');
-    post = m.params; % BetaDist
+    m = Binom_BetaDist(N, BetaDist(a,b));
+    prior = m.muDist; % BetaDist
+    suffStat.nsucc = N1;
+    suffStat.nfail = N-N1;
+    m = fit(m, 'suffStat', suffStat);
+    post = m.muDist;
     % The likelihood is the prior with a flat prior
-    m2 = BinomDist(N, BetaDist(1,1));
-    m2 = fit(m2, 'suffStat', suffStat,'method','bayesian');
-    lik = m2.params; % BetaDist
+    m2 = Binom_BetaDist(N, BetaDist(1,1));
+    m2 = fit(m2, 'suffStat', suffStat);
+    lik = m2.muDist;
     figure;
     h = plot(prior, 'plotArgs', {'r-', 'linewidth', 3});
     legendstr{1} = sprintf('prior Be(%2.1f, %2.1f)', prior.a, prior.b);
