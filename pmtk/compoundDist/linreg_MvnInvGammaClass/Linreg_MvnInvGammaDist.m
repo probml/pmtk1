@@ -4,29 +4,33 @@ classdef Linreg_MvnInvGammaDist < CondProbDist
 
     properties
      wSigmaDist;
-     transformer;      
+     transformer;   
+     priorStrength;
     end
 
     %% Main methods
     methods
         function model = Linreg_MvnInvGammaDist(varargin)
-            [model.transformer, model.wSigmaDist] = process_options(varargin,...
+            [model.transformer, model.wSigmaDist, model.priorStrength] = ...
+              process_options(varargin,...
                         'transformer', []                      ,...      
-                        'wSigmaDist'          , []);
+                        'wSigmaDist'          , [], ....
+                        'priorStrength', []);
         end
 
     
         function model = fit(model,varargin)
         % 'X'
         % 'y'
-        % 'prior' - 'ridge' (default model.prior)
-        % 'lambda'
-         [X, y, prior, lambda] = process_options(varargin,...
-          'X', [], 'y', [], 'prior', [], 'lambda', 0);
+         % 'priorStrength' - magnitude of diagonals on precision matrix
+        %    (defauly model.priorStrength); only used if model.wSigmaDist
+        %    is []
+         [X, y,  lambda] = process_options(varargin,...
+          'X', [], 'y', [], 'priorStrength',model.priorStrength);
         if ~isempty(model.transformer)
           [X, model.transformer] = train(model.transformer, X);
         end
-        if ~isempty(prior) && strcmpi(prior, 'ridge')
+        if isempty(model.wSigmaDist) && ~isempty(lambda)
           d = size(X,2);
           model.wSigmaDist = makeSphericalPrior(d, lambda, addOffset(model.transformer), 'mvnig');
         end

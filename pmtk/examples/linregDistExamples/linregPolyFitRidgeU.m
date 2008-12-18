@@ -7,7 +7,7 @@ m.transformer =  ChainTransformer({RescaleTransformer,  PolyBasisTransformer(deg
 lambdas = logspace(-10,1.2,15);
 for k=1:length(lambdas)
     lambda = lambdas(k);
-    m = fit(m, 'X', xtrain, 'y', ytrain, 'lambda', lambda);
+    m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', 'L2', 'lambda', lambda);
     testMse(k) = mean(squaredErr(m, xtest, ytest));
     trainMse(k) = mean(squaredErr(m, xtrain, ytrain));
 end

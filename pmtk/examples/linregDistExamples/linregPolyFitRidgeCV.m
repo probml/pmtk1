@@ -10,7 +10,7 @@ lambdas = logspace(-10,1.2,15);
 
 for i=1:length(lambdas)
     lambda = lambdas(i);
-    m = fit(m, 'X', xtrain, 'y', ytrain, 'lambda', lambda);
+    m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', 'L2', 'lambda', lambda);
     testMse(i) = mean(squaredErr(m, xtest, ytest));
     trainMse(i) = mean(squaredErr(m, xtrain, ytrain));
     [CVmeanMse(i), CVstdErrMse(i)] = cvScore(m, xtrain, ytrain, ...

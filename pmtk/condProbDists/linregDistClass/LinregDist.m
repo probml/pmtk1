@@ -137,7 +137,7 @@ classdef LinregDist < CondProbDist
             X = test(model.transformer, X);
           end
           n = size(X,1);
-          muHat = X*model.w;
+          muHat = (X*model.w);
           sigma2Hat = model.sigma2*ones(n,1); % constant variance!
           py = GaussDist(muHat, sigma2Hat);
         end

@@ -10,8 +10,12 @@ function hh=helperGaussVsNIG(varargin)
     [xtrain, ytrain, xtest, ytestNoisefree, ytestNoisy, sigma2] = polyDataMake(...
         'sampling', 'sparse', 'deg', 2);
     T = PolyBasisTransformer(2);
-    m = LinregDist('transformer', T);
-    m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', prior, 'sigma2', sigma2);
+    lambda = 1e-3;
+    switch prior
+      case 'mvn', m = Linreg_MvnDist('transformer', T, 'sigma2', sigma2,'priorStrength', lambda);
+      case 'mvnIG', m = Linreg_MvnInvGammaDist('transformer', T, 'priorStrength', lambda);
+    end
+    m = fit(m, 'X', xtrain, 'y', ytrain);
    
     ypredTest = predict(m, xtest);
 

@@ -8,7 +8,7 @@ function [f,g,H] = multinomLogregNLLGradHessL2(w, X, Y, lambda,offset)
 % w             ndimensions*(nclasses-1)-by-1
 % X             nexamples-by-ndimensions
 % Y             nexamples-by-nclasses (1 of C encoding)
-% lambda        L2 regularizer
+% lambda        L2 regularizer ndimensions*1
 % offset        if true, (i.e. column of ones added to X), offset weights are
 %               not penalized.
 %

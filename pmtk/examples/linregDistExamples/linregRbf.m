@@ -7,7 +7,7 @@ for i=1:length(sigmas)
     sigma = sigmas(i);
     T = ChainTransformer({RescaleTransformer, RbfBasisTransformer(K,sigma)});
     m  = LinregDist('transformer', T);
-    m = fit(m, 'X', xtrain, 'y', ytrain, 'lambda', lambda);
+    m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', 'L2', 'lambda', lambda);
     ypred = mean(predict(m, xtest));
     figure(1);clf
     scatter(xtrain,ytrain,'b','filled');

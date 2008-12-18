@@ -136,6 +136,7 @@ classdef MvnDist < ParamDist
     
      %% Methods that need an inference engine
     function samples = sample(obj,n)
+      if nargin < 2, n = 1; end
       samples = sample(obj.infEng, obj, n);
     end
     

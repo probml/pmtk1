@@ -6,15 +6,18 @@ classdef Linreg_MvnDist < CondProbDist
      wDist;
      sigma2;
      transformer;      
+     priorStrength;
     end
 
     %% Main methods
     methods
         function model = Linreg_MvnDist(varargin)
-            [model.transformer, model.wDist, model.sigma2] = process_options(varargin,...
+            [model.transformer, model.wDist, model.sigma2, model.priorStrength] = ...
+              process_options(varargin,...
                         'transformer', []                      ,...      
                         'wDist'          , []                      ,... 
-                        'sigma2', []);
+                        'sigma2', [], ....
+                        'priorStrength', []);
         end
 
        
@@ -22,14 +25,14 @@ classdef Linreg_MvnDist < CondProbDist
         function model = fit(model,varargin)
         % 'X'
         % 'y'
-        % 'prior' - 'ridge' (default model.prior)
-        % 'lambda'
-         [X, y, prior, lambda] = process_options(varargin,...
-          'X', [], 'y', [], 'prior', [], 'lambda', 0);
+        % 'priorStrength' - magnitude of diagonals on precision matrix
+        %    (defauly model.priorStrength); only used if model.wDist is []
+         [X, y, lambda] = process_options(varargin,...
+          'X', [], 'y', [], 'priorStrength', model.priorStrength);
         if ~isempty(model.transformer)
           [X, model.transformer] = train(model.transformer, X);
         end
-        if ~isempty(prior) && strcmpi(prior, 'ridge')
+        if isempty(model.wDist) && ~isempty(lambda)
           d = size(X,2);
           model.wDist = makeSphericalPrior(d, lambda, addOffset(model.transformer), 'mvn');
         end
@@ -77,8 +80,8 @@ classdef Linreg_MvnDist < CondProbDist
             %XX = train(T, X);  d = size(XX,2);
             %prior = makeSphericalPrior(d, lambda, addOffset(T), 'mvnig');
             %model = Linreg_MvnInvGammaDist('wSigmaDist', prior, 'transformer',T);
-            model = Linreg_MvnDist('transformer',T);
-            model = fit(model,'X',Xtrain,'y',ytrain, 'prior', 'ridge', 'lambda', lambda);
+            model = Linreg_MvnDist('transformer',T, 'priorStrength', lambda);
+            model = fit(model,'X',Xtrain,'y',ytrain);
             yp = predict(model,'X',Xtest);
             err = mse(ytest, mode(yp))
          end 

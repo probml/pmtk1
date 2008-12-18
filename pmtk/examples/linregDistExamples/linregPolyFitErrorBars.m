@@ -6,8 +6,8 @@ function hh=linregPolyFitErrorBars(varargin)
     for i=1:length(degs)
         deg = degs(i);
         T =  ChainTransformer({RescaleTransformer, PolyBasisTransformer(deg)});
-        m = LinregDist('transformer', T);
-        m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', prior, 'sigma2', sigma2);
+        m = Linreg_MvnInvGammaDist('transformer', T, 'priorStrength', 1e-3);
+        m = fit(m, 'X', xtrain, 'y', ytrain);
         ypredTest = predict(m, xtest);
         figure;
         hold on;

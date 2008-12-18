@@ -132,4 +132,14 @@ classdef GaussDist < ParamDist
       end 
   end
   %}
+  
+    methods(Static = true)
+    function testClass()
+      p = GaussDist([-1 0 1], [1 2 3]);
+      mean(p)
+      p = GaussDist([-1 0 1]', [1 2 3]');
+      mean(p)
+    end
+    end
+  
 end

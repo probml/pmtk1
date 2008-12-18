@@ -11,9 +11,9 @@ m.transformer =  ChainTransformer({RescaleTransformer, ...
 lambdas = [0 0.00001 0.001];
 for k=1:length(lambdas)
     lambda = lambdas(k);
-    m = fit(m, 'X', xtrain, 'y', ytrain, 'lambda', lambda);
+    m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', 'L2', 'lambda', lambda);
     format bank
-    m.w.point(:)'
+    m.w
     ypred = mean(predict(m, xtest));
     figure;
     scatter(xtrain,ytrain,'b','filled');

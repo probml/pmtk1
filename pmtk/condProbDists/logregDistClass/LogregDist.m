@@ -2,19 +2,11 @@ classdef LogregDist < CondProbDist
 %% Logistic Regression, Multiclass Conditional Distribution
 
     properties
-        w;                      % w is the posterior distribution of the weights. 
-                                % The form depends on how this object was fit. 
-                                % If method = 'map', the default, then w 
-                                % represents the MAP estimate and is stored as a
-                                % ConstDist object. If method = 'bayesian', then
-                                % w is an MvnDist representing the laplace
-                                % approximation to the posterior. 
-                                
+        w;                      
         transformer;            % A data transformer object, e.g. KernelTransformer
-        
         nclasses;               % The number of classes
-        
         classSupport;           % The suppport of the target y, e.g. [0,1], [-1,+1], 1:K, etc. 
+        priorStrength;
     end
 
     
@@ -23,16 +15,15 @@ classdef LogregDist < CondProbDist
     %% Main methods
     methods
 
-        function m =LogregDist(varargin)
+        function m = LogregDist(varargin)
         % Constructor
-            [m.transformer,  m.w, m.nclasses] = process_options( varargin ,...
+            [m.transformer,  m.w, m.nclasses, m.prior, m.priorStrength] = ...
+              process_options( varargin ,...
                 'transformer', []             ,...
                 'w'          , []             , ...
-                'nclasses'   , []);
-            
-            if(~isempty(m.w) && isnumeric(m.w))
-                m.w = ConstDist(m.w);
-            end
+                'nclasses'   , [], ...
+                'prior', 'none', ...
+                'priorStrength', []);
         end
 
         function [obj, output] = fit(obj, varargin)
@@ -48,56 +39,53 @@ classdef LogregDist < CondProbDist
         % 'X'      - The training examples: X(i,:) is the ith case
         % 'y'      - The class labels for X in {1...C}
         % 'prior'  - {'L1' | 'L2' | ['none']}]
-        % 'lambda' - [0] regularization value
-        % 'method  - {['map'] | 'bayesian'}   The latter is unsupported in the
-        %                                     case that prior = 'l1'
-        % 'optMethod' - 
-        %
-        %               ----L1----
-        % {['projection'] | 'iteratedridge' | 'grafting' | 'orthantwise' |  'pdlb' |   'sequentialqp'
-        %  |'subgradient' | 'unconstrainedapx' |  'unconstrainedapxsub' |  'boundoptrelaxed' |
-        %  'boundoptstepwise'}
-        %
-        %               ---- L2----
-        % {['lbfgs'] | 'newton' | 'bfgs' | 'newton0' | 'netwon01bfgs' | 'cg' |
-        % 'bb' | 'sd' | 'tensor' | 'boundoptrelaxed' | 'boundoptstepwise'}
-        %
-        % OUTPUT:
-        %
-        % obj      - The fitted LogregDist object
-        % output   - A structure holding the output of the fitting algorithm, if any.
+        % 'priorStrength' - [0] regularization value
+        % 'optMethod' - for L2, a method supported by minFunc
+        %             - for L1, a method supported by L1general
             
-            [X, y,  prior, lambda, method,optMethod] = process_options(varargin,...
+            [X, y,  prior, lambda, optMethod] = process_options(varargin,...
                 'X'            , []                 ,...
                 'y'            , []                 ,...
                 'prior'        , 'none'             ,...
-                'lambda'       , 0                  ,...
-                'method'       , 'map'           ,...
+                'priorStrength'       , 0                  ,...
                 'optMethod'    , 'default'           );
-
             output = [];
-            if lambda > 0 && strcmpi(prior, 'none'), prior = 'L2'; end
-            
             offsetAdded = false;
             if ~isempty(obj.transformer)
                 [X, obj.transformer] = train(obj.transformer, X);
                 offsetAdded = obj.transformer.addOffset();
             end
-
             if isempty(obj.nclasses), obj.nclasses = length(unique(y)); end
             obj.ndimsX = size(X,2);
             obj.ndimsY = size(y,2);
             [Y1,obj.classSupport] = oneOfK(y, obj.nclasses);
-            
+            [n,d] = size(X);   
+            winit = zeros(d*(obj.nclasses-1),1);
             switch lower(prior)
-                case {'l1'}
-                     obj = fitL1(obj,X,Y1,lambda,method,optMethod,offsetAdded);
-                case {'l2', 'none'}
-                    [obj,output] = fitL2(obj,X,Y1,lambda,method,optMethod,offsetAdded);
-                otherwise
-                    error(['unrecognized prior ' prior])
+              case {'l1'}
+                lambdaVec = lambda*ones(d,obj.nclasses-1);
+                if(offsetAdded),lambdaVec(:,1) = 0;end
+                lambdaVec = lambdaVec(:);
+                objective = @(w) multinomLogregNLLGradHessL2(w, X, Y1,0,false);
+                options.verbose = false;
+                if(strcmpi(optMethod,'default'))
+                  optMethod = 'L1GeneralProjection';
+                end
+                [w,fEvals] = L1General(optMethod, objective, winit,lambdaVec, options);
+              case {'l2', 'none'}
+                objective = @(w) multinomLogregNLLGradHessL2(w, X, Y1,lambda,offsetAdded);
+                if(strcmpi(optMethod,'default'))
+                  optMethod = 'lbfgs';
+                end
+                options.Method = optMethod;
+                options.Display = false;
+                [w, f, exitflag, output] = minFunc(objective, winit, options);
+              otherwise
+                error(['unrecognized prior ' prior])
             end
+            obj.w = w;
         end
+
 
         function pred = predict(obj,varargin)
         % Predict the class labels of the specified test examples using the
@@ -191,101 +179,20 @@ classdef LogregDist < CondProbDist
 
     methods(Access = 'protected')
 
-        function obj = fitL1(obj,X,Y1,lambda,method,optMethod,offsetAdded)
-        % Fit using the specified L1 regularizer, lambda via the specified method.
-            
-            if(~strcmpi(method,'map'))
-                error('%s method is not currently supported given an L1 prior',method);
-            end
-            [n,d] = size(X);                                %#ok
-            
-            lambdaVec = lambda*ones(d,obj.nclasses-1);
-            if(offsetAdded),lambdaVec(:,1) = 0;end
-            lambdaVec = lambdaVec(:);
-            options.verbose = false;
-            
-            optfunc = [];
-            switch lower(optMethod)
-                case 'iteratedridge'
-                    optfunc = @L1GeneralIteratedRige;
-                case 'projection'
-                    options.order = -1;
-                    optfunc = @L1GeneralProjection;
-                case 'grafting'
-                    optfunc = @L1GeneralGrafting;
-                case 'orthantwise'
-                    optfunc = @L1GeneralOrthantWist;
-                case 'pdlb'
-                    optfunc = @L1GeneralPrimalDualLogBarrier;
-                case 'sequentialqp'
-                    optfunc = @L1GeneralSequentialQuadraticProgramming;
-                case 'subgradient'
-                    optfunc = @L1GeneralSubGradient;
-                case 'unconstrainedapx'
-                    optfunc = @L1GeneralUnconstrainedApx;
-                case 'unconstrainedapxsub'
-                   optfunc = @L1GeneralUnconstrainedApx_sub;
-                case 'boundoptrelaxed'
-                    if(offsetAdded),warning('LogregDist:offset','currently penalizes offset weight'),end
-                    [w,output] =  compileAndRun('boundOptL1overrelaxed',X, Y1, lambda);
-                    output.ftrace = output.ftrace(output.ftrace ~= -1);
-                case 'boundoptstepwise'
-                    if(offsetAdded),warning('LogregDist:offset','currently penalizes offset weight'),end
-                    [w, output] = compileAndRun('boundOptL1Stepwise',X, Y1, lambda);
-                    output.ftrace = output.ftrace(output.ftrace ~= -1);    
-                otherwise
-                    options.order = -1; 
-                    optfunc = @L1GeneralProjection;
-            end
-            if(~isempty(optfunc))
-                w = optfunc(@multinomLogregNLLGradHessL2,zeros(d*(obj.nclasses-1),1),lambdaVec,options,X,Y1,0,false);
-            end
-            obj.w = ConstDist(w);
-        end
+      function w = fitL1(obj,X,Y1,lambda,optMethod,offsetAdded)
+        % Fit using the specified L1 regularizer, lambda via the specified
+        % method.
+        [n,d] = size(X);                                %#ok
+        lambdaVec = lambda*ones(d,obj.nclasses-1);
+        if(offsetAdded),lambdaVec(:,1) = 0;end
+        lambdaVec = lambdaVec(:);
+        options.verbose = false;
+        w = zeros(d*(obj.nclasses-1),1);
+        [w,fEvals] = L1General(optMethod, @multinomLogregNLLGradHessL2,gradFunc,w,...
+          lambda,Vec, options, X, Y1, 0, false);
+      end
 
-        function [obj,output] = fitL2(obj,X,Y1,lambda,method,optMethod,offsetAdded)
-        % Fit using the specified L1 regularizer, lambda via the specified method.
-           [n,d] = size(X);                                                         %#ok
-            switch lower(optMethod)
-                case 'boundoptrelaxed'
-                    if(offsetAdded),warning('LogregDist:offset','currently penalizes offset weight'),end
-                    [w, output] = compileAndRun('boundOptL2overrelaxed',X, Y1, lambda);
-                    output.ftrace = output.ftrace(output.ftrace ~= -1);
-                case 'boundoptstepwise'
-                    if(offsetAdded),warning('LogregDist:offset','currently penalizes offset weight'),end
-                    [w, output] = compileAndRun('boundOptL2Stepwise',X, Y1, lambda);
-                    output.ftrace = output.ftrace(output.ftrace ~= -1);
-                case 'fminuncnewton'
-                     winit = zeros(d,1);
-                     options = optimset('Display','none','Diagnostics','off','GradObj','on','Hessian','on');
-                     [w,output] = fminunc(@multinomLogregNLLGradHessL2, winit, options, X, Y1, lambda);
-                otherwise
-                    if(strcmpi(optMethod,'default'))
-                        optMethod = 'lbfgs';
-                    end
-                    options.Method = optMethod;
-                    options.Display = false;
-                    winit = zeros(d*(obj.nclasses-1),1);
-                    [w, f, exitflag, output] = minFunc(@multinomLogregNLLGradHessL2, winit, options, X, Y1, lambda,offsetAdded); %#ok
-            end
-            
-            switch method
-                
-                case 'map'
-                    obj.w = ConstDist(w);
-                case 'bayesian'
-                    try
-                        [nll, g, H] = multinomLogregNLLGradHessL2(w, X, Y1, lambda,offsetAdded); %#ok  H = hessian of neg log lik    
-                        C = inv(H);
-                        obj.w = MvnDist(w, C); %C  = inv Hessian(neg log lik)
-                    catch
-                        warning('LogregDist:Laplace','Laplace approximation to the posterior could not be computed because the Hessian could not be inverted...using MAP estimate instead');
-                        obj.w = ConstDist(w);
-                    end
-                otherwise
-                    error('%s method is not currently supported given an L2 prior',method);
-            end
-        end
+
 
     end
 

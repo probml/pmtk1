@@ -76,8 +76,8 @@ function helperBasis(varargin)
             T = RbfBasisTransformer(10, 1);
     end
     m = Linreg_MvnDist('transformer', T, 'sigma2', sigma2);
-    m = fit(m,'X',xtrain,'y',ytrain,'prior','ridge','lambda',1e-3);
-    ypredTrain = predict(m,xtrain);
+    m = fit(m,'X',xtrain,'y',ytrain,'priorStrength', 1e-3);
+    %ypredTrain = predict(m,xtrain);
     ypredTest =  predict(m,xtest);
   
 
@@ -101,8 +101,8 @@ function helperBasis(varargin)
         h=errorbar(xtest(ndx), mu(ndx), 2*sigma(ndx));
         set(h, 'color', 'k');
     end
-    title(sprintf('truth = degree %d, basis = %s, n=%d, prior %s', ...
-        deg, basis, length(xtrain), prior));
+    title(sprintf('truth = degree %d, basis = %s, n=%d', ...
+        deg, basis, length(xtrain)));
 
     % superimpose basis fns
     if strcmp(basis, 'rbf') && plotBasis

@@ -16,7 +16,7 @@ classdef CondProbDist < ParamDist
        function p = logprob(model, X, y)
           % p(i) = log p(y(i) | X(i,:), model params)
           py = predict(model, X);
-          p = logprob(py, y);
+          p = logprob(py, y(:)'); % L(1,j) = log p(y(j) | params(j))
           %%[yhat] = mean(predict(model, X));
           %s2 = model.sigma2;
           %p = -1/(2*s2)*(y(:)-yhat(:)).^2 - 0.5*log(2*pi*s2);

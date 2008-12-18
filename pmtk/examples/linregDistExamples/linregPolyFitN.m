@@ -11,7 +11,7 @@ for i=1:numel(degrees)
         [xtrain, ytrain, xtest, ytestNoiseFree, ytest,sigma2] = polyDataMake('n', n, 'sampling', 'thibaux');
         m = LinregDist();
         m.transformer =  ChainTransformer({RescaleTransformer, PolyBasisTransformer(deg)});
-        m = fit(m, 'X', xtrain, 'y', ytrain, 'lambda', lambda);
+        m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', 'L2', 'lambda', lambda);
         testMse(i) = mean(squaredErr(m, xtest, ytest));
         trainMse(i) = mean(squaredErr(m, xtrain, ytrain));
     end
