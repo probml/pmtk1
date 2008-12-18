@@ -1,4 +1,5 @@
 %% 2D Model Selection (Searching Over a Grid of Values)
+%#broken
 % In this example, we carry on from where we left off in modelSelect1D and
 % search over a 2d grid of values for a lambda-degree pair. Lambda is the L2
 % regularizer and degree is the degree of the polynomial expansion of the data. 

@@ -1,4 +1,5 @@
 %% Selecting Lambda Using the ModelSelection Class
+%#broken
 % In this example, we demonstrate how to use the ModelSelection class to choose
 % the L2 regularization parameter lambda for a LinregDist model. We use four
 % different scoring functions: CV (MSE loss), CV (NLL loss), BIC, AIC.

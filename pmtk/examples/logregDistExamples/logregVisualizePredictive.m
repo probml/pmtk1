@@ -1,4 +1,5 @@
 %% Logistic Regression: Visualizing the Predictive Distribution
+%#broken
 % Here we fit a logistic regression model to synthetic data and visualize the
 % predictive distribution. We compare the MLE to L1 and L2 regularized
 % models.

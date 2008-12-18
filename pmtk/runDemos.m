@@ -2,7 +2,6 @@
 
 %% UgmChordalGaussDist
 demoPostModelsExhaustive
-kpm_demoPostModelsExhaustive
 UGMmodelSelection
 pause(2); close('all'); clear('all');
 
@@ -62,9 +61,9 @@ pause(2); close('all'); clear('all');
 sampleHIWdemo
 pause(2); close('all'); clear('all');
 
-%% hmmDist  %!
-casinoDemo
-seqClassification
+%% hmmDist
+%casinoDemo - broken!
+%seqClassification - broken!
 pause(2); close('all'); clear('all');
 
 %% invGammaDist
@@ -95,17 +94,17 @@ linregPolyFitRidgeU
 linregRbf
 pause(2); close('all'); clear('all');
 
-%% logregDist %!
-logregCompareOptimizers
-logregCompareOptimizers2
-logregFitCrabs
-logregLaplaceGirolami
-logregSAT
-logregVisualizePredictive
-%LRvsSVM - slow!
+%% logregDist
+%logregCompareOptimizers - broken!
+%logregCompareOptimizers2 - broken!
+%logregFitCrabs - broken!
+%logregLaplaceGirolami - broken!
+%logregSAT - broken!
+%logregVisualizePredictive - broken!
+%LRvsSVM - broken!
 pause(2); close('all'); clear('all');
 
-%% mcmc 
+%% mcmc
 mcmcMvn2d
 mcmcMvn2dConditioning
 mhGmmDemo
@@ -114,12 +113,12 @@ mhMvn2d
 mhMvn2dConditioning
 pause(2); close('all'); clear('all');
 
-%% modelSelection %!  uses logreg
-modelSelect1D 
-modelSelect2D
+%% modelSelection
+%modelSelect1D - broken!
+%modelSelect2D - broken!
 pause(2); close('all'); clear('all');
 
-%% mvnDist  
+%% mvnDist
 mvnCondition2D
 mvnHeightWeight
 mvnImputationDemo
@@ -127,8 +126,8 @@ mvnPlot2Ddemo
 mvnSoftCondition
 pause(2); close('all'); clear('all');
 
-%% mvnInvWishartDist  %!
-mvnInvWIplotDemo  % complains of wrong formula
+%% mvnInvWishartDist
+%mvnInvWIplotDemo - broken!
 pause(2); close('all'); clear('all');
 
 %% mvn_InvWishartDist
@@ -136,15 +135,15 @@ mvnInferParamsSigma2d
 mvnSeqUpdateSigma1d
 pause(2); close('all'); clear('all');
 
-%% mvn_MvnDist  
+%% mvn_MvnDist
 mvnInferParamsMean1d
 mvnInferParamsMean2d
 mvnSeqUpdateMu1d
 pause(2); close('all'); clear('all');
 
-%% mvn_MvnInvWishartDist  %!
-mvnInferMuSigma1D   % ?
-mvnSeqlUpdateMuSigma1D
+%% mvn_MvnInvWishartDist
+%mvnInferMuSigma1D - broken!
+%mvnSeqlUpdateMuSigma1D - broken!
 pause(2); close('all'); clear('all');
 
 %% mvtDist
@@ -159,25 +158,25 @@ pause(2); close('all'); clear('all');
 poissonPlotDemo
 pause(2); close('all'); clear('all');
 
-%% sampleDist  
+%% sampleDist
 sampleDistDemo
 pause(2); close('all'); clear('all');
 
-%% studentDist  
+%% studentDist
 gaussVsToutlierDemo
 studentVSGauss
 pause(2); close('all'); clear('all');
 
-%% tabularDist %!
+%% tabularDist
 %tabularSprinkler - broken!
 pause(2); close('all'); clear('all');
 
-%% tabularFactor %!
+%% tabularFactor
 %tabFactSprinkler1 - broken!
 %tabFactSprinkler2 - broken!
 pause(2); close('all'); clear('all');
 
-%% ugmGaussDist %!
+%% ugmGaussDist
 %ggmBICdemo - broken!
 %ggmDemo - broken!
 %ggmInferDemo - broken!

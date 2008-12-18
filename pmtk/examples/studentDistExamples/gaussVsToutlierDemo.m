@@ -1,10 +1,9 @@
-
 function gaussVsToutlierDemo
 % Illustrate the robustness of the t-distribution compared to the Gaussian.
 % Written by Matthew Dunham
-
+warning('off','stats:tlsfit:IterOrEvalLimit');
 n = 30;
-seed = 8; randn('state',seed);
+setSeed(8);
 data = randn(n,1);
 outliers = [8 ; 8.75 ; 9.5];
 nn = length(outliers);
@@ -17,7 +16,7 @@ figure;
 plotHist(data,nbins,n+nn);
 plotHist(outliers,nn,n+nn);
 plotPDFs([data ; outliers]);
-
+warning('on','stats:tlsfit:IterOrEvalLimit');
 end
 
 

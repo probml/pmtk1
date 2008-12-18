@@ -1,3 +1,4 @@
+%#broken
 % Based on code written by Mark Girolami
 setSeed(0);
 % We generate data from two Gaussians:

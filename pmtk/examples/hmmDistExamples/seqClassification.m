@@ -1,4 +1,5 @@
 %% Sequence Classification
+%#broken
 load data45; 
 nstates = 5;
 %% 

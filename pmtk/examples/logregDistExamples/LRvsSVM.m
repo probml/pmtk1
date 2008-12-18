@@ -1,5 +1,5 @@
 %% Logistic Regression vs Support Vector Machines
-%#slow
+%#broken
 
 dataSets = {'crabs','fisherIris','glass','yeast'};
 

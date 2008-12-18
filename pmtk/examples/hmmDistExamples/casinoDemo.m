@@ -1,4 +1,5 @@
 %% HMMs and the Occasionally Dishonest Casino
+%#broken
 % This is an example from 
 % 
 % 'Biological Sequence Analysis: 

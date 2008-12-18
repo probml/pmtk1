@@ -12,7 +12,7 @@ Y = sample(truth, n);
 
 prec{1} = inv(truth.Sigma); names{1} = 'truth';
 prec{2} = inv(cov(Y)); names{2} = 'emp';
-obj = UGMGaussChordalDist([], HiwDist([], delta, Phi), []);
+obj = UgmGaussChordalDist([], HiwDist([], delta, Phi), []);
 
 scoreFunction = @(modelDist,model)logmarglik(model,'data',modelDist.Ydata);
 modelSpace = mkAllGgmDecomposable(obj)';
