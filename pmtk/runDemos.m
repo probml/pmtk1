@@ -40,7 +40,7 @@ gammaPlotDemo
 gammaRainfallDemo
 pause(2); close('all'); clear('all');
 
-%% gaussDist %!
+%% gaussDist
 gaussCVfitDemo
 gaussHeightWeight
 gaussPlotDemo
