@@ -1,5 +1,5 @@
 function mhMissouriCancer()
-%#broken
+%
 % Hierarchical Bayesian estimation of some binomial proportions
 % Johnson and Albert  p67
 % mhDemoJohnsonHierBino C:\kmurphy\pmtkLocal\BLTold\PMLcode\Book
@@ -24,7 +24,11 @@ setSeed(1);
 xinit = 0.1*randn(1,2); % initial state
 proposal = @(x) (x + mvnrnd(zeros(1,2), SigmaProp));
 
-[x, naccept] = metropolisHastings(@target, proposal, xinit, Nsamples);
+%[x, naccept] = metropolisHastings(@target, proposal, xinit, Nsamples);
+
+ [x, naccept] = mhSample('target', @target, 'proposal', proposal, ...
+      'xinit', xinit, 'Nsamples', Nsamples);
+
 
 % trace plot
 figure;
@@ -87,8 +91,8 @@ keyboard
     m = sigmoid(logitM); K = exp(logK);
     ncases = length(data.n);
     logp = (hparams.am-1).*log(m) + (hparams.bm-1).*log(1-m) ...
-      -2*log(1+K) + sum(betaln(K*m+data.y, K*(1-m)+data.n-data.y)) ...
-      -ncases*betaln(K*m, K*(1-m));
+      -2*log(1+K) + sum(betaln(K'*m+data.y, K'*(1-m)+data.n-data.y)) ...
+      -ncases*betaln(K'*m, K'*(1-m));
   end
 
 

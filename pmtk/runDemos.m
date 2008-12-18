@@ -95,7 +95,7 @@ linregPolyFitRidgeU
 linregRbf
 pause(2); close('all'); clear('all');
 
-%% logregDist
+%% logregDist %!
 logregCompareOptimizers
 logregCompareOptimizers2
 logregFitCrabs
@@ -105,21 +105,21 @@ logregVisualizePredictive
 %LRvsSVM - slow!
 pause(2); close('all'); clear('all');
 
-%% mcmc %!
+%% mcmc 
 mcmcMvn2d
 mcmcMvn2dConditioning
 mhGmmDemo
-%mhMissouriCancer - broken!
+mhMissouriCancer
 mhMvn2d
 mhMvn2dConditioning
 pause(2); close('all'); clear('all');
 
-%% modelSelection
-modelSelect1D
+%% modelSelection %!  uses logreg
+modelSelect1D 
 modelSelect2D
 pause(2); close('all'); clear('all');
 
-%% mvnDist  %!
+%% mvnDist  
 mvnCondition2D
 mvnHeightWeight
 mvnImputationDemo
@@ -128,7 +128,7 @@ mvnSoftCondition
 pause(2); close('all'); clear('all');
 
 %% mvnInvWishartDist  %!
-mvnInvWIplotDemo
+mvnInvWIplotDemo  % complains of wrong formula
 pause(2); close('all'); clear('all');
 
 %% mvn_InvWishartDist
@@ -136,14 +136,14 @@ mvnInferParamsSigma2d
 mvnSeqUpdateSigma1d
 pause(2); close('all'); clear('all');
 
-%% mvn_MvnDist  %!
+%% mvn_MvnDist  
 mvnInferParamsMean1d
 mvnInferParamsMean2d
 mvnSeqUpdateMu1d
 pause(2); close('all'); clear('all');
 
 %% mvn_MvnInvWishartDist  %!
-mvnInferMuSigma1D
+mvnInferMuSigma1D   % ?
 mvnSeqlUpdateMuSigma1D
 pause(2); close('all'); clear('all');
 
@@ -159,11 +159,11 @@ pause(2); close('all'); clear('all');
 poissonPlotDemo
 pause(2); close('all'); clear('all');
 
-%% sampleDist  %!
+%% sampleDist  
 sampleDistDemo
 pause(2); close('all'); clear('all');
 
-%% studentDist  %!
+%% studentDist  
 gaussVsToutlierDemo
 studentVSGauss
 pause(2); close('all'); clear('all');

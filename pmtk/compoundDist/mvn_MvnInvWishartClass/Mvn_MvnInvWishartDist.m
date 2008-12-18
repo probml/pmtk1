@@ -11,7 +11,7 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
   %% main methods
   methods
     function model = Mvn_MvnInvWishartDist(prior)
-      % MvnMvnInvWishartDist(prior) where prior is of type MnvInvWishartDist 
+      % Mvn_MvnInvWishartDist(prior) where prior is of type MvnInvWishartDist 
       model.muSigmaDist = prior;
       %model.ndims  = length(prior.mu);
     end

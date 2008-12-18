@@ -74,7 +74,7 @@ classdef MvnDist < ParamDist
       if nargin < 2, d = ndimensions(obj); end
       obj.mu = randn(d,1);
       obj.Sigma = randpd(d);
-      obj.ndims = d;
+      
       obj.domain = 1:d;
     end
     

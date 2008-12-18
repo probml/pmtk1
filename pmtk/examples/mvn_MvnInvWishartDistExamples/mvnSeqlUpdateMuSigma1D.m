@@ -9,11 +9,13 @@ muRange = [-5 15]; sigmaRange  = [0.1 15];
 figure; hold on;
 [styles, colors, symbols] =  plotColors();
 ns = [0 2 5 50];
-
+h = zeros(1,length(ns));
+ps = cell(1,length(ns));
+legendstr = cell(1,length(ns));
 for i=1:length(ns)
     
     n = ns(i);
-    m = fit(MvnMvnInvWishartDist(prior),'data', X(1:n));
+    m = fit(Mvn_MvnInvWishartDist(prior),'data', X(1:n));
     post = m.muSigmaDist; % paramDist(m);
     [h(i), ps{i}] = plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, ...
         'xrange', [muRange sigmaRange], 'useContour', true);

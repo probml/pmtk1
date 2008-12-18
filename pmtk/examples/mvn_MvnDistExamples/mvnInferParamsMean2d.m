@@ -23,7 +23,7 @@ subplot(nr,nc,3); plot(prior, 'xrange', xrange, 'useContour', useContour);
 title('prior'); grid on; axis square
 for i=1:length(ns)
     n = ns(i);
-    m = MvnMvnDist(prior, Ctrue);
+    m = Mvn_MvnDist(prior, Ctrue);
     m = fit(m, 'data', X(1:n,:));
     post = m.muDist; 
     subplot(nr,nc,i+3); plot(post, 'xrange', xrange, 'useContour', useContour, 'npoints', 150);

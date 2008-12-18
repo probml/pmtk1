@@ -42,7 +42,7 @@ classdef StudentDist < ParamDist
       % L(i,j) = log p(X(i) | params(j)) or log p(X(i,j) | params(j))
       N  = size(X,1);
       d=ndistrib(obj);
-      if size(X,2) == 1, X = repmat(X, N, d); end
+      if size(X,2) == 1, X = repmat(X, 1, d); end
       %L = zeros(N,d);
       logZ = lognormconst(obj);
       v = obj.dof; mu = obj.mu; s2 = obj.sigma2;

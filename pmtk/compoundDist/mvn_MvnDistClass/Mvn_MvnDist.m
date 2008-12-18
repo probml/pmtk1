@@ -1,4 +1,4 @@
-classdef Mvn_MvnDist < Compound_Dist 
+classdef Mvn_MvnDist < CompoundDist 
 % p(X|mu,mu_Sigma,Sigma) = int_m N(X|m,Sigma) N(m|mu,mu_Sigma) 
   properties
     muDist;

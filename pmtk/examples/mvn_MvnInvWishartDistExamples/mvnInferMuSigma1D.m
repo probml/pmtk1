@@ -1,6 +1,6 @@
 %% Demo of inferring mu and sigma for a 1d Gaussian
 clear;
-seed = 0; rand('twister', seed); randn('state', seed);
+setSeed(0);
 muTrue = 10; varTrue = 5^2;
 N = 12;
 X = sample(MvnDist(muTrue, varTrue), N);
@@ -9,7 +9,7 @@ X = sample(MvnDist(muTrue, varTrue), N);
 v = 1; S = var(X);
 prior{1} = MvnInvWishartDist('mu', mean(X), 'k', 1, 'dof', v, 'Sigma', v*S);
 names{1} = 'Data-driven'; % since has access to data
-v = 0; S = 0;
+v = 1; S = 0.001;
 prior{2} = MvnInvWishartDist('mu', 0, 'k', 0.01, 'dof', v, 'Sigma', v*S);
 names{2} = 'Jeffreys'; % Jeffrey
 v = N; S = 10;
@@ -19,7 +19,7 @@ muRange = [0 20]; sigmaRange  = [1 30];
 nr = 3; nc = 3;
 figure;
 for i=1:3
-  m = fit(MvnMvnInvWishartDist(prior{i}), 'data', X);
+  m = fit(Mvn_MvnInvWishartDist(prior{i}), 'data', X);
   post{i} = m.muSigmaDist; %paramDist(m);
     pmuPost = marginal(post{i}, 'mu');
     pSigmaPost = marginal(post{i}, 'Sigma');
