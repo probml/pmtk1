@@ -43,16 +43,17 @@ classdef ProbDist
         
         function [mu, stdErr] = cvScore(obj, X, varargin)
             %CV Score using nll loss of the model.
-            [nfolds] = process_options(varargin, 'nfolds', 5);
+            [nfolds,clamp] = process_options(varargin, 'nfolds', 5,'clamp',false);
             [n d] = size(X);
             [trainfolds, testfolds] = Kfold(n, nfolds);
             score = zeros(1,n);
             for k = 1:nfolds
                 trainidx = trainfolds{k}; testidx = testfolds{k};
                 Xtest = X(testidx,:);  Xtrain = X(trainidx, :);
-                obj = fit(obj, 'data', Xtrain);
-                score(testidx) = logprob(obj,  Xtest);
-                %fprintf('fold %d, logprob %5.3f, mu %5.3f, sigma %5.3f\n', k, L(k), obj.mu, obj.sigma2);
+                if(~clamp)
+                    obj = fit(obj, 'data', Xtrain);
+                end
+                score(testidx) = negloglik(obj,  Xtest);
             end
             mu = mean(score);
             stdErr = std(score,0,2)/sqrt(n);
@@ -118,7 +119,7 @@ classdef ProbDist
                     p = exp(p);
                 end
                 p = p*scaleFactor;
-                h = plot(xs, p, plotArgs{:});
+                h = plot(colvec(xs), colvec(p), plotArgs{:});
             else
                 [X1,X2] = meshgrid(linspace(xrange(1), xrange(2), npoints)',...
                     linspace(xrange(3), xrange(4), npoints)');

@@ -443,8 +443,8 @@ classdef ModelDist
          %
          % Examples: 
          %
-         % models = ModelSelection.formatModels(1:10,0.1:0.05:1,3:7,0:1)
-         % models = ModelSelection.formatModels(logspace(-2,0,20),1:0.5:15);
+         % models = ModelSelection.makeModelSpace(1:10,0.1:0.05:1,3:7,0:1)
+         % models = ModelSelection.makeModelSpace(logspace(-2,0,20),1:0.5:15);
              if(nargin == 1)
                 space = varargin{1}';
              else

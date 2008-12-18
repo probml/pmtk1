@@ -76,7 +76,7 @@ classdef GaussDist < ParamDist
        % p(i,j) = log p(X(i) | params(j)) or log p(X(i,j) | params(j));
        n = size(X,1);
        d = ndistrib(obj);
-       if size(X,2) == 1, X = repmat(X, n, d); end
+       if size(X,2) == 1, X = repmat(X, 1, d); end
        p = zeros(n,d);
        logZ = lognormconst(obj);
        for j=1:d % can be vectorized

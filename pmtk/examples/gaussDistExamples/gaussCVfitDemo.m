@@ -1,15 +1,21 @@
-%% Estimate mu/sigma by cross validation over a small grid
-% See also crossValidation class
-mu = 0; sigma = 1;
-mtrue = GaussDist(mu, sigma^2);
-ntrain = 100;
+%% Estimate mu/sigma by Cross Validation
+%% Sample
+setSeed(1);
+mu = 0; sigma = 2;
+mtrue = GaussDist(mu, sigma);
+ntrain = 300;
 Xtrain = sample(mtrue, ntrain);
-mus = [-10 0 10];
-sigmas = [1 1 1];
-for i=1:length(sigmas)
-    models{i} = GaussDist(mus(i), sigmas(i)^2);
-    models{i}.clampedMu = true;
-    models{i}.clampedSigma = true;
-end
-[mestCV, cvMean, cvStdErr] = exhaustiveSearch(models, @(m) cvScore(m, Xtrain))
-mestMLE = fit(mtrue, 'data', Xtrain)
+%% Model Selection
+modelSpace = ModelDist.makeModelSpace(-10:0.5:10,0.1:0.1:4);
+scoreFunction = @(md,model)cvScore(GaussDist(model{1},model{2}),md.Xdata,'clamp',true);
+md = fit(ModelDist('scoreFunction'     ,scoreFunction,...
+                   'Xdata'             ,Xtrain       ,...
+                   'models'            ,modelSpace   ,...
+                   'scoreTransformer'  ,@(x)-exp(x)));
+%% CV Best Guess
+% We take the map estimate of the distribution over models. 
+cvMAPmodel  = GaussDist(md.mapEstimate{1},md.mapEstimate{2})
+%% MLE
+% Here we compare the CV selected model to the MLE. 
+fitMLEmodel = fit(GaussDist(),'data',Xtrain)
+
