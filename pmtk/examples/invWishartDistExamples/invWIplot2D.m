@@ -1,8 +1,9 @@
 %% plot some IW distributions
-seed=1;randn('state',seed);rand('twister',seed);
+setSeed(1);
 S=randpd(2);
-R=cov2cor(S)
+R=cov2cor(S);
 p=InvWishartDist(20,S);
 mean(p)
-figure(1);clf;plotSamples2d(p,9);
-figure(2);clf;plotMarginals(p)
+plotSamples2d(p,9);
+plotMarginals(p)
+restoreSeed();

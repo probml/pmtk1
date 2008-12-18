@@ -47,12 +47,12 @@ function [loss, nll, names] = helperPostModelsExhaustive(varargin)
     [logpostG, GGMs, mapG, mapPrec, postG, postMeanPrec, postMeanG] = ...
         computePostAllModelsExhaustive(obj, Y);
     
-    for i=1:9
-        Graphlayout('adjMatrix',GGMs{i}.G.adjMat,'undirected',true);
-    end
-    placeFigures;
-    pause;
-    close all;
+%     for i=1:9
+%         Graphlayout('adjMatrix',GGMs{i}.G.adjMat,'undirected',true);
+%     end
+%     placeFigures;
+%     pause;
+%     close all;
    
     
     prec{3} = postMeanPrec; names{3} = 'mean';

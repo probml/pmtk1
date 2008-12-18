@@ -27,7 +27,7 @@ classdef BinomDist < ParamDist
       if ndistrib(obj) > 1, error('can only plot 1 distrib'); end
       [plotArgs] = process_options( varargin, 'plotArgs' ,{});
       if ~iscell(plotArgs), plotArgs = {plotArgs}; end
-      h=bar(exp(logprob(obj,obj.support)), plotArgs{:});
+      h=bar(exp(logprob(obj,obj.support')), plotArgs{:});
       set(gca,'xticklabel',obj.support);
     end
     
@@ -45,16 +45,18 @@ classdef BinomDist < ParamDist
      % for X(i,j) in 0:N(j)
      % eg., logprob(binomdist(10,[0.5 0.1]), 1:10)
      %  p = log(binopdf(X, obj.N, obj.mu(1)));
-     d = ndistrib(obj);
-      n = size(X,1);
-      if size(X,2) == 1, X = repmat(X, n, d); end
-      p = zeros(n, d);
-      for j=1:d
-         % LOG1P  Compute log(1+z) accurately.
-         Nj = obj.N(1);
-         Xj = X(:,j);
-        p(:,j) = nchoosekln(Nj, Xj) + Xj.*log(obj.mu(j)) + (Nj - Xj).*log1p(-obj.mu(j));
-      end
+         
+         d = ndistrib(obj);
+         
+         n = size(X,1);
+         if size(X,2) == 1, X = repmat(X, 1, d); end
+         p = zeros(n, d);
+         for j=1:d
+             % LOG1P  Compute log(1+z) accurately.
+             Nj = obj.N(1);
+             Xj = X(:,j);
+             p(:,j) = nchoosekln(Nj, Xj) + Xj.*log(obj.mu(j)) + (Nj - Xj).*log1p(-obj.mu(j));
+         end
      end
      
      function m = mean(obj)
@@ -106,6 +108,8 @@ classdef BinomDist < ParamDist
             error('unknown prior ')
        end
      end
+     
+    
            
   end 
  

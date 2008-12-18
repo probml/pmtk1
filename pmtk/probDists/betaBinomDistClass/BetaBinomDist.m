@@ -40,7 +40,7 @@ classdef BetaBinomDist < ParamDist
        % p(i,j) = log p(x(i) | params(j)), x(i) in 0:N
        d = ndistrib(obj);
        n = size(X,1);
-       if size(X,2) == 1, X = repmat(X, n, d); end
+       if size(X,2) == 1, X = repmat(X, 1, d); end
        p = zeros(n,d);
        for j=1:d
          a = obj.a(j); b = obj.b(j); n = obj.N(j);
@@ -72,7 +72,7 @@ classdef BetaBinomDist < ParamDist
        if ndistrib > 1, error('can only plot 1 distribution'); end
        [plotArgs] = process_options( varargin, 'plotArgs' ,{});
        if ~iscell(plotArgs), plotArgs = {plotArgs}; end
-       h=bar(exp(logprob(obj,obj.support)), plotArgs{:});
+       h=bar(exp(logprob(obj,obj.support')), plotArgs{:});
        set(gca,'xticklabel',obj.support);
      end     
      

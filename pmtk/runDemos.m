@@ -2,12 +2,12 @@
 
 %% UgmChordalGaussDist
 demoPostModelsExhaustive
-kpm-demoPostModelsExhaustive
+kpm_demoPostModelsExhaustive
 UGMmodelSelection
 pause(2); close('all'); clear('all');
 
-%% bernoulliDist
-bernoulliSequentialUpdate
+%% bernoulli_BetaDist
+bernoulli_betaSequentialUpdate
 pause(2); close('all'); clear('all');
 
 %% betaBinomDist
@@ -20,8 +20,11 @@ pause(2); close('all'); clear('all');
 
 %% binomDist
 binomialPlotDemo
-binomialPosteriorDemo
-binomPostPredDemo
+pause(2); close('all'); clear('all');
+
+%% binom_betaDist
+binomial_betaPosteriorDemo
+binom_betaPostPredDemo
 pause(2); close('all'); clear('all');
 
 %% chordalGraph
@@ -37,7 +40,7 @@ gammaPlotDemo
 gammaRainfallDemo
 pause(2); close('all'); clear('all');
 
-%% gaussDist
+%% gaussDist %!
 gaussCVfitDemo
 gaussHeightWeight
 gaussPlotDemo
@@ -59,7 +62,7 @@ pause(2); close('all'); clear('all');
 sampleHIWdemo
 pause(2); close('all'); clear('all');
 
-%% hmmDist
+%% hmmDist  %!
 casinoDemo
 seqClassification
 pause(2); close('all'); clear('all');
@@ -102,7 +105,7 @@ logregVisualizePredictive
 %LRvsSVM - slow!
 pause(2); close('all'); clear('all');
 
-%% mcmc
+%% mcmc %!
 mcmcMvn2d
 mcmcMvn2dConditioning
 mhGmmDemo
@@ -116,7 +119,7 @@ modelSelect1D
 modelSelect2D
 pause(2); close('all'); clear('all');
 
-%% mvnDist
+%% mvnDist  %!
 mvnCondition2D
 mvnHeightWeight
 mvnImputationDemo
@@ -124,7 +127,7 @@ mvnPlot2Ddemo
 mvnSoftCondition
 pause(2); close('all'); clear('all');
 
-%% mvnInvWishartDist
+%% mvnInvWishartDist  %!
 mvnInvWIplotDemo
 pause(2); close('all'); clear('all');
 
@@ -133,13 +136,13 @@ mvnInferParamsSigma2d
 mvnSeqUpdateSigma1d
 pause(2); close('all'); clear('all');
 
-%% mvn_MvnDist
+%% mvn_MvnDist  %!
 mvnInferParamsMean1d
 mvnInferParamsMean2d
 mvnSeqUpdateMu1d
 pause(2); close('all'); clear('all');
 
-%% mvn_MvnInvWishartDist
+%% mvn_MvnInvWishartDist  %!
 mvnInferMuSigma1D
 mvnSeqlUpdateMuSigma1D
 pause(2); close('all'); clear('all');
@@ -156,25 +159,25 @@ pause(2); close('all'); clear('all');
 poissonPlotDemo
 pause(2); close('all'); clear('all');
 
-%% sampleDist
+%% sampleDist  %!
 sampleDistDemo
 pause(2); close('all'); clear('all');
 
-%% studentDist
+%% studentDist  %!
 gaussVsToutlierDemo
 studentVSGauss
 pause(2); close('all'); clear('all');
 
-%% tabularDist
+%% tabularDist %!
 %tabularSprinkler - broken!
 pause(2); close('all'); clear('all');
 
-%% tabularFactor
+%% tabularFactor %!
 %tabFactSprinkler1 - broken!
 %tabFactSprinkler2 - broken!
 pause(2); close('all'); clear('all');
 
-%% ugmGaussDist
+%% ugmGaussDist %!
 %ggmBICdemo - broken!
 %ggmDemo - broken!
 %ggmInferDemo - broken!

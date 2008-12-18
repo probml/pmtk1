@@ -130,7 +130,9 @@ classdef ProbDist
                 end
                 p = reshape(p, nr, nc);
                 if useContour
+                    if~(any(isnan(p)))
                     [c,h] = contour(X1, X2, p, plotArgs{:});
+                    end
                 else
                     h = surf(X1, X2, p, plotArgs{:});
                 end

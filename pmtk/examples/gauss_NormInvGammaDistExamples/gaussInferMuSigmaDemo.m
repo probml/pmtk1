@@ -1,6 +1,7 @@
 %% Demo of inferring mu and sigma for a 1d Gaussian
 % Compare to mvnInferMuSigma1d in Mvn_MvnInvWishartDistExamples
 setSeed(1);
+
 muTrue = 5; varTrue = 10;
 X = sample(GaussDist(muTrue, varTrue), 500);
 muRange = [0 10]; sigmaRange  = [0.1 12];
