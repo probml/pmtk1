@@ -6,7 +6,6 @@ classdef AddOnesTransformer < Transformer
   %%  Main methods
   methods
     function obj = AddOnesTransformer()
-      obj.dummy = 1;
     end
     
     function [Xnew, obj] = train(obj, X)

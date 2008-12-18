@@ -13,6 +13,22 @@ classdef CondProbDist < ParamDist
          d = obj.ndimsX; 
       end
       
+       function p = logprob(model, X, y)
+          % p(i) = log p(y(i) | X(i,:), model params)
+          py = predict(model, X);
+          p = logprob(py, y);
+          %%[yhat] = mean(predict(model, X));
+          %s2 = model.sigma2;
+          %p = -1/(2*s2)*(y(:)-yhat(:)).^2 - 0.5*log(2*pi*s2);
+        end
+        
+        function p = squaredErr(model, X, y)
+          % p(i) = (y(i) - yhat(i))^2
+          yhat = mean(predict(model, X));
+          p  = (y(:)-yhat(:)).^2;
+        end
+
+        
     function [mu, stdErr] = cvScore(obj, X, Y, varargin)
       % X(i,:), Y(i,:)
       [nfolds, objective, randOrder] = process_options(...

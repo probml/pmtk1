@@ -11,7 +11,7 @@ end
 function demoBasisSimple()
         helperBasis(...
         'deg', 2, 'basis', 'quad', 'sampling', 'sparse', ...
-        'plotErrorBars', true, 'prior', 'mvn');
+        'plotErrorBars', true);
 end
 
 function demoBasis()
@@ -61,11 +61,11 @@ function demoBasisSparse()
 end
 
 function helperBasis(varargin)
-    [sampling, deg, basis, plotErrorBars, plotBasis, prior, plotSamples] = ...
+    [sampling, deg, basis, plotErrorBars, plotBasis, plotSamples] = ...
         process_options(varargin, ...
         'sampling', 'sparse', 'deg', 3, 'basis', 'rbf', ...
         'plotErrorBars', true, 'plotBasis', true, ...
-        'prior', 'mvn', 'plotSamples', true);
+        'plotSamples', true);
 
     [xtrain, ytrain, xtest, ytestNoisefree, ytestNoisy, sigma2] = polyDataMake(...
         'sampling', sampling, 'deg', deg);
@@ -75,8 +75,8 @@ function helperBasis(varargin)
         case 'rbf'
             T = RbfBasisTransformer(10, 1);
     end
-    m = LinregDist('transformer', T);
-    m = fit(m,'X',xtrain,'y',ytrain,'prior',prior,'sigma2',sigma2);
+    m = Linreg_MvnDist('transformer', T, 'sigma2', sigma2);
+    m = fit(m,'X',xtrain,'y',ytrain,'prior','ridge','lambda',1e-3);
     ypredTrain = predict(m,xtrain);
     ypredTest =  predict(m,xtest);
   
@@ -126,7 +126,7 @@ function helperBasis(varargin)
     grid off
     nsamples = 10;
     for s=1:nsamples
-        ws = sample(m.w);
+        ws = sample(m.wDist);
         ms = LinregDist('w', ws(:), 'sigma2', sigma2, 'transformer', T);
         [xtrainT, ms.transformer] = train(ms.transformer, xtrain);
         ypred = mean(predict(ms, xtest));
