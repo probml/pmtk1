@@ -1,5 +1,4 @@
 %% Logistic Regression: Visualizing the Predictive Distribution
-%#broken
 % Here we fit a logistic regression model to synthetic data and visualize the
 % predictive distribution. We compare the MLE to L1 and L2 regularized
 % models.
@@ -24,7 +23,7 @@ if(0)
         mode(predict(fit(LogregDist('nclasses',2,'transformer',...
         ChainTransformer({StandardizeTransformer(false),...
         KernelTransformer('rbf', sigma)})),...
-        'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2'),Xtest));
+        'X',Xtrain,'y',ytrain,'priorStrength',lambda,'prior','l2'),Xtest));
     %%
         % This is the range we will search over; every combination will be
         % tested.
@@ -69,7 +68,7 @@ model = LogregDist('nclasses',2, 'transformer', T);
 % 'l1' as we will see later. We are performing map estimation here,
 % however in the L2 case we can perform full Bayesian estimation by
 % appending 'method','bayesian' to the call to fit().
-model = fit(model,'prior','l2','lambda',lambdaL2,'X',X,'y',Y);
+model = fit(model,'prior','l2','priorStrength',lambdaL2,'X',X,'y',Y);
 %%
 % We can specify which optimization method we would like to use by passing in
 % its name to the fit method as in the following. There are number of options
@@ -91,7 +90,7 @@ testData = [X1grid(:),X2grid(:)];
 % The output of the predict method is a discrete distribution over the class
 % labels. We extract the probabilities of each test point belonging to class 1
 % and reshape the vector for plotting purposes.
-pred = predict(model,'X',testData);              % pred is an object - a discrete distribution
+pred = predict(model,testData);              % pred is an object - a discrete distribution
 pclass1 = pred.mu(:,1);
 probGrid = reshape(pclass1,nrows,ncols);
 %% Plot the Predictive Distribution
@@ -122,7 +121,7 @@ if(0) % Takes about 3 minutes
         mode(predict(fit(LogregDist('nclasses',2,'transformer',...
         ChainTransformer({StandardizeTransformer(false),...
         KernelTransformer('rbf', sigma)})),...
-        'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l1'),Xtest));
+        'X',Xtrain,'y',ytrain,'priorStrength',lambda,'prior','l1'),Xtest));
 
     lambdaRange = logspace(-1,1,10);
     sigmaRange = [0.2,0.5:0.5:4];
@@ -144,11 +143,11 @@ end
 T = ChainTransformer({StandardizeTransformer(false)      ,...
     KernelTransformer('rbf',sigmaL1)} );
 model = LogregDist('nclasses',2, 'transformer', T);
-model = fit(model,'prior','l1','lambda',lambdaL1,'X',X,'y',Y);
+model = fit(model,'prior','l1','priorStrength',lambdaL1,'X',X,'y',Y);
 [X1grid, X2grid] = meshgrid(-3:0.02:3,-3:0.02:3);
 [nrows,ncols] = size(X1grid);
 testData = [X1grid(:),X2grid(:)];
-pred = predict(model,'X',testData);              % pred is an object - a discrete distribution
+pred = predict(model,testData);              % pred is an object - a discrete distribution
 pclass1 = pred.mu(:,1);
 probGrid = reshape(pclass1,nrows,ncols);
 %% Plot the Predictive Distribution L1
@@ -170,7 +169,7 @@ contour(X1grid,X2grid,probGrid,'LineColor','k','LevelStep',0.5,'LineWidth',2.5);
 %% Identify "support vectors"
 % We now visualize the "support vectors", i.e.
 % the examples corresponding to non-zero weights.
-supportVectors = X(model.w.point ~= 0,:);
+supportVectors = X(model.w ~= 0,:);
 plot(supportVectors(:,1),supportVectors(:,2),'ok','MarkerSize',10,'LineWidth',2)
 %% MLE with Small Sigma
 % Here we investigate what happens when we use the MLE and a small value
@@ -184,7 +183,7 @@ model = fit(model,'X',X,'y',Y);
 [X1grid, X2grid] = meshgrid(-3:0.02:3,-3:0.02:3);
 [nrows,ncols] = size(X1grid);
 testData = [X1grid(:),X2grid(:)];
-pred = predict(model,'X',testData);
+pred = predict(model,testData);
 pclass1 = pred.mu(:,1);
 probGrid = reshape(pclass1,nrows,ncols);
 figure; hold on;

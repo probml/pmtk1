@@ -1,18 +1,34 @@
 %% Logistic Regression Crabs Data
-%#broken
-% Here we fit an L2 regularized logistic regression model to the crabs
-% data set and predict using three methods: MAP plugin approx, Monte
-% Carlo approx, and using a closed form approximation to the posterior
-% predictive.
+% Here we fit Logistic Regression to the crabs data set using various
+% approximations and compare the results. 
+%% Setup
 [Xtrain, ytrain, Xtest, ytest] = makeCrabs;
-sigma2 = 32/5;
+sigma2 = 32/5;  lambda = 1e-3;
 T = ChainTransformer({StandardizeTransformer(false), KernelTransformer('rbf', sigma2)});
+%% MLE
 m = LogregDist('nclasses',2, 'transformer', T);
-lambda = 1e-3;
-m = fit(m, 'X', Xtrain, 'y', ytrain, 'lambda', lambda,'prior','l2','method','bayesian');
-Pmap   = predict(m,'X',Xtest,'method','plugin');
-Pmc    = predict(m,'X',Xtest,'method','mc');
-Pexact = predict(m,'X',Xtest,'method','integral');
-nerrsMAP   = sum(mode(Pmap) ~= ytest)                                           %#ok
-nerrsMC    = sum(mode(Pmc) ~= ytest)                                            %#ok
-nerrsExact = sum(mode(Pexact) ~= ytest)
+m = fit(m, 'X', Xtrain, 'y', ytrain);
+Pmle   = predict(m,Xtest);
+%% MAP
+m = LogregDist('nclasses',2, 'transformer', T);
+m = fit(m, 'X', Xtrain, 'y', ytrain, 'priorStrength', lambda,'prior','l2');
+Pmap   = predict(m,Xtest);
+%% Bayesian (Laplace / Integral)
+m = Logreg_MvnDist('nclasses',2,'transformer',T);
+m = fit(m, 'X', Xtrain, 'y', ytrain, 'priorStrength', lambda,'infMethod','laplace');
+PbayesLAint = predict(m,Xtest,'method','integral');
+%% Bayesian (Laplace / MC)
+m = Logreg_MvnDist('nclasses',2,'transformer',T);
+m = fit(m, 'X', Xtrain, 'y', ytrain, 'priorStrength', lambda,'infMethod','laplace');
+PbayesLAmc = predict(m,Xtest,'method','mc');
+%% Bayesian (MH / MC)
+m = Logreg_MvnDist('nclasses',2,'transformer',T);
+m = fit(m, 'X', Xtrain, 'y', ytrain, 'priorStrength', lambda,'infMethod','mh');
+PbayesMHmc = predict(m,Xtest,'method','mc');
+%%
+nerrsMLE = sum(mode(Pmle) ~= ytest)
+nerrsMAP = sum(mode(Pmap) ~= ytest)                                        
+nerrsPbayesLAint = sum(mode(PbayesLAint) ~= ytest)
+nerrsPbayesLAmc  = sum(mode(PbayesLAmc)  ~= ytest)
+nerrsPbayesMHmc  = sum(mode(PbayesMHmc) ~= ytest)
+

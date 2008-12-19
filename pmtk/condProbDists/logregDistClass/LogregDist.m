@@ -44,10 +44,13 @@ classdef LogregDist < CondProbDist
             [X, y,  prior, lambda, optMethod] = process_options(varargin,...
                 'X'            , []                 ,...
                 'y'            , []                 ,...
-                'prior'        , obj.prior             ,...
-                'priorStrength'       , obj.priorStrength                  ,...
+                'prior'        , obj.prior          ,...
+                'priorStrength', obj.priorStrength  ,...
                 'optMethod'    , obj.optMethod           );
             output = [];
+            if(isempty(lambda))
+                lambda = 0;
+            end
             offsetAdded = false;
             if ~isempty(obj.transformer)
                 [X, obj.transformer] = train(obj.transformer, X);
@@ -68,6 +71,7 @@ classdef LogregDist < CondProbDist
                 options.verbose = false;
                 if(strcmpi(optMethod,'default'))
                   optMethod = 'L1GeneralProjection';
+                  options.order = -1; % significant speed improvement with this setting
                 end
                 [w,fEvals] = L1General(optMethod, objective, winit,lambdaVec, options);
               case {'l2', 'none'}

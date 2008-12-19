@@ -103,13 +103,12 @@ linregRbf
 pause(2); close('all'); clear('all');
 
 %% logregDist
-%logregCompareOptimizers - broken!
-%logregCompareOptimizers2 - broken!
-%logregFitCrabs - broken!
-%logregLaplaceGirolami - broken!
-%logregSAT - broken!
-%logregVisualizePredictive - broken!
-%LRvsSVM - broken!
+logregCompareOptimizers
+logregCompareOptimizers2
+logregFitCrabs
+logregLaplaceGirolami
+logregSAT
+logregVisualizePredictive
 pause(2); close('all'); clear('all');
 
 %% mcmc
@@ -122,8 +121,8 @@ mhMvn2dConditioning
 pause(2); close('all'); clear('all');
 
 %% modelSelection
-%modelSelect1D - broken!
-%modelSelect2D - broken!
+modelSelect1D
+modelSelect2D
 pause(2); close('all'); clear('all');
 
 %% mvnDist
@@ -135,7 +134,7 @@ mvnSoftCondition
 pause(2); close('all'); clear('all');
 
 %% mvnInvWishartDist
-%mvnInvWIplotDemo - broken!
+mvnInvWIplotDemo
 pause(2); close('all'); clear('all');
 
 %% mvn_InvWishartDist
@@ -150,8 +149,8 @@ mvnSeqUpdateMu1d
 pause(2); close('all'); clear('all');
 
 %% mvn_MvnInvWishartDist
-%mvnInferMuSigma1D - broken!
-%mvnSeqlUpdateMuSigma1D - broken!
+mvnInferMuSigma1D
+mvnSeqlUpdateMuSigma1D
 pause(2); close('all'); clear('all');
 
 %% mvtDist

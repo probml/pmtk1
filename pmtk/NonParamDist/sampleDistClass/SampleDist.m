@@ -70,11 +70,14 @@ classdef SampleDist < NonParamDist
     
     function mm = marginal(m, queryVars)    
     % mm is of size nsamples-by-numel(queryVars)-by-npdfs  
-    Q = lookupIndices(queryVars, m.domain);
+      if(isempty(m.domain))
+          m.domain = 1:size(m.samples,2);
+      end
+      Q = lookupIndices(queryVars, m.domain);
       mm = SampleDist(m.samples(:,Q,:), m.domain(Q));
     end
     
-    %{
+   
     function mm = extractDist(m,ndx)
     % mm is a SampleDist object of size nsamples-by-ndimensions-by-numel(ndx)    
     % When this object represents multiple distributions, you can extract one or

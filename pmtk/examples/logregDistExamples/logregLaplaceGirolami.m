@@ -1,4 +1,4 @@
-%#broken
+%% Logreg Plot Demo
 % Based on code written by Mark Girolami
 setSeed(0);
 % We generate data from two Gaussians:
@@ -30,17 +30,12 @@ grid=[reshape(x1,nx*nx,1) reshape(x2,nx*nx,1)];
 % Plot data and plug-in predictive
 figure;
 m = fit(LogregDist, 'X', X, 'y', y+1);
-pred = predict(m,'X',grid);
+pred = predict(m,grid);
 
 contour(x1,x2,reshape(pred.mu(:,2),[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
-
-
-
-
-
 
 title('p(y=1|x, wMLE)')
 
@@ -60,18 +55,17 @@ title('Log-Likelihood');
 subplot(J,K,3)
 contour(w1,w2,reshape(-Log_Joint,[n,n]),30);
 title('Log-Unnormalised Posterior')
-hold
+hold on
 
 %Identify the parameters w1 & w2 which maximize the posterior (joint)
-[i,j]=max(Log_Joint);                                                                %#ok
+[i,j]=max(Log_Joint);                                                               
 plot(W(j,1),W(j,2),'.','MarkerSize',40);
 %Compute the Laplace Approximation
 tic
-m  = fit(LogregDist,'X',X,'y',y+1,'prior','l2','lambda',1/alpha,'method','bayesian');
+m = fit(Logreg_MvnDist(),'X',X,'y',y+1,'priorStrength',1/alpha,'infMethod','laplace');
 toc
-wMAP = m.w.mu;
-C = m.w.Sigma;
-%[wMAP, C] = logregFitIRLS(t, X, 1/alpha);
+wMAP = m.wDist.mu;
+C = m.wDist.Sigma;
 Log_Laplace_Posterior = log(mvnpdf(W, -wMAP', C)+eps);
 subplot(J,K,4);
 contour(w1,w2,reshape(-Log_Laplace_Posterior,[n,n]),30);
@@ -82,7 +76,7 @@ title('Laplace Approximation to Posterior')
 % wMAP
 figure;
 subplot(2,2,1)
-pred = predict(m,'X',grid,'method','plugin');
+pred = predict(m,grid);
 
 contour(x1,x2,reshape(pred.mu(:,2),[nx,nx]),30);
 hold on
@@ -94,20 +88,20 @@ subplot(2,2,2); hold on
 S = 100;
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
-predDist = predict(m,'X',grid,'method','mc','nsamples',S);
-pred = marginal(predDist,2);
-
-for s=1:min(S,20)
-    p = pred.samples(s,:);
-    contour(x1,x2,reshape(p,[nx,nx]),[0.5 0.5]);
-end
-set(gca, 'xlim', [-10 10]);
-set(gca, 'ylim', [-10 10]);
-title('decision boundary for sampled w')
-subplot(2,2,3)
+predDist = predict(m,grid,'method','mc','nsamples',S);
 
 
-contour(x1,x2,reshape(mean(pred),[nx,nx]),30);
+% for s=1:min(S,20)
+%     p = samples(s,:);
+%     contour(x1,x2,reshape(p,[nx,nx]),[0.5 0.5]);
+% end
+% set(gca, 'xlim', [-10 10]);
+% set(gca, 'ylim', [-10 10]);
+% title('decision boundary for sampled w')
+% subplot(2,2,3)
+
+meanPred = mean(pred);
+contour(x1,x2,reshape(meanPred(:,1),[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
@@ -115,7 +109,7 @@ plot(X((y==0),1),X((y==0),2),'bo');
 
 title('MC approx of p(y=1|x)')
 subplot(2,2,4)
-pred = predict(m,'X',grid,'method','integral');
+pred = predict(m,grid,'method','integral');
 
 contour(x1,x2,reshape(pred.mu(:,2),[nx,nx]),30);
 hold on

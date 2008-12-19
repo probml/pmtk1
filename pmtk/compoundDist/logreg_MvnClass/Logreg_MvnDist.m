@@ -18,66 +18,67 @@ classdef Logreg_MvnDist < CondProbDist
 
         function m =Logreg_MvnDist(varargin)
         % Constructor
-            [m.transformer,  m.wDist, m.priorStrength, m.infMethod, m.nclasses] = ...
-              process_options( varargin ,...
+            [m.transformer,  m.wDist, m.priorStrength, m.infMethod, m.classSupport,m.nclasses] = ...
+              process_options( varargin,...
                 'transformer', []             ,...
                 'wDist'          , []             , ...
                 'priorStrength',[], ...
                 'infMethod', 'laplace', ...
+                'classSupport',[],...
                 'nclasses', []);
         end
 
         function [obj] = fit(obj, varargin)
-         %
-          % FORMAT:
-          %           model = fit(model, 'name1', val1, 'name2', val2, ...)
-          % INPUT:
-          %
-          % 'X'      - The training examples: X(i,:) is the ith case
-          % 'y'      - The class labels for X in {1...C}
-          % 'priorStrength'  - precision of Gaussian diagonal
-          % 'infMethod' - {'laplace', 'mh'}
-          
-          [X, y, lambda, infMethod] = process_options(varargin,...
-            'X'            , []                 ,...
-            'y'            , []                 ,...
-            'priorStrength'       , obj.priorStrength, ...
-            'infMethod', obj.infMethod);
-          offsetAdded = false;
-          if ~isempty(obj.transformer)
-            [X, obj.transformer] = train(obj.transformer, X);
-            offsetAdded = obj.transformer.addOffset();
-          end
-          if isempty(obj.nclasses), obj.nclasses = length(unique(y)); end
-          obj.ndimsX = size(X,2);
-          obj.ndimsY = size(y,2);
-        
-          % First find mode
-          tmp = LogregDist('prior', 'L2', 'priorStrength', lambda);
-          tmp = fit(tmp, 'X', X, 'y', y);
-          wMAP = tmp.w;
-          % Then find Hessian at mode
-          [Y1,obj.classSupport] = oneOfK(y, obj.nclasses);
-          [nll, g, H] = multinomLogregNLLGradHessL2(wMAP, X, Y1, lambda,offsetAdded); %#ok  
-          C = inv(H); %H = hessian of neg log lik    
-          % Now find posterior
-          switch infMethod
-            case 'laplace', obj.wDist = MvnDist(wMAP, C);
-            case 'mh', 
-              d = length(wMAP);
-              priorMu = zeros(d,1)';
-              priorCov = (1/lambda)*eye(d);
-              targetFn = @(w) logprob(LogregDist('w',w(:),'nclasses',obj.nclasses),X,y) + log(mvnpdf(w(:)',priorMu,priorCov));
-              proposalFn = @(w) mvnrnd(w(:)',C);
-              %initFn = @() mvnrnd(wMAP', 0.1*C);
-              xinit = wMAP;
-              samples = mhSample('symmetric', true, 'target', targetFn, 'xinit', xinit, ...
-                'Nsamples', 1000, 'Nburnin', 100, 'proposal',  proposalFn);
-              obj.wDist = SampleDist(samples);
-            otherwise
-              error(['unrecognized infMethod ' infMethod])
-          end
-          
+            %
+            % FORMAT:
+            %           model = fit(model, 'name1', val1, 'name2', val2, ...)
+            % INPUT:
+            %
+            % 'X'      - The training examples: X(i,:) is the ith case
+            % 'y'      - The class labels for X in {1...C}
+            % 'priorStrength'  - precision of Gaussian diagonal
+            % 'infMethod' - {'laplace', 'mh'}
+            
+            [X, y, lambda, infMethod] = process_options(varargin,...
+                'X'            , []                 ,...
+                'y'            , []                 ,...
+                'priorStrength'       , obj.priorStrength, ...
+                'infMethod', obj.infMethod);
+            offsetAdded = false;
+            if ~isempty(obj.transformer)
+                [X, obj.transformer] = train(obj.transformer, X);
+                offsetAdded = obj.transformer.addOffset();
+            end
+            if isempty(obj.nclasses), obj.nclasses = length(unique(y)); end
+            obj.ndimsX = size(X,2);
+            obj.ndimsY = size(y,2);
+            
+            % First find mode
+            tmp = LogregDist('prior', 'L2', 'priorStrength', lambda);
+            tmp = fit(tmp, 'X', X, 'y', y);
+            wMAP = tmp.w;
+            % Then find Hessian at mode
+            [Y1,obj.classSupport] = oneOfK(y, obj.nclasses);
+            [nll, g, H] = multinomLogregNLLGradHessL2(wMAP, X, Y1, lambda,offsetAdded); %#ok
+            C = inv(H); %H = hessian of neg log lik
+            % Now find posterior
+            switch infMethod
+                case 'laplace', obj.wDist = MvnDist(wMAP, C);
+                case 'mh',
+                    d = length(wMAP);
+                    priorMu = zeros(d,1)';
+                    priorCov = (1/lambda)*eye(d);
+                    targetFn = @(w) logprob(LogregDist('w',w(:),'nclasses',obj.nclasses),X,y) + log(mvnpdf(w(:)',priorMu,priorCov));
+                    proposalFn = @(w) mvnrnd(w(:)',C);
+                    %initFn = @() mvnrnd(wMAP', 0.1*C);
+                    xinit = wMAP;
+                    samples = mhSample('symmetric', true, 'target', targetFn, 'xinit', xinit, ...
+                        'Nsamples', 1000, 'Nburnin', 100, 'proposal',  proposalFn);
+                    obj.wDist = SampleDist(samples);
+                otherwise
+                    error(['unrecognized infMethod ' infMethod])
+            end
+            
         end
 
         function pred = predict(obj,X,varargin)
@@ -96,6 +97,7 @@ classdef Logreg_MvnDist < CondProbDist
             if ~isempty(obj.transformer)
                 X = test(obj.transformer, X);
             end
+            
             if strcmpi(method, 'default')
               if obj.nclasses==2 && isa(obj.wDist,'MvnDist')
                 method = 'integral';
@@ -108,21 +110,28 @@ classdef Logreg_MvnDist < CondProbDist
                 if isa(obj.wDist, 'MvnDist')
                   Wsamples = sample(obj.wDist,nsamples);
                 else
-                  Wsamples = obj.Wdist.samples;
+                  Wsamples = obj.wDist.samples;
                 end
                 n = size(X,1); C = obj.nclasses;
-                P = zeros(n,C);
+                %P = zeros(n,C);
+                
+                samples = zeros(nsamples,C,n);
                 for s=1:nsamples
-                   P = P + multiSigmoid(X,Wsamples(s,:));
+                   samples(s,:,:) = multiSigmoid(X,Wsamples(s,:))'; 
                 end
-                P = P / nsamples;
-                pred = DiscreteDist('mu', P', 'support', obj.classSupport);
+                pred = SampleDistDiscrete(samples,obj.classSupport);
+%                 for s=1:nsamples
+%                    P = P + multiSigmoid(X,Wsamples(s,:));
+%                 end
+%                 P = P / nsamples;
+%                 
+%                 pred = DiscreteDist('mu', P, 'support', obj.classSupport);
               case 'integral'
                 if(obj.nclasses ~=2),error('This method is only available in the 2 class case');end
                 if ~isa(obj.wDist,'MvnDist'), error('Only available for Gaussian posteriors'); end
                 p = sigmoidTimesGauss(X, obj.wDist.mu(:), obj.wDist.Sigma);
                 p = p(:);
-                pred = BernoulliDist('mu',p);
+                pred = DiscreteDist('mu',[p,1-p],'support',obj.classSupport);
               otherwise
                 error('%s is an unsupported prediction method',method);
             end
@@ -132,8 +141,8 @@ classdef Logreg_MvnDist < CondProbDist
           % p(i) = log p(y(i) | X(i,:), obj.w), y(i) in 1...C
             pred = predict(obj,X);
             n = size(X,1);
-            P = pred.mu;
-            if size(pred.mu,2)==1
+            P = mean(pred);
+            if size(P,2)==1
               P = [1-P, P];
             end
             Y = oneOfK(y, obj.nclasses);

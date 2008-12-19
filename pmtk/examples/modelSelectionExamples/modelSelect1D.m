@@ -1,5 +1,4 @@
 %% Selecting Lambda Using the ModelSelection Class
-%#broken
 % In this example, we demonstrate how to use the ModelSelection class to choose
 % the L2 regularization parameter lambda for a LinregDist model. We use four
 % different scoring functions: CV (MSE loss), CV (NLL loss), BIC, AIC.
@@ -43,7 +42,7 @@ models = ModelSelection.makeModelSpace(logspace(-5,3,50));
 % loss function. Here, and in general, the test function will be the composition
 % of several other functions. In this case we use fit, predict, and mode. 
 predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
-   mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',lambda),Xtest));
+   mode(predict(fit(baseModel,'X',Xtrain,'y',ytrain,'prior','l2','lambda',lambda,'prior','l2'),Xtest));
 %% Run Model Selection
 % To perform the model selection, we simply call the ModelSelection constructor
 % with the right inputs. Unless we turn it off with  "'doPlot',false" , a plot is
@@ -70,7 +69,7 @@ xlabel('lambda');
 % loss function. In this case we will have the predictFunction simply return the
 % fitted model. We will then define a custom loss function to calculate the nll.
 predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
-    fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',lambda);
+    fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',lambda,'prior','l2');
 %% Loss Function 
 % When defining our own scoring function as we will do later, we are free to
 % define the test and loss functions any way we wish, however to use the built
@@ -105,7 +104,7 @@ xlabel('lambda');
 % which is passed by the search function in model{1}.
 scoreFcn = @(obj,model)...
     -bicScore(...
-        fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',model{1})...
+        fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',model{1},'prior','l2')...
                                                        ,Xtrain,ytrain,model{1});
 %% 
 % We now run the model selection.
@@ -117,12 +116,12 @@ msBic = ModelSelection(         ...
     'scoreFunction' ,scoreFcn   );
 
 bicFinalError = mse(ytest,mode(predict(...
-    fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msBic.bestModel{1}),Xtest)));
+    fit(baseModel,'X',Xtrain,'y',ytrain,'prior','l2','lambda',msBic.bestModel{1}),Xtest)));
 title(sprintf('BIC\nlambda = %f\nFinal MSE: %f',msBic.bestModel{1},bicFinalError));
 xlabel('lambda');
 %% AIC
 % The AIC case is almost identical to the BIC case. 
-scoreFcn = @(obj,model) -aicScore(fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',model{1}),Xtrain,ytrain,model{1});
+scoreFcn = @(obj,model) -aicScore(fit(baseModel,'X',Xtrain,'y',ytrain,'prior','l2','lambda',model{1}),Xtrain,ytrain,model{1});
 msAic = ModelSelection(         ...
     'Xdata'         ,Xtrain     ,...
     'Ydata'         ,ytrain     ,...
@@ -131,7 +130,7 @@ msAic = ModelSelection(         ...
     'scoreFunction' ,scoreFcn   );
 
 aicFinalError = mse(ytest,mode(predict(...
-    fit(baseModel,'X',Xtrain,'y',ytrain,'lambda',msAic.bestModel{1}),Xtest)));
+    fit(baseModel,'X',Xtrain,'y',ytrain,'prior','l2','lambda',msAic.bestModel{1}),Xtest)));
 title(sprintf('AIC\nlambda = %f\nFinal MSE: %f',msAic.bestModel{1},aicFinalError));
 xlabel('lambda');
 %%

@@ -1,5 +1,4 @@
 %% Plot Demo
-%#broken
 for i=1:2
     if(i==1)
         useContour = false;

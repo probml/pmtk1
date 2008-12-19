@@ -1,5 +1,4 @@
 %% 2D Model Selection (Searching Over a Grid of Values)
-%#broken
 % In this example, we carry on from where we left off in modelSelect1D and
 % search over a 2d grid of values for a lambda-degree pair. Lambda is the L2
 % regularizer and degree is the degree of the polynomial expansion of the data. 
@@ -23,7 +22,7 @@ models = ModelSelection.makeModelSpace(logspace(-5,5,30) , 2:5 );
 predictFunction = @(Xtrain,ytrain,Xtest,lambda,degree)...
   mode(predict(fit(LinregDist('transformer',...
   ChainTransformer({StandardizeTransformer(false),PolyBasisTransformer(degree)})),...
-  'X',Xtrain,'y',ytrain,'lambda',lambda),Xtest));
+  'X',Xtrain,'y',ytrain,'prior','l2','lambda',lambda),Xtest));
 %% 2D CV (MSE Loss)
 % We run the model selection as before. Note that this time, it plots the error
 % surface in 2D.
@@ -42,7 +41,7 @@ title(sprintf('CV (MSE loss)\nchosen lambda: %f\nchosen degree: %f',bestLambda,b
 %%
 T = ChainTransformer({StandardizeTransformer(false),PolyBasisTransformer(bestSigma)});
 m = LinregDist('transformer',T);
-m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda);
+m = fit(m,'X',Xtrain,'y',ytrain,'prior','l2','lambda',bestLambda);
 CVmseError = mse(ytest,mode(predict(m,Xtest)))
 %% 2D CV (NLL Loss)
 % Our test function is almost the same here but we simply return the fitted
@@ -50,7 +49,7 @@ CVmseError = mse(ytest,mode(predict(m,Xtest)))
 predictFunction = @(Xtrain,ytrain,Xtest,lambda,degree)...
   fit(LinregDist('transformer',...
   ChainTransformer({StandardizeTransformer(false),PolyBasisTransformer(degree)})),...
- 'X',Xtrain,'y',ytrain,'lambda',lambda);
+ 'X',Xtrain,'y',ytrain,'prior','l2','lambda',lambda);
 %% Loss Function
 % Our loss function is the same as in the 1D CV NLL case. 
 lossFunction = @(fittedObj,Xtest,ytest)-logprob(fittedObj,Xtest,ytest);
@@ -71,7 +70,7 @@ title(sprintf('CV (NLL loss)\nchosen lambda: %f\nchosen degree: %f',bestLambda,b
 %%
 T = ChainTransformer({StandardizeTransformer(false),PolyBasisTransformer(bestSigma)});
 m = LinregDist('transformer',T);
-m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda);
+m = fit(m,'X',Xtrain,'y',ytrain,'prior','l2','lambda',bestLambda);
 CVnllError = mse(ytest,mode(predict(m,Xtest)))
 %% 2D BIC (Scoring Function)
 % Much like the 1D case, we only need to create a custom scoring function.
@@ -80,7 +79,7 @@ CVnllError = mse(ytest,mode(predict(m,Xtest)))
 scoreFcn = @(obj,model)...
     -bicScore(fit(LinregDist('transformer',...
     ChainTransformer({StandardizeTransformer(false),PolyBasisTransformer(model{2})}))...
-    ,'X',Xtrain,'y',ytrain,'lambda',model{1}),Xtrain,ytrain,model{1});
+    ,'X',Xtrain,'y',ytrain,'prior','l2','lambda',model{1}),Xtrain,ytrain,model{1});
 %%
 modelSelector = ModelSelection(           ...
     'scoreFunction' , scoreFcn           ,...
@@ -95,14 +94,14 @@ title(sprintf('BIC\nchosen lambda: %f\nchosen degree: %f',bestLambda,bestSigma))
 %%
 T = ChainTransformer({StandardizeTransformer(false),PolyBasisTransformer(bestSigma)});
 m = LinregDist('transformer',T);
-m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda);
+m = fit(m,'X',Xtrain,'y',ytrain,'prior','l2','lambda',bestLambda);
 BicError = mse(ytest, mode(predict(m,Xtest)))
 %% 2D AIC
 % The steps to perform AIC are almost identical. 
 scoreFcn = @(obj,model)...
     -aicScore(fit(LinregDist('transformer',...
     ChainTransformer({StandardizeTransformer(false),PolyBasisTransformer(model{2})}))...
-    ,'X',Xtrain,'y',ytrain,'lambda',model{1}),Xtrain,ytrain,model{1});
+    ,'X',Xtrain,'y',ytrain,'prior','l2','lambda',model{1}),Xtrain,ytrain,model{1});
 %%
 modelSelector = ModelSelection(           ...
     'scoreFunction' , scoreFcn           ,...
@@ -117,6 +116,6 @@ title(sprintf('AIC\nchosen lambda: %f\nchosen degree: %f',bestLambda,bestSigma))
 %%
 T = ChainTransformer({StandardizeTransformer(false),PolyBasisTransformer(bestSigma)});
 m = LinregDist('transformer',T);
-m = fit(m,'X',Xtrain,'y',ytrain,'lambda',bestLambda);
+m = fit(m,'X',Xtrain,'y',ytrain,'prior','l2','lambda',bestLambda);
 AicError = mse(ytest,mode(predict(m,Xtest)))
 %%

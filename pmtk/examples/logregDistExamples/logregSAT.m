@@ -1,5 +1,4 @@
 %% Binary Classification of SAT Data via Logistic Regression
-%#broken
 % In this example, we classify whether or not a student will pass a
 % course based on their SAT score, using logistic regression.
 %% Load Data
@@ -24,10 +23,10 @@ y = y(perm);
 %% Fit via MLE
 T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer});
 m = LogregDist('nclasses',2,'transformer', T);
-m = fit(m, 'X', X, 'y', y,'method','map');   % MLE performed if no prior specified
+m = fit(m, 'X', X, 'y', y);  
 %% Classify Training Examples
-pred = predict(m,'X', X,'method','plugin');  % predict on the training examples using MLE
-yhat = mode(pred);                           % most probable class labels 
+pred = predict(m,X);                      % predict on the training examples using MLE
+yhat = mode(pred);                        % most probable class labels 
 yprob = pred.mu(:,2);                     % probability of passing given SAT score and fitted weights
 %% Plot MLE
 figure; hold on
@@ -44,17 +43,14 @@ xlabel('SAT Score')
 legend({'Actual','Predicted','p( passing | SAT Score , w )'},'Location','NorthWest');
 title('MLE');
 %%  Fit Using Laplace Approximation to the Posterior
-% Here we fit in much the same way but specify an L2 prior. The laplace
-% approximation to the posterior, an MvnDist object, is assigned to
-% obj.w when 'method' is 'bayesian'.
-T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer});
-mBayes = LogregDist('nclasses',2,'transformer',T);
-mBayes = fit(mBayes,'X',X,'y',y,'prior','l2','lambda',1e-3,'method','bayesian','optMethod','bb');
+% Here we fit in much the same way but use the Logreg_MvnDist and compute a
+% Laplace approximation to the posterior. 
+mBayes = Logreg_MvnDist('nclasses',2,'transformer',T);
+mBayes = fit(mBayes,'X',X,'y',y,'priorStrength',1e-3);
 %% Plot Posterior of w
 figure; hold on
-subplot2(2,2,1,1); plot(marginal(mBayes.w,1),'plotArgs', {'linewidth',2}); title('w0')
-subplot2(2,2,1,2); plot(mBayes.w); xlabel('w0'); ylabel('w1');
-subplot2(2,2,2,2); plot(marginal(mBayes.w,2),'plotArgs', {'linewidth',2}); title('w1')
+plot(mBayes.wDist);
+title('Posterior over w');
 %% Predict using Monte Carlo sampling of the Posterior Predictive
 % When performing Monte Carlo sampling, the samples are automatically
 % averaged and used to create the DiscreteDist object storing
@@ -62,7 +58,7 @@ subplot2(2,2,2,2); plot(marginal(mBayes.w,2),'plotArgs', {'linewidth',2}); title
 % interest are returned as a SampleDist object such that
 % samples.samples(s,c,i) = probability that example i belongs to class c
 % according to sample s.
-pred = predict(mBayes,'X',X,'method','mc','nsamples',100);
+pred = predict(mBayes,X,'method','mc','nsamples',100);
 sdist = marginal(pred,2);      % marginal(sdist,1) + marginal(sdist,2) = 1
 %% Plot Credible Intervals
 % Here we obtain error bars on our predictions by looking at the

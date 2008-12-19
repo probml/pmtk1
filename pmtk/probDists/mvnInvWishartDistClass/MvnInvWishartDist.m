@@ -37,7 +37,7 @@ classdef MvnInvWishartDist < ParamDist
       d = length(obj.mu);
       if d > 1, error('not supported'); end
       pgauss = MvnDist(obj.mu, obj.Sigma/obj.k); % obj.Sigma is the argument!!
-      warning('wrong formula')
+      %warning('wrong formula')
       piw = InvWishartDist(obj.dof, obj.Sigma);
       n = size(X,1);
       assert(size(X,2)==2);

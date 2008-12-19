@@ -47,7 +47,7 @@ classdef DgmDist < GmDist
     end
     
     function postQuery = marginal(obj, queryVars)
-      postQuery = marginal(obj.infEng, queryVars);
+      postQuery = marginal(obj.infEng, obj, queryVars);
     end
     
     function postQuery = predict(obj, visVars, visVals, queryVars, varargin)

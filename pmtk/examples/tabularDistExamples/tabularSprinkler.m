@@ -1,6 +1,6 @@
 %% Sprinkler Example
 %#broken
-[G, CPD, joint, nodes] = makeSprinklerBN;
+[G, CPD, joint, nodes] = mkSprinklerDgm;
 % joint(c,s,r,w)
 C = nodes.C; R = nodes.R; S = nodes.S; W = nodes.W;
 T = TabularDist(joint);

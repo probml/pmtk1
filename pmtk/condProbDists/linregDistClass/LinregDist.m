@@ -184,6 +184,20 @@ classdef LinregDist < CondProbDist
           df(i) = sum(D2./(D2+lambdas(i)));
         end
         end
+        
+        function p = logprob(model, X, y)
+        % p(i) = log p(y(i) | X(i,:), model params)
+            [yhat] = mean(predict(model, X));
+            s2 = model.sigma2;
+            p = -1/(2*s2)*(y(:)-yhat(:)).^2 - 0.5*log(2*pi*s2);
+            %[yhat, py] = predict(model, X);
+            %PP = logprob(py, y); % PP(i,j) = p(Y(i)| yhat(j))
+            %p1 = diag(PP);
+            %yhat = predict(model, X);
+            %assert(approxeq(p,p1))
+        end
+        
+        
 
     end
 

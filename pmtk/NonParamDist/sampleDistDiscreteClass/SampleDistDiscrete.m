@@ -27,6 +27,8 @@ classdef SampleDistDiscrete < SampleDist
             m = obj.support(m);
         end
         
+        
+        
     end
     
 end

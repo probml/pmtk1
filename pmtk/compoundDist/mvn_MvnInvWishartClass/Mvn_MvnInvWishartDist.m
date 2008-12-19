@@ -43,6 +43,7 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
       %k0 = obj.k; m0 = obj.mu; S0 = obj.Sigma; v0 = obj.dof;
       k0 = obj.muSigmaDist.k; m0 = obj.muSigmaDist.mu;
       S0 = obj.muSigmaDist.Sigma; v0 = obj.muSigmaDist.dof;
+      if SS.n==0, return; end
       n = SS.n;
       kn = k0 + n;
       vn = v0 + n;
@@ -50,6 +51,7 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
       mn = (k0*m0 + n*SS.xbar)/kn;
       %obj.mu = mn; obj.Sigma = Sn; obj.dof = vn; obj.k = kn;
       obj.muSigmaDist = MvnInvWishartDist('mu', mn, 'Sigma', Sn, 'dof', vn, 'k', kn);
+    assert(~isnan(mn))
     end
    
   

@@ -1,6 +1,5 @@
 %% Sequential Bayesian updating of (mu,sigma) for a 1D gaussian
-%#broken
-nu = 0.001; S = 0.001; k = 0.001;
+nu = 1.1; S = 0.001; k = 0.001;
 prior = MvnInvWishartDist('mu', 0, 'k', k, 'dof', nu, 'Sigma', S);
 setSeed(1);
 muTrue = 5; varTrue = 10;
@@ -15,7 +14,7 @@ legendstr = cell(1,length(ns));
 for i=1:length(ns)
     
     n = ns(i);
-    m = fit(Mvn_MvnInvWishartDist(prior),'data', X(1:n));
+   m = fit(Mvn_MvnInvWishartDist(prior),'data', X(1:n));
     post = m.muSigmaDist; % paramDist(m);
     [h(i), ps{i}] = plot(post, 'plotArgs', {styles{i}, 'linewidth', 2}, ...
         'xrange', [muRange sigmaRange], 'useContour', true);
