@@ -30,6 +30,14 @@ pause(2); close('all'); clear('all');
 chordalGraphDemo
 pause(2); close('all'); clear('all');
 
+%% dgmDist
+cooperYooInterventionDemo
+%gaussDGMdemo - broken!
+mkSprinklerDgm
+rainyDayDemo
+sprinklerDGMdemo
+pause(2); close('all'); clear('all');
+
 %% dirichletDist
 dirichletHistPlotDemo
 pause(2); close('all'); clear('all');
@@ -114,8 +122,8 @@ mhMvn2dConditioning
 pause(2); close('all'); clear('all');
 
 %% modelSelection
-%modelSelect1D - broken! (depends on LogregDist)
-%modelSelect2D - broken! (depends on LogregDist)
+%modelSelect1D - broken!
+%modelSelect2D - broken!
 pause(2); close('all'); clear('all');
 
 %% mvnDist
