@@ -22,6 +22,9 @@ mcmc{2} = MvnDist(mu, Sigma, 'infEng', ...
 mcmc{3} = MvnDist(mu, Sigma, 'infEng', ...
   MhInfEng('Nsamples', N, 'proposal', @(x) mvnrnd(x, 0.01*eye(h))));
      
+%targetFn = @(x) logprob(MvnDist(mu,Sigma), x, false);
+%initFn  = @()  mvnrnd(mu, Sigma);
+  
 names= {'gibbs', 'mh I', 'mh 0.01 I'};
 
 for j=1:1%length(mcmc)
@@ -35,8 +38,11 @@ for j=1:1%length(mcmc)
     title(ttl)
     
     figure;
+     % calling marginal re-runs sampler; for speed, we extract all the marginals at once
+    % rather than calling marginal every time
+    margApprox = marginal(ms, {[1],[2]});
     for i=1:2
-      margApprox{i} = marginal(ms,i);
+      %margApprox{i} = marginal(ms,i);
       subplot2(2,2,i,1);
       [h, histArea] = plot(margApprox{i}, 'useHisto', true);
       hold on

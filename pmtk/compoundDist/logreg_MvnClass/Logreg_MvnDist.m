@@ -7,6 +7,7 @@ classdef Logreg_MvnDist < CondProbDist
         nclasses;               % The number of classes
         classSupport;           % The suppport of the target y, e.g. [0,1], [-1,+1], 1:K, etc. 
         priorStrength;
+        infMethod;
     end
 
     
@@ -15,21 +16,19 @@ classdef Logreg_MvnDist < CondProbDist
     %% Main methods
     methods
 
-        function m =LogregDist(varargin)
+        function m =Logreg_MvnDist(varargin)
         % Constructor
-            [m.transformer,  m.wDist, m.nclasses, m.priorStrength] = ...
+            [m.transformer,  m.wDist, m.priorStrength, m.infMethod, m.nclasses] = ...
               process_options( varargin ,...
                 'transformer', []             ,...
                 'wDist'          , []             , ...
-                'priorStrength', []);
+                'priorStrength',[], ...
+                'infMethod', 'laplace', ...
+                'nclasses', []);
         end
 
-        function [obj, output] = fit(obj, varargin)
-          % Compute the posterior distribution over w, the weights. This is either
-          % a constant distribution representing the MAP estimate if method =
-          % 'map', (the default), or a full MvnDist distribution representing
-          % the laplace approximation to the posterior, if method = 'bayesian'.
-          %
+        function [obj] = fit(obj, varargin)
+         %
           % FORMAT:
           %           model = fit(model, 'name1', val1, 'name2', val2, ...)
           % INPUT:
@@ -37,11 +36,13 @@ classdef Logreg_MvnDist < CondProbDist
           % 'X'      - The training examples: X(i,:) is the ith case
           % 'y'      - The class labels for X in {1...C}
           % 'priorStrength'  - precision of Gaussian diagonal
-
-          [X, y, lambda] = process_options(varargin,...
+          % 'infMethod' - {'laplace', 'mh'}
+          
+          [X, y, lambda, infMethod] = process_options(varargin,...
             'X'            , []                 ,...
             'y'            , []                 ,...
-            'lambda'       , obj.priorStrength);
+            'priorStrength'       , obj.priorStrength, ...
+            'infMethod', obj.infMethod);
           offsetAdded = false;
           if ~isempty(obj.transformer)
             [X, obj.transformer] = train(obj.transformer, X);
@@ -50,61 +51,78 @@ classdef Logreg_MvnDist < CondProbDist
           if isempty(obj.nclasses), obj.nclasses = length(unique(y)); end
           obj.ndimsX = size(X,2);
           obj.ndimsY = size(y,2);
+        
+          % First find mode
+          tmp = LogregDist('prior', 'L2', 'priorStrength', lambda);
+          tmp = fit(tmp, 'X', X, 'y', y);
+          wMAP = tmp.w;
+          % Then find Hessian at mode
           [Y1,obj.classSupport] = oneOfK(y, obj.nclasses);
-          [nll, g, H] = multinomLogregNLLGradHessL2(w, X, Y1, lambda,offsetAdded); %#ok  
+          [nll, g, H] = multinomLogregNLLGradHessL2(wMAP, X, Y1, lambda,offsetAdded); %#ok  
           C = inv(H); %H = hessian of neg log lik    
-          obj.w = MvnDist(w, C); 
+          % Now find posterior
+          switch infMethod
+            case 'laplace', obj.wDist = MvnDist(wMAP, C);
+            case 'mh', 
+              d = length(wMAP);
+              priorMu = zeros(d,1)';
+              priorCov = (1/lambda)*eye(d);
+              targetFn = @(w) logprob(LogregDist('w',w(:),'nclasses',obj.nclasses),X,y) + log(mvnpdf(w(:)',priorMu,priorCov));
+              proposalFn = @(w) mvnrnd(w(:)',C);
+              %initFn = @() mvnrnd(wMAP', 0.1*C);
+              xinit = wMAP;
+              samples = mhSample('symmetric', true, 'target', targetFn, 'xinit', xinit, ...
+                'Nsamples', 1000, 'Nburnin', 100, 'proposal',  proposalFn);
+              obj.wDist = SampleDist(samples);
+            otherwise
+              error(['unrecognized infMethod ' infMethod])
+          end
+          
         end
 
-        function pred = predict(obj,varargin)
-          % pred(i) = p(y|X(i,:))
-        %
+        function pred = predict(obj,X,varargin)
+          % pred(i) = p(y|X(i,:)), a discreteDist
         %
         % 'X'      The test data: X(i,:) is the ith case
         %
-        % 'method' -  'mc' | 'integral'
-        %           mc       - monte carlo approximation
+        % 'method' - 
+        %           'mc'       - monte carlo approximation
         %           integral - only available in 2-class problems
         %
         % nsamples [1000] The number of Monte Carlo samples to perform. Only
         %                 used when method = 'mc'
-        %
-        % OUTPUT:
-        %
-        % pred    - is a series of discrete distributions over class labels,
-        %           one for each test example X(i,:). All of these are
-        %           represented in a single DiscreteDist object such that
-        %           pred.probs(i,c) is the probability that example i
-        %           belongs to class c. 
-        %           
-        %           If method = 'mc', pred is a SampleDistDiscrete object storing one
-        %           distribution, (represented by samples) for every test
-        %           example such that pred.samples(s,c,i) is the
-        %           probability that example i is in class c according to sample
-        %           s. Simply take the mode to obtain predicted class labels. 
-            
-            [X,method,nsamples] = process_options(varargin,'X',[],'method','plugin','nsamples',1000);
+            [method,nsamples] = process_options(varargin,...
+              'method','default','nsamples',1000);
             if ~isempty(obj.transformer)
                 X = test(obj.transformer, X);
             end
-            w = obj.wDist;
+            if strcmpi(method, 'default')
+              if obj.nclasses==2 && isa(obj.wDist,'MvnDist')
+                method = 'integral';
+              else
+                method = 'mc';
+              end
+            end
             switch method
               case 'mc'
-
-                Wsamples = sample(w,nsamples);
-                samples = zeros(nsamples,obj.nclasses,size(X,1));
-                for s=1:nsamples
-                  samples(s,:,:) = multiSigmoid(X,Wsamples(s,:)')';
+                if isa(obj.wDist, 'MvnDist')
+                  Wsamples = sample(obj.wDist,nsamples);
+                else
+                  Wsamples = obj.Wdist.samples;
                 end
-                pred = SampleDistDiscrete(samples,obj.classSupport);
+                n = size(X,1); C = obj.nclasses;
+                P = zeros(n,C);
+                for s=1:nsamples
+                   P = P + multiSigmoid(X,Wsamples(s,:));
+                end
+                P = P / nsamples;
+                pred = DiscreteDist('mu', P', 'support', obj.classSupport);
               case 'integral'
                 if(obj.nclasses ~=2),error('This method is only available in the 2 class case');end
-                if(~isa(w,'MvnDist')),
-                  error('w must be an MvnDist object for this method. Either specify p(w|D) as an mvnDist or call fit with ''prior'' = ''l2'', ''method'' = ''bayesian''');
-                end
-                p = sigmoidTimesGauss(X, w.mu(:), w.Sigma);
+                if ~isa(obj.wDist,'MvnDist'), error('Only available for Gaussian posteriors'); end
+                p = sigmoidTimesGauss(X, obj.wDist.mu(:), obj.wDist.Sigma);
                 p = p(:);
-                pred = DiscreteProductDist([p,1-p],obj.classSupport);
+                pred = BernoulliDist('mu',p);
               otherwise
                 error('%s is an unsupported prediction method',method);
             end
@@ -112,8 +130,12 @@ classdef Logreg_MvnDist < CondProbDist
 
         function p = logprob(obj, X, y)
           % p(i) = log p(y(i) | X(i,:), obj.w), y(i) in 1...C
-            pred = predict(obj,'X',X,'method','plugin');
+            pred = predict(obj,X);
+            n = size(X,1);
             P = pred.mu;
+            if size(pred.mu,2)==1
+              P = [1-P, P];
+            end
             Y = oneOfK(y, obj.nclasses);
             p =  sum(sum(Y.*log(P)));
         end
@@ -126,22 +148,19 @@ classdef Logreg_MvnDist < CondProbDist
 %%   
     methods(Static = true)
 
-        function testClass()
+      function testClass()
         % check functions are syntactically correct
-            n = 10; d = 3; C = 2;
-            X = randn(n,d );
-            y = sampleDiscrete((1/C)*ones(1,C), n, 1);
-            mL2 = LogregDist('nclasses', C);
-            mL2 = fit(mL2, 'X', X, 'y', y,'method','bayesian');
-            predMAPL2 = predict(mL2, 'X',X);                                                %#ok
-            [predMCL2]  = predict(mL2,'X',X,'method','mc','nsamples',2000);       %#ok
-            predExactL2 = predict(mL2,'X',X,'method','integral');                           %#ok
-            llL2 = logprob(mL2, X, y);                                                      %#ok
-            %
-            mL1 = LogregDist('nclasses',C);
-            mL1 = fit(mL1,'X',X,'y',y,'prior','L1','lambda',0.1);
-            pred = predict(mL1,'X',X);                                                      %#ok
-        end 
+        n = 10; d = 3; C = 2;
+        X = randn(n,d );
+        y = sampleDiscrete((1/C)*ones(1,C), n, 1);
+        mL2 = Logreg_MvnDist('nclasses', C, 'priorStrength', 1);
+        mL2 = fit(mL2, 'X', X, 'y', y, 'infMethod', 'laplace');
+        pred1 = predict(mL2, X, 'method', 'integral');
+        pred2 = predict(mL2, X, 'method', 'mc');
+        mL3 = fit(mL2, 'X', X, 'y', y, 'infMethod', 'mh');
+        pred3 = predict(mL2, X);
+        llL2 = logprob(mL2, X, y);
+      end
 
     end
 

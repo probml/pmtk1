@@ -37,7 +37,7 @@ classdef LogregDist < CondProbDist
         % 'X'      - The training examples: X(i,:) is the ith case
         % 'y'      - The class labels for X in {1...C}
         % 'prior'  - {'L1' | 'L2' | ['none']}]
-        % 'lambda' - [0] regularization value
+        % 'priorStrength' - [0] regularization value
         % 'optMethod' - for L2, a method supported by minFunc
         %             - for L1, a method supported by L1general
             
@@ -45,7 +45,7 @@ classdef LogregDist < CondProbDist
                 'X'            , []                 ,...
                 'y'            , []                 ,...
                 'prior'        , obj.prior             ,...
-                'lambda'       , obj.priorStrength                  ,...
+                'priorStrength'       , obj.priorStrength                  ,...
                 'optMethod'    , obj.optMethod           );
             output = [];
             offsetAdded = false;
@@ -115,11 +115,11 @@ methods(Static = true)
     X = randn(n,d );
     y = sampleDiscrete((1/C)*ones(1,C), n, 1);
     mL2 = LogregDist('nclasses', C);
-    mL2 = fit(mL2, 'X', X, 'y', y,'prior','L2','lambda',0.1);
+    mL2 = fit(mL2, 'X', X, 'y', y,'prior','L2','priorStrength',0.1);
     predMAPL2 = predict(mL2,X);
     llL2 = logprob(mL2, X, y);
     mL1 = LogregDist('nclasses',C);
-    mL1 = fit(mL1,'X',X,'y',y,'prior','L1','lambda',0.1);
+    mL1 = fit(mL1,'X',X,'y',y,'prior','L1','priorStrength',0.1);
     pred = predict(mL1,X);
   end
 

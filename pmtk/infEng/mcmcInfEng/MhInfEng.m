@@ -16,6 +16,8 @@ classdef MhInfEng  < InfEng
         'thin', 1, 'proposal', [], 'symmetric', true);
     end
    
+    %eng = MhInfEng('targetFn', targetFn, 'proposalFn', proposalFn, 'initFn', initFn,...
+    %            'Nsamples', 1000, 'Nburnin', 500);
     
     function [samples] = sample(eng, model, n)
       targetFn = @(x) logprob(model, x, false); % unnormalized

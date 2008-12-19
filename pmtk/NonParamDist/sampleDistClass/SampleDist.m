@@ -126,10 +126,6 @@ classdef SampleDist < NonParamDist
       s = obj.samples(ndx,:);
     end
     
-    function l = logprob(obj,varargin)
-       error('not yet implemented');  
-    end
-    
     function [h, hist_area] = plot(obj, varargin)
       [scaleFactor, useHisto,distNDX] = process_options(...
         varargin, 'scaleFactor', 1, 'useHisto', 1,'distNDX',1);
@@ -156,6 +152,10 @@ classdef SampleDist < NonParamDist
       % num dimensions (variables)
       %mu = mean(obj); d = length(mu);
       d = size(obj.samples,2);
+    end
+    
+    function d = ndistrib(obj)
+      d = size(obj.samples,3);
     end
   end
   
