@@ -42,9 +42,23 @@ classdef TrellisDist < NonParamDist
         function trellis = TrellisDist(pi,A,B)
         % Construct a new trellis dist with the a distribution over starting 
         % states pi, a transition matrix A and a matrix of local evidence, B. 
-            if(nargin > 0), trellis.pi = pi; end
-            if(nargin > 1), trellis.A =  A ; end
-            if(nargin > 2), trellis.B =  B ; end    
+            if(nargin > 0)
+                
+                if(~isnumeric(pi))
+                   pi = mean(pi); 
+                end
+                
+                trellis.pi = pi; 
+                
+            end
+            if(nargin > 1)
+               
+                if(~isnumeric(A))
+                    A = mean(A)';
+                end
+                trellis.A =  A ;
+            end
+            if(nargin > 2), trellis.B =  B ; end 
             
         end
         

@@ -23,7 +23,9 @@ classdef DiscreteDist  < ParamDist
         support = 1:nstates;
       end
       obj.mu = mu;
-      if isempty(support), error('must specify support'); end
+      if isempty(support) && nargin > 1
+          error('must specify support'); 
+      end
       obj.support = support;
       obj.prior = prior;
     end
@@ -49,7 +51,7 @@ classdef DiscreteDist  < ParamDist
       %in support
       n = size(X,1); 
       d = ndistrib(obj);
-      if size(X,2) == 1, X = repmat(X, n, d); end
+      if size(X,2) == 1, X = repmat(X, 1, d); end
       L = zeros(n,d);
       for j=1:d
         XX = canonizeLabels(X(:,j),obj.support);
@@ -62,13 +64,24 @@ classdef DiscreteDist  < ParamDist
       p = obj.mu;
     end
     
-    function SS = mkSuffStat(obj, X)
-      K = nstates(obj); d = size(X,2); 
-      counts = zeros(K, d);
-      for j=1:d
-        counts(:,j) = colvec(histc(X(:,j), obj.support));
-      end
-      SS.counts = counts;
+    function SS = mkSuffStat(obj, X,weights)
+        K = nstates(obj); d = size(X,2);
+        counts = zeros(K, d);
+        if(nargin < 3)
+            for j=1:d
+                counts(:,j) = colvec(histc(X(:,j), obj.support));
+            end
+        else  %weigthed SS
+            if size(weights,2) == 1
+                weights = repmat(weights,1,d);
+            end
+            for j=1:d
+                for s=1:K
+                    counts(s,j) = sum(weights(X(:,j) == obj.support(s),j));
+                end
+            end
+        end
+        SS.counts = counts;
     end
     
     function model = fit(model,varargin)
@@ -101,7 +114,7 @@ classdef DiscreteDist  < ParamDist
       case 'char'
         switch lower(prior)
           case 'none',
-            model.mu = normalize(SS.counts);
+            model.mu = normalize(SS.counts,1);
           case 'dirichlet'
             pseudoCounts = repmat(priorStrength,K,d);
             model.mu = normalize(SS.counts + pseudoCounts);

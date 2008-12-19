@@ -1,7 +1,5 @@
 %% HMMs and the Occasionally Dishonest Casino
-%#broken
 % This is an example from 
-% 
 % 'Biological Sequence Analysis: 
 % Probabilistic Models Proteins and Nucleic Acids' by Durbin, Eddy, Krogh, &
 % Mitchison, (1998).
@@ -20,16 +18,18 @@ fair = 1; loaded = 2;
 % state of which there are two. We store these state conditional densities in a
 % cell array.
     setSeed(0);
-    obsModel = {DiscreteDist([1/6 , 1/6 , 1/6 , 1/6 , 1/6 , 1/6  ]);...   % fair die
-                DiscreteDist([1/10, 1/10, 1/10, 1/10, 1/10, 5/10 ])};     % loaded die
+    obsModel = {DiscreteDist('mu',[1/6 , 1/6 , 1/6 , 1/6 , 1/6 , 1/6  ]','support',1:6);...   % fair die
+                DiscreteDist('mu',[1/10, 1/10, 1/10, 1/10, 1/10, 5/10 ]','support',1:6)};     % loaded die
 %% Transition Matrix
 % 
     transmat = [0.95  , 0.05;
                 0.10  , 0.90];
+    transDist = DiscreteDist('mu',transmat','support',1:2);        
 %% Distribution over Starting States      
     pi = [0.5,0.5];
+    startDist = DiscreteDist('mu',pi','support',1:2);
 %% Create the Model
-    model = HmmDist('pi',pi,'transitionMatrix',transmat,'stateConditionalDensities',obsModel);
+    model = HmmDist('startDist',startDist,'transitionDist',transDist,'emissionDist',obsModel);
 %% Sample
 % We now sample a single sequence of 300 dice rolls    
     nsamples = 1; length = 300;
@@ -46,7 +46,7 @@ fair = 1; loaded = 2;
 % entire path rather than values at specific points in the sequence. These are
 % the smoothed estimates, we can also obtain the filtered estimates for comparison.
 % The method also supports two slice marginals, hence the []. 
-   maxmarg = maxidx(marginal(trellis,':'));
+   maxmarg  = maxidx(marginal(trellis,':'));
    maxmargF = maxidx(marginal(trellis,':',[],'filtered'));
 %%
 % We can also sample from the posterior and compare the mode of these

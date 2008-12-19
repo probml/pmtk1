@@ -2,8 +2,8 @@ classdef GenerativeClassifierDist < ParamDist
     
     properties
         classConditionals;      % a cell array of distributions 1 per class
-        classPrior;                 % Discrete or Discrete_Dirichlet 
-        transformer;                    % a data transformer object, (e.g. pcaTransformer)
+        classPrior;             % Discrete or Discrete_Dirichlet 
+        transformer;            % a data transformer object, (e.g. pcaTransformer)
     end
     
     methods
@@ -12,7 +12,7 @@ classdef GenerativeClassifierDist < ParamDist
             [obj.transformer,obj.classConditionals,obj.classPrior] = process_options(varargin,...
                 'transformer'           ,[],...
                 'classConditionals'     ,[],...
-                'classPrior'          ,[]);
+                'classPrior'            ,[]);
         end
               
         
@@ -25,12 +25,12 @@ classdef GenerativeClassifierDist < ParamDist
           %           'X'            - X(i,:) is i'th case
           %           'y'            - the training labels
           [X,y] = process_options(varargin,'X',[],'y',[]);
-          obj.classPrior = fit(obj.classPrior, 'data',  y);
+          obj.classPrior = fit(obj.classPrior, 'data',  colvec(y));
           if(~isempty(obj.transformer))
             [X,obj.transformer] = train(obj.transformer,X);
           end
           for c=1:length(obj.classConditionals)
-            obj.classConditionals{c} = fit(obj.classConditionals{c},'data',X(y==c,:));
+            obj.classConditionals{c} = fit(obj.classConditionals{c},'data',X(y==obj.classPrior.support(c),:));
           end
         end
         

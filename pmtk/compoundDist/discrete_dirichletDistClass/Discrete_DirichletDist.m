@@ -29,15 +29,6 @@ classdef Discrete_DirichletDist < CompoundDist
       m =  DiscreteDist('mu', normalize(obj.muDist.alpha));
     end
 
-     function SS = mkSuffStat(obj, X)
-      K = nstates(obj); d = size(X,2); % ndistrib(obj);
-      counts = zeros(K, d);
-      for j=1:d
-        counts(:,j) = colvec(histc(X(:,j), obj.support));
-      end
-      SS.counts = counts;
-     end
-    
 
      function obj = fit(obj, varargin)
        % m = fit(model, 'name1', val1, 'name2', val2, ...)
@@ -58,13 +49,24 @@ classdef Discrete_DirichletDist < CompoundDist
   end
   
   methods(Static = true)
-    function testClass()
-      prior = DirichletDist(0.1*ones(1,3));
-      X = sampleDiscrete([0.1 0.3 0.6]', 5, 2);
-      m = Discrete_DirichletDist(prior);
-      m = fit(m, 'data', X);
-      v = var(m);
-    end
+      function testClass()
+          prior = DirichletDist(0.1*ones(1,3));
+          X = sampleDiscrete([0.1 0.3 0.6]', 5, 2);
+          m = Discrete_DirichletDist(prior);
+          m = fit(m, 'data', X);
+          v = var(m);
+      end
+      
+      function SS = mkSuffStat(obj, X)
+          K = nstates(obj); d = size(X,2); % ndistrib(obj);
+          counts = zeros(K, d);
+          for j=1:d
+              counts(:,j) = colvec(histc(X(:,j), obj.support));
+          end
+          SS.counts = counts;
+      end
+      
+      
   end
   
  

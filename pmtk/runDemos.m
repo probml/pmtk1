@@ -62,8 +62,8 @@ sampleHIWdemo
 pause(2); close('all'); clear('all');
 
 %% hmmDist
-%casinoDemo - broken!
-%seqClassification - broken!
+casinoDemo
+seqClassification
 pause(2); close('all'); clear('all');
 
 %% invGammaDist
