@@ -31,6 +31,7 @@ function makeDocumentation(destination)
         if(~isempty(entry.m))                                   % if it contains m-files loop over them
             [exdirName,viewInfo(demoCounter).primaryClassName] = getPrimaryClass(entry.path);
             for j=1:numel(entry.m)                              % for every mfile
+                 if(~tagsearch(entry.m,'#broken'))
                  [viewInfo(demoCounter).functionName    ,...
                  viewInfo(demoCounter).title            ,...
                  viewInfo(demoCounter).description      ,...
@@ -38,11 +39,10 @@ function makeDocumentation(destination)
                  viewInfo(demoCounter).classesUsed      ,...
                  viewInfo(demoCounter).evalCode] = getDemoInfo(entry.m{j});
                 
-                 
-             
                  viewInfo(demoCounter).htmlLink = ['./',exdirName,'/',viewInfo(demoCounter).functionName,'.html'];
                  viewInfo(demoCounter).outputDir = fullfile(destination,destRoot,exdirName);  % publish to here
                  demoCounter = demoCounter + 1;
+                 end
                   
             end
        
