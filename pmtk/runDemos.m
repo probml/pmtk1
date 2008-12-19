@@ -114,8 +114,8 @@ mhMvn2dConditioning
 pause(2); close('all'); clear('all');
 
 %% modelSelection
-%modelSelect1D - broken!
-%modelSelect2D - broken!
+%modelSelect1D - broken! (depends on LogregDist)
+%modelSelect2D - broken! (depends on LogregDist)
 pause(2); close('all'); clear('all');
 
 %% mvnDist
