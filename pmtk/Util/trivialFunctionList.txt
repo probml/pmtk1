@@ -8,3 +8,4 @@ approxeq
 mysetdiff
 pdfcrop
 nsubplots
+sample

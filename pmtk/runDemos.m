@@ -1,10 +1,5 @@
 %% Run Every Demo
 
-%% UgmChordalGaussDist
-demoPostModelsExhaustive
-UGMmodelSelection
-pause(2); close('all'); clear('all');
-
 %% bernoulli_BetaDist
 bernoulli_betaSequentialUpdate
 pause(2); close('all'); clear('all');
@@ -35,7 +30,7 @@ cooperYooInterventionDemo
 %gaussDGMdemo - broken!
 mkSprinklerDgm
 rainyDayDemo
-sprinklerDGMdemo
+%sprinklerDGMdemo - broken!
 pause(2); close('all'); clear('all');
 
 %% dirichletDist
@@ -181,6 +176,11 @@ pause(2); close('all'); clear('all');
 %% tabularFactor
 %tabFactSprinkler1 - broken!
 %tabFactSprinkler2 - broken!
+pause(2); close('all'); clear('all');
+
+%% ugmChordalGaussDist
+demoPostModelsExhaustive
+UGMmodelSelection
 pause(2); close('all'); clear('all');
 
 %% ugmGaussDist

@@ -1,4 +1,5 @@
 %% Example of explaining away
+%#broken
 dgm = mkSprinklerDgm;
 dgm  = initInfEng(dgm, 'enumeration');
 false = 1; true = 2;

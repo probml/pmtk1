@@ -83,7 +83,7 @@ subplot(4,1,4); bar(post.meantheta);title('posterior mean (red line=pooled MLE)'
 hold on;h=line([0 20], [thetaPooledMLE thetaPooledMLE]);
 set(h,'color','r','linewidth',2)
 
-keyboard
+
 
 
   function logp = target(x)

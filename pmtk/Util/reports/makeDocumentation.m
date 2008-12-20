@@ -14,7 +14,7 @@ function makeDocumentation(destination)
         excludeList = [excludeList,getText('trivialFunctionList.txt')];
     end
 
-    makeRootOnly = false;                                       % If true, only the root html file is generated, nothing else is published. 
+    makeRootOnly = true;                                       % If true, only the root html file is generated, nothing else is published. 
     
     originalDirectory = pwd;                                    % save current directory
     if(nargin == 0), destination = defaultDocDir;  end          % this is where the docs will live
@@ -31,7 +31,7 @@ function makeDocumentation(destination)
         if(~isempty(entry.m))                                   % if it contains m-files loop over them
             [exdirName,viewInfo(demoCounter).primaryClassName] = getPrimaryClass(entry.path);
             for j=1:numel(entry.m)                              % for every mfile
-                 if(~tagsearch(entry.m,'#broken'))
+                 if(~tagsearch(entry.m{j},'#broken'))
                  [viewInfo(demoCounter).functionName    ,...
                  viewInfo(demoCounter).title            ,...
                  viewInfo(demoCounter).description      ,...
