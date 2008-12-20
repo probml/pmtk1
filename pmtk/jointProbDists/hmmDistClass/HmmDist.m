@@ -386,6 +386,9 @@ classdef HmmDist < ParamDist
       
         
         function seqalign()
+            if(~exist('data45.mat','file'))
+               error('Please download data45.mat from www.cs.ubc.ca/~murphyk/pmtk and save it in the data directory');
+            end
             setSeed(0);
             load data45; nstates = 5; ndimensions = 13;
             startDist = DiscreteDist('mu',[1,0,0,0,0]','support',1:5);

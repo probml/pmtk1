@@ -1,4 +1,7 @@
 %% Sequence Classification
+if(~exist('data45.mat','file'))
+    error('Please download data45.mat from www.cs.ubc.ca/~murphyk/pmtk and save it in the data directory');
+end
 load data45; 
 nstates = 5;
 %% 
