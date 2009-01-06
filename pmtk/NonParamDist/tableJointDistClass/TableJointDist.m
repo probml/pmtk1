@@ -1,80 +1,59 @@
 classdef TableJointDist < NonParamDist 
   % tabular (multi-dimensional array) distribution
   
-  properties
-    T;
-    domain;
-  end
+  % No internal state
 
   
   %% main methods
   methods
-    function m = TableJointDist(T, domain)
-      if nargin == 0
-        T = []; domain = [];
-      elseif nargin < 2
-        domain = 1:ndims(T); 
-      end
-      m.T = T;
-      m.domain = domain;
+    function m = TableJointDist()
     end
-
+    %{
     function [X] = sample(obj, n)
        % X(i,:) = sample for i=1:n
        if nargin < 2, n = 1; end
        X = sampleDiscrete(obj.T, n, 1);
     end
     
-    function d = ndimensions(obj)
-     d = ndims(obj.T);
-    end
-  
     function x = mode(obj)
       x = argmax(obj.T);
     end
-    
-    function print(obj)
-      disp('TableJointDist')
-      dispjoint(obj.T);
-    end
-     
+   %}
         
-    function postQuery = marginal(obj, queryVars)
-      R  = mysetdiff(obj.domain, queryVars); % variables to remove (marginalize over)
-      Rndx = lookupIndices(R, obj.domain);
-      smallT = obj.T;
-      for i=1:length(Rndx)
-        smallT = sum(smallT, Rndx(i));
+    
+    function postQuery = marginal(eng, model, queryVars)
+      % prob = sum_h p(Query,h)
+      % Amortize cost of pre-processing across queries
+      Tfac = dgmDiscreteToTfac(model);
+      if ~iscell(queryVars)
+        postQuery = marginalize(Tfac, queryVars);
+      else
+        for i=1:length(queryVars)
+          postQuery{i} = marginalize(Tfac, queryVars{i});
+        end
       end
-      smallT = squeeze(smallT);
-      postQuery = TableJointDist(smallT, queryVars);
     end
+  
     
-     function Tsmall = slice(Tbig, visVars, visValues)
-      % Return Tsmall(hnodes) = Tbig(visNodes=visValues, hnodes=:)
-      if isempty(visVars), Tsmall = Tbig; return; end
-      d = ndimensions(Tbig);
-      Vndx = lookupIndices(visVars, Tbig.domain);
-      ndx = mk_multi_index(d, Vndx, visValues);
-      Tsmall = squeeze(Tbig.T(ndx{:}));
-      H = mysetdiff(Tbig.domain, visVars);
-      Tsmall = TableJointDist(Tsmall, H);
-     end
-    
+    %{
      function [obj, Z] = normalize(obj)
        % Ensure obj.T sums to 1
       [obj.T, Z] = normalize(obj.T);
-    end
-    
-     function prob = predict(obj, visVars, visValues, queryVars)
+     end
+    %}
+     
+     function prob = predict(eng, model, visVars, visValues, queryVars)
       % computes p(Q|V=v)
-      prob = slice(obj, visVars, visValues); % p(H,v)
-      prob = normalize(prob);
+      Tfac = dgmDiscreteToTfac(model);
+      %domain = 1:ndimensions(model);
+      prob = slice(Tfac, visVars, visValues); % p(H,v)
+      prob = normalizeFactor(prob);
       if nargin >= 4
-        prob = marginal(prob, queryVars);
+        prob = marginalize(prob, queryVars);
       end
-    end
+     end
 
+    %{
     function [ll, L] = logprob(obj, X)
       % ll(i) = log p(X(i,:) | params)
       % L = sum_i ll(i)
@@ -83,16 +62,18 @@ classdef TableJointDist < NonParamDist
       ll = log(obj.T(ndx));
       L = sum(ll);
     end
-    
+    %}
+     
   end % methods
 
   methods(Static = true)
     function testSprinkler()
       [dgm] = DgmDist.mkSprinklerDgm;
-      T = dgmDiscreteToTable(dgm);
-      J = T.T; % CSRW
+      dgm.infEng = TableJointDist;
+      Tfac = dgmDiscreteToTfac(dgm);
+      J = Tfac.T; % CSRW
       C = 1; S = 2; R = 3; W = 4;
-      pSgivenCW = predict(T, [C W], [1 1], [S]);
+      pSgivenCW = predict(gdm, [C W], [1 1], [S]);
       pSgivenCW2 = sumv(J(1,:,:,1),3) ./ sumv(J(1,:,:,1),[2 3]);
       assert(approxeq(pSgivenCW.T(:), pSgivenCW2(:)))
     end

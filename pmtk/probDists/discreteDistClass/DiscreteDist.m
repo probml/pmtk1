@@ -38,6 +38,12 @@ classdef DiscreteDist  < ParamDist
       K = length(obj.support); % size(obj.mu, 1);
     end
     
+    
+    function p = pmf(obj)
+      % p(j,d) = p(X=j | params(d)), j=1:nstates, d=1:ndistrib
+      p = obj.mu;
+    end
+    
     function m = mean(obj)
        m = obj.mu; 
     end

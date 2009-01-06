@@ -111,15 +111,29 @@ classdef SampleDist < NonParamDist
       end
     end
     
+    
     function v = cdf(obj, x)
-      [Nsamples d] = size(obj.samples);
-      for j=1:d
+      [Nsamples Ndims Ndistrib] = size(obj.samples); % samples(s,d,i)
+      assert(Ndistrib==1)
+      for j=1:Ndims
         tmp = sort(obj.samples(:,j), 'ascend'); %#ok
         ndx = find(x <= tmp);
         ndx = ndx(1);
         v(j) = ndx/Nsamples;
       end
     end
+    
+    function p = pmf(obj)
+      % p(j,d) = p(X=j|distrib d), j=1:nstates, d=1:ndistrib
+      [Nsamples Ndims Ndistrib] = size(obj.samples); % samples(s,d,i)
+      K = length(unique(obj.samples));
+      assert(Ndistrib==1)
+      p = zeros(K, Ndims);
+      for d=1:Ndims
+        p(:,d) = int_hist(obj.samples(:,d), K)'/Nsamples;
+      end
+    end
+    
     
     function s = sample(obj,n)
       NN = size(obj.samples, 1);

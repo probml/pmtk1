@@ -3,36 +3,13 @@ classdef ProbDist
 % All PMTK probability distributions inherit directly or indirectly from ProbDist.
     
     methods(Abstract = true)
-    % These are methods that every probability distribution must implement.
-    % Where possible, sublcasses should also implement the following:
-    % mean()
-    % mode()
-    % var()
-    % sample()
-        %logprob();
-        %ndimensions();
     end
     
     %%  Main methods
     methods
-    % Methods available to all subclasses include:    
-    % marginal()
-    % negloglik()
-    % cvScore()
-    % plot()
-        function marginal(obj,varargin)
-            error('not yet implemented'); 
-        end
-        
-        function fit(obj,varargin)
-           error('not yet implemented'); 
-        end
-        
-        function predict(obj,varargin)
-           error('not yet implemented'); 
-        end
+       
     
-    
+    %% Other
         function nll = negloglik(obj,X)
             % The negative log likelihood of a data set
             % nll = -(1/n)sum_i(log p(X_i | params))

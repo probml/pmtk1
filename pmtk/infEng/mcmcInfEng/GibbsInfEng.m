@@ -1,53 +1,60 @@
 classdef GibbsInfEng  < InfEng 
    % Gibbs sampling
-   % Model must support mcmcInitSample and mkFullConditionals
-
+   % Model must support following methods
+% fullCond = makeFullConditionals(model, visVars, visVals);
+%  xinit = mcmcInitSample(model, visVars, visVals);
+      
    properties
-     % Parameters that control the sampler
      Nsamples; Nburnin; thin;
+     Nchains;
+     convDiag;
+     verbose;
+     samples;
    end
    
   methods
     function obj = GibbsInfEng(varargin)
-      [obj.Nsamples, obj.Nburnin, obj.thin] = ...
-        process_options(varargin, 'Nsamples', 1000, 'Nburnin', 100, 'thin', 1);
+      [obj.Nsamples, obj.Nburnin, obj.thin, obj.Nchains, obj.verbose] = ...
+        process_options(varargin, 'Nsamples', 500, 'Nburnin', 100, ...
+        'thin', 1, 'Nchains', 3, 'verbose', false);
     end
    
-    function [samples] = sample(eng, model, n)
-      fullCond = makeFullConditionals(model);
-      xinit = mcmcInitSample(model);
-      [samples] = gibbsSample(fullCond, xinit, n, eng.Nburnin, eng.thin);
-    end
-    
-     function [postQuery] = marginal(eng, model, queryVars)
-       % Does a fresh sampling run every time.
-       % If you want to compute multiple marginals,
-       % pass in all at once as cell array.
-       [S] = sample(eng, model, eng.Nsamples);
-       S = SampleDist(S, model.domain);
-       if ~iscell(queryVars)
-         postQuery = marginal(S, queryVars);
-       else
-         for i=1:length(queryVars)
-           postQuery{i} = marginal(S, queryVars{i});
-         end
-       end
-     end
-    
-     function [postQuery] = predict(eng, model, visVars, visVals, queryVars)
-       fc = makeFullConditionals(model, visVars, visVals);
-       xinit = initMcmcSample(model, visVars, visVals);
-       hidVars = mysetdiff(model.domain, visVars);
-       [samples] = gibbsSample(fc, xinit, ...
-         'Nsamples', n, 'Nburnin', eng.Nburnin, 'thin', eng.thin);
+    function [eng] = condition(eng, model, visVars, visVals)
+      fullCond = makeFullConditionals(model, visVars, visVals);
+      xinit = mcmcInitSample(model, visVars, visVals);
+      ndims = length(xinit);
+      samples = zeros(eng.Nsamples, ndims, eng.Nchains);
+      for c=1:eng.Nchains
+        if eng.verbose
+          fprintf('starting to collect %d samples from chain %d of %d\n', ...
+            eng.Nsamples, c, eng.Nchains);
+        end
+        if c>1, xinit = mcmcInitSample(model, visVars, visVals); end
+        [samples(:,:,c)] = gibbsSample(fullCond, xinit, eng.Nsamples, eng.Nburnin, eng.thin);
+      end
+      if eng.Nchains > 1
+        [eng.convDiag.Rhat, eng.convDiag.converged] = epsrMultidim(samples);
+        samples = permute(samples, [1 3 2]); % s,c,j
+        samples = reshape(samples, eng.Nsamples*eng.Nchains, ndims); % s*c by j
+      end
        % The samples only contain values of the hidden variables, not all
        % the variables, so we need to 'label' the columns with the right
        % domain
-       postQuery = SampleDist(samples, hidVars);
-       if (nargin >= 4) && ~isempty(queryVars)
-         postQuery = marginal(postQuery, queryVars);
-       end
+       hidVars = mysetdiff(model.domain, visVars);
+       eng.samples = SampleDist(samples, hidVars);
+    end
+    
+    
+     function [postQuery] = marginal(eng, queryVars)
+       if isempty(eng.samples), error('must first call condition'); end
+       postQuery = marginal(eng.samples, queryVars);
      end
+    
+     function [samples] = sample(eng, n)
+       if isempty(eng.samples), error('must first call condition'); end
+      samples = sample(eng.samples, n);
+    end
+  
     
   end
     

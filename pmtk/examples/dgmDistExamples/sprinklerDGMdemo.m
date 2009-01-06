@@ -1,22 +1,29 @@
 %% Example of explaining away
-%#broken
-dgm = mkSprinklerDgm;
-dgm  = initInfEng(dgm, 'enumeration');
+
+dgm = mkSprinklerDgm();
+dgm.infEng  = EnumInfEng();
 false = 1; true = 2;
 C = 1; S = 2; R = 3; W = 4;
 
-mW = marginal(dgm, W);
-assert(approxeq(mW.T(true), 0.6471))
-mSW = marginal(dgm, [S W]);
-assert(approxeq(mSW.T(true,true), 0.2781))
+% unconditional marginals
+dgm = condition(dgm);
+mW = pmf(marginal(dgm, W));
+mSW = pmf(marginal(dgm, [S W]));
+assert(approxeq(mW(true), 0.6471))
+assert(approxeq(mSW(true,true), 0.2781))
 
-pSgivenW = predict(dgm, W, true, S);
-assert(approxeq(pSgivenW.T(true), 0.4298));
-pSgivenWR = predict(dgm, [W R], [true, true], S);
-assert(approxeq(pSgivenWR.T(true), 0.1945)); % explaining away
+% conditional marginals
+dgm = condition(dgm, W, true);
+pSgivenW = pmf(marginal(dgm, S));
+assert(approxeq(pSgivenW(true), 0.4298));
+dgm = condition(dgm, [W R], [true, true]);
+pSgivenWR = pmf(marginal(dgm, S));
+assert(approxeq(pSgivenWR(true), 0.1945)); % explaining away
+
 
 % Display joint
-joint = dgmDiscreteToTable(dgm);
+joint = convertToTabularFactor(dgm);
+joint = joint.T;
 lab=cellfun(@(x) {sprintf('%d ',x)}, num2cell(ind2subv([2 2 2 2],1:16),2));
 figure;
 %bar(joint.T(:))

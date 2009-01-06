@@ -10,8 +10,10 @@ mFull = MvnDist(mu, Sigma);
 H = 1:2;
 V = 3:d;
 data = randn(1,length(V));
-mCond = predict(mFull, V, data); % p(h|V=v) is a 2d Gaussian
-margExact = marginal(mCond, {1, 2});
+mCond = condition(mFull, V, data);% p(h|V=v) is a 2d Gaussian
+for i=1:2
+  margExact{i} = marginal(mCond, i);
+end
 
 N = 500;
 
@@ -27,31 +29,31 @@ mcmc{3} = MvnDist(mu, Sigma, 'infEng', ...
   
 names= {'gibbs', 'mh I', 'mh 0.01 I'};
 
-for j=1:1%length(mcmc)
+for j=2:length(mcmc)
     ms = mcmc{j};
+    ms = condition(ms, V, data); % runs sampler
     ttl = names{j};
     figure;
     plot(mCond, 'useContour', 'true');
     hold on
-     S = sample(ms, N); % runs sampler
+    S = sample(ms, N);
     plot(S(:,1), S(:,2), '.');
     title(ttl)
     
     figure;
-     % calling marginal re-runs sampler; for speed, we extract all the marginals at once
-    % rather than calling marginal every time
-    margApprox = marginal(ms, {[1],[2]});
     for i=1:2
-      %margApprox{i} = marginal(ms,i);
+      margApprox{i} = marginal(ms,i);
       subplot2(2,2,i,1);
       [h, histArea] = plot(margApprox{i}, 'useHisto', true);
       hold on
       [h, p] = plot(margExact{i}, 'scaleFactor', histArea, ...
         'plotArgs', {'linewidth', 2, 'color', 'r'});
-      title(sprintf('exact m=%5.3f, v=%5.3f', mean(margExact{i}), var(margExact{i})));
+      title(sprintf('exact m=%5.3f, v=%5.3f', ...
+        mean(margExact{i}), var(margExact{i})));
       subplot2(2,2,i,2);
       plot(margApprox{i}, 'useHisto', false);
-      title(sprintf('approx m=%5.3f, v=%5.3f', mean(margApprox{i}), var(margApprox{i})));
+      title(sprintf('approx m=%5.3f, v=%5.3f, Rhat=%4.3f', ...
+        mean(margApprox{i}), var(margApprox{i}), ms.infEng.convDiag.Rhat(i)));
     end
     suptitle(ttl);
     

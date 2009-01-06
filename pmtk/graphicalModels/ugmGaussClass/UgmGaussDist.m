@@ -15,13 +15,15 @@ classdef UgmGaussDist < GmDist
       if nargin < 2, mu = []; end
       if nargin < 3, Sigma = []; end
       obj.G = G; obj.mu = mu; obj.Sigma = Sigma;
-      %obj.stateInfEng = MvnExactInfer; % ignores graph structure
+      obj.infEng = GaussInfEng; % ignores graph structure
     end
 
+    %{
     function params = getModelParams(obj)
       params = {obj.mu, obj.Sigma, obj.G};
     end
-
+%}
+    
     function obj = mkRndParams(obj)
       % Set Sigma to a random pd matrix such that SigmaInv is consistent
       % with G

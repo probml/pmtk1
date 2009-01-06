@@ -3,8 +3,8 @@ classdef DgmDist < GmDist
   
   properties
     CPDs;
-    infEng;
-    infMethod;
+    %infEng;
+    %infMethod;
     % G field is in parent class
   end
 
@@ -14,15 +14,17 @@ classdef DgmDist < GmDist
     function obj = DgmDist(G, varargin)
       if isa(G,'double'), G=Dag(G); end
       obj.G = G;
-      [CPDs, infMethod]= process_options(...
-        varargin, 'CPDs', [], 'infMethod',[]);
-      obj.CPDs = CPDs;
-      obj.infMethod = infMethod;
-      if ~isempty(CPDs) && ~isempty(infMethod)
-        obj = initInfEng(obj);
-      end
+      [obj.CPDs, obj.infEng]= process_options(...
+        varargin, 'CPDs', [], 'infEng', []);
+      %if ~isempty(CPDs) && ~isempty(infMethod)
+      %  obj = initInfEng(obj);
+      %end
     end
 
+    function d = ndimensions(obj)
+      d = nnodes(obj.G);
+    end
+    
     function obj = fit(obj, X, varargin)
       % We fit each CPD separately assuming no missing data
       % and no param tying
@@ -38,29 +40,35 @@ classdef DgmDist < GmDist
         ndx = find(~interventionMask(:,j));
         obj.CPDs{j} = fit(obj.CPDs{j}, 'X', X(ndx, pa), 'y', X(ndx,j));
       end
-      obj = initInfEng(obj);
+      %obj = initInfEng(obj);
     end
     
     function X = sample(obj, n)
       % X(i,:) = i'th forwards (ancestral) sample
-      X = sample(obj.infEng, n); % not necessary to use joint!!
+      %X = sample(obj.infEng, n); % not necessary to use joint!!
+      d = ndimensions(obj);
+      X = zeros(n,d);
+      for j=1:d
+        pa = parents(obj.G, j);
+        X(:,j) = sample(obj.CPDs{j}, X(:,pa), n);
+      end
     end
     
-    function postQuery = marginal(obj, queryVars)
-      postQuery = marginal(obj.infEng, obj, queryVars);
-    end
-    
+  
+    %{
     function postQuery = predict(obj, visVars, visVals, queryVars, varargin)
       % sum_h p(Q,h|V=v)
+      % 'interventionVector'(j) = 1 if node j set by intervention
       % Needs to be vectorized...
       [interventionVector] = process_options(varargin, ...
         'interventionVector', []);
       if ~isempty(interventionVector)
         obj = performIntervention(obj, visVars, visVals, interventionVector);
       end
-      postQuery = predict(obj.infEng, visVars, visVals, queryVars);
+     postQuery = predict(obj.infEng, obj, visVars, visVals, queryVars);
     end
-     
+ %}
+    
     function obj = performIntervention(obj, visVars, visVals, interventionVector)
       % Perform Pearl's "surgical intervention" on nodes specified by
       % intervention vector. We modify the specified CPDs and 
@@ -69,7 +77,7 @@ classdef DgmDist < GmDist
         ndx = (visVars==j);
         obj.CPDs{j} = ConstDist(visVals(ndx));
       end
-      obj = initInfEng(obj);
+      %obj = initInfEng(obj);
     end
      
     function L = logprob(obj, X, varargin)
@@ -102,24 +110,9 @@ classdef DgmDist < GmDist
         L(j) = logmarglik(obj.CPDs{j}, X(ndx, pa), X(ndx, j));
       end
       L = sum(L);
-    end
+   end
     
-    function obj = initInfEng(obj, infMethod)
-      % "Freeze" the CPDs and graph structure and compile into an engine
-      if nargin < 2, infMethod = obj.infMethod; end
-      if isempty(infMethod), return; end % silently return
-      switch lower(infMethod)
-        case 'enumeration'
-          T =  dgmDiscreteToTable(obj);
-          obj.infEng = EnumInfEng(T);
-        case 'gauss'
-          [mu, Sigma] = dgmGaussToMvn(obj);
-          obj.infEng = GaussInfEng(mu, Sigma);
-        otherwise
-          error(['unrecognized method ' infMethod])
-      end
-    end
-    
+   
     function dgm = mkRndParams(dgm, varargin)
       d = ndimensions(dgm);
       [CPDtype, arity] = process_options(varargin, ...
@@ -137,12 +130,18 @@ classdef DgmDist < GmDist
             error(['unknown type ' CPDtype])
         end
       end
-      dgm = initInfEng(dgm);
+      %dgm = initInfEng(dgm);
+    end
+   
+    function M = convertToUgm(obj)
+      [Tfacs, nstates] = convertToTabularFactors(obj);
+      M = UgmTabularDist('factors', Tfacs, 'nstates', nstates);
     end
     
-    function T = dgmDiscreteToTable(obj)
+    function [Tfacs, nstates] = convertToTabularFactors(obj)
       d = length(obj.CPDs);
       Tfacs = cell(1,d);
+      nstates = zeros(1,d);
       for j=1:d
         if isa(obj.CPDs{j}, 'ConstDist') % node was set by intervention
           sz = mysize(obj.CPDs{j}.T);
@@ -154,13 +153,16 @@ classdef DgmDist < GmDist
           dom = [parents(obj.G, j), j];
           Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom);
         end
+        nstates(j) = Tfacs{j}.sizes(end);
       end
-      Tfac = TabularFactor.multiplyFactors(Tfacs);
-      T = Tfac.T;
-      %T = TableJointDist(Tfac.T);
     end
     
-    function [mu, Sigma] = dgmGaussToMvn(dgm)
+    function Tfac = convertToTabularFactor(obj)
+      % Represent the joint distribution as a single large factor
+      Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj));
+    end
+    
+    function [mu,Sigma,domain] = convertToMvnDist(dgm)
       % Koller and Friedman p233
       d = nnodes(dgm.G);
       mu = zeros(d,1);
@@ -182,7 +184,8 @@ classdef DgmDist < GmDist
         Sigma(1:j-1,j) = s;
         Sigma(j,1:j-1) = s';
       end
-      %mvn = MvnDist(mu,Sigma);
+      %dist = MvnDist(mu,Sigma);
+      domain = 1:length(mu);
     end
     
   end

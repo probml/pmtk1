@@ -1,4 +1,7 @@
 function [X, naccept] = mcmcSample(varargin)
+
+% DEPRECATED
+
 % method - one of {'gibbs', 'metrop', 'mh'}
 %
 % Gibbs only:

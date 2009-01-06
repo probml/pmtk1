@@ -3,7 +3,7 @@
 d = 10; seed = 0; pcMissing = 0.3;
 setSeed(seed);
 model = mkRndParams(MvnDist, d);
-model.domain = 1:10;
+model = condition(model);
 n = 5;
 Xfull = sample(model, n);
 %missing = rand(n,d) < pcMissing;

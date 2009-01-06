@@ -58,6 +58,15 @@ classdef TabularCPD < CondProbDist
       counts = compute_counts([X y]', obj.sizes);
       obj.T = mkStochastic(counts + obj.pseudoCounts);
     end
+    
+    function y = sample(obj, X, n)
+      y = zeros(n,1);
+      sz = mysize(obj.T); r = sz(end); q = prod(sz(1:end-1));
+      T = reshape(obj.T, q, r);
+      for i=1:n
+        y(i) = sampleDiscrete(obj.T(X(i,:),:));
+      end
+    end
   end
   
 end

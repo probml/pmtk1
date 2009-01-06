@@ -17,6 +17,20 @@ classdef TabularFactor
       m.sizes = mysize(T);
     end
 
+    function p = pmf(obj)
+      % p(j,k,...) = p(X=(j,k,...)), multidim array
+      p = obj.T;
+    end
+
+    
+    function d = ndimensions(T)
+      d = length(T.domain);
+    end
+    
+    function S = sample(T, n)
+      if nargin < 2, n = 1; end
+      S = ind2subv(T.sizes, sample(T.T(:), n));
+    end
     function smallpot = marginalize(bigpot, onto, maximize)
       % smallpot = marginalizeFactor(bigpot, onto, maximize)
       if nargin < 3, maximize = 0; end
@@ -45,6 +59,17 @@ classdef TabularFactor
     function [Tfac, Z] = normalizeFactor(Tfac)
       [Tfac.T, Z] = normalize(Tfac.T);
     end
+    
+     function Tsmall = slice(Tbig, visVars, visValues)
+      % Return Tsmall(hnodes) = Tbig(visNodes=visValues, hnodes=:)
+      if isempty(visVars), Tsmall = Tbig; return; end
+      d = ndimensions(Tbig);
+      Vndx = lookupIndices(visVars, Tbig.domain);
+      ndx = mk_multi_index(d, Vndx, visValues);
+      Tsmall = squeeze(Tbig.T(ndx{:}));
+      H = mysetdiff(Tbig.domain, visVars);
+      Tsmall = TabularFactor(Tsmall, H);
+     end
     
    
    

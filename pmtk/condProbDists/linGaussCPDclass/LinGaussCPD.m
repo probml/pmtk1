@@ -39,6 +39,15 @@ classdef LinGaussCPD < CondProbDist
        ll = log(normpdf(Xself, mu, sqrt(sigma2)));
      end
     
+      function y = sample(obj, Xpa, n)
+      y = zeros(n,1);
+      [n d] = size(Xpa);
+      X = [ones(n,1) Xpa];
+      mu = X * [obj.w0;obj.w];
+      sigma = sqrt(obj.v)*ones(n,1);
+      y = mu + sigma .* randn(n, 1);
+      end
+    
   end
   
 end
