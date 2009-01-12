@@ -5,7 +5,7 @@ classdef UgmTabularDist < GmDist
     %G;
     factors;
     nstates;
-    domain;
+    %domain; % in ParamJoint
   end
 
   %%  Main methods

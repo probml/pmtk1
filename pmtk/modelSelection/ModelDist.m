@@ -303,9 +303,11 @@ classdef ModelDist
                 end
             end
             t = toc;
-            str = sprintf('Finishing...\nElapsed Time: %d minute(s), %d seconds',floor(t/60),floor(rem(t,60))); 
-            waitbar(1,obj.progressBar,str);
-            pause(0.5);
+            if obj.verbose
+              str = sprintf('Finishing...\nElapsed Time: %d minute(s), %d seconds',floor(t/60),floor(rem(t,60)));
+              waitbar(1,obj.progressBar,str);
+              pause(0.5);
+            end
         end
         
         function [score,stdErr] = crossvalScore(obj,model)

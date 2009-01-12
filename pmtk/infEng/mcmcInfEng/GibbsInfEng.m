@@ -52,7 +52,7 @@ classdef GibbsInfEng  < InfEng
     
      function [samples] = sample(eng, n)
        if isempty(eng.samples), error('must first call condition'); end
-      samples = sample(eng.samples, n);
+      samples = sample(eng.samples,n);
     end
   
     

@@ -1,14 +1,18 @@
 classdef ParamJointDist < ParamDist
 
   % Parametric joint distribution, which supports inference
-  % about states of some components (dimensions) given evidence on others
+  % about states of some components (dimensions) given evidence on others.
+  % We keep track of what has been conditioned on here.
   % (Abstract class)
 
   properties
     infEng;
     conditioned = false;
     % conditioned =  true if infEng has been initialized
-    % by calling condition
+    % by calling condition. We remember the inserted data.
+    visVars;
+    visVals;
+    domain;
   end
 
   methods
@@ -18,8 +22,10 @@ classdef ParamJointDist < ParamDist
       if nargin < 2
         visVars = []; visValues = [];
       end
-      [model.infEng] = condition(model.infEng, model, visVars, visValues);
       model.conditioned = true;
+      model.visVars = visVars;
+      model.visVals = visValues;
+      [model.infEng] = condition(model.infEng, model, visVars, visValues);
     end
 
     function [postQuery] = marginal(model, queryVars)
@@ -27,6 +33,7 @@ classdef ParamJointDist < ParamDist
       % condition operation
       if ~model.conditioned
         %error('must first call condition');
+        %fprintf('it is recommended to first call condition\n');
         model = condition(model);
       end
       [postQuery] = marginal(model.infEng, queryVars);
@@ -39,16 +46,37 @@ classdef ParamJointDist < ParamDist
     end
 
     function L = logprob(model, X)
-      % L(i) = log p(X(i,:) | params)
+      % L(i) = log p(X(i,:) | params), where columns are hidden nodes
       if ~model.conditioned, model = condition(model); end
       %L = logprob(model.infEng, X, normalize);
+      %XX = insertVisData(model,X);
       L = logprobUnnormalized(model, X) - lognormconst(model);
     end
 
-    function logZ = logprobUnnormalized(model, X)
-      %if ~model.conditioned, model = condition(model); end
-      logZ = logprobUnnormalized(model.infEng, X);
+    function XX = insertVisData(model, X)
+      % X contains values of hidden variables
+      % We insert the data that we have already conditioned on
+      [n nhid] = size(X);
+      nvis = length(model.visVars);
+      if nvis == 0, XX = X; return; end
+      XX = zeros(n, nhid+nvis);
+      domain = model.domain;
+      V = lookupIndices(model.visVars, domain);
+      hidVars = mysetdiff(domain, model.visVars);
+      H = lookupIndices(hidVars, domain);
+      nv = size(model.visVals,1);
+      if nv==1 && n>1
+        XX(:, V) = repmat(model.visVals, n, 1);
+      else
+        XX(:, V) = model.visVals;
+      end
+      XX(:, H) = X;
     end
+    
+    %function logZ = logprobUnnormalized(model, X)
+    %  %if ~model.conditioned, model = condition(model); end
+    %  logZ = logprobUnnormalized(model.infEng, X);
+    %end
     
     function logZ = lognormconst(model)
       %if ~model.conditioned, model = condition(model); end

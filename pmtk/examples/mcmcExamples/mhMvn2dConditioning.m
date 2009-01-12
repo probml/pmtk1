@@ -12,12 +12,14 @@ mu = randn(d,1);
 mFull = MvnDist(mu, Sigma);
 V = 3:d;
 data = randn(1,length(V));
-mCond = predict(mFull, V, data); % p(h|V=v) is a 2d Gaussian
+%mCond = predict(mFull, V, data); % p(h|V=v) is a 2d Gaussian
+mCond = condition(mFull, V, data);
 for i=1:2
-  margExact{i} = marginal(mCond, i);
+  margExact{i} = marginal(mCond, i); %#ok
 end
 % target is logprob of hidden vars augmeneted with visible data
-targetFn = @(x) logprob(mFull,[x data],false); % unnormalized distribution
+%targetFn = @(x) logprobUnnormalized(mFull,[x data]);
+targetFn = @(x) logprobUnnormalized(mCond,x);
 fc = makeFullConditionals(mFull, V, data);
 
 N = 500;

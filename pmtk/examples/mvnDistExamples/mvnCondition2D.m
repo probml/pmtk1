@@ -26,9 +26,9 @@ ps = exp(logprob(marg, xs));
 ps = 50*normalize(ps);
 plot(xs, 0+ps, 'b', 'linewidth',2 );
 
-post = predict(obj, 2, x2); % 2 is the y axis
-%obj = enterEvidence(obj, 2, x2);
-%post = marginal(obj, 1);
+%post = predict(obj, 2, x2); % 2 is the y axis
+obj = condition(obj, 2, x2);
+post = marginal(obj, 1);
 %plot(post, 'xrange', [-4 4]);
 xs = -5:0.1:5;
 ps = exp(logprob(post, xs));

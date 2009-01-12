@@ -1,3 +1,4 @@
+
 %% Run Every Demo
 
 %% bernoulli_BetaDist
@@ -27,10 +28,10 @@ pause(2); close('all'); clear('all');
 
 %% dgmDist
 cooperYooInterventionDemo
-%gaussDGMdemo - broken!
+gaussDGMdemo
 mkSprinklerDgm
 rainyDayDemo
-%sprinklerDGMdemo - broken!
+sprinklerDGMdemo
 pause(2); close('all'); clear('all');
 
 %% dirichletDist
@@ -66,6 +67,8 @@ pause(2); close('all'); clear('all');
 
 %% hmmDist
 casinoDemo
+
+
 seqClassification
 pause(2); close('all'); clear('all');
 
@@ -107,17 +110,13 @@ logregVisualizePredictive
 pause(2); close('all'); clear('all');
 
 %% mcmc
+gibbsSprinklerUGM
 mcmcMvn2d
 mcmcMvn2dConditioning
 mhGmmDemo
 mhMissouriCancer
 mhMvn2d
 mhMvn2dConditioning
-pause(2); close('all'); clear('all');
-
-%% modelSelection
-modelSelect1D
-modelSelect2D
 pause(2); close('all'); clear('all');
 
 %% mvnDist
@@ -135,6 +134,11 @@ pause(2); close('all'); clear('all');
 %% mvn_InvWishartDist
 mvnInferParamsSigma2d
 mvnSeqUpdateSigma1d
+pause(2); close('all'); clear('all');
+
+%% modelSelection
+modelSelect1D
+modelSelect2D
 pause(2); close('all'); clear('all');
 
 %% mvn_MvnDist
@@ -169,24 +173,21 @@ gaussVsToutlierDemo
 studentVSGauss
 pause(2); close('all'); clear('all');
 
-%% tabularDist
-%tabularSprinkler - broken!
-pause(2); close('all'); clear('all');
-
-%% tabularFactor
-%tabFactSprinkler1 - broken!
-%tabFactSprinkler2 - broken!
-pause(2); close('all'); clear('all');
-
 %% ugmChordalGaussDist
 demoPostModelsExhaustive
-UGMmodelSelection
+GGMchordalModelSelection
 pause(2); close('all'); clear('all');
 
+%% ugmDist
+misconceptionRank
+sprinklerUGMdemo
+pause(2); close('all'); clear('all');
+
+
 %% ugmGaussDist
-%ggmBICdemo - broken!
-%ggmDemo - broken!
-%ggmInferDemo - broken!
+ggmBICdemo
+ggmDemo
+ggmInferDemo
 pause(2); close('all'); clear('all');
 
 %% wishartDist

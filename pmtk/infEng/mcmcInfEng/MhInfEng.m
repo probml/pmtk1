@@ -30,8 +30,8 @@ classdef MhInfEng  < InfEng
        %function x = addVisData(x, V, visVars)
        %  x(V) = visVars;
        %end
-       targetFn = @(xh) logprobUnnormalized(model, MhInfEng.addVisData(xh, V, visVals));
-       %targetFn = @(xh) logprobUnnormalized(model, addVisData(xh, V, visVals));
+       %targetFn = @(xh) logprobUnnormalized(model, MhInfEng.addVisData(xh, V, visVals));
+       targetFn = @(xh) logprobUnnormalized(model, xh);
        %hidVars = mysetdiff(model.domain, visVars);
        %targetFn = @(xh) logprobUnnormalized(model, xh, 'domain', hidVars, ...
        %  'visVars', visVars, 'visVals', visVals);

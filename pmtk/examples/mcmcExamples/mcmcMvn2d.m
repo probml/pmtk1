@@ -9,8 +9,7 @@ assert(ndimensions(m)==2)
 for i=1:2
   margExact{i} = marginal(m, i); %#ok
 end
-margExact2 = marginal(m, {[1],[2]});
-assert(isequal(margExact,margExact2))
+
  
 N = 500; 
 
@@ -28,7 +27,8 @@ names= {'gibbs', 'mh I', 'mh 0.01 I', 'gibbs'};
 
 for j=1:length(mcmc)
     ms = mcmc{j};
-    S = sample(ms, N); % runs sampler
+    ms = condition(ms); % run sampler
+    S = sample(ms, N); 
     ttl = names{j};
     figure;
     plot(m, 'useContour', 'true');
@@ -37,11 +37,8 @@ for j=1:length(mcmc)
     title(ttl)
     
     figure;
-    % calling marginal re-runs sampler; for speed, we extract all the marginals at once
-    % rather than calling marginal every time
-    margApprox = marginal(ms, {[1],[2]});
     for i=1:2
-      %margApprox{i} = marginal(ms,i);
+      margApprox{i} = marginal(ms,i); %#ok
       subplot2(2,2,i,1);
       [h, histArea] = plot(margApprox{i}, 'useHisto', true);
       hold on

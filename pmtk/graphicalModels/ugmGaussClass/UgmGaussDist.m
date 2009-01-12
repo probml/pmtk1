@@ -15,9 +15,16 @@ classdef UgmGaussDist < GmDist
       if nargin < 2, mu = []; end
       if nargin < 3, Sigma = []; end
       obj.G = G; obj.mu = mu; obj.Sigma = Sigma;
+      obj.domain = 1:length(mu);
       obj.infEng = GaussInfEng; % ignores graph structure
     end
 
+    function [mu,Sigma,domain] = convertToMvnDist(m)
+      mu = m.mu; Sigma = m.Sigma;
+      domain = 1:length(m.mu); 
+    end
+    
+     
     %{
     function params = getModelParams(obj)
       params = {obj.mu, obj.Sigma, obj.G};
@@ -84,28 +91,6 @@ classdef UgmGaussDist < GmDist
       d = nnodes(obj.G);
     end
 
-  end
-
-
-  methods(Static = true)
-      
-      function testClass
-          d = 10;
-          G = UndirectedGraph('type', 'loop', 'nnodes', d);
-          obj = UgmGaussDist(G, [], []);
-          obj = mkRndParams(obj);
-          V = 1:2; H = mysetdiff(1:d, V); xv = randn(2,1);
-          obj = enterEvidence(obj, V, xv);
-          pobj = marginal(obj, H);
-          obj2 = MvnDist(obj.mu, obj.Sigma);
-          obj2 = enterEvidence(obj2, V, xv);
-          pobj2 = marginal(obj2, H);
-          assert(approxeq(mean(pobj), mean(pobj2)))
-          assert(approxeq(cov(pobj), cov(pobj2)))
-      end
-   
-
-   
   end
 
 end

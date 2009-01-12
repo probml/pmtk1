@@ -32,7 +32,6 @@ for i=1:length(sigmas)
     title(sprintf('MH with N(0,%5.3f^2) proposal', sigma_prop))
 end
 drawnow
-break
 
 % Convergence diagnosistics 
 seeds = 1:3;

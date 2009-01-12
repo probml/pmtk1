@@ -7,9 +7,11 @@ classdef MvnDist < ParamJointDist
     prior;
   end
   
+  %{
   properties(Hidden = true)
     domain;
   end
+  %}
   
   %{
   properties(SetAccess = 'private')
@@ -31,6 +33,26 @@ classdef MvnDist < ParamJointDist
 
     function [mu,Sigma,domain] = convertToMvnDist(m)
       mu = m.mu; Sigma = m.Sigma; domain = m.domain; 
+    end
+    
+    function L = logprobUnnormalized(model, X)
+      % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
+      % variables
+      mu = model.mu; Sigma = model.Sigma;
+      X = insertVisData(model,X);
+      if numel(mu)==1
+        X = X(:); % ensure column vector
+      end
+      [N d] = size(X);
+      if length(mu) ~= d
+        error('X should be N x d')
+        % if some components have been observed, X needs to be expanded...
+      end
+      X = bsxfun(@minus,X,rowvec(mu));
+      L =-0.5*sum((X*inv(Sigma)).*X,2);
+      %if normalize
+      %    L = L - lognormconst(eng);
+      %end
     end
     
     function fc = makeFullConditionals(obj, visVars, visVals)

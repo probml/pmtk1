@@ -1,8 +1,8 @@
-%% Demo
-%#broken
+%% Samples from a GGM
+
 d = 10;
 G = UndirectedGraph('type', 'loop', 'nnodes', d);
-obj = GgmDist(G, [], []);
+obj = UgmGaussDist(G, [], []);
 obj = mkRndParams(obj);
 n = 1000;
 X = sample(obj, n);

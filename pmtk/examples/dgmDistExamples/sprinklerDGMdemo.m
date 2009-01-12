@@ -1,4 +1,4 @@
-%% Example of explaining away
+%% Example of inference in water sprinkler DGM
 
 dgm = mkSprinklerDgm();
 dgm.infEng  = EnumInfEng();

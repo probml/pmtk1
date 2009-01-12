@@ -1,6 +1,5 @@
-%%  Koller & Friedman DGM Example
+%%  Koller & Friedman Gaussian DGM Example
 % p233
-%#broken
 G = zeros(3,3);
 G(1,2) = 1; G(2,3)=1;
 % LinGaussCPD(w, w0, sigma2)
@@ -8,7 +7,9 @@ CPDs{1} = LinGaussCPD([], 1, 4);
 CPDs{2} = LinGaussCPD(0.5, -5, 4);
 CPDs{3} = LinGaussCPD(-1, 4, 3);
 dgm = DgmDist(G, 'CPDs', CPDs, 'infEng', GaussInfEng());
-p = predict(dgm, 2, -3.1, [1 3]);
+%p = predict(dgm, 2, -3.1, [1 3]);
+tmp = condition(dgm, 2, -3.1);
+query = marginal(tmp, [1 3])
 X = sample(dgm, 1000);
 dgm2 = DgmDist(G);
 dgm2 = mkRndParams(dgm2, 'CPDtype', 'LinGaussCPD');

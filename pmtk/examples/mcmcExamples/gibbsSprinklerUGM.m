@@ -20,9 +20,9 @@ Texact %#ok
 figure; bar(jointExact(:)); title('exact joint')
 
 % Gibbs
-N = 500;
+N = 100;
 ugmGibbs = ugm;
-ugmGibbs.infEng =  GibbsInfEng('Nsamples', N, 'verbose', true);
+ugmGibbs.infEng =  GibbsInfEng('Nsamples', N, 'verbose', true, 'Nchains', 2);
 ugmGibbs = condition(ugmGibbs);
 Tgibbs = zeros(2,4);
 for j=1:4
