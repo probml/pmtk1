@@ -5,6 +5,7 @@ classdef EnumInfEng < InfEng
   
   properties
     Tfac;
+    logZ;
   end
 
   
@@ -16,8 +17,9 @@ classdef EnumInfEng < InfEng
 
     function eng = condition(eng, model, visVars, visValues)
        Tfac = convertToTabularFactor(model);
-       Tfac = normalizeFactor(slice(Tfac, visVars, visValues)); % p(H,v)
+       [Tfac, Z] = normalizeFactor(slice(Tfac, visVars, visValues)); % p(H,v)
        eng.Tfac = Tfac;
+       eng.logZ = log(Z);
     end
     
     function [postQuery] = marginal(eng, queryVars)
@@ -31,6 +33,10 @@ classdef EnumInfEng < InfEng
        if isempty(eng.Tfac), error('must first call condition'); end
        [samples] = sample(eng.Tfac,  n);
      end
+    
+     function logZ = lognormconst(eng)
+       logZ = eng.logZ;
+      end
     
   end % methods
 
