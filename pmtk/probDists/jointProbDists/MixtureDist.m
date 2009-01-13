@@ -1,17 +1,24 @@
 classdef MixtureDist < ParamJointDist
-   
+% A mixture model   
     
     properties
-        distributions;
-        mixingWeights;
+        distributions;      % a cell array storing the distributions
+        mixingWeights;      % pi
         verbose = true;
-        transformer;
+        transformer;        % data preprocessor
     end
     
     methods
         
         function model = MixtureDist(varargin)
-           [nmixtures,distributions,mixingWeights,model.transformer] = process_options(varargin,'nmixtures',[],'distributions',[],'mixingWeights',[],'transformer',[]);
+        % Construct a new mixture of distributions    
+           [nmixtures,distributions,mixingWeights,model.transformer]...
+               = process_options(varargin,...
+               'nmixtures'    ,[] ,...
+               'distributions',[] ,...
+               'mixingWeights',[] ,...
+               'transformer'  ,[]);
+           
            if ~isempty(nmixtures) && numel(distributions) == 1
                distributions = copy(distributions,nmixtures,1);
            end
@@ -25,52 +32,55 @@ classdef MixtureDist < ParamJointDist
         end
         
         function model = fit(model,varargin)
-           [data,opttol,maxiter,prior] = process_options(varargin,'data',[],'opttol',1e-10,'maxiter',100,'prior','none');
+        % Fit via EM    
+           [data,opttol,maxiter,nrestarts,prior] = process_options(varargin,...
+               'data'      ,[]     ,...
+               'opttol'    ,1e-5   ,...
+               'maxiter'   ,100    ,...
+               'nrestarts' ,20     ,...
+               'prior'     ,'none' );
            if(~isempty(model.transformer))
               [data,model.transformer] = train(model.transformer,data); 
            end
-           n = size(data,1);
-           nmixtures = numel(model.distributions);
            model = initializeEM(model,data);
-           converged = false;
-           iter = 0;
-           currentLL = 0;
-           while(not(converged))
-                if(model.verbose)
-                    if(size(data,2) == 2)
-                       plot(data(:,1),data(:,2),'.');
-                       t = sprintf('negloglik = %g\n',-currentLL);
-                       fprintf(t);
-                       title(t);
-                       hold on;
-                       for k=1:nmixtures
-                          plot(model.distributions{k});
-                       end
-                       pause(0.5);
-                    end
+           n = size(data,1); nmixtures = numel(model.distributions);
+           bestDists = model.distributions;
+           bestMix = model.mixingWeights;
+           bestLL = sum(logprob(model,data)); bestRR = 1;
+           for r = 1:nrestarts
+               if(r>1),model = initializeEM(model,data);end
+               converged = false; iter = 0; currentLL = -inf;
+               while(not(converged))
+                   if(model.verbose),displayProgress(model,data,currentLL,r);end
+                   prevLL = currentLL;
+                   Rik = zeros(n,nmixtures);  % responsibilities
+                   for k=1:nmixtures
+                       Rik(:,k) = model.mixingWeights(k)*exp(logprob(model.distributions{k},data));
+                   end
+                   Rik = normalize(Rik,2);
+                   for k=1:nmixtures
+                       ess = model.distributions{k}.mkSuffStat(data,Rik(:,k));
+                       model.distributions{k} = fit(model.distributions{k},'suffStat',ess,'prior',prior);
+                   end
+                   model.mixingWeights = sum(Rik,1)./n;
+                   iter = iter + 1;
+                   currentLL = sum(logprob(model,data));
+                   converged = iter >=maxiter || (abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < opttol;
                end
-               prevLL = currentLL;
-               Rik = zeros(n,nmixtures);  % responsibilities
-               for k=1:nmixtures
-                   Rik(:,k) = model.mixingWeights(k)*exp(logprob(model.distributions{k},data));
-               end
-               Rik = normalize(Rik,2);
-               for k=1:nmixtures
-                   model.distributions{k} = fit(model.distributions{k},'suffStat',model.distributions{k}.mkSuffStat(data,Rik(:,k)),'prior',prior);
-               end
-               
-               model.mixingWeights = sum(Rik,1)./n;
-               iter = iter + 1;
-               currentLL = sum(logprob(model,data));
-              
-               converged = iter >=maxiter || (abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < opttol;
-               if(model.verbose && ~converged)
-                  clf; 
+               if(currentLL > bestLL)
+                   bestDists = model.distributions;
+                   bestMix = model.mixingWeights;
+                   bestLL =  sum(logprob(model,data));
+                   bestRR = r;
                end
            end
+           model.distributions = bestDists;
+           model.mixingWeights = bestMix;
+           if(model.verbose),displayProgress(model,data,bestLL,bestRR);end
         end
         
         function logp = logprob(model,data)
+        % logp(i) = log p(data(i,:) | params)    
             p = zeros(size(data,1),1);
             for k = 1:numel(model.distributions)
                 p = p + exp(logprob(model.distributions{k},data))*model.mixingWeights(k);
@@ -84,28 +94,25 @@ classdef MixtureDist < ParamJointDist
     methods(Access = 'protected')
         
         function model = initializeEM(model,X)
-           for k=1:numel(model.distributions)
-              model.distributions{k} = mkRndParams(model.distributions{k},size(X,2));
-           end
-          
+        % override in subclass if necessary    
+          for k=1:numel(model.distributions)
+             model.distributions{k} = mkRndParams(model.distributions{k},X); 
+          end
+        end
+        
+        function displayProgress(model,data,loglik,rr)
+        % override in subclass to customize displayed info    
+            fprintf('RR: %d, negloglik: %g\n',rr,-loglik);
         end
         
         
     end
     
     
-    methods(Static = true)
-        
-        function testClass()
-           load oldFaith;
-           model = MixtureDist('nmixtures',2,'distributions',MvnDist(),'transformer',StandardizeTransformer(true));
-           model = fit(model,'data',X);
-        end
+  
         
         
-        
-        
-    end
+    
     
 end
 

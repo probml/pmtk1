@@ -97,9 +97,16 @@ classdef MvnDist < ParamJointDist
     
     function obj = mkRndParams(obj, d)
       if nargin < 2, d = ndimensions(obj); end
-      obj.mu = randn(d,1);
-      obj.Sigma = randpd(d);
-      obj.domain = 1:d;
+      if(~isscalar(d) || d~=round(d))
+          perm = randperm(size(d,1));
+          obj.mu = d(perm(1),:);
+          obj.Sigma = 0.05*cov(d);
+          obj.domain = 1:size(d,2);
+      else
+          obj.mu = randn(d,1);
+          obj.Sigma = randpd(d);
+          obj.domain = 1:d;
+      end
     end
     
     function d = ndimensions(m)
