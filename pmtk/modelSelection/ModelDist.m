@@ -302,8 +302,9 @@ classdef ModelDist
                     results(i).stdErr = 0;
                 end
             end
-            t = toc;
+            
             if obj.verbose
+              t = toc;  
               str = sprintf('Finishing...\nElapsed Time: %d minute(s), %d seconds',floor(t/60),floor(rem(t,60)));
               waitbar(1,obj.progressBar,str);
               pause(0.5);
