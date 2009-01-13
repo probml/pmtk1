@@ -17,16 +17,7 @@ classdef MvnMixDist < MixtureDist
             
         end
         
-        function model = mkRndParams(model, d, K)
-            model.distributions = copy(MvnDist(),1,K);
-            
-            for i=1:K
-               model.distributions{i}.mu    = randn(d,1);
-               model.distributions{i}.Sigma = randpd(d);
-               
-            end
-            model.mixingWeights = normalize(rand(1,K));
-        end
+       
         
         
         

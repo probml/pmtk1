@@ -87,6 +87,39 @@ classdef MixtureDist < ParamJointDist
             end
             logp = log(p);
         end
+        
+        function model = mkRndParams(model, d,K)
+            for i=1:K
+                model.distributions{i} = mkRndParams(model.distributions{i},d);
+            end
+            model.mixingWeights = normalize(rand(1,K));
+        end
+        
+         function model = condition(model, visVars, visValues)
+             
+         end
+         
+         function [postQuery] = marginal(model, queryVars)
+              
+         end
+         
+         function S = sample(model,nsamples)
+              if nargin < 2, nsamples = 1; end
+              Z = sampleDiscrete(model.mixingweights, nsamples, 1);
+              d = ndimensions(model);
+              S = zeros(nsamples, d);
+              for i=1:nsamples
+                 S(i,:) = rowvec(sample(model.distributions{Z(i)}));
+              end
+         end
+         
+         function d = ndimensions(model)
+            if(numel(model.ndistributions) > 0)
+                d = ndimensions(model.distributions{1}); 
+            else
+                d = 0;
+            end
+         end
        
     end
     
