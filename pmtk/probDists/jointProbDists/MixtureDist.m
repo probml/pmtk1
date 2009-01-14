@@ -108,7 +108,7 @@ classdef MixtureDist < ParamJointDist
          
          function S = sample(model,nsamples)
               if nargin < 2, nsamples = 1; end
-              Z = sampleDiscrete(model.mixingweights, nsamples, 1);
+              Z = sampleDiscrete(model.mixingWeights, nsamples, 1);
               d = ndimensions(model);
               S = zeros(nsamples, d);
               for i=1:nsamples
@@ -117,10 +117,17 @@ classdef MixtureDist < ParamJointDist
          end
          
          function d = ndimensions(model)
-            if(numel(model.ndistributions) > 0)
+            if(numel(model.distributions) > 0)
                 d = ndimensions(model.distributions{1}); 
             else
                 d = 0;
+            end
+         end
+         
+         function h = plot(model,varargin)
+            h = figure; hold on;
+            for i=1:numel(model.distributions)
+               plot(model.distributions{i},'scaleFactor',model.mixingWeights(i),varargin{:}); 
             end
          end
        

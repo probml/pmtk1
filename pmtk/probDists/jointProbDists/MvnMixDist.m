@@ -17,6 +17,13 @@ classdef MvnMixDist < MixtureDist
             
         end
         
+        
+         function model = mkRndParams(model, d,K)
+            model.distributions = copy(MvnDist(),K,1);
+            model = mkRndParams@MixtureDist(model,d,K);
+             
+         end
+        
        
         
         
@@ -32,9 +39,14 @@ classdef MvnMixDist < MixtureDist
             fprintf(t);
             if(size(data,2) == 2)
                 nmixtures = numel(model.distributions);
-                %plot(data(:,1),data(:,2),'.','MarkerSize',10);
-                colors = subd(predict(model,data),'mu')';
-                scatter(data(:,1),data(:,2),18,[colors(:,1),zeros(size(colors,1),1),colors(:,2)],'filled');
+                if(nmixtures == 2)
+                    colors = subd(predict(model,data),'mu')';
+                    scatter(data(:,1),data(:,2),18,[colors(:,1),zeros(size(colors,1),1),colors(:,2)],'filled');
+                else
+                    plot(data(:,1),data(:,2),'.','MarkerSize',10);
+                end
+                
+                
                 title(t);
                 hold on;
                 axis tight;
@@ -42,7 +54,7 @@ classdef MvnMixDist < MixtureDist
                     f = @(x)model.mixingWeights(k)*exp(logprob(model.distributions{k},x));
                     [x1,x2] = meshgrid(min(data(:,1)):0.1:max(data(:,1)),min(data(:,2)):0.1:max(data(:,2)));
                     z = f([x1(:),x2(:)]);
-                    contour(x1,x2,reshape(z,size(x1)),'LevelList',0.6*max(z),'LineWidth',2);
+                    contour(x1,x2,reshape(z,size(x1)));
                     mu = model.distributions{k}.mu;
                     plot(mu(1),mu(2),'rx','MarkerSize',15,'LineWidth',2);
                 end
@@ -57,10 +69,17 @@ classdef MvnMixDist < MixtureDist
     methods(Static = true)
         
         function testClass()
-            
-           load oldFaith;  m = fit(MvnMixDist('nmixtures',2,'transformer',StandardizeTransformer(false)),'data',X); 
-           pred = predict(m,X);
-           
+           if(0) 
+            load oldFaith;  m = fit(MvnMixDist('nmixtures',2,'transformer',StandardizeTransformer(false)),'data',X); 
+            pred = predict(m,X);
+           end
+           setSeed(13);
+           m = mkRndParams(MvnMixDist(),2,4);
+           plot(m);
+           X = sample(m,500);
+           hold on;
+           plot(X(:,1),X(:,2),'or');
+           m1 = fit(MvnMixDist('nmixtures',4),'data',X);
            
          
             
