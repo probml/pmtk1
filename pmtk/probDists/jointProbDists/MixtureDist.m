@@ -77,14 +77,6 @@ classdef MixtureDist < ParamJointDist
         end
         
         function pred = predict(model,data)
-%             if(~isempty(model.transformer))
-%                data = test(model.transformer,data); 
-%             end
-%             n = size(data,1); nmixtures = numel(model.distributions);
-%             Rik = zeros(n,nmixtures);  % responsibilities
-%             for k=1:nmixtures
-%                 Rik(:,k) = log(model.mixingWeights(k))+logprob(model.distributions{k},data);
-%             end
             logRik = calcResponsibilities(model,data);
             Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2))); 
             pred = DiscreteDist('mu',Rik');
@@ -108,10 +100,10 @@ classdef MixtureDist < ParamJointDist
             end
          end
          
-         function model = marginal(model, queryVars)
-             for i=1:numel(model.distributions)
-                 model.distributions{i} = marginal(model.distributions{i},queryVars);
-             end
+         function postQuery = marginal(model, queryVars)
+             model.distributions = model.distributions{queryVars};
+             model.mixingWeights = model.mixingWeights(queryVars);
+             postQuery = model;
          end
          
          function S = sample(model,nsamples)
