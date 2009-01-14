@@ -163,7 +163,7 @@ classdef MvnDist < ParamJointDist
            m = mode(post);
            obj.mu = m.mu;
            obj.Sigma = m.Sigma;
-         otherwise
+           otherwise
            error('unknown prior ')
        end
      end
@@ -212,7 +212,7 @@ classdef MvnDist < ParamJointDist
 
         suffStat.n = sum(weights,1);
         suffStat.xbar = sum(bsxfun(@times,X,weights))'/suffStat.n;  % bishop eq 13.20
-        X = bsxfun(@minus,X,mean(X,1));
+        X = bsxfun(@minus,X,suffStat.xbar');
         suffStat.XX = bsxfun(@times,X,weights)'*X/suffStat.n;
 
         if(0) % sanity check

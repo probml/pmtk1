@@ -5,7 +5,8 @@ classdef MvnMixDist < MixtureDist
     methods
         
         function model = MvnMixDist(varargin)
-           [nmixtures,mixingWeights,distributions,model.transformer] = process_options(varargin,'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[]);
+           [nmixtures,mixingWeights,distributions,model.transformer] = process_options(varargin,...
+               'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[]);
            if(isempty(mixingWeights) && ~isempty(nmixtures))
                mixingWeights = normalize(ones(1,nmixtures));
            end
@@ -23,11 +24,6 @@ classdef MvnMixDist < MixtureDist
             model = mkRndParams@MixtureDist(model,d,K);
              
          end
-        
-       
-        
-        
-        
     end
     
     methods(Access = 'protected')
@@ -69,18 +65,23 @@ classdef MvnMixDist < MixtureDist
     methods(Static = true)
         
         function testClass()
-           if(0) 
-            load oldFaith;  m = fit(MvnMixDist('nmixtures',2,'transformer',StandardizeTransformer(false)),'data',X); 
+           if(1) 
+            %dists = {MvnDist([1,-1],0.1*eye(2)),MvnDist([-1,1],0.1*eye(2
+            setSeed(0);
+            load oldFaith;  
+            %m = fit(MvnMixDist('nmixtures',2,'distributions',dists,'transformer',StandardizeTransformer(false)),'data',X,'init',false,'nrestarts',1); 
+            m = fit(MvnMixDist('nmixtures',2,'transformer',StandardizeTransformer(false)),'data',X); 
             pred = predict(m,X);
            end
+           if(0)
            setSeed(13);
            m = mkRndParams(MvnMixDist(),2,4);
            plot(m);
-           X = sample(m,500);
+           X = sample(m,1000);
            hold on;
-           plot(X(:,1),X(:,2),'or');
+           plot(X(:,1),X(:,2),'.','MarkerSize',10);
            m1 = fit(MvnMixDist('nmixtures',4),'data',X);
-           
+           end
          
             
         end

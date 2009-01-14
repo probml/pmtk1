@@ -33,23 +33,24 @@ classdef MixtureDist < ParamJointDist
         
         function model = fit(model,varargin)
         % Fit via EM    
-           [data,opttol,maxiter,nrestarts,prior] = process_options(varargin,...
-               'data'      ,[]     ,...
-               'opttol'    ,1e-3   ,...
+           [data,opttol,maxiter,nrestarts,prior,init] = process_options(varargin,...
+               'data'      ,[]    ,...
+               'opttol'    ,1e-3  ,...
                'maxiter'   ,20    ,...
                'nrestarts' ,5     ,...
-               'prior'     ,'none' );
+               'prior'     ,'none',...
+               'init'      , true );
            if(~isempty(model.transformer))
               [data,model.transformer] = train(model.transformer,data); 
            end
-           model = initializeEM(model,data);
+           if(init),model = initializeEM(model,data);end
            n = size(data,1); nmixtures = numel(model.distributions);
            bestDists = model.distributions;
            bestMix = model.mixingWeights;
            bestLL = sum(logprob(model,data)); bestRR = 1;
            for r = 1:nrestarts
-               if(r>1),model = initializeEM(model,data);end
-               converged = false; iter = 0; currentLL = -inf;
+               if(r>1 && init),model = initializeEM(model,data);end
+               converged = false; iter = 0; currentLL =sum(logprob(model,data));
                while(not(converged))
                    if(model.verbose),displayProgress(model,data,currentLL,r);end
                    prevLL = currentLL;
