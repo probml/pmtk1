@@ -161,7 +161,7 @@ classdef DiscreteDist  < ParamDist
     
     function y = mode(obj)
       % y(i) = arg max mu(i,:)
-      y = obj.support(maxidx(obj.mu,[],2));
+      y = obj.support(maxidx(obj.mu,[],1));
       y = y(:);
     end
     

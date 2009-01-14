@@ -32,7 +32,9 @@ classdef MvnMixDist < MixtureDist
             fprintf(t);
             if(size(data,2) == 2)
                 nmixtures = numel(model.distributions);
-                plot(data(:,1),data(:,2),'.','MarkerSize',10);
+                %plot(data(:,1),data(:,2),'.','MarkerSize',10);
+                colors = subd(predict(model,data),'mu')';
+                scatter(data(:,1),data(:,2),18,[colors(:,1),zeros(size(colors,1),1),colors(:,2)],'filled');
                 title(t);
                 hold on;
                 axis tight;
@@ -56,12 +58,11 @@ classdef MvnMixDist < MixtureDist
         
         function testClass()
             
-           load oldFaith;  m = fit(MvnMixDist('nmixtures',2,'transformer',StandardizeTransformer(true)),'data',X); 
-            
+           load oldFaith;  m = fit(MvnMixDist('nmixtures',2,'transformer',StandardizeTransformer(false)),'data',X); 
+           pred = predict(m,X);
            
            
-           m = MvnMixDist();
-           m = mkRndParams(m,2,2);
+         
             
         end
         

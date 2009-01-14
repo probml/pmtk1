@@ -35,9 +35,9 @@ classdef MixtureDist < ParamJointDist
         % Fit via EM    
            [data,opttol,maxiter,nrestarts,prior] = process_options(varargin,...
                'data'      ,[]     ,...
-               'opttol'    ,1e-5   ,...
-               'maxiter'   ,100    ,...
-               'nrestarts' ,20     ,...
+               'opttol'    ,1e-3   ,...
+               'maxiter'   ,20    ,...
+               'nrestarts' ,5     ,...
                'prior'     ,'none' );
            if(~isempty(model.transformer))
               [data,model.transformer] = train(model.transformer,data); 
@@ -53,11 +53,8 @@ classdef MixtureDist < ParamJointDist
                while(not(converged))
                    if(model.verbose),displayProgress(model,data,currentLL,r);end
                    prevLL = currentLL;
-                   Rik = zeros(n,nmixtures);  % responsibilities
-                   for k=1:nmixtures
-                       Rik(:,k) = model.mixingWeights(k)*exp(logprob(model.distributions{k},data));
-                   end
-                   Rik = normalize(Rik,2);
+                   pred = predict(model,data);
+                   Rik = pred.mu';                   
                    for k=1:nmixtures
                        ess = model.distributions{k}.mkSuffStat(data,Rik(:,k));
                        model.distributions{k} = fit(model.distributions{k},'suffStat',ess,'prior',prior);
@@ -79,13 +76,23 @@ classdef MixtureDist < ParamJointDist
            if(model.verbose),displayProgress(model,data,bestLL,bestRR);end
         end
         
+        function pred = predict(model,data)
+%             if(~isempty(model.transformer))
+%                data = test(model.transformer,data); 
+%             end
+%             n = size(data,1); nmixtures = numel(model.distributions);
+%             Rik = zeros(n,nmixtures);  % responsibilities
+%             for k=1:nmixtures
+%                 Rik(:,k) = log(model.mixingWeights(k))+logprob(model.distributions{k},data);
+%             end
+            logRik = calcResponsibilities(model,data);
+            Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2))); 
+            pred = DiscreteDist('mu',Rik');
+        end
+         
         function logp = logprob(model,data)
-        % logp(i) = log p(data(i,:) | params)    
-            p = zeros(size(data,1),1);
-            for k = 1:numel(model.distributions)
-                p = p + exp(logprob(model.distributions{k},data))*model.mixingWeights(k);
-            end
-            logp = log(p);
+        % logp(i) = log p(data(i,:) | params) 
+              logp = logsumexp(calcResponsibilities(model,data),2);
         end
         
         function model = mkRndParams(model, d,K)
@@ -140,6 +147,20 @@ classdef MixtureDist < ParamJointDist
         function displayProgress(model,data,loglik,rr)
         % override in subclass to customize displayed info    
             fprintf('RR: %d, negloglik: %g\n',rr,-loglik);
+        end
+        
+        function logRik = calcResponsibilities(model,data)
+        % returns unnormalized log responsibilities
+        % logRik(i,k) = log(p(data(n,:),Z_k | params))
+        % Used by predict() and logprob()
+            if(~isempty(model.transformer))
+                data = test(model.transformer,data);
+            end
+            n = size(data,1); nmixtures = numel(model.distributions);
+            logRik = zeros(n,nmixtures);
+            for k=1:nmixtures
+                logRik(:,k) = log(model.mixingWeights(k))+logprob(model.distributions{k},data);
+            end
         end
         
         
