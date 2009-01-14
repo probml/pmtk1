@@ -96,11 +96,15 @@ classdef MixtureDist < ParamJointDist
         end
         
          function model = condition(model, visVars, visValues)
-             
+            for i=1:numel(model.distributions)
+               model.distributions{i} = condition(model.distributions{i},visVars,visValues); 
+            end
          end
          
-         function [postQuery] = marginal(model, queryVars)
-              
+         function model = marginal(model, queryVars)
+             for i=1:numel(model.distributions)
+                 model.distributions{i} = marginal(model.distributions{i},queryVars);
+             end
          end
          
          function S = sample(model,nsamples)
