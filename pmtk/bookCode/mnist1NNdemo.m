@@ -7,15 +7,15 @@ load mnistAll;
 if 0
   trainndx = 1:60000; testndx =  1:10000;
 else
-  trainndx = 1:10000; 
-  testndx = 1:1000; 
+  trainndx = 1:6000; 
+  testndx =  1:1000; 
 end
 ntrain = length(trainndx);
 ntest = length(testndx);
 Xtrain = double(reshape(mnist.train_images(:,:,trainndx),28*28,ntrain)');
 Xtest  = double(reshape(mnist.test_images(:,:,testndx),28*28,ntest)');
-% If you have the memory, removing 'sparse' will increase speed by about 25%
-if 0
+
+if 1
   Xtrain = sparse(Xtrain);
   Xtest = sparse(Xtest);
 end
