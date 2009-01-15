@@ -22,6 +22,42 @@ classdef MvnMixDist < MixtureDist
             model.distributions = copy(MvnDist(),K,1);
             model = mkRndParams@MixtureDist(model,d,K);
          end
+         
+         function mu = mean(m)
+             mu = zeros(ndimensions(m),ndistrib(m));
+             for k=1:numel(m.distributions)
+                 mu(:,k) = colvec(m.distributions{k}.mu);
+             end
+             
+             M = bsxfun(@times,  mu, m.mixingWeights(:)');
+             mu = sum(M, 2);
+         end
+    
+         function C = cov(m)
+             mu = mean(m);
+             C = mu*mu';
+             for k=1:numel(m.distributions)
+                 mu = m.distributions{k}.mu;
+                 C = C + m.mixingWeights(k)*(m.distributions{k}.Sigma + mu*mu');
+             end
+         end
+         
+         function xrange = plotRange(obj, sf)
+             if nargin < 2, sf = 3; end
+             %if ndimensions(obj) ~= 2, error('can only plot in 2d'); end
+             mu = mean(obj); C = cov(obj);
+             s1 = sqrt(C(1,1));
+             x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
+             if ndimensions(obj)==2
+                 s2 = sqrt(C(2,2));
+                 x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
+                 xrange = [x1min x1max x2min x2max];
+             else
+                 xrange = [x1min x1max];
+             end
+end
+         
+       
     end
     
     methods(Access = 'protected')
@@ -68,7 +104,6 @@ classdef MvnMixDist < MixtureDist
             pred = predict(m,X);
             setSeed(13);
             m = mkRndParams(MvnMixDist(),2,4);
-            plot(m);
             X = sample(m,1000);
             hold on;
             plot(X(:,1),X(:,2),'.','MarkerSize',10);

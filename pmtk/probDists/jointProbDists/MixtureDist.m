@@ -125,14 +125,7 @@ classdef MixtureDist < ParamJointDist
                 d = 0;
             end
          end
-         
-         function h = plot(model,varargin)
-            h = figure; hold on;
-            for i=1:numel(model.distributions)
-               plot(model.distributions{i},'scaleFactor',model.mixingWeights(i),varargin{:}); 
-            end
-         end
-       
+            
     end
     
     
