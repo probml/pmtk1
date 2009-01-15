@@ -23,7 +23,7 @@ classdef BernoulliMixDist < MixtureDist
         
         function d = ndimensions(model)
            if(numel(model.distributions) > 0)
-               d = size(model.distributions{1}.mu,2);
+               d = ndistrib(model.distributions{1});
            else
                d = 0;
            end
@@ -71,6 +71,7 @@ classdef BernoulliMixDist < MixtureDist
            end
            placeFigures('Square',true)
            if(0)
+               
               for i=1:numel(lookfor)
                   figure;
                   imagesc(reshape(mean(sample(m.distributions{i},500),1),28,28))
