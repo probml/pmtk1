@@ -78,6 +78,7 @@ classdef MixtureDist < ParamJointDist
         end
         
         function pred = predict(model,data)
+        % pred.mu(k,i) = p(Z_k | data(i,:),params)   
             logRik = calcResponsibilities(model,data);
             Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2))); 
             pred = DiscreteDist('mu',Rik');
@@ -159,7 +160,7 @@ classdef MixtureDist < ParamJointDist
             n = size(data,1); nmixtures = numel(model.distributions);
             logRik = zeros(n,nmixtures);
             for k=1:nmixtures
-                logRik(:,k) = log(model.mixingWeights(k))+logprob(model.distributions{k},data);
+                logRik(:,k) = log(model.mixingWeights(k))+sum(logprob(model.distributions{k},data),2);
             end
         end
         
