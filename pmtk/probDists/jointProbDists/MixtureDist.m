@@ -96,13 +96,21 @@ classdef MixtureDist < ParamJointDist
             model.mixingWeights = normalize(rand(1,K));
         end
         
-         function model = condition(model, visVars, visValues)
-            for i=1:numel(model.distributions)
-               model.distributions{i} = condition(model.distributions{i},visVars,visValues); 
+        function model = condition(model, visVars, visValues)
+        % pass condition requests through to mixture components
+            if nargin < 2
+                visVars = []; visValues = [];
             end
-         end
+            model.conditioned = true;
+            model.visVars = visVars;
+            model.visVals = visValues;
+            for i=1:numel(model.distributions)
+                model.distributions{i} = condition(model.distributions{i},visVars,visValues);
+            end
+        end
          
          function postQuery = marginal(model, queryVars)
+         % keep only the queryVars mixture components - barren node removal   
              model.distributions = model.distributions{queryVars};
              model.mixingWeights = model.mixingWeights(queryVars);
              postQuery = model;
