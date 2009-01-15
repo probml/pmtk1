@@ -23,6 +23,7 @@ classdef HmmDist < ParamDist
                                     % is automatically initialized and
                                     % replicated. 
         verbose = true;             
+        infEng; 
     end
     
     methods
@@ -90,14 +91,14 @@ classdef HmmDist < ParamDist
         end
         
         function trellis = predict(model,observations)
-        % Return a trellisDist for each observation
+       
             n = nobservations(model,observations);  
             if(n == 1)
-                trellis = TrellisDist(model.startDist,model.transitionDist,makeLocalEvidence(model,observations));
+                trellis = FwdBackInfEng(model.startDist,model.transitionDist,makeLocalEvidence(model,observations));
             else
                 trellis = cell(n,1);
                 for i=1:n
-                   trellis{i} =  TrellisDist(model.startDist,model.transitionDist,makeLocalEvidence(model,getObservation(model,observations,i)));
+                   trellis{i} =  FwdBackInfEng(model.startDist,model.transitionDist,makeLocalEvidence(model,getObservation(model,observations,i)));
                 end
             end
         end
