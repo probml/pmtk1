@@ -51,7 +51,7 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
       mn = (k0*m0 + n*SS.xbar)/kn;
       %obj.mu = mn; obj.Sigma = Sn; obj.dof = vn; obj.k = kn;
       obj.muSigmaDist = MvnInvWishartDist('mu', mn, 'Sigma', Sn, 'dof', vn, 'k', kn);
-    assert(~isnan(mn))
+    %assert(~isnan(mn))
     end
    
   

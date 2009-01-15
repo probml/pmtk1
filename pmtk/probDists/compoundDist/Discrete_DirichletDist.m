@@ -40,11 +40,20 @@ classdef Discrete_DirichletDist < CompoundDist
        [X, SS] = process_options(varargin,...
            'data'       , [],...
            'suffStat'   , []);
-       if isempty(SS), SS = mkSuffStat(obj,X); end
+       if isempty(SS), SS = obj.mkSuffStat(X); end
        d = size(X,2);
        pseudoCounts = repmat(obj.muDist.alpha, 1, d);
        obj.muDist = DirichletDist(pseudoCounts + SS.counts);
      end
+     
+      function SS = mkSuffStat(obj, X)
+          K = nstates(obj); d = size(X,2); % ndistrib(obj);
+          counts = zeros(K, d);
+          for j=1:d
+              counts(:,j) = colvec(histc(X(:,j), obj.support));
+          end
+          SS.counts = counts;
+      end
            
   end
   
@@ -57,14 +66,7 @@ classdef Discrete_DirichletDist < CompoundDist
           v = var(m);
       end
       
-      function SS = mkSuffStat(obj, X)
-          K = nstates(obj); d = size(X,2); % ndistrib(obj);
-          counts = zeros(K, d);
-          for j=1:d
-              counts(:,j) = colvec(histc(X(:,j), obj.support));
-          end
-          SS.counts = counts;
-      end
+     
       
       
   end

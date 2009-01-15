@@ -48,7 +48,7 @@ classdef GenerativeClassifierDist < ParamDist
             L(:,c) = sum(logprob(obj.classConditionals{c},X),2) + logpy(c);
           end
           L = L - repmat(logsumexp(L,2),1,C); 
-          pred = DiscreteDist('mu', exp(L), 'support', obj.classPrior.support);
+          pred = DiscreteDist('mu', exp(L)', 'support', obj.classPrior.support);
         end
         
         function d = ndimensions(obj)
@@ -119,7 +119,7 @@ classdef GenerativeClassifierDist < ParamDist
               if bayes
                 for c=1:Nclasses, classCond{c} = Mvn_MvnInvWishartDist(prior); end
               else
-                for c=1:Nclasses, classCond{c} = MvnDist('prior', prior); end
+                for c=1:Nclasses, classCond{c} = MvnDist([],[],'prior', prior); end
               end
               if bayes
                 alpha = 1*ones(1,Nclasses);
