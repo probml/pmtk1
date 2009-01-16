@@ -28,7 +28,7 @@ classdef ParamJointDist < ParamDist
       [model.infEng] = condition(model.infEng, model, visVars, visValues);
     end
 
-    function [postQuery] = marginal(model, queryVars)
+    function [postQuery] = marginal(model, queryVars,varargin)
       % postQuery = p(queryVars) conditional on the most recent
       % condition operation
       if ~model.conditioned
@@ -36,7 +36,11 @@ classdef ParamJointDist < ParamDist
         %fprintf('it is recommended to first call condition\n');
         model = condition(model);
       end
-      [postQuery] = marginal(model.infEng, queryVars);
+      if(nargin == 1)
+          [postQuery] = marginal(model.infEng);
+      else
+          [postQuery] = marginal(model.infEng, queryVars,varargin{:});
+      end
     end
 
     function [samples] = sample(model, n)
@@ -56,6 +60,9 @@ classdef ParamJointDist < ParamDist
     function XX = insertVisData(model, X)
       % X contains values of hidden variables
       % We insert the data that we have already conditioned on
+      if(isstruct(model.domain))
+         error('Not yet supported for models with multiple types of variables'); 
+      end
       [n nhid] = size(X);
       nvis = length(model.visVars);
       if nvis == 0, XX = X; return; end
@@ -80,25 +87,41 @@ classdef ParamJointDist < ParamDist
     
     function logZ = lognormconst(model)
       %if ~model.conditioned, model = condition(model); end
+      if(~ismember('lognormconst',methods(model.infEng)))
+         error('The current inference engine does not support this operation'); 
+      end
+      
       logZ = lognormconst(model.infEng);
     end
 
     function mu = mean(model)
+        if(~ismember('mean',methods(model.infEng)))
+            error('The current inference engine does not support this operation');
+        end
       if ~model.conditioned, model = condition(model); end
       mu = mean(model.infEng);
     end
 
     function mu = mode(model)
+        if(~ismember('mode',methods(model.infEng)))
+            error('The current inference engine does not support this operation');
+        end
       if ~model.conditioned, model = condition(model); end
       mu = mode(model.infEng);
     end
 
     function C = cov(model)
-      if ~model.conditioned, model = condition(model); end
-      C = cov(model.infEng);
+        if(~ismember('cov',methods(model.infEng)))
+            error('The current inference engine does not support this operation');
+        end
+        if ~model.conditioned, model = condition(model); end
+        C = cov(model.infEng);
     end
 
     function C = var(model)
+        if(~ismember('var',methods(model.infEng)))
+            error('The current inference engine does not support this operation');
+        end
       if ~model.conditioned, model = condition(model); end
       C = var(model.infEng);
     end

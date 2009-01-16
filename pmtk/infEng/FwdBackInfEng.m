@@ -79,6 +79,25 @@ classdef FwdBackInfEng < InfEng
     end
     
     methods
+        
+        
+        function eng = condition(eng,model,visVars,visValues)    
+            eng.pi = mean(model.startDist);
+            eng.A = mean(model.transitionDist);
+            if(iscell(visVars))
+                error('conditioning on multiple variables not yet supported');
+            else
+               if(isequal(visVars,'Y'))
+                   eng.B = makeLocalEvidence(model,visValues);
+               elseif(isequal(visVArs,'Z'))
+                   error('conditioning on observed values for the latent variables not yet supported');
+               else
+                   error('Valid variables are ''Y'' for the emission observations and ''Z'' for latent');
+               end
+            end
+        end
+        
+        
         function [path,eng] = mode(eng)
         % runs viterbi
             checkParams(eng);
@@ -171,11 +190,7 @@ classdef FwdBackInfEng < InfEng
             checkParams(eng);
             s = hmmSamplePost(eng.pi, eng.A, eng.B, nsamples);           
         end
-               
-        function [h,eng] = plot(eng,varargin)
-            checkParams(eng);
-        end
-        
+                 
         function eng =  reset(eng)
         % Clears stored values used in lazy evaluation. This is called
         % automatically when the parameters are changed. 

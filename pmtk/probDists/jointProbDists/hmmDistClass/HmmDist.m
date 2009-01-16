@@ -1,4 +1,4 @@
-classdef HmmDist < ParamDist
+classdef HmmDist < ParamJointDist
 % This class represents a Hidden Markov Model. 
     properties                           
         nstates;                    % number of hidden states
@@ -23,7 +23,7 @@ classdef HmmDist < ParamDist
                                     % is automatically initialized and
                                     % replicated. 
         verbose = true;             
-        infEng; 
+      
     end
     
     methods
@@ -34,21 +34,38 @@ classdef HmmDist < ParamDist
         % INPUT:    'nstates'                       - the number of hidden states
         %           'transitionDist'                - see property above   
         %           'emissionDist'                  - see proeprty above
+        %           'infEng'                        - an inference engine for
+        %                                             answering condition and 
+        %                                             marginal queries, etc - one
+        %                                             is initialized by default. 
         %           'verbose'                       - see property above
         % OUTPUT:   'model'   - the constructed HMM object
             [model.nstates                          ,...
              model.startDist                        ,...
              model.transitionDist                   ,...
              model.emissionDist                     ,...
+             model.infEng                           ,...
              model.verbose                          ]...
              = process_options(varargin,...
                 'nstates'                           ,[],...
                 'startDist'                         ,[],...
                 'transitionDist'                    ,[],...
-                'emissionDist'         ,{},...
+                'emissionDist'                      ,{},...
+                'infEng'                            ,FwdBackInfEng(),...
                 'verbose'                           ,true);
             if(isempty(model.nstates))
                 model.nstates = numel(model.emissionDist);
+            end
+            model.domain = struct;
+            model.domain.Z = 1:model.nstates;
+            model.domain.Y = [];
+            if(~isempty(model.emissionDist))
+                if(iscell(model.emissionDist))
+                    model.domain.Y = 1:ndimensions(model.emissionDist{1});
+                else
+                    model.domain.Y = 1:ndimensions(model.emissionDist);
+                end
+                
             end
         end
         
@@ -69,13 +86,24 @@ classdef HmmDist < ParamDist
              data = checkData(model,data);
              model = emUpdate(model,data,options{:});
         end
-
-        function logp = logprob(model,X)
-        % logp(i) = log p(X{i} | model)
-            n = nobservations(model,X);                              
-            logp = zeros(n,1);
-            for i=1:n
-                logp(i) = logprob(predict(model,getObservation(model,X,i)));
+        
+        function logp = logprob(model,Y)
+        % logp(i) = log p(Y{i} | model)
+        % If Y specified, the model is first conditioned on Y. Y may store
+        % multiple observations, in which case the model is conditioned on each
+        % in turn. 
+            if(nargin ==1)
+                if(~model.conditioned)
+                   error('You must call condition first or specify an observation'); 
+                end
+                [logp,model.infEng] = logprob(model.infEng);
+            else
+                n = nobservations(model,Y);
+                logp = zeros(n,1);
+                for i=1:n
+                    model = condition(model,'Y',getObservation(model,Y,i));
+                    [logp(i),model.infEng] = logprob(model.infEng);
+                end
             end
         end
         
@@ -90,22 +118,23 @@ classdef HmmDist < ParamDist
             end    
         end
         
-        function trellis = predict(model,observations)
-       
-            n = nobservations(model,observations);  
-            if(n == 1)
-                trellis = FwdBackInfEng(model.startDist,model.transitionDist,makeLocalEvidence(model,observations));
-            else
-                trellis = cell(n,1);
-                for i=1:n
-                   trellis{i} =  FwdBackInfEng(model.startDist,model.transitionDist,makeLocalEvidence(model,getObservation(model,observations,i)));
-                end
-            end
+        function S = samplePost(model,nsamples)
+        % Forwards filtering, backwards sampling    
+            S = sample(model.infEng,nsamples);
         end
-            
+        
         function d = ndimensions(model)
         % The dimensionality of the emission densities.    
            d = ndimensions(model.emissionDist{1});
+        end
+        
+         function localEvidence = makeLocalEvidence(model,obs)
+         % the probability of the observed sequence under each state conditional density. 
+         % localEvidence(i,t) = p(Y(t) | Z(t)=i)
+            localEvidence = zeros(model.nstates,size(obs,2));     
+            for i = 1:model.nstates
+                localEvidence(i,:) = exp(logprob(model.emissionDist{i},obs'));
+            end
         end
  
     end
@@ -139,21 +168,21 @@ classdef HmmDist < ParamDist
             function Estep()
             % Compute the expected sufficient statistics    
                 for j=1:nobs
-                    trellis = predict(model,getObservation(model,data,j));
+                    model = condition(model,'Y',getObservation(model,data,j));
                     %% Starting Distribution
                     if(not(clampedStart)) 
-                        essStart.counts = essStart.counts + colvec(marginal(trellis,1));     % marginal(trellis,1) is one slice marginal at t=1
+                        essStart.counts = essStart.counts + colvec(marginal(model,1));     % marginal(model,1) is one slice marginal at t=1
                     end 
                     %% Transition Distributions
                     if(not(clampedTrans))
-                        essTrans.counts = essTrans.counts +  marginal(trellis);               % marginal(trellis) = two slice marginal xi
+                        essTrans.counts = essTrans.counts +  marginal(model);               % marginal(model) = full two slice marginals xi
                     end  
                     if(not(clampedObs))
-                        gamma = marginal(trellis,':');
+                        gamma = marginal(model,':');                                        % marginal(model,':') all of the 1 slice marginals, i.e. gamma
                         weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) =...
                           weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) + gamma';
                     end
-                    loglikelihood = loglikelihood + logprob(trellis);
+                    loglikelihood = loglikelihood + logprob(model);
                 end
                 essTrans.counts = essTrans.counts';
                 %% Emission Distributions
@@ -308,14 +337,7 @@ classdef HmmDist < ParamDist
            [junk,n] = getObservation(model,X,1); %#ok
         end
         
-        function localEvidence = makeLocalEvidence(model,obs)
-        % the probability of the observed sequence under each state conditional density. 
-        % localEvidence(i,t) = p(y(t) | S(t)=i)
-            localEvidence = zeros(model.nstates,size(obs,2));     
-            for i = 1:model.nstates
-                localEvidence(i,:) = exp(logprob(model.emissionDist{i},obs'));
-            end
-        end
+       
         
     end % end of protected methods
     
@@ -365,11 +387,11 @@ classdef HmmDist < ParamDist
             
             model = HmmDist('emissionDist',DiscreteDist('support',1:6),'nstates',2);
             model = fit(model,'data',observed);
-            trellis = predict(model,observed{1}');
             
-            postSample = mode(sample(trellis,1000),2)' %#ok
-            viterbi  = mode(trellis)                   %#ok
-            maxmarg = maxidx(marginal(trellis,':'))    %#ok
+            model = condition(model,'Y',observed{1}');
+            postSample = mode(samplePost(model,1000),2)'
+            viterbi = mode(model)
+            maxmarg = maxidx(marginal(model,':'))
             %% MVN
             trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
             trueTransDist = DiscreteDist('mu',[0.8,0.2;0.1,0.90]','support',1:2);

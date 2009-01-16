@@ -10,8 +10,9 @@
 % which die is being used at any given point in a sequence of rolls. In this
 % example, we know both the transition and emission probabilities. 
 %% Specifying the Model
-% Since we are not learning the parameters, we must specify the observation
-% model, the transition matrix, and the distribution over starting states.
+% Since we are not learning the parameters, we must specify the
+% observation/emission model, the transition matrix, and the distribution 
+% over starting states.
 fair = 1; loaded = 2;
 %% Observation Model  
 % We will use a discrete observation model, one DiscreteDist object per hidden
@@ -35,23 +36,23 @@ fair = 1; loaded = 2;
     nsamples = 1; length = 300;
     [rolls,die] = sample(model,nsamples,length);
 %% Prediction
-% We can obtain a distribution over paths, a TrellisDist, by calling predict on
-% the fitted model, passing in a sequence of observations. The mode of this
-% distribution is the Viterbi path or most likely sequence of hidden states. 
-    trellis = predict(model,rolls);
-    viterbiPath = mode(trellis);
+% We can obtain the most likely sequence of hidden states, (the viterbi path) by
+% conditioning on observed data and calling mode(). There are two variable
+% types, Y for the emission probabilities and Z for the latent, hidden states. 
+    model = condition(model,'Y',rolls);
+    viterbiPath = mode(model);
 %%
 % This is different than the sequence of most likely states, which we can obtain
-% by calling marginal() on the trellis and taking the max. The ':' returns the
+% by calling marginal() and taking the max. The ':' returns the
 % entire path rather than values at specific points in the sequence. These are
 % the smoothed estimates, we can also obtain the filtered estimates for comparison.
 % The method also supports two slice marginals, hence the []. 
-   maxmarg  = maxidx(marginal(trellis,':'));
-   maxmargF = maxidx(marginal(trellis,':',[],'filtered'));
+   maxmarg  = maxidx(marginal(model,':'));
+   maxmargF = maxidx(marginal(model,':',[],'filtered'));
 %%
-% We can also sample from the posterior and compare the mode of these
-% samples to the predictions above. 
-   postSamp = mode(sample(trellis,500),2)';
+% We can also sample from the posterior, fowards filtering, backwards sampling,
+% and compare the mode of these samples to the predictions above. 
+   postSamp = mode(samplePost(model,500),2)';
 %%
 % We now display the rolls, the corresponding die used and the Viterbi 
 % prediction. 
@@ -84,8 +85,8 @@ fprintf('Max Marginal Filtered:  %d/%d\n',maxMargFErr,300);
 fprintf('Mode Posterior Samples: %d/%d\n',postSampErr,300);
 
 %% Marginals 
-    filtered = marginal(trellis,':',[],'filtered'); % filtered(i,t) = p(S(t)=i | y(1:t))
-    smoothed = marginal(trellis,':',[],'smoothed'); % smoothed(i,t) = p(S(t)=i | y(1:T))
+    filtered = marginal(model,':',[],'filtered'); % filtered(i,t) = p(S(t)=i | y(1:t))
+    smoothed = marginal(model,':',[],'smoothed'); % smoothed(i,t) = p(S(t)=i | y(1:T))
 %% 
 % Here we plot the probabilities and shade in grey the portions of the die
 % sequence where a loaded die was actually used. 
