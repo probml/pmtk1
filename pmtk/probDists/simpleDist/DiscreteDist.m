@@ -22,6 +22,9 @@ classdef DiscreteDist  < ParamDist
         [nstates] = size(mu,1);
         support = 1:nstates;
       end
+      if(~approxeq(normalize(mu,1),mu))
+         error('Each column must sum to one'); 
+      end
       obj.mu = mu;
       if isempty(support) && nargin > 1
           error('must specify support'); 
@@ -119,17 +122,19 @@ classdef DiscreteDist  < ParamDist
         model.mu = normalize(SS.counts + pseudoCounts, 1);
       case 'char'
         switch lower(prior)
-          case 'none',
+          case 'none'
             model.mu = normalize(SS.counts,1);
+           
           case 'dirichlet'
             pseudoCounts = repmat(priorStrength,K,d);
-            model.mu = normalize(SS.counts + pseudoCounts);
+            model.mu = normalize(SS.counts + pseudoCounts,1);
           otherwise
             error(['unknown prior %s ' prior])
         end
       otherwise
         error('unknown prior ')
     end
+
     end
    
     function x = sample(obj, n)
@@ -177,14 +182,5 @@ classdef DiscreteDist  < ParamDist
     end
   end
   
-  %% Getters and Setters
-  %{
-  methods
-      function obj = set.mu(obj, mu)
-          obj.mu = mu;
-          obj.nstates = size(mu,1);
-          obj.ndistrib = size(mu,2);
-      end 
-  end
-  %}
+ 
 end

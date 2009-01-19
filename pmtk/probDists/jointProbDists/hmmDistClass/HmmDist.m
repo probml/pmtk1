@@ -8,7 +8,8 @@ classdef HmmDist < ParamJointDist
 
         transitionDist;             % p( S(t) = j | S(t-1) = i),
                                     % A DiscreteDist or a Discrete_DirichletDist
-                                    % (vectorized)
+                                    % (vectorized) (Each *column* of
+                                    % mean(transitionDist) sums to one)
                                      
         emissionDist;               % the emmission densities - one object per 
                                     % hidden state stored as a cell array. 
@@ -375,7 +376,7 @@ classdef HmmDist < ParamJointDist
                             DiscreteDist('mu',[ones(5,1)./10;0.5],'support',1:6)};
            
             trueTransDist = DiscreteDist('mu',[0.8,0.2;0.3,0.70]','support',1:2);
-            trueStartDist = DiscreteDist('mu',[0.5,0.5],'support',1:2);
+            trueStartDist = DiscreteDist('mu',[0.5,0.5]','support',1:2);
             trueModel = HmmDist('startDist'     ,trueStartDist,...
                                 'transitionDist',trueTransDist,...
                                 'emissionDist'  ,trueObsModel);
@@ -395,7 +396,7 @@ classdef HmmDist < ParamJointDist
             %% MVN
             trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
             trueTransDist = DiscreteDist('mu',[0.8,0.2;0.1,0.90]','support',1:2);
-            trueStartDist = DiscreteDist('mu',[0.5,0.5],'support',1:2);
+            trueStartDist = DiscreteDist('mu',[0.5;0.5],'support',1:2);
             trueModel = HmmDist('startDist'     ,trueStartDist,...
                                 'transitionDist',trueTransDist,...
                                 'emissionDist'  ,trueObsModel);
@@ -413,13 +414,13 @@ classdef HmmDist < ParamJointDist
                error('Please download data45.mat from www.cs.ubc.ca/~murphyk/pmtk and save it in the data directory');
             end
             setSeed(0);
-            load data45; nstates = 5; ndimensions = 13;
+            load data45; nstates = 5; d = 13;
             startDist = DiscreteDist('mu',[1,0,0,0,0]','support',1:5);
             transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
             transDist = DiscreteDist('mu',transmat0','support',1:5);
             emissionDist = cell(5,1);
             for i=1:nstates
-                emissionDist{i} = mkRndParams(MvnDist(),ndimensions);
+                emissionDist{i} = mkRndParams(MvnDist(),d);
             end
             model4 = HmmDist('startDist',startDist,'transitionDist',transDist,'emissionDist',emissionDist,'nstates',nstates);
             model4 = fit(model4,'data',train4);
@@ -429,10 +430,12 @@ classdef HmmDist < ParamJointDist
                 subplot(2,2,2)
                 specgram(signal2);
                 subplot(2,2,3);
-                plot(mode(predict(model4,mfcc1)));
+                model4 = condition(model4,'Y',mfcc1);
+                plot(mode(model4));
                 set(gca,'YTick',1:5);
                 subplot(2,2,4);
-                plot(mode(predict(model4,mfcc2)));
+                model4 = condition(model4,'Y',mfcc2);
+                plot(mode(model4));
                 set(gca,'YTick',1:5);
                 maximizeFigure;
             end 

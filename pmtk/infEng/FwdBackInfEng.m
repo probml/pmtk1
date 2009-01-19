@@ -9,7 +9,8 @@ classdef FwdBackInfEng < InfEng
         
         pi;   % The distribution over starting states
         A;    % A(i,j) = p(S(t+1)=j | S(t)=i) - the transition matrix: 
-              % size(A) = nstates-by-nstates
+              % size(A) = nstates-by-nstates (Each *row* sums to one unlike the
+              % DiscreteDist class)
               
         B;    % B(i,t) = p(y(t) | S(t)=i)     - the matrix of local evidence: 
               % size(B) = nstates-by-length(y)
@@ -64,11 +65,12 @@ classdef FwdBackInfEng < InfEng
         %% Setters
         function eng = set.pi(eng,pi)
             eng = reset(eng);
-            eng.pi = pi;
+            eng.pi = rowvec(pi);
         end
         
         function eng = set.A(eng,A)
            eng = reset(eng);
+           assert(approxeq(A,normalize(A,2)));
            eng.A = A;
         end
         
@@ -81,15 +83,16 @@ classdef FwdBackInfEng < InfEng
     methods
         
         
-        function eng = condition(eng,model,visVars,visValues)    
+        function eng = condition(eng,model,visVars,visValues)   
+            eng = reset(eng);
             eng.pi = mean(model.startDist);
-            eng.A = mean(model.transitionDist);
+            eng.A = mean(model.transitionDist)';
             if(iscell(visVars))
                 error('conditioning on multiple variables not yet supported');
             else
                if(isequal(visVars,'Y'))
                    eng.B = makeLocalEvidence(model,visValues);
-               elseif(isequal(visVArs,'Z'))
+               elseif(isequal(visVars,'Z'))
                    error('conditioning on observed values for the latent variables not yet supported');
                else
                    error('Valid variables are ''Y'' for the emission observations and ''Z'' for latent');

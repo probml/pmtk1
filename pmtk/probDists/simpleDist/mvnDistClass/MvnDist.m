@@ -21,6 +21,9 @@ classdef MvnDist < ParamJointDist
   
   %% main methods
   methods
+      
+      
+      
     function m = MvnDist(mu, Sigma,  varargin)
       if nargin == 0
         mu = []; Sigma = [];
@@ -158,7 +161,7 @@ classdef MvnDist < ParamJointDist
            end
          case 'MvnInvWishartDist'  % MAP estimation
            m = Mvn_MvnInvWishartDist(prior);
-           m = fit(m, 'data', X);
+           m = fit(m, 'suffStat',SS);
            post = m.muSigmaDist; % paramDist(m); % NIW
            m = mode(post);
            obj.mu = m.mu;
