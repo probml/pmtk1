@@ -34,7 +34,7 @@ classdef MixtureDist < ParamJointDist
         
         function model = fit(model,varargin)
         % Fit via EM    
-           [data,opttol,maxiter,nrestarts,suffStat,prior,init] = process_options(varargin,...
+           [data,opttol,maxiter,nrestarts,SS,prior,init] = process_options(varargin,...
                'data'      ,[]    ,...
                'opttol'    ,1e-3  ,...
                'maxiter'   ,20    ,...
@@ -43,14 +43,11 @@ classdef MixtureDist < ParamJointDist
                'prior'     ,'none',...
                'init'      , true );
            nmixtures = numel(model.distributions);
-           if(~isempty(suffStat))
-               logRik = calcResponsibilities(model,suffStat.data,suffStat.weights);
-               Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2)));
+           if(~isempty(SS))
                for k=1:nmixtures
-                   ess = model.distributions{k}.mkSuffStat(suffStat.data,Rik(:,k));
-                   model.distributions{k} = fit(model.distributions{k},'suffStat',ess,'prior',prior);
+                   model.distributions{k} = fit(model.distributions{k},'suffStat',SS.ess{k},'prior',prior);
                end
-               model.mixingWeights = normalize(sum(Rik,1));
+               model.mixingWeights = normalize(sum(SS.weights,1));
                return;
            end
            if(~isempty(model.transformer))
@@ -146,6 +143,31 @@ classdef MixtureDist < ParamJointDist
                 d = 0;
             end
          end
+         
+         
+         function SS = mkSuffStat(model,data,weights) 
+         % Compute weighted, (expected) sufficient statistics. In the case of 
+         % an HMM, the weights correspond to gamma = normalize(alpha.*beta,1)
+         % We calculate gamma2 by combining alpha and beta messages with the
+         % responsibilities - see equation 13.109 in pml24nov08
+             if(nargin < 2)
+                 weights = ones(size(data,1));
+             end
+             if(~isempty(model.transformer))
+                 [data,model.transformer] = train(model.transformer,data);
+             end
+             logRik = calcResponsibilities(model,data);
+             logGamma2 = bsxfun(@plus,logRik,log(weights+eps));           % combine alpha,beta,local evidence messages
+             logGamma2 = bsxfun(@minus,logGamma2,logsumexp(logGamma2,2)); % normalize while avoiding numerical underflow
+             gamma2 = exp(logGamma2);
+             nmixtures = numel(model.distributions);
+             ess = cell(nmixtures,1);
+             for k=1:nmixtures
+                 ess{k} = model.distributions{k}.mkSuffStat(data,gamma2(:,k));   
+             end
+             SS.ess = ess;
+             SS.weights = gamma2;
+         end
             
     end
     
@@ -166,20 +188,17 @@ classdef MixtureDist < ParamJointDist
             end
         end
         
-        function logRik = calcResponsibilities(model,data,weights)
+        function logRik = calcResponsibilities(model,data)
         % returns unnormalized log responsibilities
         % logRik(i,k) = log(p(data(n,:),Z_k | params))
-        % Used by predict() and logprob()
+        % Used by predict(), logprob(), mkSuffStat()
             if(~isempty(model.transformer))
                 data = test(model.transformer,data);
-            end
-            if(nargin < 3)
-                weights = ones(size(data,1),1);
             end
             n = size(data,1); nmixtures = numel(model.distributions);
             logRik = zeros(n,nmixtures);
             for k=1:nmixtures
-                logRik(:,k) = log(model.mixingWeights(k)+eps)+sum(logprob(model.distributions{k},data),2) + log(weights + eps);
+                logRik(:,k) = log(model.mixingWeights(k)+eps)+sum(logprob(model.distributions{k},data),2); % We sum across columns in the 2nd term for the case in which the mixture components are themselves products of distributions, otherwise it has no effect. 
             end
         end
         
@@ -188,18 +207,7 @@ classdef MixtureDist < ParamJointDist
     
     methods(Static = true)
         
-       function SS = mkSuffStat(data,weights)
-            if(nargin < 2)
-                weights = ones(size(data,1));
-            end
-%             nocontrib = weights ==0;
-%             data(nocontrib,:) = [];
-%             weights(nocontrib) = [];
-            
-            SS.data = data;
-            SS.weights = weights;
-           
-        end
+       
         
     end
   

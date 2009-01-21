@@ -78,7 +78,7 @@ classdef DiscreteDist  < ParamDist
        if(nargin < 3)
            ndistrib = 1;
        end
-       obj.mu = normalize(rand(d,ndistrib));
+       obj.mu = normalize(rand(d,ndistrib),1);
        obj.support = 1:d;
     end
     

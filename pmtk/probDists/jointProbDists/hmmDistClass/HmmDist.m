@@ -293,7 +293,7 @@ classdef HmmDist < ParamJointDist
                 nobs = nobservations(model,X);
                 if(nobs >= model.nstates)
                     for i=1:model.nstates
-                        model.emissionDist{i} =  fit(model.emissionDist{i},'data',getObservation(model,X,i));
+                        model.emissionDist{i} =  fit(model.emissionDist{i},'data',getObservation(model,X,i)');
                     end
                 else
                     data = HmmDist.stackObservations(X);
@@ -396,6 +396,7 @@ classdef HmmDist < ParamJointDist
     methods(Static = true)
         
         function testClass()
+            %% Discrete Observations
             setSeed(0);
             trueObsModel = {DiscreteDist('mu',ones(6,1)./6       ,'support',1:6)
                             DiscreteDist('mu',[ones(5,1)./10;0.5],'support',1:6)};
@@ -418,7 +419,7 @@ classdef HmmDist < ParamJointDist
             postSample = mode(samplePost(model,1000),2)'
             viterbi = mode(model)
             maxmarg = maxidx(marginal(model,':'))
-            %% MVN
+            %% MVN Observations
             trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
             trueTransDist = DiscreteDist('mu',[0.8,0.2;0.1,0.90]','support',1:2);
             trueStartDist = DiscreteDist('mu',[0.5;0.5],'support',1:2);
@@ -427,10 +428,32 @@ classdef HmmDist < ParamJointDist
                                 'emissionDist'  ,trueObsModel);
             nsamples = 200; length = 20;
             [observed,trueHidden] = sample(trueModel,nsamples,length);
-
-            
             model = HmmDist('emissionDist',MvnDist(),'nstates',2);
             model = fit(model,'data',observed);
+            %% MvnMixDist Observations
+            nstates = 5; d = 2; nmixcomps = 2;
+            emissionDist = cell(5,1);
+            for i=1:nstates
+                emissionDist{i} = mkRndParams(MvnMixDist('nrestarts',5,'verbose',false),d,nmixcomps);
+            end
+            pi = DiscreteDist('mu',normalize(ones(nstates,1)));
+            A = DiscreteDist('mu',normalize(rand(nstates),1));
+            trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
+            [observed,hidden] = sample(trueModel,1,1000);            
+            model = HmmDist('emissionDist',MvnMixDist('nmixtures',nmixcomps,'verbose',false,'nrestarts',1),'nstates',nstates);
+            model = fit(model,'data',observed,'maxIter',20);
+            %% BernoulliMixDist Observations
+            nstates = 5;  nmixcomps = 2; d = 3;
+            emissionDist = cell(5,1);
+            for i=1:nstates
+                emissionDist{i} = mkRndParams(BernoulliMixDist('nmixtures',nmixcomps),d,nmixcomps);
+            end
+            pi = DiscreteDist('mu',normalize(rand(nstates,1)));
+            A = DiscreteDist('mu',normalize(rand(nstates),1));
+            trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
+            [observed,hidden] = sample(trueModel,1,1000);     
+            model = HmmDist('emissionDist',BernoulliMixDist('nmixtures',nmixcomps,'verbose',false),'nstates',nstates);
+            model = fit(model,'data',observed,'maxIter',20);
         end
       
         
@@ -465,54 +488,10 @@ classdef HmmDist < ParamJointDist
                 maximizeFigure;
             end 
         end
-        
-        function testClass2()
-            
-            nstates = 5; d = 2; nmixcomps = 2;
-            emissionDist = cell(5,1);
-            for i=1:nstates
-                emissionDist{i} = mkRndParams(MvnMixDist('nrestarts',5,'verbose',false),d,nmixcomps);
-            end
-            pi = DiscreteDist('mu',normalize(ones(nstates,1)));
-            A = DiscreteDist('mu',normalize(rand(nstates),1));
-            trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
-            [observed,hidden] = sample(trueModel,1,1000);            
-          
-
-            model = HmmDist('emissionDist',MvnMixDist('nmixtures',nmixcomps,'verbose',false,'nrestarts',1),'nstates',nstates);
-            model = fit(model,'data',observed,'maxIter',20);
-            model = condition(model,'Y',observed);
-            
-            maxmarg = maxidx(marginal(model,':'));
-            mean(hidden ~= maxmarg)
-            
-        end
-        
-         function testClass3()
-          
-            nstates = 5;  nmixcomps = 2; d = 3;
-            emissionDist = cell(5,1);
-            for i=1:nstates
-                emissionDist{i} = mkRndParams(BernoulliMixDist('nmixtures',nmixcomps),d,nmixcomps);
-            end
-            pi = DiscreteDist('mu',normalize(rand(nstates,1)));
-            A = DiscreteDist('mu',normalize(rand(nstates),1));
-            trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
-            [observed,hidden] = sample(trueModel,1,1000);     
-          
-          
-            model = HmmDist('emissionDist',BernoulliMixDist('nmixtures',nmixcomps,'verbose',false),'nstates',nstates);
-            model = fit(model,'data',observed,'maxIter',20);
-            model = condition(model,'Y',observed(:,:,1));
-            
-            maxmarg = maxidx(marginal(model,':'));
-            mean(hidden(1,:) ~= maxmarg)
-            
-        end
-        
-        
-        
+     
          function seqalign2()
+         % Same as seqalign but use MvnMixDist observation model    
+            setSeed(1);
             if(~exist('data45.mat','file'))
                error('Please download data45.mat from www.cs.ubc.ca/~murphyk/pmtk and save it in the data directory');
             end
@@ -525,8 +504,23 @@ classdef HmmDist < ParamJointDist
                 emissionDist{i} = mkRndParams(MvnMixDist('nrestarts',1,'verbose',false),d,nmixcomps);
             end
             model4 = HmmDist('startDist',startDist,'transitionDist',transDist,'emissionDist',emissionDist,'nstates',nstates);
-            model4 = fit(model4,'data',train4);
-           
+            model4 = fit(model4,'data',train4,'maxIter',10);
+            if(exist('specgram','file'))
+                subplot(2,2,1);
+                specgram(signal1); 
+                subplot(2,2,2)
+                specgram(signal2);
+                subplot(2,2,3);
+                model4 = condition(model4,'Y',mfcc1);
+                plot(mode(model4));
+                set(gca,'YTick',1:5);
+                subplot(2,2,4);
+                model4 = condition(model4,'Y',mfcc2);
+                plot(mode(model4));
+                set(gca,'YTick',1:5);
+                maximizeFigure;
+            end 
+            
         end
       
         
