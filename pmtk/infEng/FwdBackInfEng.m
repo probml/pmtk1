@@ -17,14 +17,13 @@ classdef FwdBackInfEng < InfEng
             
     end
     
-    properties(GetAccess = 'protected', SetAccess = 'protected')
+    properties(GetAccess = 'public', SetAccess = 'protected')
     % Values here are calculated only as needed and stored for future queries.   
     
     
       alpha;    % alpha(i,t) = p(S(t)=i| y(1:t))       (filtering) forwards step    
       beta;     % beta(i,t) propto p(y(t+1:T) | Z(t=i))            backwards step
       gamma;    % gamma(i,t) = p(S(t)=i | y(1:T))      (smoothing) forwards/backwards
-      gamma2;
       xi;       % two slice marginal distribution 
       
       viterbiPath; % the most likely sequence of hidden states given model and 
@@ -200,7 +199,6 @@ classdef FwdBackInfEng < InfEng
           eng.alpha = [];  
           eng.beta = [];    
           eng.gamma = [];   
-          eng.gamma2 = [];
           eng.xi = [];      
           eng.viterbiPath = []; 
           eng.logp = [];  

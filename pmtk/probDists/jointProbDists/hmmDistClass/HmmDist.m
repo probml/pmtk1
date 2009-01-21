@@ -154,7 +154,7 @@ classdef HmmDist < ParamJointDist
                    'clampedTrans'          ,false  );
                if(clampedStart && clampedObs && clampedTrans),return;end % nothing to do
                
-               [loglikelihood,prevLL,iter,converged,nobs,essStart,...
+               [currentLL,prevLL,iter,converged,nobs,essStart,...
                 essTrans,essObs,stackedData,seqndx,weightingMatrix] = initializeVariables();
                % these variables are global to the emUpdate method
                
@@ -168,8 +168,10 @@ classdef HmmDist < ParamJointDist
                              
             function Estep()
             % Compute the expected sufficient statistics    
+               
                 for j=1:nobs
                     model = condition(model,'Y',getObservation(model,data,j));
+                    currentLL = currentLL + logprob(model);
                     %% Starting Distribution
                     if(not(clampedStart)) 
                         essStart.counts = essStart.counts + colvec(marginal(model,1));     % marginal(model,1) is one slice marginal at t=1
@@ -180,16 +182,17 @@ classdef HmmDist < ParamJointDist
                     end  
                     if(not(clampedObs))
                         gamma = marginal(model,':');                                        % marginal(model,':') all of the 1 slice marginals, i.e. gamma
-                        weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) =...
-                          weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) + gamma';
+                        weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) =...         % seqndx just keeps track of where data cases start and finish
+                          weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) + gamma';  % in the stacked matrix
                     end
-                    loglikelihood = loglikelihood + logprob(model);
                 end
+               
                 essTrans.counts = essTrans.counts';
                 %% Emission Distributions
+                
                 if(not(clampedObs))
-                    for i=1:model.nstates
-                        essObs{i} = model.emissionDist{i}.mkSuffStat(stackedData,weightingMatrix(:,i));
+                    for j=1:model.nstates
+                        essObs{j} = model.emissionDist{j}.mkSuffStat(stackedData,weightingMatrix(:,j));
                     end
                 end
             end % end of Estep subfunction
@@ -219,29 +222,30 @@ classdef HmmDist < ParamJointDist
                         end
                     end
                 end
+                
             end % end of Mstep subfunction
             
             function testConvergence()
             % Test if EM has converged yet  
                 if(model.verbose)
-                    fprintf('\niteration %d, loglik = %f\n',iter,loglikelihood);
+                    fprintf('\niteration %d, loglik = %f\n',iter,currentLL);
                 end
                 iter = iter + 1;
-                converged = (abs(loglikelihood - prevLL) / (abs(loglikelihood) + abs(prevLL) + eps)/2) < optTol;
+                converged = (abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < optTol;
             end % end of testConvergence subfunction
             
             function resetStatistics()
             % called during EM loop to reset stats    
-                prevLL = loglikelihood;
-                loglikelihood = 0;
+                prevLL = currentLL;
+                currentLL = 0;
                 if(~clampedStart)  ,essStart.counts(:) = 0;end
                 if(~clampedTrans)  ,essTrans.counts(:) = 0;end
                 if(~clampedObs)    ,weightingMatrix(:) = 0;end
             end % end of resetStatistics subfunction
             
-            function [loglikelihood,prevLL,iter,converged,nobs,essStart,essTrans,essObs,stackedData,seqndx,weightingMatrix] = initializeVariables()
+            function [currentLL,prevLL,iter,converged,nobs,essStart,essTrans,essObs,stackedData,seqndx,weightingMatrix] = initializeVariables()
             % called prior to EM loop to setup variables   
-                loglikelihood = 0;
+                currentLL = 0;
                 prevLL = 0;
                 iter = 1;
                 converged = false;
@@ -423,7 +427,61 @@ classdef HmmDist < ParamJointDist
                 emissionDist{i} = mkRndParams(MvnDist(),d);
             end
             model4 = HmmDist('startDist',startDist,'transitionDist',transDist,'emissionDist',emissionDist,'nstates',nstates);
-            model4 = fit(model4,'data',train4);
+            model4 = fit(model4,'data',train4,'maxIter',5);
+            if(exist('specgram','file'))
+                subplot(2,2,1);
+                specgram(signal1); 
+                subplot(2,2,2)
+                specgram(signal2);
+                subplot(2,2,3);
+                model4 = condition(model4,'Y',mfcc1);
+                plot(mode(model4));
+                set(gca,'YTick',1:5);
+                subplot(2,2,4);
+                model4 = condition(model4,'Y',mfcc2);
+                plot(mode(model4));
+                set(gca,'YTick',1:5);
+                maximizeFigure;
+            end 
+        end
+        
+        function testClass2()
+            setSeed(0);
+            nstates = 5; d = 2; nmixcomps = 3;
+            emissionDist = cell(5,1);
+            for i=1:nstates
+                emissionDist{i} = mkRndParams(MvnMixDist('nrestarts',1,'verbose',false),d,nmixcomps);
+            end
+            pi = DiscreteDist('mu',[0.5;0.5]);
+            A = DiscreteDist('mu',normalize(rand(2),1));
+            trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
+            [observed,hidden] = sample(trueModel,1,1000);            
+          
+
+            model = HmmDist('emissionDist',MvnMixDist('nmixtures',nmixcomps,'verbose',false,'nrestarts',1),'nstates',nstates);
+            model = fit(model,'data',observed,'maxIter',20);
+            model = condition(model,'Y',observed);
+            
+            maxmarg = maxidx(marginal(model,':'));
+            mean(hidden ~= maxmarg)
+            
+        end
+        
+         function seqalign2()
+            if(~exist('data45.mat','file'))
+               error('Please download data45.mat from www.cs.ubc.ca/~murphyk/pmtk and save it in the data directory');
+            end
+            setSeed(2);
+            load data45; nstates = 5; d = 13; nmixcomps = 2;
+            startDist = DiscreteDist('mu',[1,0,0,0,0]','support',1:5);
+            transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
+            transDist = DiscreteDist('mu',transmat0','support',1:5);
+            emissionDist = cell(5,1);
+            for i=1:nstates
+                emissionDist{i} = mkRndParams(MvnMixDist('nrestarts',1,'verbose',false),d,nmixcomps);
+            end
+            model4 = HmmDist('startDist',startDist,'transitionDist',transDist,'emissionDist',emissionDist,'nstates',nstates);
+            model4 = fit(model4,'data',train4,'maxIter',10);
             if(exist('specgram','file'))
                 subplot(2,2,1);
                 specgram(signal1); 

@@ -5,8 +5,8 @@ classdef MvnMixDist < MixtureDist
     methods
         
         function model = MvnMixDist(varargin)
-           [nmixtures,mixingWeights,distributions,model.transformer] = process_options(varargin,...
-               'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[]);
+           [nmixtures,mixingWeights,distributions,model.transformer,model.verbose,model.nrestarts] = process_options(varargin,...
+               'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[],'verbose',true,'nrestarts',model.nrestarts);
            if(isempty(mixingWeights) && ~isempty(nmixtures))
                mixingWeights = normalize(ones(1,nmixtures));
            end
@@ -100,7 +100,7 @@ end
             
             setSeed(0);
             load oldFaith;
-            m = fit(MvnMixDist('nmixtures',2,'transformer',StandardizeTransformer(false)),'data',X);
+            m = fit(MvnMixDist('nmixtures',2),'data',X);
             pred = predict(m,X);
             setSeed(13);
             m = mkRndParams(MvnMixDist(),2,4);

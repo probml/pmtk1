@@ -212,7 +212,6 @@ classdef MvnDist < ParamJointDist
       % SS.xbar = 1/n sum_i X(i,:)'
       % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k)
       if(nargin > 1) % weighted sufficient statistics, e.g. for EM
-
         suffStat.n = sum(weights,1);
         suffStat.xbar = sum(bsxfun(@times,X,weights))'/suffStat.n;  % bishop eq 13.20
         X = bsxfun(@minus,X,suffStat.xbar');
