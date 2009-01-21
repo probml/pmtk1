@@ -90,6 +90,9 @@ classdef FwdBackInfEng < InfEng
                 error('conditioning on multiple variables not yet supported');
             else
                if(isequal(visVars,'Y'))
+                   if(nobservations(model,visValues) > 1)
+                      error('You can only condition on one observation sequence at a time'); 
+                   end
                    eng.B = makeLocalEvidence(model,visValues);
                elseif(isequal(visVars,'Z'))
                    error('conditioning on observed values for the latent variables not yet supported');

@@ -6,7 +6,7 @@ classdef MixtureDist < ParamJointDist
         mixingWeights;      % pi
         verbose = true;
         transformer;        % data preprocessor
-        nrestarts = 5;          % number of random restarts
+        nrestarts = 5;      % number of random restarts
     end
     
     methods
@@ -42,38 +42,46 @@ classdef MixtureDist < ParamJointDist
                'suffStat', []     ,...
                'prior'     ,'none',...
                'init'      , true );
-           if(isempty(suffStat))
-                suffStat.data = data;
-                suffStat.weights = ones(size(data,1),1);
+           nmixtures = numel(model.distributions);
+           if(~isempty(suffStat))
+               logRik = calcResponsibilities(model,suffStat.data,suffStat.weights);
+               Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2)));
+               for k=1:nmixtures
+                   ess = model.distributions{k}.mkSuffStat(suffStat.data,Rik(:,k));
+                   model.distributions{k} = fit(model.distributions{k},'suffStat',ess,'prior',prior);
+               end
+               model.mixingWeights = normalize(sum(Rik,1));
+               return;
            end
            if(~isempty(model.transformer))
-              [suffStat.data,model.transformer] = train(model.transformer,suffStat.data); 
+              [data,model.transformer] = train(model.transformer,data); 
            end
-           if(init),model = initializeEM(model,suffStat.data);end
-           nmixtures = numel(model.distributions);
+           if(init),model = initializeEM(model,data);end
+          
            bestDists = model.distributions;
            bestMix = model.mixingWeights;
-           bestLL = sum(logprob(model,suffStat.data)); bestRR = 1;
+           bestLL = sum(logprob(model,data)); bestRR = 1;
            for r = 1:nrestarts
-               if(r>1 && init),model = initializeEM(model,suffStat.data);end
-               converged = false; iter = 0; currentLL =sum(logprob(model,suffStat.data));
+               if(r>1 && init),model = initializeEM(model,data);end
+               converged = false; iter = 0; currentLL =sum(logprob(model,data));
                while(not(converged))
-                   if(model.verbose),displayProgress(model,suffStat.data,currentLL,r);end
+                   if(model.verbose),displayProgress(model,data,currentLL,r);end
                    prevLL = currentLL;
-                   Rik = normalize(exp(calcResponsibilities(model,suffStat.data,suffStat.weights)),2);
+                   logRik = calcResponsibilities(model,data);
+                   Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2)));
                    for k=1:nmixtures
-                       ess = model.distributions{k}.mkSuffStat(suffStat.data,Rik(:,k));
+                       ess = model.distributions{k}.mkSuffStat(data,Rik(:,k));
                        model.distributions{k} = fit(model.distributions{k},'suffStat',ess,'prior',prior);
                    end
                    model.mixingWeights = normalize(sum(Rik,1));
                    iter = iter + 1;
-                   currentLL = sum(logprob(model,suffStat.data));    
+                   currentLL = sum(logprob(model,data));    
                    converged = iter >=maxiter || (abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < opttol;
                end
                if(currentLL > bestLL)
                    bestDists = model.distributions;
                    bestMix = model.mixingWeights;
-                   bestLL =  sum(logprob(model,suffStat.data));
+                   bestLL =  sum(logprob(model,data));
                    bestRR = r;
                end
            end
@@ -152,8 +160,10 @@ classdef MixtureDist < ParamJointDist
         end
         
         function displayProgress(model,data,loglik,rr)
-        % override in subclass to customize displayed info    
-            fprintf('RR: %d, negloglik: %g\n',rr,-loglik);
+            % override in subclass to customize displayed info
+            if(model.verbose)
+                fprintf('RR: %d, negloglik: %g\n',rr,-loglik);
+            end
         end
         
         function logRik = calcResponsibilities(model,data,weights)
@@ -163,13 +173,13 @@ classdef MixtureDist < ParamJointDist
             if(~isempty(model.transformer))
                 data = test(model.transformer,data);
             end
+            if(nargin < 3)
+                weights = ones(size(data,1),1);
+            end
             n = size(data,1); nmixtures = numel(model.distributions);
             logRik = zeros(n,nmixtures);
             for k=1:nmixtures
-                logRik(:,k) = log(model.mixingWeights(k))+sum(logprob(model.distributions{k},data),2);
-            end
-            if(nargin > 2)
-               logRik = bsxfun(@plus,logRik, log(colvec(weights))); 
+                logRik(:,k) = log(model.mixingWeights(k)+eps)+sum(logprob(model.distributions{k},data),2) + log(weights + eps);
             end
         end
         
@@ -185,6 +195,7 @@ classdef MixtureDist < ParamJointDist
 %             nocontrib = weights ==0;
 %             data(nocontrib,:) = [];
 %             weights(nocontrib) = [];
+            
             SS.data = data;
             SS.weights = weights;
            

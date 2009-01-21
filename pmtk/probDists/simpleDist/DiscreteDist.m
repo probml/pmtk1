@@ -73,6 +73,15 @@ classdef DiscreteDist  < ParamDist
       p = obj.mu;
     end
     
+    
+    function obj = mkRndParams(obj,d,ndistrib)
+       if(nargin < 3)
+           ndistrib = 1;
+       end
+       obj.mu = normalize(rand(d,ndistrib));
+       obj.support = 1:d;
+    end
+    
     function SS = mkSuffStat(obj, X,weights)
         K = nstates(obj); d = size(X,2);
         counts = zeros(K, d);
