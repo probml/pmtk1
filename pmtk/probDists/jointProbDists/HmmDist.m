@@ -248,7 +248,7 @@ classdef HmmDist < ParamJointDist
                     fprintf('\niteration %d, loglik = %f\n',iter,currentLL);
                 end
                 iter = iter + 1;
-                converged = (abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < optTol;
+                converged = ((abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < optTol) || (iter > maxIter);
             end % end of testConvergence subfunction
             
             function resetStatistics()
@@ -307,14 +307,6 @@ classdef HmmDist < ParamJointDist
                 
                 
             end
-            
-%                  if(~iscell(model.emissionDist))
-%                      model.emissionDist = {model.emissionDist};
-%                  end
-%                  data = HmmDist.stackObservations(X);
-%                  template = fit(model.emissionDist{1},'data',data);
-%                  model.emissionDist = copy(template,model.nstates,1);
-            %end
         end
         
          function data = checkData(model,data)
@@ -431,6 +423,7 @@ classdef HmmDist < ParamJointDist
             model = HmmDist('emissionDist',MvnDist(),'nstates',2);
             model = fit(model,'data',observed);
             %% MvnMixDist Observations
+            setSeed(0);
             nstates = 5; d = 2; nmixcomps = 2;
             emissionDist = cell(5,1);
             for i=1:nstates
@@ -443,6 +436,7 @@ classdef HmmDist < ParamJointDist
             model = HmmDist('emissionDist',MvnMixDist('nmixtures',nmixcomps,'verbose',false,'nrestarts',1),'nstates',nstates);
             model = fit(model,'data',observed,'maxIter',20);
             %% BernoulliMixDist Observations
+            setSeed(0);
             nstates = 5;  nmixcomps = 2; d = 3;
             emissionDist = cell(5,1);
             for i=1:nstates
@@ -491,7 +485,7 @@ classdef HmmDist < ParamJointDist
      
          function seqalign2()
          % Same as seqalign but use MvnMixDist observation model    
-            setSeed(1);
+            setSeed(0);
             if(~exist('data45.mat','file'))
                error('Please download data45.mat from www.cs.ubc.ca/~murphyk/pmtk and save it in the data directory');
             end

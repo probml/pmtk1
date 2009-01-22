@@ -11,11 +11,11 @@ classdef BernoulliMixDist < MixtureDist
             [nmixtures,mixingWeights,distributions,model.transformer,model.nrestarts,model.verbose] = process_options(varargin,...
                 'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[],'nrestarts',model.nrestarts,'verbose',true);
             if(isempty(mixingWeights) && ~isempty(nmixtures))
-                mixingWeights = normalize(ones(1,nmixtures));
+                mixingWeights = DiscreteDist('mu',normalize(ones(nmixtures,1)));
             end
             model.mixingWeights = mixingWeights;
-            if(isempty(distributions))
-                distributions = copy(DiscreteDist(),numel(model.mixingWeights),1);
+            if(isempty(distributions)&&~isempty(model.mixingWeights))
+                distributions = copy(DiscreteDist(),nstates(model.mixingWeights),1);
             end
             model.distributions = distributions;
            

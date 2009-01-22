@@ -179,6 +179,10 @@ classdef DiscreteDist  < ParamDist
       y = y(:);
     end
     
+    function m = marginal(obj,queryvars)
+       m = DiscreteDist('mu',obj.mu(queryvars,:),'support',obj.support,'prior',obj.prior); 
+    end
+    
   end
 
   methods(Static = true)

@@ -8,11 +8,11 @@ classdef MvnMixDist < MixtureDist
            [nmixtures,mixingWeights,distributions,model.transformer,model.verbose,model.nrestarts] = process_options(varargin,...
                'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[],'verbose',true,'nrestarts',model.nrestarts);
            if(isempty(mixingWeights) && ~isempty(nmixtures))
-               mixingWeights = normalize(ones(1,nmixtures));
+               mixingWeights = DiscreteDist('mu',normalize(ones(nmixtures,1)));
            end
            model.mixingWeights = mixingWeights;
-           if(isempty(distributions))
-               distributions = copy(MvnDist(),numel(model.mixingWeights),1);
+           if(isempty(distributions)&&~isempty(model.mixingWeights))
+               distributions = copy(MvnDist(),nstates(model.mixingWeights),1);
            end
            model.distributions = distributions;
             
@@ -29,7 +29,7 @@ classdef MvnMixDist < MixtureDist
                  mu(:,k) = colvec(m.distributions{k}.mu);
              end
              
-             M = bsxfun(@times,  mu, m.mixingWeights(:)');
+             M = bsxfun(@times,  mu, rowvec(mean(m.mixingWeights)));
              mu = sum(M, 2);
          end
     
@@ -38,7 +38,7 @@ classdef MvnMixDist < MixtureDist
              C = mu*mu';
              for k=1:numel(m.distributions)
                  mu = m.distributions{k}.mu;
-                 C = C + m.mixingWeights(k)*(m.distributions{k}.Sigma + mu*mu');
+                 C = C + sub(mean(m.mixingWeights),k)*(m.distributions{k}.Sigma + mu*mu');
              end
          end
          
@@ -79,7 +79,7 @@ end
                 hold on;
                 axis tight;
                 for k=1:nmixtures
-                    f = @(x)model.mixingWeights(k)*exp(logprob(model.distributions{k},x));
+                    f = @(x)sub(mean(model.mixingWeights),k)*exp(logprob(model.distributions{k},x));
                     [x1,x2] = meshgrid(min(data(:,1)):0.1:max(data(:,1)),min(data(:,2)):0.1:max(data(:,2)));
                     z = f([x1(:),x2(:)]);
                     contour(x1,x2,reshape(z,size(x1)));
@@ -98,16 +98,17 @@ end
         
         function testClass()
             
-            setSeed(0);
+            setSeed(1);
             load oldFaith;
-            m = fit(MvnMixDist('nmixtures',2),'data',X);
+            m = fit(MvnMixDist('nmixtures',2),'data',X,'nrestarts',1);
             pred = predict(m,X);
+            cls
             setSeed(13);
             m = mkRndParams(MvnMixDist(),2,4);
             X = sample(m,1000);
             hold on;
             plot(X(:,1),X(:,2),'.','MarkerSize',10);
-            m1 = fit(MvnMixDist('nmixtures',4),'data',X);
+            m1 = fit(MvnMixDist('nmixtures',4),'data',X,'nrestarts',1);
             
             
             

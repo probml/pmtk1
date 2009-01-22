@@ -3,7 +3,7 @@ classdef MixtureDist < ParamJointDist
     
     properties
         distributions;      % a cell array storing the distributions
-        mixingWeights;      % pi
+        mixingWeights;      % DiscreteDist or Discrete_DirichletDist
         verbose = true;
         transformer;        % data preprocessor
         nrestarts = 5;      % number of random restarts
@@ -25,9 +25,9 @@ classdef MixtureDist < ParamJointDist
            end
            model.distributions = distributions;
            if(~isempty(nmixtures) && isempty(mixingWeights))
-               mixingWeights = normalize(ones(1,nmixtures));
+               mixingWeights = DiscreteDist('mu',normalize(ones(nmixtures,1)));
            elseif(~isempty(model.distributions))
-               mixingWeights = normalize(ones(1,numel(model.distributions)));
+               mixingWeights = DiscreteDist('mu',normalize(ones(numel(model.distributions,1))));
            end
            model.mixingWeights = mixingWeights;
         end
@@ -43,49 +43,59 @@ classdef MixtureDist < ParamJointDist
                'prior'     ,'none',...
                'init'      , true );
            nmixtures = numel(model.distributions);
-           if(~isempty(SS))
-               for k=1:nmixtures
-                   model.distributions{k} = fit(model.distributions{k},'suffStat',SS.ess{k},'prior',prior);
-               end
-               model.mixingWeights = normalize(sum(SS.weights,1));
-               return;
-           end
+           if(not(isempty(SS))),fitSS();return;end    
            if(~isempty(model.transformer))
               [data,model.transformer] = train(model.transformer,data); 
            end
            if(init),model = initializeEM(model,data);end
-          
-           bestDists = model.distributions;
-           bestMix = model.mixingWeights;
-           bestLL = sum(logprob(model,data)); bestRR = 1;
-           for r = 1:nrestarts
-               if(r>1 && init),model = initializeEM(model,data);end
-               converged = false; iter = 0; currentLL =sum(logprob(model,data));
-               while(not(converged))
-                   if(model.verbose),displayProgress(model,data,currentLL,r);end
-                   prevLL = currentLL;
-                   logRik = calcResponsibilities(model,data);
-                   Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2)));
-                   for k=1:nmixtures
-                       ess = model.distributions{k}.mkSuffStat(data,Rik(:,k));
-                       model.distributions{k} = fit(model.distributions{k},'suffStat',ess,'prior',prior);
-                   end
-                   model.mixingWeights = normalize(sum(Rik,1));
-                   iter = iter + 1;
-                   currentLL = sum(logprob(model,data));    
-                   converged = iter >=maxiter || (abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < opttol;
-               end
-               if(currentLL > bestLL)
-                   bestDists = model.distributions;
-                   bestMix = model.mixingWeights;
-                   bestLL =  sum(logprob(model,data));
-                   bestRR = r;
-               end
+           bestDists = model.distributions;  
+           bestMix   = model.mixingWeights; 
+           bestLL    = sum(logprob(model,data)); 
+           bestRR    = 1;
+           for r = 1:nrestarts,
+                emUpdate();
            end
            model.distributions = bestDists;
            model.mixingWeights = bestMix;
            if(model.verbose),displayProgress(model,data,bestLL,bestRR);end
-        end
+           %% Sub functions to fit
+            function fitSS()
+            % Fit via sufficient statistics    
+                for k=1:nmixtures
+                    model.distributions{k} = fit(model.distributions{k},'suffStat',SS.ess{k},'prior',prior);
+                end
+                mixSS.counts = colvec(normalize(sum(SS.weights,1)));
+                model.mixingWeights = fit(model.mixingWeights,'suffStat',mixSS);
+            end
+           
+            function emUpdate()
+            % Perform EM    
+                if(r>1 && init),model = initializeEM(model,data);end
+                converged = false; iter = 0; currentLL =sum(logprob(model,data));
+                while(not(converged))
+                    if(model.verbose),displayProgress(model,data,currentLL,r);end
+                    prevLL = currentLL;
+                    logRik = calcResponsibilities(model,data);  % responsibility of each cluster for each data point
+                    Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2))); % normalize
+                    for k=1:nmixtures
+                        ess = model.distributions{k}.mkSuffStat(data,Rik(:,k));
+                        model.distributions{k} = fit(model.distributions{k},'suffStat',ess,'prior',prior); 
+                    end
+                    mixSS.counts = colvec(normalize(sum(Rik,1)));
+                    model.mixingWeights = fit(model.mixingWeights,'suffStat',mixSS);
+                    iter = iter + 1;
+                    currentLL = sum(logprob(model,data));
+                    converged = iter >=maxiter || (abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < opttol;
+                end
+                if(currentLL > bestLL)
+                    bestDists = model.distributions;
+                    bestMix   = model.mixingWeights;
+                    bestLL    = sum(logprob(model,data));
+                    bestRR    = r;
+                end   
+                %%
+            end % end of emUpdate() subfunction
+        end % end of fit method
         
         function pred = predict(model,data)
         % pred.mu(k,i) = p(Z_k | data(i,:),params)   
@@ -97,13 +107,14 @@ classdef MixtureDist < ParamJointDist
         function logp = logprob(model,data)
         % logp(i) = log p(data(i,:) | params) 
               logp = logsumexp(calcResponsibilities(model,data),2);
+              
         end
         
         function model = mkRndParams(model, d,K)
             for i=1:K
                 model.distributions{i} = mkRndParams(model.distributions{i},d);
             end
-            model.mixingWeights = normalize(rand(1,K));
+            model.mixingWeights = DiscreteDist('mu',normalize(rand(K,1)));
         end
         
         function model = condition(model, visVars, visValues)
@@ -122,13 +133,13 @@ classdef MixtureDist < ParamJointDist
          function postQuery = marginal(model, queryVars)
          % keep only the queryVars mixture components - barren node removal   
              model.distributions = model.distributions{queryVars};
-             model.mixingWeights = model.mixingWeights(queryVars);
+             model.mixingWeights = marginal(model.mixingWeights,queryVars);
              postQuery = model;
          end
          
          function S = sample(model,nsamples)
               if nargin < 2, nsamples = 1; end
-              Z = sampleDiscrete(model.mixingWeights, nsamples, 1);
+              Z = sampleDiscrete(mean(model.mixingWeights)', nsamples, 1);
               d = ndimensions(model);
               S = zeros(nsamples, d);
               for i=1:nsamples
@@ -198,7 +209,12 @@ classdef MixtureDist < ParamJointDist
             n = size(data,1); nmixtures = numel(model.distributions);
             logRik = zeros(n,nmixtures);
             for k=1:nmixtures
-                logRik(:,k) = log(model.mixingWeights(k)+eps)+sum(logprob(model.distributions{k},data),2); % We sum across columns in the 2nd term for the case in which the mixture components are themselves products of distributions, otherwise it has no effect. 
+                logRik(:,k) = log(sub(mean(model.mixingWeights),k)+eps)+sum(logprob(model.distributions{k},data),2); 
+                % Calling logprob on vectorized distributions, (representing a
+                % product, e.g. product of Bernoulli's) returns a matrix. We
+                % therefore sum along the 2nd dimension in the 2nd term. This
+                % has no effect for other distributions as logprob returns a
+                % column vector. 
             end
         end
         
