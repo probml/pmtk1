@@ -244,7 +244,7 @@ classdef HmmDist < ParamJointDist
             
             function testConvergence()
             % Test if EM has converged yet  
-                if(model.verbose)
+                if(model.verbose && iter > 0)
                     fprintf('\niteration %d, loglik = %f\n',iter,currentLL);
                 end
                 iter = iter + 1;
@@ -264,7 +264,7 @@ classdef HmmDist < ParamJointDist
             % called prior to EM loop to setup variables   
                 currentLL = 0;
                 prevLL = 0;
-                iter = 1;
+                iter = 0;
                 converged = false;
                 nobs  = nobservations(model,data);
                 model = initializeParams(model,data);
