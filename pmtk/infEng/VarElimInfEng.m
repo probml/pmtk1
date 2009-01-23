@@ -73,8 +73,8 @@ classdef VarElimInfEng < InfEng
                 for f=1:nfacs
                     inscope(f) = ismember(variable,factors{f}.domain);
                 end
-                phi = TabularFactor.multiplyFactors(factors(inscope));
-                tau = marginalize(phi,mysetdiff(phi.domain,variable)); % marginalize out the elimination variable
+                psi = TabularFactor.multiplyFactors(factors(inscope));
+                tau = marginalize(psi,mysetdiff(psi.domain,variable)); % marginalize out the elimination variable
                 newFactors = {factors{not(inscope)},tau};
             end
             
