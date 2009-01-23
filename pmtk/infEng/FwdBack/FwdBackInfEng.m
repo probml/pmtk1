@@ -58,6 +58,7 @@ classdef FwdBackInfEng < InfEng
                 eng.A =  A ;
             end
             if(nargin > 2), eng.B =  B ; end 
+            %mex hmmFwdBackC.c;
             
         end
         

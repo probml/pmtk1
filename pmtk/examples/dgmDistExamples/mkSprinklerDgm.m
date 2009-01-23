@@ -23,4 +23,5 @@ function dgm = mkSprinklerDgm()
     CPD{S} = TabularCPD(reshape([0.5 0.9 0.5 0.1], 2, 2)); %, [C S]);
     CPD{W} = TabularCPD(reshape([1 0.1 0.1 0.01 0 0.9 0.9 0.99], 2, 2, 2)); %,[S R W]);
     dgm = DgmDist(G, 'CPDs', CPD);
+    dgm.domain = 1:4;
 end
