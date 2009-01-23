@@ -7,9 +7,7 @@ classdef VarElimInfEng < InfEng
     end
  
     methods
-        
-        
-        
+      
         function eng = condition(eng, model, visVars, visValues)    
             if(nargin < 3), visVars = [];end
             eng.Tfac = convertToTabularFactors(model);
@@ -17,6 +15,8 @@ classdef VarElimInfEng < InfEng
             eng.visVars = visVars;
             nvis = numel(visVars);
             if nvis > 0
+            % slice factors according to the evidence - leave unnormalized
+            % See Koller & Friedman algorithm 9.2 pg 278   
                 for f =1:numel(eng.Tfac)
                       include = false(1,nvis);
                       dom = eng.Tfac{f}.domain;
@@ -29,7 +29,7 @@ classdef VarElimInfEng < InfEng
         end
         
         function [postQuery,Z] = marginal(eng, queryVars)
-        % postQuery = sum_h p(Query,h)    
+        % postQuery = sum_h p(Query,h)      
             elim = mysetdiff(mysetdiff(eng.domain,queryVars),eng.visVars);
             % find a good ordering here
             postQuery = VarElimInfEng.variableElimination(eng.Tfac,elim);
@@ -39,7 +39,10 @@ classdef VarElimInfEng < InfEng
         end
         
         function [samples] = sample(eng,n)
-           Tfac = marginal(eng,eng.domain);  % eng.Tfac may consist of unnormalized sliced factors after a call to condition
+           Tfac = marginal(eng,eng.domain);  
+           % eng.Tfac may consist of unnormalized sliced factors after a call to
+           % condition. Calling marginal(eng,eng.domain) here builds the full,
+           % (conditioned) normalized table.
            samples = sample(Tfac,  n);
         end
         
@@ -55,6 +58,7 @@ classdef VarElimInfEng < InfEng
        
         function margFactor = variableElimination(factors,elimOrdering)
         % Perform sum-product variable elimination    
+        % See Koller & Friedman algorithm 9.1 pg 273
             k = numel(elimOrdering);
             for i=1:k
                factors = eliminate(elimOrdering(i),factors); 
