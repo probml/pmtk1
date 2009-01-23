@@ -10,7 +10,7 @@ classdef VarElimInfEng < InfEng
         
         
         
-        function eng = condition(eng, model, visVars, visValues)
+        function eng = condition(eng, model, visVars, visValues)    
             if(nargin < 3), visVars = [];end
             eng.Tfac = convertToTabularFactors(model);
             eng.domain = model.domain;
@@ -99,8 +99,15 @@ classdef VarElimInfEng < InfEng
                    VE   = margVE.T
                    ENUM = margENUM.T
                    assert(approxeq(margVE.T,margENUM.T));
+  
              end
-             
+             %%
+             dgmVE = condition(dgmVE,[R,W],[1,1]);
+             pSgivenRW = marginal(dgmVE,S);
+             dgmENUM = condition(dgmENUM,[R,W],[1,1]);
+             pSgivenRW2 = marginal(dgmENUM,S);
+             assert(approxeq(pSgivenRW.T,pSgivenRW2.T));
+             %%
              [dgm] = mkSprinklerDgm;
              dgm.infEng = VarElimInfEng();
              Tfac = convertToTabularFactor(dgm);
