@@ -5,6 +5,7 @@ function ndx = lookupIndices(small, big)
 if isempty(small)
   ndx = []; return;
 end
+ndx = zeros(length(small),1);
 for i=1:length(small)
   ndx(i) = find(big==small(i));
 end

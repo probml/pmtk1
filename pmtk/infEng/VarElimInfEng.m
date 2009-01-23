@@ -1,38 +1,51 @@
 classdef VarElimInfEng < InfEng
-% Sum-Product Variable Elimination    
+% Sum-Product Variable Elimination 
     properties
-        Tfacs;
-        logZ;
+        Tfac;
         domain;
         visVars;
     end
  
     methods
         
-        function eng = VarElimInfEng(varargin)
-            
-        end
+        
         
         function eng = condition(eng, model, visVars, visValues)
             if(nargin < 3), visVars = [];end
-            eng.Tfacs = convertToTabularFactors(model);
+            eng.Tfac = convertToTabularFactors(model);
             eng.domain = model.domain;
             eng.visVars = visVars;
+            nvis = numel(visVars);
+            if nvis > 0
+                for f =1:numel(eng.Tfac)
+                      include = false(1,nvis);
+                      dom = eng.Tfac{f}.domain;
+                      for i=1:nvis
+                         include(i) = ismember(visVars(i),dom);
+                      end
+                    eng.Tfac{f} = slice(eng.Tfac{f},visVars(include),visValues(include));
+                end
+            end
         end
         
-        function [postQuery] = marginal(eng, queryVars)
+        function [postQuery,Z] = marginal(eng, queryVars)
+        % postQuery = sum_h p(Query,h)    
             elim = mysetdiff(mysetdiff(eng.domain,queryVars),eng.visVars);
             % find a good ordering here
-            postQuery = VarElimInfEng.variableElimination(eng.Tfacs,elim);
-            eng.Tfacs = postQuery;
+            postQuery = VarElimInfEng.variableElimination(eng.Tfac,elim);
+            if not(isempty(eng.visVars))
+                [postQuery,Z] = normalizeFactor(postQuery);
+            end
         end
         
         function [samples] = sample(eng,n)
-            
+           Tfac = marginal(eng,eng.domain);  % eng.Tfac may consist of unnormalized sliced factors after a call to condition
+           samples = sample(Tfac,  n);
         end
         
         function logZ = lognormconst(eng)
-            
+            [Tfac,Z] = marginal(eng,eng.domain);
+            logZ = log(Z);
         end
         
     end
@@ -41,7 +54,7 @@ classdef VarElimInfEng < InfEng
     methods(Static = true, Access = 'protected')
        
         function margFactor = variableElimination(factors,elimOrdering)
-            
+        % Perform sum-product variable elimination    
             k = numel(elimOrdering);
             for i=1:k
                factors = eliminate(elimOrdering(i),factors); 
@@ -50,13 +63,14 @@ classdef VarElimInfEng < InfEng
             
             
             function newFactors = eliminate(variable,factors)
+            % eliminate a single variable    
                 nfacs = numel(factors);
                 inscope  = false(nfacs,1);   % inscope(f) is true iff the variable is in the scope of factors{f} 
                 for f=1:nfacs
                     inscope(f) = ismember(variable,factors{f}.domain);
                 end
                 phi = TabularFactor.multiplyFactors(factors(inscope));
-                tau = marginalize(phi,mysetdiff(phi.domain,variable));
+                tau = marginalize(phi,mysetdiff(phi.domain,variable)); % marginalize out the elimination variable
                 newFactors = {factors{not(inscope)},tau};
             end
             
@@ -74,7 +88,7 @@ classdef VarElimInfEng < InfEng
              C = 1; S = 2; R = 3; W = 4;
              % test every combination to make sure VarElimInfEng returns the
              % same results as EnumInfEng
-             powerset = {[],[C],[S],[R],[W],[C,S],[C,R],[C,W],[S,R],[S,W],[R,W],[C,S,R],[C,S,W],[C,R,W],[S,R,W],[C,S,R,W]};
+             powerset = {[],C,S,R,W,[C,S],[C,R],[C,W],[S,R],[S,W],[R,W],[C,S,R],[C,S,W],[C,R,W],[S,R,W],[C,S,R,W]};
              for i=1:numel(powerset)
                    dgmVE   = mkSprinklerDgm;
                    dgmENUM = dgmVE;
@@ -84,11 +98,21 @@ classdef VarElimInfEng < InfEng
                    margENUM = marginal(dgmENUM,powerset{i});
                    VE   = margVE.T
                    ENUM = margENUM.T
-                   pause(2);
-                   clc;
                    assert(approxeq(margVE.T,margENUM.T));
              end
-         
+             
+             [dgm] = mkSprinklerDgm;
+             dgm.infEng = VarElimInfEng();
+             Tfac = convertToTabularFactor(dgm);
+             J = Tfac.T; % CSRW
+             C = 1; S = 2; R = 3; W = 4;
+             dgm = condition(dgm, [C W], [1 1]);
+             pSgivenCW = marginal(dgm, S);
+             pSgivenCW2 = sumv(J(1,:,:,1),3) ./ sumv(J(1,:,:,1),[2 3]);
+             assert(approxeq(pSgivenCW.T(:), pSgivenCW2(:)))
+             X = sample(dgm, 100);
+             lognormconst(dgm)
+             
         end
         
         
