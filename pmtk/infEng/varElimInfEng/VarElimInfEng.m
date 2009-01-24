@@ -4,13 +4,16 @@ classdef VarElimInfEng < InfEng
         Tfac;
         domain;
         visVars;
+        ordering;
     end
  
     methods
       
         function eng = condition(eng, model, visVars, visValues)    
             if(nargin < 3), visVars = [];end
-            eng.Tfac = convertToTabularFactors(model);
+            [eng.Tfac,nstates] = convertToTabularFactors(model);
+            moralGraph = moralize(model.G);
+            eng.ordering = best_first_elim_order(moralGraph.adjMat,nstates);
             eng.domain = model.domain;
             eng.visVars = visVars;
             nvis = numel(visVars);
@@ -18,24 +21,16 @@ classdef VarElimInfEng < InfEng
             % slice factors according to the evidence - leave unnormalized
             % See Koller & Friedman algorithm 9.2 pg 278   
                 for f =1:numel(eng.Tfac)
-                      include = false(1,nvis);
-                      dom = eng.Tfac{f}.domain;
-                      for i=1:nvis
-                         include(i) = ismember(visVars(i),dom);
-                      end
-                    eng.Tfac{f} = slice(eng.Tfac{f},visVars(include),visValues(include));
+                      include = ismember(visVars,eng.Tfac{f}.domain);
+                      eng.Tfac{f} = slice(eng.Tfac{f},visVars(include),visValues(include));
                 end
             end
         end
         
         function [postQuery,Z] = marginal(eng, queryVars)
         % postQuery = sum_h p(Query,h)      
-            elim = mysetdiff(mysetdiff(eng.domain,queryVars),eng.visVars);
-            % find a good ordering here
-            postQuery = VarElimInfEng.variableElimination(eng.Tfac,elim);
-            if not(isempty(eng.visVars))
-                [postQuery,Z] = normalizeFactor(postQuery);
-            end
+            elim = mysetdiff(mysetdiff(eng.domain(eng.ordering),queryVars),eng.visVars);
+            [postQuery,Z] = normalizeFactor(VarElimInfEng.variableElimination(eng.Tfac,elim));
         end
         
         function [samples] = sample(eng,n)
@@ -125,6 +120,21 @@ classdef VarElimInfEng < InfEng
              lognormconst(dgm)
              
         end
+        
+        function alarmNetworkTest()
+            profile on;
+            dgm = mkAlarmNetworkDgm();
+            dgm.infEng = VarElimInfEng();
+            p35 = marginal(dgm,35);
+            dgm = condition(dgm,37,2);
+           
+            p35given37 = marginal(dgm,35);
+            
+            p35.T
+            p35given37.T
+            profile viewer;
+        end
+        
         
         
     end

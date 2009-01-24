@@ -16,13 +16,13 @@ else
   mb = max(B);
 end
 
-if ma==0 | mb==0
+if ma==0 || mb==0
   C = [];
 else
   %bits = sparse(1, max(ma,mb));
-  bits = zeros(1, max(ma,mb));
+  bits = false(max(ma,mb),1);
   bits(A) = 1;
-  C = B(logical(bits(B)));  
+  C = B(bits(B));  
 end
 
 %sum( bitget( bitand( cliquesb(i), cliquesb(j) ), 1:52 ) ); 

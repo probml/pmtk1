@@ -61,7 +61,7 @@ classdef Dag < DirectedGraph
     function [M, moral_edges] = moralize(obj)
       % Ensure that for every child, all its parents are married (connected)
       % and then drop directionality of edges.
-      M = obj.adjmat;
+      M = obj.adjMat;
       n = length(M);
       for i=1:n
         fam = family(obj,i);
