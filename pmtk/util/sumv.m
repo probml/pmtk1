@@ -1,4 +1,4 @@
-function T2 = sumv(T1, sum_over)
+function T = sumv(T, sum_over)
 % sumv(T, dims)  Sum multidimensional array T over dimensions 'dims' and squeeze the result
 % This is like the built-in sum, but you can pass a vector of dimensions to sum over
 % Example
@@ -12,10 +12,13 @@ function T2 = sumv(T1, sum_over)
 %     5     7
 %     6     8
 
-T2 = T1;
-for i=1:length(sum_over)
-  if sum_over(i) <= ndims(T2) % prevent summing over non-existent dimensions
-    T2=sum(T2, sum_over(i));
-  end
+for i=1:numel(sum_over)
+    T = sum(T, sum_over(i));
 end
-T2 = squeeze(T2);
+T = squeeze(T);
+
+% loop much faster than vectorized solution
+% dims = 1:ndims(M);
+% s = size(M);
+% keep = mysetdiff(dims,ndx);
+% M = squeeze(sum(reshape(permute(M,[ndx,keep]),[prod(s(ndx)),s(keep)]),1));
