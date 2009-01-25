@@ -66,7 +66,7 @@ classdef VarElimInfEng < InfEng
                 nfacs = numel(factors);
                 inscope  = false(nfacs,1);   % inscope(f) is true iff the variable is in the scope of factors{f} 
                 for f=1:nfacs
-                    inscope(f) = ismember(variable,factors{f}.domain);
+                    inscope(f) = any(variable==factors{f}.domain);
                 end
                 psi = TabularFactor.multiplyFactors(factors(inscope));
                 tau = marginalize(psi,mysetdiff(psi.domain,variable)); % marginalize out the elimination variable
