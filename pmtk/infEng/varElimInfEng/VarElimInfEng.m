@@ -123,13 +123,14 @@ classdef VarElimInfEng < InfEng
         
         function alarmNetworkTest()
             profile on;
+            
             dgm = mkAlarmNetworkDgm();
             dgm.infEng = VarElimInfEng();
+            for i=1:100
             p35 = marginal(dgm,35);
             dgm = condition(dgm,37,2);
-           
             p35given37 = marginal(dgm,35);
-            
+            end
             p35.T
             p35given37.T
             profile viewer;

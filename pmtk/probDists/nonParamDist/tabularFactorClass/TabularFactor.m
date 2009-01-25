@@ -32,18 +32,31 @@ classdef TabularFactor
       S = ind2subv(T.sizes, sample(T.T(:), n));
     end
     function smallpot = marginalize(bigpot, onto, maximize)
-      % smallpot = marginalizeFactor(bigpot, onto, maximize)
-      if nargin < 3, maximize = 0; end
-      ns = zeros(1, max(bigpot.domain));
-      ns(bigpot.domain) = bigpot.sizes;
-      smallT = marg_table(bigpot.T, bigpot.domain, bigpot.sizes, onto, maximize);
-      smallpot = TabularFactor(smallT, onto);
+        % smallpot = marginalizeFactor(bigpot, onto, maximize)
+        if nargin < 3, maximize = 0; end
+        %       ns = zeros(1, max(bigpot.domain));
+        %       ns(bigpot.domain) = bigpot.sizes;
+        smallT = marg_table(bigpot.T, bigpot.domain, bigpot.sizes, onto, maximize);
+        smallpot = TabularFactor(smallT, onto);
     end
     
     function Tbig = multiplyBy(Tbig, Tsmall)
-      % Tsmall's domain must be a subset of Tbig's domain.
-      Ts = extend_domain_table(Tsmall.T, Tsmall.domain, Tsmall.sizes, Tbig.domain, Tbig.sizes);
-      Tbig.T(:) = Tbig.T(:) .* Ts(:);  % must have bigT(:) on LHS to preserve shape
+    % Tsmall's domain must be a subset of Tbig's domain.
+        
+        %Ts = extend_domain_table(Tsmall.T, Tsmall.domain, Tsmall.sizes, Tbig.domain, Tbig.sizes);
+        %Tbig.T(:) = Tbig.T(:).*Ts(:);
+        %% Optimized
+        bigdom   = Tbig.domain;
+        smalldom = Tsmall.domain;  
+        nsmall   = numel(smalldom);
+        map      = zeros(nsmall,1);
+        for i=1:nsmall                           % loop is faster than vectorized solution: sz(any(bsxfun(@eq,smalldom',bigdom),1)) = Tsmall.sizes;
+            map(i) = find(bigdom==smalldom(i));
+        end
+        sz       = ones(1, numel(bigdom));
+        sz(map)  = Tsmall.sizes;      
+        Tbig.T   = bsxfun(@times,Tbig.T, myreshape(Tsmall.T, sz)); % avoids call to repmat
+        %%
     end
     
     function Tbig = divideBy(Tbig, Tsmall)
@@ -60,16 +73,16 @@ classdef TabularFactor
       [Tfac.T, Z] = normalize(Tfac.T);
     end
     
-     function Tsmall = slice(Tbig, visVars, visValues)
-      % Return Tsmall(hnodes) = Tbig(visNodes=visValues, hnodes=:)
-      if isempty(visVars), Tsmall = Tbig; return; end
-      d = ndimensions(Tbig);
-      Vndx = lookupIndices(visVars, Tbig.domain);
-      ndx = mk_multi_index(d, Vndx, visValues);
-      Tsmall = squeeze(Tbig.T(ndx{:}));
-      H = mysetdiff(Tbig.domain, visVars);
-      Tsmall = TabularFactor(Tsmall, H);
-     end
+    function Tsmall = slice(Tbig, visVars, visValues)
+        % Return Tsmall(hnodes) = Tbig(visNodes=visValues, hnodes=:)
+        if isempty(visVars), Tsmall = Tbig; return; end
+        d = ndimensions(Tbig);
+        Vndx = lookupIndices(visVars, Tbig.domain);
+        ndx = mk_multi_index(d, Vndx, visValues);
+        Tsmall = squeeze(Tbig.T(ndx{:}));
+        H = mysetdiff(Tbig.domain, visVars);
+        Tsmall = TabularFactor(Tsmall, H);
+    end
     
    
    
@@ -78,30 +91,30 @@ classdef TabularFactor
 
   methods(Static=true)
     
-    function T = multiplyFactors(facs)
-      % T = multiplyFactors({fac1, fac2, ...})
-      N = length(facs);
-      dom = [];
-      for i=1:N
-        Ti = facs{i}; 
-        dom = [dom Ti.domain];
+      function T = multiplyFactors(facs)
+          % T = multiplyFactors({fac1, fac2, ...})
+          N = length(facs);
+          dom = [];
+          for i=1:N
+              Ti = facs{i};
+              dom = [dom Ti.domain];
+          end
+          dom = unique(dom);
+          ns = zeros(1, max(dom));
+          for i=1:N
+              Ti = facs{i};
+              ns(Ti.domain) = Ti.sizes;
+          end
+          sz = prod(ns(dom));
+          if sz>10000
+              sprintf('creating tabular factor with %d entries', sz)
+          end
+          T = TabularFactor(myones(ns(dom)), dom);
+          for i=1:N
+              Ti = facs{i};
+              T = multiplyBy(T, Ti);
+          end
       end
-      dom = unique(dom);
-      ns = zeros(1, max(dom));
-      for i=1:N
-        Ti = facs{i}; 
-        ns(Ti.domain) = Ti.sizes;
-      end
-      sz = prod(ns(dom));
-      if sz>10000
-        sprintf('creating tabular factor with %d entries', sz)
-      end
-      T = TabularFactor(myones(ns(dom)), dom);
-      for i=1:N
-        Ti = facs{i};
-        T = multiplyBy(T, Ti);
-      end
-    end
     
     function joint = testSprinkler()
       % water sprinkeler BN
