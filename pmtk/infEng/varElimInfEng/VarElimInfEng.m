@@ -12,7 +12,7 @@ classdef VarElimInfEng < InfEng
         function eng = condition(eng, model, visVars, visValues)    
             if(nargin < 3), visVars = [];end
             [eng.Tfac,nstates] = convertToTabularFactors(model);
-            if isempty(eng.ordering) || nargin > 2 
+            if isempty(eng.ordering)
                 moralGraph = moralize(model.G);
                 eng.ordering = best_first_elim_order(moralGraph.adjMat,nstates);
             end
