@@ -43,15 +43,16 @@ classdef TabularFactor
     function Tbig = multiplyBy(Tbig, Tsmall)
     % Tsmall's domain must be a subset of Tbig's domain.
         
-        %Ts = extend_domain_table(Tsmall.T, Tsmall.domain, Tsmall.sizes, Tbig.domain, Tbig.sizes);
-        %Tbig.T(:) = Tbig.T(:).*Ts(:);
-        %% Optimized
-        bigdom   = Tbig.domain;
-        smalldom = Tsmall.domain;  
-        map      = lookupIndices(smalldom,bigdom);
-        sz       = ones(1, max(2,numel(bigdom)));
-        sz(map)  = Tsmall.sizes;      
-        Tbig.T   = bsxfun(@times,Tbig.T, reshape(Tsmall.T, sz)); % avoids call to repmat
+        Ts = extend_domain_table(Tsmall.T, Tsmall.domain, Tsmall.sizes, Tbig.domain, Tbig.sizes);
+        Tbig.T = Tbig.T.*Ts;
+        
+        %% bsxfun version is slower!
+%         bigdom   = Tbig.domain;
+%         smalldom = Tsmall.domain;  
+%         map      = lookupIndices(smalldom,bigdom);
+%         sz       = ones(1, max(2,numel(bigdom)));
+%         sz(map)  = Tsmall.sizes;      
+%         Tbig.T   = bsxfun(@times,Tbig.T, reshape(Tsmall.T, sz)); % avoids call to repmat
         %%
     end
     
@@ -60,7 +61,7 @@ classdef TabularFactor
       Ts = extend_domain_table(Tsmall.T, Tsmall.domain, Tsmall.sizes, Tbig.domain, Tbig.sizes);
       % Replace 0s by 1s before dividing. This is valid, Ts(i)=0 iff Tbig(i)=0.
       Ts = Ts + (Ts==0);
-      Tbig.T(:) = Tbig.T(:) ./ Ts(:);  % must have bigT(:) on LHS to preserve shape
+      Tbig.T = Tbig.T ./ Ts;  
     end
     
    

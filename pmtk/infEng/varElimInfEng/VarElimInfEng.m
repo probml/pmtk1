@@ -128,13 +128,22 @@ classdef VarElimInfEng < InfEng
             dgm.infEng = VarElimInfEng();
             profile on;
             for i=1:37
-                pi = marginal(dgm,i);
-                dgm2 = condition(dgm,mod(i,37+1),2);
-                piGivenip1 = marginal(dgm2,i);
+                m = marginal(dgm,[i,mod(i,37)+1]);
+                dgm2 = condition(dgm,mod(i,37)+2,2);
+                m2 = marginal(dgm2,i);
             end
             profile viewer;
         end
         
+        function largeMarginalTest()
+             dgm = mkAlarmNetworkDgm();
+             dgm.infEng = VarElimInfEng();
+             profile on
+             m = marginal(dgm,1:20); % 36 million entries!
+             profile viewer
+        end
+        
+       
         
         
     end
