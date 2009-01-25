@@ -48,14 +48,10 @@ classdef TabularFactor
         %% Optimized
         bigdom   = Tbig.domain;
         smalldom = Tsmall.domain;  
-        nsmall   = numel(smalldom);
-        map      = zeros(nsmall,1);
-        for i=1:nsmall                           % loop is faster than vectorized solution: sz(any(bsxfun(@eq,smalldom',bigdom),1)) = Tsmall.sizes;
-            map(i) = find(bigdom==smalldom(i));
-        end
-        sz       = ones(1, numel(bigdom));
+        map      = lookupIndices(smalldom,bigdom);
+        sz       = ones(1, max(2,numel(bigdom)));
         sz(map)  = Tsmall.sizes;      
-        Tbig.T   = bsxfun(@times,Tbig.T, myreshape(Tsmall.T, sz)); % avoids call to repmat
+        Tbig.T   = bsxfun(@times,Tbig.T, reshape(Tsmall.T, sz)); % avoids call to repmat
         %%
     end
     
