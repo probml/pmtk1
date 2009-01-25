@@ -12,8 +12,10 @@ classdef VarElimInfEng < InfEng
         function eng = condition(eng, model, visVars, visValues)    
             if(nargin < 3), visVars = [];end
             [eng.Tfac,nstates] = convertToTabularFactors(model);
-            moralGraph = moralize(model.G);
-            eng.ordering = best_first_elim_order(moralGraph.adjMat,nstates);
+            if isempty(eng.ordering) || nargin > 2 
+                moralGraph = moralize(model.G);
+                eng.ordering = best_first_elim_order(moralGraph.adjMat,nstates);
+            end
             eng.domain = model.domain;
             eng.visVars = visVars;
             nvis = numel(visVars);
@@ -122,17 +124,14 @@ classdef VarElimInfEng < InfEng
         end
         
         function alarmNetworkTest()
-            profile on;
-            
             dgm = mkAlarmNetworkDgm();
             dgm.infEng = VarElimInfEng();
-            for i=1:100
-            p35 = marginal(dgm,35);
-            dgm = condition(dgm,37,2);
-            p35given37 = marginal(dgm,35);
+            profile on;
+            for i=1:37
+                pi = marginal(dgm,i);
+                dgm2 = condition(dgm,mod(i,37+1),2);
+                piGivenip1 = marginal(dgm2,i);
             end
-            p35.T
-            p35given37.T
             profile viewer;
         end
         
