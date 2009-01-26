@@ -4,7 +4,7 @@ function T = myreshape(T, sizes)
 
 if isempty(sizes)
   return;
-elseif length(sizes)==1
+elseif numel(sizes)==1
   T = reshape(T, [sizes 1]);
 else
   T = reshape(T, sizes(:)');

@@ -4,7 +4,9 @@ mex repmat.c mexutil.obj
 to check for warnings:
 gcc -Wall -I/cygdrive/c/MATLAB6p1/extern/include -c repmat.c
 */
-#include "mexutil.h"
+/*#include "mexutil.h"
+*/
+#include "mex.h"
 #include <string.h>
 
 /* repeat a block of memory rep times */

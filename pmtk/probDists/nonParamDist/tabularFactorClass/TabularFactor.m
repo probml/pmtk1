@@ -89,12 +89,11 @@ classdef TabularFactor
   methods(Static=true)
     
       function T = multiplyFactors(facs)
-          % T = multiplyFactors({fac1, fac2, ...})
-          N = length(facs);
+          % T = multiplyFactors({fac1, fac2, ...})       
+          N = numel(facs);
           dom = [];
           for i=1:N
-              Ti = facs{i};
-              dom = [dom Ti.domain];
+              dom = [dom facs{i}.domain];
           end
           dom = unique(dom);
           ns = zeros(1, max(dom));
