@@ -389,6 +389,7 @@ classdef HmmDist < ParamJointDist
         
         function testClass()
             %% Discrete Observations
+            profile on;
             setSeed(0);
             trueObsModel = {DiscreteDist('mu',ones(6,1)./6       ,'support',1:6)
                             DiscreteDist('mu',[ones(5,1)./10;0.5],'support',1:6)};
@@ -448,6 +449,7 @@ classdef HmmDist < ParamJointDist
             [observed,hidden] = sample(trueModel,1,1000);     
             model = HmmDist('emissionDist',BernoulliMixDist('nmixtures',nmixcomps,'verbose',false),'nstates',nstates);
             model = fit(model,'data',observed,'maxIter',20);
+            profile viewer
         end
       
         

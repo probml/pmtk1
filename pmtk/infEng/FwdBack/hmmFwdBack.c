@@ -218,9 +218,7 @@ double normalizeInPlace(double * A, unsigned int N) {
 	}
     }
 
-    if (sum == 0)
-	mexErrMsgTxt("We are asked to normalize a section of a vector containing only zeros.");
-    else {
+    if (sum > 0){
 	for(n=0;n<N;++n)
 	    A[n] /= sum;
     }
