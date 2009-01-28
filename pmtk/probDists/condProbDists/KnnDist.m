@@ -47,14 +47,19 @@ classdef KnnDist < CondProbDist
             end
             dst = obj.distanceFcn(data,obj.examples);
             [sortedDst,kNearest] = minK(dst,obj.K);
-            counts = histc(obj.labels(kNearest),1:obj.nclasses,2);
             if ~isempty(obj.localKernel)
-                        
+                weights = obj.localKernel(data,obj.examples,sortedDst,kNearest);
+                counts = zeros(size(data,1),obj.nclasses);
+                for j=1:obj.nclasses
+                    for k=1:obj.K
+                        counts(:,j) = counts(:,j) + (obj.labels(kNearest(:,k)) == j).*weights(:,k);
+                    end
+                end
+                
+            else
+                counts = histc(obj.labels(kNearest),1:obj.nclasses,2);
             end
                 
-                
-              
-            
             probs = normalize(exp(counts*obj.beta),2);
             pred = DiscreteDist('mu',probs','support',obj.support);
             
@@ -73,12 +78,20 @@ classdef KnnDist < CondProbDist
                case 'tricube'
                    
                case 'gaussian'
-                    bandwidth = 1;
-                    obj.localKernel = @(sos)(1/(sqrt(2*pi)*bandwidth))*exp(-sos/(2*bandwith^2));
+                    obj.localKernel = @gaussianKernel;
+                    
                otherwise
                    error('The %s local kernel has not been implemented, please pass in your own function instead',kernelName);
                
+                   
            end
+                   function weights = gaussianKernel(testData,examples,sqdist,knearest)
+                       bandwidth = repmatC(sqrt(max(sqdist,[],2))+eps,1,size(knearest,2)); 
+                       weights = normalize(eps + (1./((2*pi)*bandwidth)).*exp(-(sqdist./(2*bandwidth.^2))),2);
+                   end
+                   
+                   
+           
             
             
         end
@@ -108,7 +121,7 @@ classdef KnnDist < CondProbDist
             ytrain = (mnist.train_labels(trainndx));
             ytest  = (mnist.test_labels(testndx));
             clear mnist;
-            model = KnnDist('K',3,'localKernel',@(x1,x2)1./(sqDistance(x1,x2)+eps));
+            model = KnnDist('K',3,'localKernel','Gaussian');
             model = fit(model,Xtrain,ytrain);
             clear Xtrain ytrain
             pred = predict(model,Xtest);
