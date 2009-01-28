@@ -35,7 +35,7 @@ wbar = waitbar(0,sprintf('%d of %d classified',0,ntest));
 %% Classify
 for i=1:nbatches
     t = toc; waitbar(i/nbatches,wbar,sprintf('%d of %d Classified\nElapsed Time: %.2f seconds',(i-1)*(ntest/nbatches),ntest,t));
-    dst = euclidDist(Xtest(batches{i},:),Xtrain,XtestSOS(batches{i},:),XtrainSOS);
+    dst = sqDistance(Xtest(batches{i},:),Xtrain,XtestSOS(batches{i},:),XtrainSOS);
     [junk,closest] = min(dst,[],2);
     ypred(batches{i}) = ytrain(closest);
 end
