@@ -125,6 +125,9 @@ classdef DiscreteDist  < ParamDist
     end
     if isempty(SS), SS = mkSuffStat(model, X); end
     K = nstates(model); d = ndistrib(model);
+    if (d==0)
+       d = size(SS.counts,2); 
+    end
     switch class(prior)
       case 'DirichletDist'
         pseudoCounts = repmat(prior.alpha(:),1,d);

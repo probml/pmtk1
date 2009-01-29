@@ -16,19 +16,23 @@ classdef KnnDist < CondProbDist
         distanceFcn;    % the global metric, e.g. Euclidean distance: either the string 'sqdist' or a function handle
         useSoftMax      % if true, counts are smoothed using the softmax function, with specified inv temp beta
         beta;           % inverse temperate used in softmax smoothing S(y,beta) = normalize(exp(beta*y)
+        verbose;        % if true, (default) display progress in calls to predict
+        classPrior;     % A DirichletDist
     end
     
     methods
        
         function obj = KnnDist(varargin)
-            [obj.K,obj.transformer,obj.localKernel,obj.distanceFcn,obj.useSoftMax,obj.beta] =...
+            [obj.K,obj.transformer,obj.localKernel,obj.distanceFcn,obj.useSoftMax,obj.beta,obj.classPrior,obj.verbose] =...
                 process_options(varargin,...
                 'K'             , 1              ,...
                 'transformer'   , []             ,...
                 'localKernel'   , []             ,...
                 'distanceFcn'   , 'sqdist'       ,...
                 'useSoftMax'    , true           ,...
-                'beta'          , 1              );
+                'beta'          , 1              ,...
+                'classPrior'    , 'none'         ,...
+                'verbose'       , true           );
             
                 if ischar(obj.localKernel)
                    obj = setLocalKernel(obj,obj.localKernel);
@@ -40,9 +44,9 @@ classdef KnnDist < CondProbDist
                [examples,obj.transformer] = train(obj.transformer,examples);
            end
            obj.examples = examples;
-           obj.examplesSOS = sum(examples.^2,2);
            [obj.labels,obj.support] = canonizeLabels(labels);
            obj.nclasses = numel(obj.support);
+          
         end
         
         function pred = predict(obj,data)
@@ -52,15 +56,22 @@ classdef KnnDist < CondProbDist
             ntest = size(data,1);
             probs = zeros(ntest,obj.nclasses);
             batch = largestBatch(obj,1,ntest);
-            wbar = waitbar(0,sprintf('%d of %d classified',0,ntest));
-            tic;
+            if(obj.verbose)
+                if(batch(end) == ntest)
+                    wbar = waitbar(0,sprintf('Classifying all %d examples in a single batch\n please wait...',ntest));
+                else
+                    wbar = waitbar(0,sprintf('Classifying first %d of %d',batch(end),ntest));
+                end
+                tic;
+            end
             while ~isempty(batch)
                 probs(batch,:) = predictHelper(obj,data(batch,:));
-                t = toc; waitbar(batch(end)/ntest,wbar,sprintf('%d of %d Classified\nElapsed Time: %.2f seconds',batch(end),ntest,t));
+                if(obj.verbose),t = toc; waitbar(batch(end)/ntest,wbar,sprintf('%d of %d Classified\nElapsed Time: %.2f seconds',batch(end),ntest,t));end
                 batch = largestBatch(obj,batch(end)+1,ntest);
             end
-            close(wbar);
-            pred = DiscreteDist('mu',probs','support',obj.support);
+            if(obj.verbose && ishandle(wbar)),close(wbar);end
+            SS.counts = probs';
+            pred = fit(DiscreteDist('support',obj.support),'suffStat',SS,'prior',obj.classPrior);
         end
         
     end
@@ -152,7 +163,7 @@ classdef KnnDist < CondProbDist
     methods(Static = true)
         
         function testClass()
-            profile on;
+           
             load mnistAll;
             if 1
                 trainndx = 1:60000; testndx =  1:1000;
@@ -172,12 +183,13 @@ classdef KnnDist < CondProbDist
             ytrain = (mnist.train_labels(trainndx));
             ytest  = (mnist.test_labels(testndx));
             clear mnist;
-            model = KnnDist('K',3,'localKernel','gaussian');
+            classPrior = DirichletDist(0.01*normalize(1+histc(ytrain,unique(ytrain))));
+            model = KnnDist('K',3,'localKernel','gaussian','classPrior',classPrior,'beta',0.5);
             model = fit(model,Xtrain,ytrain);
             clear Xtrain ytrain
             pred = predict(model,Xtest);
             err = mean(ytest ~= mode(pred))
-            profile viewer
+           
             
             
         end
@@ -185,6 +197,14 @@ classdef KnnDist < CondProbDist
         
     end
     
+    methods
+        
+        function obj = set.examples(obj,examples)
+           obj.examples = examples;
+           obj.examplesSOS = sum(examples.^2,2);
+        end
+        
+    end
     
     
     
