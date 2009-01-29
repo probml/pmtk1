@@ -7,18 +7,23 @@ classdef KnnDist < CondProbDist
     properties
         K;              % the number of neighbours to consider
         examples;       % a set of example points nexamples-by-ndimensions
-        examplesSOS;    % sum(examples.^2,2)
         labels;         % labels corresponding to the above examples
-        nclasses;       % the number of classes
-        support;        % the support of the labels
         transformer;    % a data transformer object, e.g. PcaTransformer
-        localKernel;    % e.g. Gaussian Kernel
+        localKernel;    % e.g. Gaussian Kernel - a string or custom function handle
         distanceFcn;    % the global metric, e.g. Euclidean distance: either the string 'sqdist' or a function handle
         useSoftMax      % if true, counts are smoothed using the softmax function, with specified inv temp beta
         beta;           % inverse temperate used in softmax smoothing S(y,beta) = normalize(exp(beta*y)
         verbose;        % if true, (default) display progress in calls to predict
         classPrior;     % A DirichletDist
     end
+    
+    
+    properties(SetAccess = 'protected')
+        examplesSOS;    % sum(examples.^2,2)         (set automatically)
+        nclasses;       % the number of classes      (set automatically)
+        support;        % the support of the labels  (set automatically)
+    end
+    
     
     methods
        
@@ -58,7 +63,7 @@ classdef KnnDist < CondProbDist
             batch = largestBatch(obj,1,ntest);
             if(obj.verbose)
                 if(batch(end) == ntest)
-                    wbar = waitbar(0,sprintf('Classifying all %d examples in a single batch\n please wait...',ntest));
+                    wbar = waitbar(0,sprintf('Classifying all %d examples in a single batch...',ntest));
                 else
                     wbar = waitbar(0,sprintf('Classifying first %d of %d',batch(end),ntest));
                 end
@@ -163,35 +168,22 @@ classdef KnnDist < CondProbDist
     methods(Static = true)
         
         function testClass()
-           
+            % takes about 3 minutes to run and gives an error rate of 2.31%
             load mnistAll;
-            if 1
-                trainndx = 1:60000; testndx =  1:1000;
-            else
-                trainndx = 1:10000;
-                testndx =  1:1000;
-            end
+            trainndx = 1:60000; testndx =  1:10000;
             ntrain = length(trainndx);
             ntest = length(testndx);
             Xtrain = double(reshape(mnist.train_images(:,:,trainndx),28*28,ntrain)');
             Xtest  = double(reshape(mnist.test_images(:,:,testndx),28*28,ntest)');
-            if 1
-                Xtrain = sparse(Xtrain);
-                Xtest  = sparse(Xtest);
-            end
-            
             ytrain = (mnist.train_labels(trainndx));
             ytest  = (mnist.test_labels(testndx));
             clear mnist;
-            classPrior = DirichletDist(0.01*normalize(1+histc(ytrain,unique(ytrain))));
-            model = KnnDist('K',3,'localKernel','gaussian','classPrior',classPrior,'beta',0.5);
+            classPrior = DirichletDist(0.05*normalize(1+histc(ytrain,unique(ytrain))));
+            model = KnnDist('K',3,'localKernel','gaussian','classPrior',classPrior,'beta',0.5,'transformer',PcaTransformer('k',60));
             model = fit(model,Xtrain,ytrain);
             clear Xtrain ytrain
             pred = predict(model,Xtest);
             err = mean(ytest ~= mode(pred))
-           
-            
-            
         end
         
         
