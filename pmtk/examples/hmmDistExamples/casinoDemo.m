@@ -2,7 +2,7 @@
 % This is an example from 
 % 'Biological Sequence Analysis: 
 % Probabilistic Models Proteins and Nucleic Acids' by Durbin, Eddy, Krogh, &
-% Mitchison, (1998).
+% Mitchison, (1998) p54.
 %%
 % Suppose a casino uses a fair die most of the time but occasionally switches to
 % and from a loaded die according to Markovian dynamics. We observe the dice
@@ -33,6 +33,7 @@ fair = 1; loaded = 2;
     model = HmmDist('startDist',startDist,'transitionDist',transDist,'emissionDist',obsModel);
 %% Sample
 % We now sample a single sequence of 300 dice rolls    
+setSeed(0);
     nsamples = 1; length = 300;
     [rolls,die] = sample(model,nsamples,length);
 %% Prediction
@@ -91,18 +92,27 @@ fprintf('Mode Posterior Samples: %d/%d\n',postSampErr,300);
 % Here we plot the probabilities and shade in grey the portions of the die
 % sequence where a loaded die was actually used. 
     figure; hold on;
+    % fair=1, loaded=2. So die-1=0 for fair, so gray=loaded
     area(die-1,'FaceColor',0.75*ones(1,3),'EdgeColor',ones(1,3));
-    plot(filtered(fair,:),'LineWidth',2.5);
+    plot(filtered(loaded,:),'LineWidth',2.5);
     xlabel('roll number');
-    ylabel('p(fair)');
+    ylabel('p(loaded)');
     set(gca,'YTick',0:0.5:1);
-    title(sprintf('filtered\n(grey bars correspond to a loaded die)'));
+    title(sprintf('filtered'));
     
     figure; hold on;
     area(die-1,'FaceColor',0.75*ones(1,3),'EdgeColor',ones(1,3));
-    plot(smoothed(fair,:),'LineWidth',2.5);
+    plot(smoothed(loaded,:),'LineWidth',2.5);
     xlabel('roll number');
-    ylabel('p(fair)');
+    ylabel('p(loaded)');
     set(gca,'YTick',0:0.5:1);
-    title(sprintf('smoothed\n(grey bars correspond to a loaded die)'));
+    title(sprintf('smoothed'));
+    
+    figure; hold on;
+    area(die-1,'FaceColor',0.75*ones(1,3),'EdgeColor',ones(1,3));
+    plot(viterbiPath-1, 'linewidth', 2.5);
+    xlabel('roll number');
+    ylabel('MAP state (0=fair,1=loaded)');
+    set(gca,'YTick',0:0.5:1);
+    title(sprintf('Viterbi'));
 %%
