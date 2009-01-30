@@ -7,6 +7,8 @@ classdef MvnMixDist < MixtureDist
         function model = MvnMixDist(varargin)
            [nmixtures,mixingWeights,distributions,model.transformer,model.verbose,model.nrestarts] = process_options(varargin,...
                'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[],'verbose',true,'nrestarts',model.nrestarts);
+           if(~isempty(distributions)),nmixtures = numel(distributions);end
+               
            if(isempty(mixingWeights) && ~isempty(nmixtures))
                mixingWeights = DiscreteDist('mu',normalize(ones(nmixtures,1)));
            end

@@ -14,8 +14,8 @@ classdef DgmDist < GmDist
     function obj = DgmDist(G, varargin)
       if isa(G,'double'), G=Dag(G); end
       obj.G = G;
-      [obj.CPDs, obj.infEng]= process_options(...
-        varargin, 'CPDs', [], 'infEng', []);
+      [obj.CPDs, obj.infEng,obj.domain]= process_options(...
+        varargin, 'CPDs', [], 'infEng', [],'domain',[]);
       %if ~isempty(CPDs) && ~isempty(infMethod)
       %  obj = initInfEng(obj);
       %end
@@ -138,28 +138,35 @@ classdef DgmDist < GmDist
       M = UgmTabularDist('factors', Tfacs, 'nstates', nstates);
     end
     
-    function [Tfacs, nstates] = convertToTabularFactors(obj)
-      d = length(obj.CPDs);
-      Tfacs = cell(1,d);
-      nstates = zeros(1,d);
-      for j=1:d
-        if isa(obj.CPDs{j}, 'ConstDist') % node was set by intervention
-          sz = mysize(obj.CPDs{j}.T);
-          ssz = sz(end);
-          tmp = zeros(1,ssz);
-          tmp(obj.CPDs{j}.point) = 1; % delta function at set value
-          Tfacs{j} = TabularFactor(tmp, j);
-        else % CPDs over discrete nodes can always be converted to tables...
-          dom = [parents(obj.G, j), j];
-          Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom);
+    function [Tfacs, nstates] = convertToTabularFactors(obj,visVars,visVals)
+        if(nargin < 3)
+           visVars = [];  visVals = {};
         end
-        nstates(j) = Tfacs{j}.sizes(end);
-      end
+        d = length(obj.CPDs);
+        Tfacs = cell(1,d);
+        nstates = zeros(1,d);
+        for j=1:d
+            dom = [parents(obj.G, j), j];
+            include = ismember(visVars,dom);
+            if(isempty(include) || ~any(include))
+                if(isempty(children(obj.G,j))) % unobserved and no children - barren node removal
+                    Tfacs{j} = TabularFactor(1,[]);
+                else
+                    Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, [],{});
+                end
+            else
+                Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, visVars(include) , visVals(include));
+            end
+            nstates(j) = Tfacs{j}.sizes(end);
+        end
     end
     
-    function Tfac = convertToTabularFactor(obj)
+    function Tfac = convertToTabularFactor(obj,visVars,visVals)
       % Represent the joint distribution as a single large factor
-      Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj));
+      if nargin < 3
+          visVars = []; visVals = [];
+      end
+      Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
     end
     
     function [mu,Sigma,domain] = convertToMvnDist(dgm)

@@ -107,8 +107,20 @@ classdef MixtureDist < ParamJointDist
         function logp = logprob(model,data)
         % logp(i) = log p(data(i,:) | params) 
               logp = logsumexp(calcResponsibilities(model,data),2);
-              
         end
+        
+        
+        function Tfac = convertToTabularFactor(model, globalDomain,visVars,visVals)
+        % globalDomain = indices of each parent, followed by index of child
+        % all of the children must be observed
+            
+            if ~isequal(globalDomain(2:end),visVars)
+                error('Not all of the continuous valued children of this CPD were observed.');
+            end
+            T = exp(calcResponsibilities(model,visVals));
+            Tfac = TabularFactor(T,globalDomain(1)); % only a factor of the parent now
+        end
+        
         
         function model = mkRndParams(model, d,K)
             for i=1:K

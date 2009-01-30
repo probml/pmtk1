@@ -173,33 +173,33 @@ classdef MvnDist < ParamJointDist
 
 
      function [postmu, logevidence] = softCondition(pmu, py, A, y)
-       % Bayes rule for MVNs
-      Syinv = inv(py.Sigma);
-      Smuinv = inv(pmu.Sigma);
-      postSigma = inv(Smuinv + A'*Syinv*A);
-      postmu = postSigma*(A'*Syinv*(y-py.mu) + Smuinv*pmu.mu);
-      postmu = MvnDist(postmu, postSigma);
-      %evidence = mvnpdf(y(:)', (A*pmu.mu + py.mu)', py.Sigma + A*pmu.Sigma*A');
-      logevidence = logprob(MvnDist(A*pmu.mu + py.mu, py.Sigma + A*pmu.Sigma*A'), y(:)');
-    end
+         % Bayes rule for MVNs
+         Syinv = inv(py.Sigma);
+         Smuinv = inv(pmu.Sigma);
+         postSigma = inv(Smuinv + A'*Syinv*A);
+         postmu = postSigma*(A'*Syinv*(y-py.mu) + Smuinv*pmu.mu);
+         postmu = MvnDist(postmu, postSigma);
+         %evidence = mvnpdf(y(:)', (A*pmu.mu + py.mu)', py.Sigma + A*pmu.Sigma*A');
+         logevidence = logprob(MvnDist(A*pmu.mu + py.mu, py.Sigma + A*pmu.Sigma*A'), y(:)');
+     end
     
     
-    function xrange = plotRange(obj, sf)
-        if nargin < 2, sf = 3; end
-        %if ndimensions(obj) ~= 2, error('can only plot in 2d'); end
-        mu = mean(obj); C = cov(obj);
-        s1 = sqrt(C(1,1));
-        x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
-        switch length(mu) % ndimensions(obj)
-          case 1,  xrange = [x1min x1max];
-          case 2,
-            s2 = sqrt(C(2,2));
-            x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
-            xrange = [x1min x1max x2min x2max];
-          otherwise
-            error('can only plot 1 or 2d');
-        end           
-    end
+     function xrange = plotRange(obj, sf)
+         if nargin < 2, sf = 3; end
+         %if ndimensions(obj) ~= 2, error('can only plot in 2d'); end
+         mu = mean(obj); C = cov(obj);
+         s1 = sqrt(C(1,1));
+         x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
+         switch length(mu) % ndimensions(obj)
+             case 1,  xrange = [x1min x1max];
+             case 2,
+                 s2 = sqrt(C(2,2));
+                 x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
+                 xrange = [x1min x1max x2min x2max];
+             otherwise
+                 error('can only plot 1 or 2d');
+         end
+     end
     
     
   end % methods

@@ -9,24 +9,30 @@ classdef VarElimInfEng < InfEng
  
     methods
       
-        function eng = condition(eng, model, visVars, visValues)    
-            if(nargin < 3), visVars = [];end
-            [eng.Tfac,nstates] = convertToTabularFactors(model);
+        function eng = condition(eng, model, visVars, visVals)    
+            if(nargin < 4), visVars = []; visVals = {};end
+            [eng.Tfac,nstates] = convertToTabularFactors(model,visVars,visVals);
             if isempty(eng.ordering)
-                moralGraph = moralize(model.G);
+                if(model.G.directed)
+                    moralGraph = moralize(model.G);
+                else
+                    moralGraph = model.G;
+                end
                 eng.ordering = best_first_elim_order(moralGraph.adjMat,nstates);
             end
             eng.domain = model.domain;
             eng.visVars = visVars;
-            nvis = numel(visVars);
-            if nvis > 0
-            % slice factors according to the evidence - leave unnormalized
-            % See Koller & Friedman algorithm 9.2 pg 278   
-                for f =1:numel(eng.Tfac)
-                      include = ismember(visVars,eng.Tfac{f}.domain);
-                      eng.Tfac{f} = slice(eng.Tfac{f},visVars(include),visValues(include));
-                end
-            end
+            
+            % we now slice in convertToTabularFactors
+%             nvis = numel(visVars);
+%             if nvis > 0
+%             % slice factors according to the evidence - leave unnormalized
+%             % See Koller & Friedman algorithm 9.2 pg 278   
+%                 for f =1:numel(eng.Tfac)
+%                       include = ismember(visVars,eng.Tfac{f}.domain);
+%                       eng.Tfac{f} = slice(eng.Tfac{f},visVars(include),visValues(include));
+%                 end
+%             end
         end
         
         function [postQuery,Z] = marginal(eng, queryVars)

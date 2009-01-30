@@ -23,9 +23,12 @@ classdef TabularCPD < CondProbDist
       obj.pseudoCounts = C;
     end
     
-    function Tfac = convertToTabularFactor(obj, domain)
+    function Tfac = convertToTabularFactor(obj, domain,visVars,visVals)
        % domain = indices of each parent, followed by index of child
       Tfac = TabularFactor(obj.T, domain);
+      if(nargin == 4 && ~isempty(visVars))
+          Tfac = slice(Tfac,visVars,visVals);
+      end
     end
     
     function ll = logprob(obj, Xpa, Xself)

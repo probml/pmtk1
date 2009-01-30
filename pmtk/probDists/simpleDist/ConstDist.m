@@ -58,6 +58,14 @@ classdef ConstDist < NonParamDist
             axis tight;
             grid on;
       end
+      
+      function Tfac = convertToTabularFactor(obj,globalDomain,varargin)
+          sz = mysize(obj.point);
+          ssz = sz(end);
+          tmp = zeros(1,ssz);
+          tmp(obj.point) = 1; % delta function at set value
+          Tfac = TabularFactor(tmp, globalDomain);
+      end
             
   end
   
