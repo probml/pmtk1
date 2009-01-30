@@ -24,6 +24,16 @@ CPD{X3}  = CPD{X1};
 
 dgm = DgmDist(graph,'CPDs', CPD,'infEng',VarElimInfEng(),'domain',1:6);
 
-dgm  = condition(dgm,[X2,X3],[50,50]) ;
+dgm1  = condition(dgm,[X2,X3],[50,50]) ;
 
-pG1givenX2X3 = marginal(dgm,G1);
+pG1marg = marginal(dgm1,G1); % a factor
+p = pG1marg.T(1)     % p(G1 = 0 | X2 = 50, X3 = 50)
+
+
+dgm2 = condition(dgm,[X2,X3],[100,100]);
+pG1marg = marginal(dgm2,G1);
+p = pG1marg.T(1)     % p(G1 = 0 | X2 = 100, X3 = 100)
+
+
+
+
