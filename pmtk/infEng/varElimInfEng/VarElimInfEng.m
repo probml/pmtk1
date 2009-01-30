@@ -22,23 +22,13 @@ classdef VarElimInfEng < InfEng
             end
             eng.domain = model.domain;
             eng.visVars = visVars;
-            
-            % we now slice in convertToTabularFactors
-%             nvis = numel(visVars);
-%             if nvis > 0
-%             % slice factors according to the evidence - leave unnormalized
-%             % See Koller & Friedman algorithm 9.2 pg 278   
-%                 for f =1:numel(eng.Tfac)
-%                       include = ismember(visVars,eng.Tfac{f}.domain);
-%                       eng.Tfac{f} = slice(eng.Tfac{f},visVars(include),visValues(include));
-%                 end
-%             end
         end
         
         function [postQuery,Z] = marginal(eng, queryVars)
         % postQuery = sum_h p(Query,h)      
             elim = mysetdiff(mysetdiff(eng.domain(eng.ordering),queryVars),eng.visVars);
             [postQuery,Z] = normalizeFactor(VarElimInfEng.variableElimination(eng.Tfac,elim));
+            
         end
         
         function [samples] = sample(eng,n)

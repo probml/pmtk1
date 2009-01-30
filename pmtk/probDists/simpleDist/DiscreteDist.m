@@ -19,7 +19,7 @@ classdef DiscreteDist  < ParamDist
       % 'support' - Support is a set of K numbers, defining the domain.
       % Each distribution has the same support.
       % 'prior' - 'none' or DirichletDist. Same prior is used for each distribution.
-      if ~isstr(varargin{1})
+      if nargin > 0 && ~ischar(varargin{1})
         mu = varargin{1}; support = []; prior = 'none';
       else
         [mu, support, prior] = process_options(varargin, ...

@@ -436,18 +436,18 @@ classdef HmmDist < ParamJointDist
             [observed,hidden] = sample(trueModel,1,1000);            
             model = HmmDist('emissionDist',MvnMixDist('nmixtures',nmixcomps,'verbose',false,'nrestarts',1),'nstates',nstates);
             model = fit(model,'data',observed,'maxIter',20);
-            %% BernoulliMixDist Observations
+            %% DiscreteMixDist Observations
             setSeed(0);
             nstates = 5;  nmixcomps = 2; d = 3;
             emissionDist = cell(5,1);
             for i=1:nstates
-                emissionDist{i} = mkRndParams(BernoulliMixDist('nmixtures',nmixcomps),d,nmixcomps);
+                emissionDist{i} = mkRndParams(DiscreteMixDist('nmixtures',nmixcomps),d,nmixcomps);
             end
             pi = DiscreteDist('mu',normalize(rand(nstates,1)));
             A = DiscreteDist('mu',normalize(rand(nstates),1));
             trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
             [observed,hidden] = sample(trueModel,1,1000);     
-            model = HmmDist('emissionDist',BernoulliMixDist('nmixtures',nmixcomps,'verbose',false),'nstates',nstates);
+            model = HmmDist('emissionDist',DiscreteMixDist('nmixtures',nmixcomps,'verbose',false),'nstates',nstates);
             model = fit(model,'data',observed,'maxIter',20);
             profile viewer
         end
