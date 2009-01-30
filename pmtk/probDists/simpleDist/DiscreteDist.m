@@ -10,14 +10,21 @@ classdef DiscreteDist  < ParamDist
   
   
   methods
-    function obj = DiscreteDist(varargin)  
+    function obj = DiscreteDist(varargin) 
+      % obj = DiscreteDist([vector of probabilities])
+      % or
+      % obj = DiscreteDist(option arguments):
       % 'mu' - mu is K*d, for K states and d distributions.
-      % Each *column* of mu represents a different discrete distribution. 
+      %   Each *column* of mu represents a different discrete distribution. 
       % 'support' - Support is a set of K numbers, defining the domain.
       % Each distribution has the same support.
       % 'prior' - 'none' or DirichletDist. Same prior is used for each distribution.
-      [mu, support, prior] = process_options(varargin, ...
-        'mu', [], 'support', [], 'prior', 'none');
+      if ~isstr(varargin{1})
+        mu = varargin{1}; support = []; prior = 'none';
+      else
+        [mu, support, prior] = process_options(varargin, ...
+          'mu', [], 'support', [], 'prior', 'none');
+      end
       if isempty(support) && ~isempty(mu)
         [nstates] = size(mu,1);
         support = 1:nstates;

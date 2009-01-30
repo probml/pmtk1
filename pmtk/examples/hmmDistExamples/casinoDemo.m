@@ -1,4 +1,4 @@
-%% HMMs and the Occasionally Dishonest Casino
+%% HMMs and the occasionally Dishonest Casino
 % This is an example from 
 % 'Biological Sequence Analysis: 
 % Probabilistic Models Proteins and Nucleic Acids' by Durbin, Eddy, Krogh, &
@@ -18,24 +18,25 @@ fair = 1; loaded = 2;
 % We will use a discrete observation model, one DiscreteDist object per hidden
 % state of which there are two. We store these state conditional densities in a
 % cell array.
-    setSeed(0);
-    obsModel = {DiscreteDist('mu',[1/6 , 1/6 , 1/6 , 1/6 , 1/6 , 1/6  ]','support',1:6);...   % fair die
-                DiscreteDist('mu',[1/10, 1/10, 1/10, 1/10, 1/10, 5/10 ]','support',1:6)};     % loaded die
+setSeed(0);
+obsModel = {DiscreteDist([1/6 , 1/6 , 1/6 , 1/6 , 1/6 , 1/6  ]');...   % fair die
+           DiscreteDist([1/10, 1/10, 1/10, 1/10, 1/10, 5/10 ]')};     % loaded die
+
 %% Transition Matrix
 % 
-    transmat = [0.95  , 0.05;
-                0.10  , 0.90];
-    transDist = DiscreteDist('mu',transmat','support',1:2);        
+transmat = [0.95  , 0.05;
+           0.10  , 0.90];
+transDist = DiscreteDist(transmat');
 %% Distribution over Starting States      
-    pi = [0.5,0.5];
-    startDist = DiscreteDist('mu',pi','support',1:2);
+pi = [0.5,0.5];
+startDist = DiscreteDist(pi');
 %% Create the Model
     model = HmmDist('startDist',startDist,'transitionDist',transDist,'emissionDist',obsModel);
 %% Sample
 % We now sample a single sequence of 300 dice rolls    
 setSeed(0);
-    nsamples = 1; length = 300;
-    [rolls,die] = sample(model,nsamples,length);
+nsamples = 1; length = 300;
+[rolls,die] = sample(model,nsamples,length);
 %% Prediction
 % We can obtain the most likely sequence of hidden states, (the viterbi path) by
 % conditioning on observed data and calling mode(). There are two variable
