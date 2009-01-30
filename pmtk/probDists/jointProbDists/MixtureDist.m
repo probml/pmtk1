@@ -113,7 +113,10 @@ classdef MixtureDist < ParamJointDist
         function Tfac = convertToTabularFactor(model, globalDomain,visVars,visVals)
         % globalDomain = indices of each parent, followed by index of child
         % all of the children must be observed
-            
+            if(isempty(visVars))
+               Tfac = TabularFactor(1,[]);
+               return;
+            end
             if ~isequal(globalDomain(2:end),visVars)
                 error('Not all of the continuous valued children of this CPD were observed.');
             end

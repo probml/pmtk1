@@ -149,11 +149,11 @@ classdef DgmDist < GmDist
             dom = [parents(obj.G, j), j];
             include = ismember(visVars,dom);
             if(isempty(include) || ~any(include))
-                if(isempty(children(obj.G,j))) % unobserved and no children - barren node removal
-                    Tfacs{j} = TabularFactor(1,[]);
-                else
+%                 if(isempty(children(obj.G,j))) % unobserved and no children - barren node removal
+%                     Tfacs{j} = TabularFactor(1,[]);
+%                 else
                     Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, [],{});
-                end
+                %end
             else
                 Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, visVars(include) , visVals(include));
             end
