@@ -20,4 +20,4 @@ model = KnnDist('K',3,'localKernel','gaussian','classPrior',classPrior,'beta',0.
 model = fit(model,Xtrain,ytrain);
 clear Xtrain ytrain
 pred = predict(model,Xtest);
-err = mean(ytest ~= mode(pred))
+err  = mean(ytest ~= mode(pred))
