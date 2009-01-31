@@ -8,7 +8,8 @@ classdef Gauss_NormInvGammaDist < CompoundDist
   %% Main methods
   methods 
      function m = Gauss_NormInvGammaDist(prior)
-      m.muSigmaDist = prior;
+        if(nargin < 1), prior = []; end
+        m.muSigmaDist = prior;
      end
      
      function obj = fit(obj, varargin)
@@ -39,14 +40,4 @@ classdef Gauss_NormInvGammaDist < CompoundDist
      
   end
   
-  methods(Static = true)
-    function test
-      prior = NormInvGammaDist('mu', 0, 'k', 0.01, 'a', 0.01, 'b', 0.01);
-      p = Gauss_NormInvGammaDist(prior);
-      x = rand(100,1);
-      p = fit(p, 'data', x);
-      pp = marginal(p);
-      pp = var(p);
-    end
-  end
 end

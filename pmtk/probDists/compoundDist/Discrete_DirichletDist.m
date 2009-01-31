@@ -26,7 +26,7 @@ classdef Discrete_DirichletDist < CompoundDist
     
     function m = marginal(obj)
       % This may not be correct...
-      m =  DiscreteDist('mu', normalize(obj.muDist.alpha));
+      m =  DiscreteDist('mu', normalize(obj.muDist.alpha,2)');
     end
 
 
@@ -57,19 +57,7 @@ classdef Discrete_DirichletDist < CompoundDist
            
   end
   
-  methods(Static = true)
-      function testClass()
-          prior = DirichletDist(0.1*ones(1,3));
-          X = sampleDiscrete([0.1 0.3 0.6]', 5, 2);
-          m = Discrete_DirichletDist(prior);
-          m = fit(m, 'data', X);
-          v = var(m);
-      end
-      
-     
-      
-      
-  end
+ 
   
  
 end

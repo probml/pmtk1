@@ -8,20 +8,21 @@ classdef TabularCPD < CondProbDist
   end
   
   methods
-    function obj = TabularCPD(T, varargin) 
-      obj.sizes = mysize(T);
-      sz = obj.sizes; r = sz(end); q = prod(sz(1:end-1));
-      [prior] = process_options(varargin, ...
-        'prior', 'none');
-      obj.T = T;
-      %obj.domain = domain;
-      switch lower(prior)
-        case 'bdeu', C = myones(sz)*1/(q*r);
-        case 'laplace', C = myones(sz)*1;
-        case 'none', C = 0*myones(sz);
+      function obj = TabularCPD(T, varargin)
+          if(nargin == 0),T=[];end
+          obj.sizes = mysize(T);
+          sz = obj.sizes; r = sz(end); q = prod(sz(1:end-1));
+          [prior] = process_options(varargin, ...
+              'prior', 'none');
+          obj.T = T;
+          %obj.domain = domain;
+          switch lower(prior)
+              case 'bdeu', C = myones(sz)*1/(q*r);
+              case 'laplace', C = myones(sz)*1;
+              case 'none', C = 0*myones(sz);
+          end
+          obj.pseudoCounts = C;
       end
-      obj.pseudoCounts = C;
-    end
     
     function Tfac = convertToTabularFactor(obj, domain,visVars,visVals)
        % domain = indices of each parent, followed by index of child
@@ -52,14 +53,14 @@ classdef TabularCPD < CondProbDist
     
     
     function obj = fit(obj, varargin)
-      [X, y] = process_options(varargin, ...
-        'X', [], 'y', []);
-      % X(i,:) are the values of the parents in the i'th case
-      % y(i) is the value of the child
-      % All values must be integers from {1,2,...,K}
-      % where K is the arity of the relevant variable.     
-      counts = compute_counts([X y]', obj.sizes);
-      obj.T = mkStochastic(counts + obj.pseudoCounts);
+        [X, y] = process_options(varargin, ...
+            'X', [], 'y', []);
+        % X(i,:) are the values of the parents in the i'th case
+        % y(i) is the value of the child
+        % All values must be integers from {1,2,...,K}
+        % where K is the arity of the relevant variable.
+        counts = compute_counts([X y]', obj.sizes);
+        obj.T = mkStochastic(counts + obj.pseudoCounts);
     end
     
     function y = sample(obj, X, n)

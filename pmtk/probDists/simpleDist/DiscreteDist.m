@@ -63,16 +63,16 @@ classdef DiscreteDist  < ParamDist
     end
   
     function L = logprob(obj,X)
-      %L(i,j) = logprob(X(i) | mu(j)) or logprob(X(i,j) | mu(j)) for X(i,j)
-      %in support
-      n = size(X,1); 
-      d = ndistrib(obj);
-      if size(X,2) == 1, X = repmat(X, 1, d); end
-      L = zeros(n,d);
-      for j=1:d
-        XX = canonizeLabels(X(:,j),obj.support);
-        L(:,j) = log(obj.mu(XX,j)); % requires XX to be in 1..K
-      end
+        %L(i,j) = logprob(X(i) | mu(j)) or logprob(X(i,j) | mu(j)) for X(i,j)
+        %in support
+        n = size(X,1);
+        d = ndistrib(obj);
+        if size(X,2) == 1, X = repmat(X, 1, d); end
+        L = zeros(n,d);
+        X = canonizeLabels(X,obj.support);
+        for j=1:d
+            L(:,j) = log(eps + obj.mu(X(:,j),j)); % requires XX to be in 1..K
+        end
     end
     
     function p = predict(obj)

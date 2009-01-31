@@ -2,14 +2,10 @@ classdef ProbDist
 % This class represents an abstract proability distribution, e.g. a pdf or pmf.
 % All PMTK probability distributions inherit directly or indirectly from ProbDist.
     
-    methods(Abstract = true)
-    end
     
     %%  Main methods
     methods
-       
-    
-    %% Other
+      
         function nll = negloglik(obj,X)
             % The negative log likelihood of a data set
             % nll = -(1/n)sum_i(log p(X_i | params))
@@ -121,16 +117,16 @@ classdef ProbDist
             if nargin < 2, sf = 3; end
             mu = mean(obj);
             if ndimensions(obj)==1
-              s1 = sqrt(var(obj));
-              x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
-              xrange = [x1min x1max];
+                s1 = sqrt(var(obj));
+                x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
+                xrange = [x1min x1max];
             else
-              C = cov(obj);
-              s1 = sqrt(C(1,1));
-              s2 = sqrt(C(2,2));
-              x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
-              x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
-              xrange = [x1min x1max x2min x2max];
+                C = cov(obj);
+                s1 = sqrt(C(1,1));
+                s2 = sqrt(C(2,2));
+                x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
+                x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
+                xrange = [x1min x1max x2min x2max];
             end
         end
     end

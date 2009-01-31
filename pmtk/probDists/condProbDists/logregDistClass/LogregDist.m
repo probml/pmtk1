@@ -94,13 +94,13 @@ classdef LogregDist < CondProbDist
             if ~isempty(obj.transformer)
                 X = test(obj.transformer, X);
             end
-            pred = DiscreteDist('mu', multiSigmoid(X,obj.w(:)),'support',obj.classSupport);      
+            pred = DiscreteDist('mu', multiSigmoid(X,obj.w(:))','support',obj.classSupport);      
         end
 
         function p = logprob(obj, X, y)
           % p(i) = log p(y(i) | X(i,:), obj.w), y(i) in 1...C
           pred = predict(obj,X);
-          P = pred.mu;
+          P = pred.mu';
           Y = oneOfK(y, obj.nclasses);
           p =  sum(sum(Y.*log(P)));
         end

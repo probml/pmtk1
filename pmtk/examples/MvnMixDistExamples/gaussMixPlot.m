@@ -7,13 +7,13 @@ Sigma1 = [0.018  0.01 ;  0.01 0.011];
 Sigma2 = [0.011 -0.01 ; -0.01 0.018];
 Sigma3 = Sigma1;
 dists = {MvnDist(mu1,Sigma1),MvnDist(mu2,Sigma2),MvnDist(mu3,Sigma3)};
-mix = [0.5 0.3 0.2];
+mix = DiscreteDist('mu',[0.5 0.3 0.2]');
 m = MvnMixDist('nmixtures',3,'distributions',dists,'mixingWeights',mix);
 figure; hold on;
 colors = {'r', 'g', 'b'};
 for k=1:3
     mk = m.distributions{k};
-    [h,p]=plot(mk, 'useContour', true, 'npoints', 200,'scaleFactor',mix(k));
+    [h,p]=plot(mk, 'useContour', true, 'npoints', 200,'scaleFactor',mix.mu(k));
     set(h, 'color', colors{k});
 end
 axis tight;

@@ -131,7 +131,7 @@ classdef Logreg_MvnDist < CondProbDist
                 if ~isa(obj.wDist,'MvnDist'), error('Only available for Gaussian posteriors'); end
                 p = sigmoidTimesGauss(X, obj.wDist.mu(:), obj.wDist.Sigma);
                 p = p(:);
-                pred = DiscreteDist('mu',[p,1-p],'support',obj.classSupport);
+                pred = DiscreteDist('mu',[p,1-p]','support',obj.classSupport);
               otherwise
                 error('%s is an unsupported prediction method',method);
             end
@@ -141,9 +141,9 @@ classdef Logreg_MvnDist < CondProbDist
           % p(i) = log p(y(i) | X(i,:), obj.w), y(i) in 1...C
             pred = predict(obj,X);
             n = size(X,1);
-            P = mean(pred);
-            if size(P,2)==1
-              P = [1-P, P];
+            P = mean(pred)';
+            if size(P,1)==2
+              P = [1-P; P];
             end
             Y = oneOfK(y, obj.nclasses);
             p =  sum(sum(Y.*log(P)));
@@ -154,24 +154,6 @@ classdef Logreg_MvnDist < CondProbDist
 
     
 
-%%   
-    methods(Static = true)
-
-      function testClass()
-        % check functions are syntactically correct
-        n = 10; d = 3; C = 2;
-        X = randn(n,d );
-        y = sampleDiscrete((1/C)*ones(1,C), n, 1);
-        mL2 = Logreg_MvnDist('nclasses', C, 'priorStrength', 1);
-        mL2 = fit(mL2, 'X', X, 'y', y, 'infMethod', 'laplace');
-        pred1 = predict(mL2, X, 'method', 'integral');
-        pred2 = predict(mL2, X, 'method', 'mc');
-        mL3 = fit(mL2, 'X', X, 'y', y, 'infMethod', 'mh');
-        pred3 = predict(mL2, X);
-        llL2 = logprob(mL2, X, y);
-      end
-
-    end
 
 
 

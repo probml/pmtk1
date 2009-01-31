@@ -11,6 +11,7 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
   %% main methods
   methods
     function model = Mvn_MvnInvWishartDist(prior)
+      if(nargin < 1),prior = [];end
       % Mvn_MvnInvWishartDist(prior) where prior is of type MvnInvWishartDist 
       model.muSigmaDist = prior;
       %model.ndims  = length(prior.mu);

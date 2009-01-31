@@ -9,6 +9,7 @@ classdef Mvn_MvnDist < CompoundDist
   %% main methods
   methods
     function model = Mvn_MvnDist(muPrior, Sigma)
+      if(nargin == 0),muPrior = [];Sigma = [];end
       % MvnMvnDist(muPrior, Sigma) where muPrior is of type MnvDist 
       model.muDist = muPrior;
       model.Sigma = Sigma;

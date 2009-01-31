@@ -4,9 +4,9 @@ function makeRunDemos()
 %
 % Version 1.0
     
-    excludeTag = '%#exclude';
-    slowTag    = '%#slow';
-    brokenTag  = '%#broken';
+    excludeTag = '%#exclude';   % do not include in runDemos
+    slowTag    = '%#slow';      % include in runDemos but comment out with slow tag
+    brokenTag  = '%#broken';    % include in runDemos but comment out with broken tag
 
     reportDir = fileparts(which('makeRunDemos'));
     cd(reportDir);  cd ..;cd ..;

@@ -10,6 +10,7 @@ classdef Mvn_InvWishartDist < CompoundDist
   %% main methods
   methods
     function model = Mvn_InvWishartDist(mu, SigmaPrior)
+      if(nargin ==0),mu = []; SigmaPrior = [];end
       % Mvn_InvWishartDist(mu, SigmaPrior) where SigmaPrior is of type InvWishartDist 
       model.mu = mu;
       model.SigmaDist = SigmaPrior;

@@ -1,5 +1,9 @@
 classdef MixtureDist < ParamJointDist
-% A mixture model   
+% A mixture model
+% Mixtures of any probability distributions can be created with this class.
+% Subclasses simply allow for more a more convienient interface by automatically
+% instantiating the mixture components. To fit via EM, however, each mixture
+% component must have a mkSuffStat method and a 'suffStat' option to fit(). 
     
     properties
         distributions;      % a cell array storing the distributions
@@ -235,13 +239,7 @@ classdef MixtureDist < ParamJointDist
         
     end
     
-    methods(Static = true)
-        
-       
-        
-    end
   
-        
         
     
     
