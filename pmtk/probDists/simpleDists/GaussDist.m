@@ -123,23 +123,5 @@ classdef GaussDist < ParamDist
       
   end
  
-   %% Getters and Setters
-  %{
-  methods
-      function obj = set.mu(obj, mu)
-          obj.mu = mu;
-          obj.ndims = length(mu);
-      end 
-  end
-  %}
-  
-    methods(Static = true)
-    function testClass()
-      p = GaussDist([-1 0 1], [1 2 3]);
-      mean(p)
-      p = GaussDist([-1 0 1]', [1 2 3]');
-      mean(p)
-    end
-    end
   
 end

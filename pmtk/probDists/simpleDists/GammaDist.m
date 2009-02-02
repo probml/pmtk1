@@ -64,28 +64,28 @@ classdef GammaDist < ParamDist
     end
 
     function obj = fit(obj, varargin)
-      % m = fit(model, 'name1', val1, 'name2', val2, ...)
-      % Arguments are
-      % data - data(i) = case i
-      % method - one of {mle, mom} where mom  = method of moments
-      [X, suffStat, method] = process_options(...
-        varargin, 'data', [], 'suffStat', [], 'method', 'mle');
-      switch method
-        case 'mle'
-          if useStatsToolbox
-            phat = gamfit(X);
-            obj.a = phat(1); obj.b = 1/phat(2);
-          else
-            [a, b] = gamma_fit(X);
-            obj.a = a; obj.b = 1/b; % Minka uses b=scale
-          end
-        case 'mom'
-          xbar = mean(X); s2hat = var(X);
-          obj.a = xbar^2/s2hat;
-          obj.b = xbar/s2hat;
-        otherwise
-          error(['unknown method ' method])
-      end
+        % m = fit(model, 'name1', val1, 'name2', val2, ...)
+        % Arguments are
+        % data - data(i) = case i
+        % method - one of {mle, mom} where mom  = method of moments
+        [X, suffStat, method] = process_options(...
+            varargin, 'data', [], 'suffStat', [], 'method', 'mle');
+        switch method
+            case 'mle'
+                if useStatsToolbox
+                    phat = gamfit(X);
+                    obj.a = phat(1); obj.b = 1/phat(2);
+                else
+                    [a, b] = gamma_fit(X);
+                    obj.a = a; obj.b = 1/b; % Minka uses b=scale
+                end
+            case 'mom'
+                xbar = mean(X); s2hat = var(X);
+                obj.a = xbar^2/s2hat;
+                obj.b = xbar/s2hat;
+            otherwise
+                error(['unknown method ' method])
+        end
     end
     
 

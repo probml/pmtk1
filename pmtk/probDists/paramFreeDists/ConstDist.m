@@ -1,4 +1,4 @@
-classdef ConstDist < NonParamDist
+classdef ConstDist < ParamFreeDist
   % vector of delta fns (constant values)
   properties
     point;
@@ -69,21 +69,4 @@ classdef ConstDist < NonParamDist
             
   end
   
-  methods(Static = true)
-      
-      function testClass()
-         point = 10*rand(20,1);
-         p = ConstDist(point);
-         logprob = logProb(p,point);
-         s = sample(p,10);
-         logZ = lognormconst(p);
-         nd = ndimensions(p);
-         m = mean(p);
-         v = var(p);
-         mm = mode(p);
-         plot(p);
-      end
-      
-  end
-    
 end

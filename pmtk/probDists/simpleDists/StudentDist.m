@@ -82,18 +82,18 @@ classdef StudentDist < ParamDist
     end
    
     function obj = fit(obj, varargin)
-      % m = fit(model, 'name1', val1, 'name2', val2, ...)
-      % Finds the MLE. Needs stats toolbox.
-      % Arguments are
-      % data - data(i) = case i
-      % 
-      [X, suffStat, method] = process_options(...
-        varargin, 'data', [], 'suffStat', [], 'method', 'mle');
-      assert(statsToolboxInstalled); %#statsToolbox
-      params = mle(X, 'distribution', 'tlocationscale');
-      obj.mu = params(1);
-      obj.sigma2 = params(2);
-      obj.dof = params(3);
+        % m = fit(model, 'name1', val1, 'name2', val2, ...)
+        % Finds the MLE. Needs stats toolbox.
+        % Arguments are
+        % data - data(i) = case i
+        %
+        [X, suffStat, method] = process_options(...
+            varargin, 'data', [], 'suffStat', [], 'method', 'mle');
+        assert(statsToolboxInstalled); %#statsToolbox
+        params = mle(X, 'distribution', 'tlocationscale');
+        obj.mu = params(1);
+        obj.sigma2 = params(2);
+        obj.dof = params(3);
     end
       
      

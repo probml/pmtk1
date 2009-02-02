@@ -2,23 +2,10 @@ classdef MvnDist < ParamJointDist
 % multivariate normal p(X|mu,Sigma) 
 
   properties
-    %infEng;
     mu; Sigma;
     prior;
   end
-  
-  %{
-  properties(Hidden = true)
-    domain;
-  end
-  %}
-  
-  %{
-  properties(SetAccess = 'private')
-     ndims;
-  end
-  %}
-  
+ 
   %% main methods
   methods
       
@@ -31,7 +18,6 @@ classdef MvnDist < ParamJointDist
       [m.infEng, m.domain, m.prior] = process_options(varargin, ...
         'infEng', GaussInfEng(), 'domain', 1:numel(mu), 'prior', 'none');
       m.mu = mu; m.Sigma = Sigma;
-      %m.ndims = length(mu);
     end
 
     function [mu,Sigma,domain] = convertToMvnDist(m)
@@ -207,35 +193,32 @@ classdef MvnDist < ParamJointDist
  
 
   methods(Static = true)
-    function suffStat = mkSuffStat(X,weights)
-      % SS.n
-      % SS.xbar = 1/n sum_i X(i,:)'
-      % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k)
-      if(nargin > 1) % weighted sufficient statistics, e.g. for EM
-        suffStat.n = sum(weights,1);
-        suffStat.xbar = sum(bsxfun(@times,X,weights))'/suffStat.n;  % bishop eq 13.20
-        X = bsxfun(@minus,X,suffStat.xbar');
-        suffStat.XX = bsxfun(@times,X,weights)'*X/suffStat.n;
-
-        if(0) % sanity check
-          XXtest = zeros(size(X,2));
-          for i=1:size(X,1)
-            XXtest = XXtest + weights(i)*(X(i,:)'*X(i,:));       % bishop eq 13.21
+      function suffStat = mkSuffStat(X,weights)
+          % SS.n
+          % SS.xbar = 1/n sum_i X(i,:)'
+          % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k)
+          if(nargin > 1) % weighted sufficient statistics, e.g. for EM
+              suffStat.n = sum(weights,1);
+              suffStat.xbar = sum(bsxfun(@times,X,weights))'/suffStat.n;  % bishop eq 13.20
+              X = bsxfun(@minus,X,suffStat.xbar');
+              suffStat.XX = bsxfun(@times,X,weights)'*X/suffStat.n;
+              
+              if(0) % sanity check
+                  XXtest = zeros(size(X,2));
+                  for i=1:size(X,1)
+                      XXtest = XXtest + weights(i)*(X(i,:)'*X(i,:));       % bishop eq 13.21
+                  end
+                  XXtest = XXtest/suffStat.n;
+                  assert(approxeq(XXtest,suffStat.XX));
+              end
+          else
+              n = size(X,1);
+              suffStat.n = n;
+              suffStat.xbar = sum(X,1)'/n; % column vector
+              X = bsxfun(@minus,X,suffStat.xbar');
+              suffStat.XX = (X'*X)/n;
           end
-          XXtest = XXtest/suffStat.n;
-          assert(approxeq(XXtest,suffStat.XX));
-        end
-      else
-        n = size(X,1);
-        suffStat.n = n;
-        %suffStat.X = sum(X,1)'; % column vector
-        suffStat.xbar = sum(X,1)'/n; % column vector
-        %Xc = (X-repmat(suffStat.xbar',n,1));
-        %suffStat.XX = (Xc'*Xc)/n;
-        X = bsxfun(@minus,X,suffStat.xbar');
-        suffStat.XX = (X'*X)/n;
       end
-    end
 
   end
   

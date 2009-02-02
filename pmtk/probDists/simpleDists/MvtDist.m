@@ -36,26 +36,26 @@ classdef MvtDist < ParamDist
     
     
     function L = logprob(obj, X)
-      % L(i) = log p(X(i,:) | params)
-      mu = obj.mu(:)'; % ensure row vector
-      if length(mu)==1
-        X = X(:); % ensure column vector
-      end
-      [N d] = size(X);
-      if length(mu) ~= d
-        error('X should be N x d')
-      end
-      %if statsToolboxInstalled
-      %  L1 = log(mvtpdf(X-repmat(obj.mu,N,1), obj.Sigma, obj.dof));
-      M = repmat(mu, N, 1); % replicate the mean across rows
-      if isnan(obj.Sigma) | obj.Sigma==0
-        L = repmat(NaN, N, 1);
-      else
-        mahal = sum(((X-M)*inv(obj.Sigma)).*(X-M),2);
-        v = obj.dof;
-        L = -0.5*(v+d)*log(1+(1/v)*mahal) - lognormconst(obj);
-        %assert(approxeq(L,L1)) % fails unless Sigma is I
-      end
+        % L(i) = log p(X(i,:) | params)
+        mu = obj.mu(:)'; % ensure row vector
+        if length(mu)==1
+            X = X(:); % ensure column vector
+        end
+        [N d] = size(X);
+        if length(mu) ~= d
+            error('X should be N x d')
+        end
+        %if statsToolboxInstalled
+        %  L1 = log(mvtpdf(X-repmat(obj.mu,N,1), obj.Sigma, obj.dof));
+        M = repmat(mu, N, 1); % replicate the mean across rows
+        if isnan(obj.Sigma) | obj.Sigma==0
+            L = repmat(NaN, N, 1);
+        else
+            mahal = sum(((X-M)*inv(obj.Sigma)).*(X-M),2);
+            v = obj.dof;
+            L = -0.5*(v+d)*log(1+(1/v)*mahal) - lognormconst(obj);
+            %assert(approxeq(L,L1)) % fails unless Sigma is I
+        end
     end
     
 
@@ -90,38 +90,38 @@ classdef MvtDist < ParamDist
   
      
     function mm = marginal(obj, queryVars)
-      % p(Q)
-      checkParamsAreConst(obj)
-      d = ndimensions(obj);
-      if d == 1, error('cannot compute marginal of a 1d rv'); end
-      mu = mean(obj); C = cov(obj);
-      dims = queryVars;
-      mm = MvtDist(obj.dof, mu(dims), C(dims,dims));
-      if length(dims)==1
-        mm = convertToScalarDist(mm);
-      end
+        % p(Q)
+        checkParamsAreConst(obj)
+        d = ndimensions(obj);
+        if d == 1, error('cannot compute marginal of a 1d rv'); end
+        mu = mean(obj); C = cov(obj);
+        dims = queryVars;
+        mm = MvtDist(obj.dof, mu(dims), C(dims,dims));
+        if length(dims)==1
+            mm = convertToScalarDist(mm);
+        end
     end
 
     function mm = conditional(m, visVars, visValues)
-      % p(Xh|Xvis=vis) 
-      checkParamsAreConst(m)
-      d = ndimensions(obj);
-      if d == 1, error('cannot compute conditional of a 1d rv'); end
-      % p(Xa|Xb=b)
-      b = visVars; a = setdiff(1:d, b);
-      dA = length(a); dB = length(b);
-      if isempty(a)
-        muAgivenB = []; SigmaAgivenB  = [];
-      else
-        mu = m.mu(:);
-        xb = visValues;
-        SAA = Sigma(a,a); SAB = Sigma(a,b); SBB = Sigma(b,b);
-        SBBinv = inv(SBB);
-        muAgivenB = mu(a) + SAB*SBBinv*(xb-mu(b));
-        h = 1/(m.dof+dB) * (m.dof + (xb-muB)'*SBBinv*(xb-mu(b)));
-        SigmaAgivenB = h*(SAA - SAB*SBBinv*SAB');
-      end
-      mm = MvtDist(m.dof + dA, muAgivenB, SigmaAgivenB);
+        % p(Xh|Xvis=vis)
+        checkParamsAreConst(m)
+        d = ndimensions(obj);
+        if d == 1, error('cannot compute conditional of a 1d rv'); end
+        % p(Xa|Xb=b)
+        b = visVars; a = setdiff(1:d, b);
+        dA = length(a); dB = length(b);
+        if isempty(a)
+            muAgivenB = []; SigmaAgivenB  = [];
+        else
+            mu = m.mu(:);
+            xb = visValues;
+            SAA = Sigma(a,a); SAB = Sigma(a,b); SBB = Sigma(b,b);
+            SBBinv = inv(SBB);
+            muAgivenB = mu(a) + SAB*SBBinv*(xb-mu(b));
+            h = 1/(m.dof+dB) * (m.dof + (xb-muB)'*SBBinv*(xb-mu(b)));
+            SigmaAgivenB = h*(SAA - SAB*SBBinv*SAB');
+        end
+        mm = MvtDist(m.dof + dA, muAgivenB, SigmaAgivenB);
     end
     
     function xrange = plotRange(obj, sf)

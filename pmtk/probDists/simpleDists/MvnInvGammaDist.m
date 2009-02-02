@@ -61,8 +61,6 @@ classdef MvnInvGammaDist < ParamDist
         
     end
     
-    %% demos
-    methods(Static = true)
-    end
+ 
     
 end

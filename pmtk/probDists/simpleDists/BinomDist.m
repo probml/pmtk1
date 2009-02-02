@@ -71,43 +71,43 @@ classdef BinomDist < ParamDist
        m = floor((obj.N + 1) .* obj.mu);
      end
     
-      function SS = mkSuffStat(obj,X) %#ok
+      function SS = mkSuffStat(obj,X) 
        SS.nsucc = sum(X,1);
        ntrials = size(X,1);
        SS.nfail = ntrials*obj.N - SS.nsucc;
       end
 
-     function obj = fit(obj, varargin)
-       % m = fit(model, 'name1', val1, 'name2', val2, ...)
-       % Arguments are
-       % data - X(i,1) is number of successes out of N
-       % suffStat - struct with nsucc, nfail
-       % 'prior' - 'none' or BetaDist [obj.prior]
-       [X, SS, prior] = process_options(varargin,...
-           'data'       , [],...
-           'suffStat'   , [],...
-           'prior'      , obj.prior);
-       if isempty(SS), SS = mkSuffStat(obj,X); end
-       switch class(prior)
-         case 'char'
-           switch prior
-             case 'none'
-               obj.mu = SS.nsucc ./ (SS.nsucc + SS.nfail);
-             otherwise
-               error(['unknown prior ' prior])
-           end
-         case 'BetaDist' % MAP estimate
-           m = Binom_BetaDist('N', obj.N, 'prior', prior);
-           m = fit(m, 'suffStat', SS);
-           obj.mu = mode(m.muDist);
-           
-           a = prior.a; b = prior.b;
-           mm = (SS.nsucc + a - 1) ./ (SS.nsucc + SS.nfail + a + b - 2);
-           assert(approxeq(mm, obj.mu))
-         otherwise
-            error('unknown prior ')
-       end
-     end
+      function obj = fit(obj, varargin)
+          % m = fit(model, 'name1', val1, 'name2', val2, ...)
+          % Arguments are
+          % data - X(i,1) is number of successes out of N
+          % suffStat - struct with nsucc, nfail
+          % 'prior' - 'none' or BetaDist [obj.prior]
+          [X, SS, prior] = process_options(varargin,...
+              'data'       , [],...
+              'suffStat'   , [],...
+              'prior'      , obj.prior);
+          if isempty(SS), SS = mkSuffStat(obj,X); end
+          switch class(prior)
+              case 'char'
+                  switch prior
+                      case 'none'
+                          obj.mu = SS.nsucc ./ (SS.nsucc + SS.nfail);
+                      otherwise
+                          error(['unknown prior ' prior])
+                  end
+              case 'BetaDist' % MAP estimate
+                  m = Binom_BetaDist('N', obj.N, 'prior', prior);
+                  m = fit(m, 'suffStat', SS);
+                  obj.mu = mode(m.muDist);
+                  
+                  a = prior.a; b = prior.b;
+                  mm = (SS.nsucc + a - 1) ./ (SS.nsucc + SS.nfail + a + b - 2);
+                  assert(approxeq(mm, obj.mu))
+              otherwise
+                  error('unknown prior ')
+          end
+      end
      
     
            

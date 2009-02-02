@@ -66,11 +66,4 @@ classdef UnifDist < ParamDist
     
 
   end % methods
-
-  %% Demos
-  methods
-    
-  end
-  
-  
 end
