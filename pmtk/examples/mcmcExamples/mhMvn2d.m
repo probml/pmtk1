@@ -1,6 +1,6 @@
 %% MH Sampling from a 2d Gaussians
 % We use a N(0, sigma*eye(2)) proposal and see the effect of changing sigma
-
+cls;
 Sigma = [1 -0.5; -0.5 1];
 mu = [1; 1];
 N = 500; 

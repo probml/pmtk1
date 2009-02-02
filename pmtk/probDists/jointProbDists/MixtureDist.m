@@ -148,12 +148,16 @@ classdef MixtureDist < ParamJointDist
             end
         end
          
-         function postQuery = marginal(model, queryVars)
-         % keep only the queryVars mixture components - barren node removal   
-             model.distributions = model.distributions{queryVars};
-             model.mixingWeights = marginal(model.mixingWeights,queryVars);
-             postQuery = model;
-         end
+        function postQuery = marginal(model, queryVars)
+            % keep only the queryVars mixture components - barren node removal
+            if(numel(queryVars == 1))
+                postQuery = model.distributions{queryVars};
+            else
+                model.distributions = model.distributions{queryVars};
+                model.mixingWeights = marginal(model.mixingWeights,queryVars);
+                postQuery = model;
+            end
+        end
          
          function S = sample(model,nsamples)
               if nargin < 2, nsamples = 1; end
@@ -171,6 +175,10 @@ classdef MixtureDist < ParamJointDist
             else
                 d = 0;
             end
+         end
+         
+         function d = ndistrib(model)
+            d = max(1,numel(model.distributions)); 
          end
          
          

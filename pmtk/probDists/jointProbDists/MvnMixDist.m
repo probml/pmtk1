@@ -27,7 +27,7 @@ classdef MvnMixDist < MixtureDist
          
          function mu = mean(m)
              mu = zeros(ndimensions(m),ndistrib(m));
-             for k=1:numel(m.distributions)
+             for k=1:ndistrib(m)
                  mu(:,k) = colvec(m.distributions{k}.mu);
              end
              
@@ -43,6 +43,7 @@ classdef MvnMixDist < MixtureDist
                  C = C + sub(mean(m.mixingWeights),k)*(m.distributions{k}.Sigma + mu*mu');
              end
          end
+         
          
          function xrange = plotRange(obj, sf)
              if nargin < 2, sf = 3; end

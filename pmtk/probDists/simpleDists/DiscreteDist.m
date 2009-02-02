@@ -190,7 +190,7 @@ classdef DiscreteDist  < ParamDist
     end
     
     function m = marginal(obj,queryvars)
-       m = DiscreteDist('mu',obj.mu(queryvars,:),'support',obj.support,'prior',obj.prior); 
+       m = DiscreteDist('mu',normalize(obj.mu(queryvars,:),1),'support',obj.support,'prior',obj.prior); 
     end
     
   end

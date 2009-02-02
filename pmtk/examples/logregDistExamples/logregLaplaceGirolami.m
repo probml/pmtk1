@@ -32,7 +32,7 @@ figure;
 m = fit(LogregDist, 'X', X, 'y', y+1);
 pred = predict(m,grid);
 
-contour(x1,x2,reshape(pred.mu(:,2),[nx,nx]),30);
+contour(x1,x2,reshape(pred.mu(2,:)',[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
@@ -78,7 +78,7 @@ figure;
 subplot(2,2,1)
 pred = predict(m,grid);
 
-contour(x1,x2,reshape(pred.mu(:,2),[nx,nx]),30);
+contour(x1,x2,reshape(pred.mu(2,:)',[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
@@ -100,7 +100,7 @@ predDist = predict(m,grid,'method','mc','nsamples',S);
 % title('decision boundary for sampled w')
 % subplot(2,2,3)
 
-meanPred = mean(pred);
+meanPred = mean(pred)';
 contour(x1,x2,reshape(meanPred(:,1),[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
@@ -111,7 +111,7 @@ title('MC approx of p(y=1|x)')
 subplot(2,2,4)
 pred = predict(m,grid,'method','integral');
 
-contour(x1,x2,reshape(pred.mu(:,2),[nx,nx]),30);
+contour(x1,x2,reshape(pred.mu(2,:)',[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
