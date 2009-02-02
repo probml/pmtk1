@@ -144,7 +144,7 @@ end
 
 
 function classNames = shortenClassNames(classNames)
-    remove = {'Dist'};            % add to this list to remove other partial strings - case sensitive
+    remove = {'Dist','_'};            % add to this list to remove other partial strings - case sensitive
     for i=1:numel(remove)
         ndx = strfind(classNames,remove{i});
         for j=1:numel(classNames)

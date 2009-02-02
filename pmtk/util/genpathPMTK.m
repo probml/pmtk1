@@ -1,6 +1,6 @@
-function p = genpathKPM(d)
-% genpathKPM Like built-in genpath, but omits directories whose name is 'Old', 'old' or 'CVS'
-% function p = genpathKPM(d)
+function p = genpathPMTK(d)
+% genpathPMTK Like built-in genpath, but omits directories whose name is 'Old', 'old' or 'CVS'
+% function p = genpathPMTK(d)
 
 if nargin==0,
   p = genpath(fullfile(matlabroot,'toolbox'));
@@ -41,7 +41,7 @@ for i=1:length(dirs)
          ~strncmp(dirname,'+',1) && ...
 	 isempty(strfind(dirname, 'Old')) && ...
 	 isempty(strfind(dirname, 'old')) 
-      p = [p genpathKPM(fullfile(d,dirname))]; % recursive calling of this function.
+      p = [p genpathPMTK(fullfile(d,dirname))]; % recursive calling of this function.
    end
 end
 
