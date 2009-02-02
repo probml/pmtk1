@@ -1,4 +1,4 @@
-classdef GridDist  < NonParamDist
+classdef GridDist  < ParamFreeDist
 
   properties
     density;
@@ -13,7 +13,8 @@ classdef GridDist  < NonParamDist
       % logDensityFn(X(i,:)) is the unnormalized log density at specifed vector
       %   or we can pass in normalized density(i,j) as a vector or matrix.
       % range1 = vector of values on which x1 is evaluated
-      % range2 (optional) = vector of values on which x2 is evaluated
+      % range2 (optional) = vector of values on which x2 is 
+      if(nargin == 0), return; end 
       if nargin < 3, range2 = []; end
       obj.range1 = range1;
       obj.range2 = range2;

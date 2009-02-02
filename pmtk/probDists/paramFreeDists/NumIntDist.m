@@ -1,4 +1,4 @@
-classdef NumIntDist  < NonParamDist
+classdef NumIntDist  < ParamFreeDist
    % Compute posterior quantities using numerical integration (up to 3d)
    
   properties

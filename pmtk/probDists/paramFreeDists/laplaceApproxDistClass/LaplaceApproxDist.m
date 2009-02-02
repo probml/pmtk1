@@ -7,6 +7,7 @@ classdef LaplaceApproxDist  < MvnDist
    
   methods
     function obj = LaplaceApproxDist(logdensityFn, initVal)
+      if nargin == 0, obj; return;end
       [obj.mu, obj.Sigma, obj.logZ] = laplaceApprox(logdensityFn, initVal);
     end
     

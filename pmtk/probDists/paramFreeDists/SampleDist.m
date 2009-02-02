@@ -1,4 +1,4 @@
-classdef SampleDist < NonParamDist
+classdef SampleDist < ParamFreeDist
   % Sample based representation of a pdf
   % May represent multiple distributions in pages so long as these are all
   % of he same size, e.g. the same number of samples drawn for each and each
