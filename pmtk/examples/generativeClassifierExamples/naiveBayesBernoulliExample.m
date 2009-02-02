@@ -1,4 +1,4 @@
-%% Classify The Mnist Digits using a Naive Bayes Classifier
+%% Classify Mnist Digits Using a Naive Bayes Classifier
 
 binary = true;
 Ntrain = 5000;

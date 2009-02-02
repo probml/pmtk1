@@ -2,7 +2,6 @@
 % Multivariate Gaussian class cond densities
 Ntrain = 100; Ntest = 100;
 Nclasses = 10;
-%[Xtrain,Xtest,ytrain,ytest] = setupMnist(binary, Ntrain, Ntest);
 d = 5; pi = (1/Nclasses)*ones(1,Nclasses); % uniform class labels
 Xtrain = rand(Ntrain,d); Xtest = rand(Ntest,d);
 ytrain = sampleDiscrete(pi,Ntrain,1);
@@ -11,9 +10,9 @@ classCond = cell(1,Nclasses);
 prior = MvnInvWishartDist('mu', zeros(d,1), 'Sigma', eye(d), 'dof', d+1, 'k', 0.01);
 for bayes=0:1
     if bayes
-        for c=1:Nclasses, classCond{c} = Mvn_MvnInvWishartDist(prior); end
+        classCond = copy(Mvn_MvnInvWishartDist(prior),1,Nclasses);
     else
-        for c=1:Nclasses, classCond{c} = MvnDist([],[],'prior', prior); end
+        classCond = copy(MvnDist([],[],'prior', prior),1,Nclasses);
     end
     if bayes
         alpha = 1*ones(1,Nclasses);
@@ -24,5 +23,4 @@ for bayes=0:1
     model = GenerativeClassifierDist('classPrior', classPrior, 'classConditionals', classCond);
     model = fit(model,'X',Xtrain,'y',ytrain);
     pred  = predict(model,Xtest);
-    errorRate = mean(mode(pred) ~= ytest)
 end

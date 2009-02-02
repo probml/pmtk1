@@ -42,17 +42,7 @@ classdef SampleDist < NonParamDist
       mu = squeeze(median(obj.samples))';
     end
     
-    function m = mode(obj)
-    % m is of size npdfs-by-d
-    warning('cannot find mode of a bag of samples');
-      if(ndims(obj.samples) == 3)
-         [val,m] = max(mean(obj),[],2);
-         m = m';
-      else
-        [val, m] = max(obj.samples); % mode is most probable, not largest!
-        m = squeeze(m)';
-      end
-    end
+   
     
     function v = var(obj)
     % v is of size npdfs-by-d    

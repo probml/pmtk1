@@ -108,7 +108,7 @@ classdef FwdBackInfEng < InfEng
         % runs viterbi
             checkParams(eng);
             if(isempty(eng.viterbiPath))
-                [path,j,j] = hmmViterbiC(log(eng.pi+eps),log(eng.A+eps),log(eng.B+eps));
+                [path,j,j] = hmmViterbiC(log(eng.pi),log(eng.A),log(eng.B));
                 eng.viterbiPath = path;
             else
                 path = eng.viterbiPath; 

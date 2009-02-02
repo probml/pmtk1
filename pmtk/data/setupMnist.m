@@ -1,8 +1,9 @@
-function [Xtrain,Xtest,ytrain,ytest] = setupMnist(binary, Ntrain, Ntest)
+function [Xtrain,Xtest,ytrain,ytest] = setupMnist(binary, Ntrain, Ntest,full)
 
 if nargin < 1, binary = false; end
 if nargin < 2, Ntrain = 60000; end
 if nargin < 3, Ntest = 10000; end
+if nargin < 4, full  = false; end
 
 
 load mnistAll
@@ -20,5 +21,10 @@ if(binary)
 end
 ytrain = double(ytrain);
 ytest  = double(ytest);
+
+if(full)
+   Xtrain = double(Xtrain);
+   Xtest  = double(Xtest);
+end
 
 end
