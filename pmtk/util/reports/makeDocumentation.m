@@ -14,7 +14,7 @@ function makeDocumentation(destination)
         excludeList = [excludeList,getText('trivialFunctionList.txt')];
     end
 
-    makeRootOnly = true;                                       % If true, only the root html file is generated, nothing else is published. 
+    makeRootOnly = false;                                       % If true, only the root html file is generated, nothing else is published. 
     
     originalDirectory = pwd;                                    % save current directory
     if(nargin == 0), destination = defaultDocDir;  end          % this is where the docs will live
