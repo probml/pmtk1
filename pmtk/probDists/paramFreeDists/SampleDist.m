@@ -120,7 +120,7 @@ classdef SampleDist < ParamFreeDist
       assert(Ndistrib==1)
       p = zeros(K, Ndims);
       for d=1:Ndims
-        p(:,d) = int_hist(obj.samples(:,d), K)'/Nsamples;
+        p(:,d) = histc(obj.samples(:,d), 1:K)'/Nsamples;
       end
     end
     

@@ -58,7 +58,7 @@ classdef FwdBackInfEng < InfEng
                 eng.A =  A ;
             end
             if(nargin > 2), eng.B =  B ; end 
-            %mex hmmFwdBackC.c;
+           
             
         end
         
@@ -108,7 +108,7 @@ classdef FwdBackInfEng < InfEng
         % runs viterbi
             checkParams(eng);
             if(isempty(eng.viterbiPath))
-                [path,j,j] = hmmViterbiC(log(eng.pi),log(eng.A),log(eng.B));
+                [path,j,j] = hmmViterbi(log(eng.pi),log(eng.A),log(eng.B));
                 eng.viterbiPath = path;
             else
                 path = eng.viterbiPath; 
