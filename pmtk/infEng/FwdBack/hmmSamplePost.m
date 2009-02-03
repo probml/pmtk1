@@ -7,13 +7,13 @@ function [samples] = hmmSamplePost(initDist, transmat, obslik, nsamples)
 alpha = hmmFilter(initDist, transmat, obslik);
 samples = zeros(T, nsamples);
 dist = normalize(alpha(:,T));
-samples(T,:) = sample(dist, nsamples);
+samples(T,:) = sampleDiscrete(dist, 1,nsamples);
 for t=T-1:-1:1
   tmp = obslik(:,t+1) ./ (alpha(:,t+1)+eps); % b_{t+1}(j) / alpha_{t+1}(j)
   xi_filtered = transmat .* (alpha(:,t) * tmp');
   for n=1:nsamples
     dist = xi_filtered(:,samples(t+1,n));
-    samples(t,n) = sample(dist);
+    samples(t,n) = sampleDiscrete(dist);
   end
 end
 
