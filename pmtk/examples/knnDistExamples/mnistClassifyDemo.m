@@ -1,7 +1,7 @@
 %% Classify the Mnist Digits Using KNN
 % Takes about 3 minutes to run and gives an error rate of 2.31%
 %% Load Data
-load mnistAll;
+load mnistALL;
 trainndx = 1:60000; testndx =  1:10000;
 ntrain = length(trainndx);
 ntest = length(testndx);

@@ -6,7 +6,7 @@ if nargin < 3, Ntest = 10000; end
 if nargin < 4, full  = false; end
 
 
-load mnistAll
+load mnistALL
 Xtrain = reshape(mnist.train_images(:,:,1:Ntrain),28*28,Ntrain)';
 Xtest = reshape(mnist.test_images(:,:,1:Ntest),28*28,Ntest)';
 ytrain = (mnist.train_labels);

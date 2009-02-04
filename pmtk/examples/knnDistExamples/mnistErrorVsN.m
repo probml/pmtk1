@@ -8,7 +8,7 @@
 %%
 run = false;  % set to true to regenerate the results
 if(run)
-load mnistAll;
+load mnistALL;
 setSeed(0);
 ntest  = 1000;
 Xtrain = sparse(double(reshape(mnist.train_images,28*28,[])'));

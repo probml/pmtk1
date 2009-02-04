@@ -3,7 +3,7 @@
 % Code by Matthew Dunham
 %% Load Data
 tic
-load mnistAll;
+load mnistALL;
 if 0
   trainndx = 1:60000; testndx =  1:10000;
 else

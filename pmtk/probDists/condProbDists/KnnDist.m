@@ -113,8 +113,14 @@ classdef KnnDist < CondProbDist
                 batch = []; return;
             end
             prop = 0.20; % proportion of largest possible array size to use
-            batchSize = ceil( (prop*subd(memory,'MaxPossibleArrayBytes')/8) /size(obj.examples,1));
-            batch = start:min(start+batchSize-1,ntest);
+            if(ispc)
+                batchSize = ceil( (prop*subd(memory,'MaxPossibleArrayBytes')/8) /size(obj.examples,1));
+                batch = start:min(start+batchSize-1,ntest);
+            else
+                maxsize = 6e6;
+                batchSize = ceil(maxsize/size(obj.examples,1));
+                batch = start:min(start+batchSize-1,ntest);
+            end
         end
         
         function obj = setLocalKernel(obj,kernelName)
