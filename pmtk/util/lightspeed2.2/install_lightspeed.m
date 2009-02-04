@@ -100,7 +100,7 @@ if ispc
     mex randgamma.c util.obj random.c
     mex sample_hist.c util.obj random.c
   end
-  mex repmat.c mexutil.obj
+  %mex repmat.c mexutil.obj
   mex trigamma.c util.obj
   try
     % standalone programs
