@@ -1,4 +1,4 @@
-function report = makeAuthorReport(fname)
+function report = makeAuthorReport(location)
 % Generate an HTML report of the files contributed by other authors.    
    
    
