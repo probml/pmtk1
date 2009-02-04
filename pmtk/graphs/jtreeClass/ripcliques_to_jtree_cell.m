@@ -12,8 +12,8 @@ function [jtree]=ripcliques_to_jtree_cell(re_index_cliques)
 %   vertices is [6 5 3 1 4 2], then a clique comprised of {6,1} will precede 
 %   a clique comprised of {4,2} since 6 and 1 precede 4 and 2 in the ordering [6 5 3 1 4 2]. 
 
-%#author Helen Armstrong
-%#url http://www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf -
+% author Helen Armstrong
+% url http://www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf -
 
 t=size(re_index_cliques,2);
 score=zeros(1,t);

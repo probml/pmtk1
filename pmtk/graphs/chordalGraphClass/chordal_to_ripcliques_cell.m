@@ -19,8 +19,8 @@ function [re_index_cliques, cliques]=chordal_to_ripcliques_cell(g, order)
 % variables v_2, v_4, v_5 and v_7 with respect to the original 
 % ordering of the adjacency matrix, and not the perfect numbering. 
 
-%#author Helen Armstrong
-%#url http://www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf 
+% author Helen Armstrong
+% url http://www.library.unsw.edu.au/~thesis/adt-NUN/uploads/approved/adt-NUN20060901.134349/public/01front.pdf 
 
 p=size(g,1);
 pa=cell(1,p); 
