@@ -3,6 +3,7 @@ function removePMTKmex()
     savedDir = pwd;
     mfiles = findAllFilesWithTag('#PMTKmex');
     mfiles(ismember(mfiles,'compilePMTKmex.m')) = [];
+    mfiles(ismember(mfiles,'removePMTKmex.m' )) = [];
     for i=1:numel(mfiles)
         file = mfiles{i};
         mexFileName = [file(1:end-1),mexext];
@@ -21,11 +22,12 @@ function removePMTKmex()
     end
     
     if ~ismac
+        fprintf('\n\n ...removing lightspeed mex files...\n\n');
         cd(fullfile(PMTKroot,'util','lightspeed2.2'));
         files = ls(['*.',mexext]);
         clear mex;
-        for i=1:numel(files)
-           mexFileName = files{i};
+        for i=1:size(files,1)
+           mexFileName = deblank(files(i,:));
            try
                 fprintf('Removing %s\n',mexFileName);
                 delete(mexFileName);
