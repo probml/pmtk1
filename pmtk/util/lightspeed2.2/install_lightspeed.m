@@ -9,7 +9,7 @@
 
 
 fprintf('Compiling lightspeed mex files...\n');
-fprintf('Change directory to lightspeed for this to work.\n');
+
 
 % Matlab version
 v = sscanf(version,'%d.%d.%*s (R%d) %*s');
@@ -153,4 +153,4 @@ end
 
 addpath(genpath(pwd))
 fprintf('Done.\n');
-fprintf('Type "test_lightspeed" to verify the installation.\n');
+%fprintf('Type "test_lightspeed" to verify the installation.\n');
