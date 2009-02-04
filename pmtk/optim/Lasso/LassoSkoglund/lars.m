@@ -27,8 +27,8 @@ function beta = lars(X, y, method, stop, useGram, Gram, trace)
 %    possibly including interpolation to achieve sub-iteration accuracy.
 % Reference: 'Least Angle Regression' by Bradley Efron et al, 2003.
 
-%#author Karl Skoglund
-%#url http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3897
+% author Karl Skoglund
+% url http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3897
 % IMM, DTU, kas@imm.dtu.dk
 
 %% Input checking
