@@ -1,67 +1,49 @@
-function [w,wp,m] = LassoShooting(X, y, lambda,varargin)
-% This function computes the Least Squares parameters
-% with a penalty on the L1-norm of the parameters
-%
-% Method used:
-%   The Shooting method of [Fu, 1998]
-%
-% Modifications:
-%   We precompute the Hessian diagonals, since they do not 
-%   change between iterations
-[maxIter,verbose,optTol,zeroThreshold] = process_options(varargin,'maxIter',10000,'verbose',2,'optTol',1e-5,'zeroThreshold',1e-4);
-[n p] = size(X);
-
-% Start from the Least Squares solution
-beta = (X'*X + lambda*eye(p))\(X'*y);
-% Start the log
-if verbose==2
-    w_old = beta;
-    fprintf('%10s %10s %15s %15s %15s\n','iter','shoots','n(w)','n(step)','f(w)');
-    k=1;
-    wp = beta;
-end
-
-m = 0;
-
-XX2 = X'*X*2;
-Xy2 = X'*y*2;
-while m < maxIter
+function [beta,iter] = LassoShooting(X, y, lambda,varargin)
+    % min_w ||Xw-y||_2^2 + lambda ||w||_1
+    % Coordinate descent method  ("Shooting"), [Fu, 1998]
     
-    
-    
-    beta_old = beta;
-    for j = 1:p
-        
-        % Compute the Shoot and Update the variable
-        S0 = sum(XX2(j,:)*beta) - XX2(j,j)*beta(j) - Xy2(j);
-        if S0 > lambda
-            beta(j,1) = (lambda - S0)/XX2(j,j);
-        elseif S0 < -lambda
-            beta(j,1) = (-lambda - S0)/XX2(j,j);
-        elseif abs(S0) <= lambda
-            beta(j,1) = 0;
+    [n p] = size(X);
+    [maxIter, optTol, verbose, beta,offsetAdded] = ...
+        process_options(varargin, 'maxIter',10000, 'optTol',1e-5, 'verbose', 0,...
+        'w0', [],'offsetAdded',false);
+    if isempty(beta)
+        if(offsetAdded)
+            lam = repmat(lambda,p,1); lam(1) = 0;
+            beta = (X'*X + diag(sqrt(lam)))\(X'*y);
+        else
+            beta = (X'*X + sqrt(lambda)*eye(p))\(X'*y);
         end
-        
+    end
+    iter = 0;
+    XX2 = X'*X*2;
+    Xy2 = X'*y*2;
+    converged = 0;
+    while ~converged && (iter < maxIter)
+        beta_old = beta;
+        if(offsetAdded)  % don't penalize offset, i.e. use a lambda value of 0
+            c1 = Xy2(1) - sum(XX2(1,:)*beta) + XX2(1,1)*beta(1);
+            a1 = XX2(1,1);
+            if c1 == 0
+                beta(1,1) = 0;
+            else
+                beta(1,1) = c1/a1;
+            end
+            start = 2;
+        else
+            start = 1;
+        end
+        for j = start:p
+            cj = Xy2(j) - sum(XX2(j,:)*beta) + XX2(j,j)*beta(j);
+            aj = XX2(j,j);
+            if cj < -lambda
+                beta(j,1) = (cj + lambda)/aj;
+            elseif cj > lambda
+                beta(j,1) = (cj  - lambda)/aj;
+            else
+                beta(j,1) = 0;
+            end
+        end
+        iter = iter + 1;
+        converged = (sum(abs(beta-beta_old)) < optTol);
     end
     
-    m = m + 1;
-    
-    % Update the log
-    if verbose==2
-        fprintf('%10d %10d %15.2e %15.2e %15.2e\n',m,m*p,sum(abs(beta)),sum(abs(beta-w_old)),...
-            sum((X*beta-y).^2)+lambda*sum(abs(beta)));
-        w_old = beta;
-        k=k+1;
-        wp(:,k) = beta;
-    end
-    % Check termination
-    if sum(abs(beta-beta_old)) < optTol
-        break;
-    end
-    
-    
-end
-if verbose
-fprintf('Number of iterations: %d\nTotal Shoots: %d\n',m,m*p);
-end
-w = beta;

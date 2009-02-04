@@ -1,9 +1,7 @@
 function [w,exitflag] = lassoLin(X, y, t,varargin)
 % Lasso using positive variables,
 
-%#url http://www.cs.ubc.ca/~schmidtm/Software/lasso.html
-%#author Mark Schmidt
-%#modified  Kevin Murphy
+
 
 [maxIter,verbose,display,optTol] = process_options(varargin,'maxIter',10000,...
    'verbose','1','Display','none','optTol',0.0000001);

@@ -1,9 +1,6 @@
 function [w] = lassoExp(X, y, t,varargin)
-% Naive implementation of Lassot
+% Naive implementation of Lasso
 
-%#url http://www.cs.ubc.ca/~schmidtm/Software/lasso.html
-%#author Mark Schmidt
-%#modified  Kevin Murphy
 
 [maxIter,verbose,display] = process_options(varargin,'maxIter',10000,'verbose','1','Display','none');
 [n p] = size(X);
