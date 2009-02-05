@@ -1,6 +1,5 @@
+%% Illustrate the Robustness of the T-Distribution Compared to the Gaussian.
 function gaussVsToutlierDemo
-% Illustrate the robustness of the t-distribution compared to the Gaussian.
-% Written by Matthew Dunham
 warning('off','stats:tlsfit:IterOrEvalLimit');
 n = 30;
 setSeed(8);

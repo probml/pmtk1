@@ -1,3 +1,4 @@
+%% Linear Regression with Various Basis Expansions
 function linregBasis
     demoBasisSimple();
     demoBasis();

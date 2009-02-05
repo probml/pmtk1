@@ -1,3 +1,4 @@
+%% UgmGaussDist Exhaustive Search of the Model Space
 function demoPostModelsExhaustive(varargin)
     % Examples
     % demoPostModelsExhaustive('n',10,'d',5,'graphType','chain')

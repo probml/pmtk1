@@ -1,3 +1,4 @@
+%% Fit Linear Regression Models with Various Polynomial Basis Expansions
 clear;
 degrees = [1,2,30];
 

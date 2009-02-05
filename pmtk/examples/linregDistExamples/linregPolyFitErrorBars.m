@@ -1,3 +1,4 @@
+%% Linear Regression with a Polynomial Basis Expansion and Error Bars
 function hh=linregPolyFitErrorBars(varargin)
     [prior] = process_options(varargin, 'prior', 'mvnIG');
     [xtrain, ytrain, xtest, ytestNoisefree, ytestNoisy, sigma2] = polyDataMake(...

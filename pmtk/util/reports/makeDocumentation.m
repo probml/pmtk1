@@ -13,6 +13,9 @@ function makeDocumentation(destination)
     if(exist('trivialFunctionList.txt','file'))
         excludeList = [excludeList,getText('trivialFunctionList.txt')];
     end
+    
+    brokenTag     = '%#broken';
+    inprogressTag = '%#inprogress';
 
     makeRootOnly = false;                                       % If true, only the root html file is generated, nothing else is published. 
     
@@ -31,19 +34,18 @@ function makeDocumentation(destination)
         if(~isempty(entry.m))                                   % if it contains m-files loop over them
             [exdirName,viewInfo(demoCounter).primaryClassName] = getPrimaryClass(entry.path);
             for j=1:numel(entry.m)                              % for every mfile
-                 if(~tagsearch(entry.m{j},'#broken'))
-                 [viewInfo(demoCounter).functionName    ,...
-                 viewInfo(demoCounter).title            ,...
-                 viewInfo(demoCounter).description      ,...
-                 viewInfo(demoCounter).functionsUsed    ,...
-                 viewInfo(demoCounter).classesUsed      ,...
-                 viewInfo(demoCounter).evalCode] = getDemoInfo(entry.m{j});
-                
-                 viewInfo(demoCounter).htmlLink = ['./',exdirName,'/',viewInfo(demoCounter).functionName,'.html'];
-                 viewInfo(demoCounter).outputDir = fullfile(destination,destRoot,exdirName);  % publish to here
-                 demoCounter = demoCounter + 1;
-                 end
-                  
+                if(~tagsearch(entry.m{j},brokenTag) && ~tagsearch(entry.m{j},inprogressTag))
+                    [viewInfo(demoCounter).functionName    ,...
+                        viewInfo(demoCounter).title            ,...
+                        viewInfo(demoCounter).description      ,...
+                        viewInfo(demoCounter).functionsUsed    ,...
+                        viewInfo(demoCounter).classesUsed      ,...
+                        viewInfo(demoCounter).evalCode] = getDemoInfo(entry.m{j});
+                    
+                    viewInfo(demoCounter).htmlLink = ['./',exdirName,'/',viewInfo(demoCounter).functionName,'.html'];
+                    viewInfo(demoCounter).outputDir = fullfile(destination,destRoot,exdirName);  % publish to here
+                    demoCounter = demoCounter + 1;
+                end
             end
        
         end
