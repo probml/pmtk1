@@ -1,4 +1,5 @@
 %% Test EnumInfEng 
+%#testPMTK
 [dgm] = mkSprinklerDgm;
 dgm.infEng = EnumInfEng;
 Tfac = convertToTabularFactor(dgm);

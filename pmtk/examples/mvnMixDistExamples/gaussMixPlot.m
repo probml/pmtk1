@@ -1,5 +1,5 @@
 %% Plot a Mixture of Gaussians
-
+%#testPMTK
 mu1 = [0.22 0.45]';
 mu2 = [0.5 0.5]';
 mu3 = [0.77 0.55]';

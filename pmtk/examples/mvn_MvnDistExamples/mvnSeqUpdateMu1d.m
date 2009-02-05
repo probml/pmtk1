@@ -1,4 +1,5 @@
 %% Sequential Updating of mu for fixed sigma
+%#testClass
 setSeed(1);
 mutrue = 5; Ctrue = 10;
 mtrue = MvnDist(mutrue, Ctrue);

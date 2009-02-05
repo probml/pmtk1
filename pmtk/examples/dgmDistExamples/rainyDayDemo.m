@@ -3,6 +3,7 @@
 %   \  /  \
 %    v    v
 %    R    S
+%#testPMTK
 V = 1; G = 2; R = 3; S = 4;
 dag = zeros(4,4);
 dag(V,R) = 1; dag(G,[R S])=1;

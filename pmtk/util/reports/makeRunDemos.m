@@ -4,12 +4,13 @@ function makeRunDemos()
 %
 % Version 1.0
     
-    excludeTag = '%#exclude';   % do not include in runDemos
-    slowTag    = '%#slow';      % include in runDemos but comment out with slow tag
-    brokenTag  = '%#broken';    % include in runDemos but comment out with broken tag
+    excludeTag = '%#exclude';       % do not include in runDemos
+    slowTag    = '%#slow';          % include in runDemos but comment out with slow tag
+    brokenTag  = '%#broken';        % include in runDemos but comment out with broken tag
+    inprogressTag = '%#inprogress';
 
     reportDir = fileparts(which('makeRunDemos'));
-    cd(reportDir);  cd ..;cd ..;
+    cd(reportDir);  cd ..;
     
     if(exist('runDemos.m','file'))
         if(exist('runDemos.old','file'))
@@ -20,7 +21,7 @@ function makeRunDemos()
     fid = fopen('runDemos.m','w+');
     fprintf(fid,'%%%% Run Every Demo\n\n');
     
-    info = dirinfo('./examples');
+    info = dirinfo('../examples');
     
     for i=1:numel(info)
        entry = info(i);
@@ -36,13 +37,16 @@ function makeRunDemos()
                     if(~tagsearch(entry.m{j},excludeTag))
                         slow = tagsearch(entry.m{j},slowTag);
                         broken = tagsearch(entry.m{j},brokenTag);
-                        if(slow || broken), fprintf(fid,'%%'); end
+                        inprogress = tagsearch(entry.m{j},inprogressTag);
+                        if(slow || broken || inprogress), fprintf(fid,'%%'); end
                         mfile = entry.m{j};
                         fprintf(fid,'%s',mfile(1:end-2));
                         if(broken)
                             fprintf(fid,' - broken!\n');
                         elseif(slow)
                             fprintf(fid,' - slow!\n');
+                        elseif(inprogress)
+                            fprintf(fid,' - not yet finished\n');
                         else
                             fprintf(fid,'\n');
                         end 

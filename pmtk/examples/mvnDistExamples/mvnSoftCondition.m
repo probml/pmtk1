@@ -1,4 +1,5 @@
 %% Soft Conditioning Demo
+%#testPMTK
 setSeed(0);
 muTrue = [0.5 0.5]'; Ctrue = 0.1*[2 1; 1 1];
 mtrue = MvnDist(muTrue, Ctrue);

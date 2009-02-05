@@ -1,5 +1,5 @@
-%% Inherited disease example
-
+%% Inherited Disease DGM Example
+%#testPMTK
 G1 = 1; G2 = 2; G3 = 3;
 X1 = 4; X2 = 5; X3 = 6;
 

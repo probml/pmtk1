@@ -1,4 +1,5 @@
 %% Fit a Mixture of Gaussians to the Old Faithful Data Set
+%#testPMTK
 cls;
 setSeed(1);
 load oldFaith;

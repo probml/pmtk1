@@ -1,6 +1,6 @@
 %%  A Simple Test of the HmmDist Class
+%#testPMTK
 %% Discrete Observations
-profile on;
 setSeed(0);
 trueObsModel = {DiscreteDist('mu',ones(6,1)./6       ,'support',1:6)
     DiscreteDist('mu',[ones(5,1)./10;0.5],'support',1:6)};
@@ -11,7 +11,7 @@ trueModel = HmmDist('startDist'     ,trueStartDist,...
     'transitionDist',trueTransDist,...
     'emissionDist'  ,trueObsModel);
 
-nsamples = 200; length1 = 13; length2 = 30;
+nsamples = 20; length1 = 13; length2 = 30;
 [observed1,hidden1] = sample(trueModel,nsamples/2,length1);
 [observed2,hidden2] = sample(trueModel,nsamples/2,length2);
 observed = [num2cell(squeeze(observed1),1)';num2cell(squeeze(observed2),1)'];
@@ -30,7 +30,7 @@ trueStartDist = DiscreteDist('mu',[0.5;0.5],'support',1:2);
 trueModel = HmmDist('startDist'     ,trueStartDist,...
     'transitionDist',trueTransDist,...
     'emissionDist'  ,trueObsModel);
-nsamples = 200; length = 20;
+nsamples = 20; length = 20;
 [observed,trueHidden] = sample(trueModel,nsamples,length);
 model = HmmDist('emissionDist',MvnDist(),'nstates',2);
 model = fit(model,'data',observed);
@@ -44,7 +44,7 @@ end
 pi = DiscreteDist('mu',normalize(ones(nstates,1)));
 A = DiscreteDist('mu',normalize(rand(nstates),1));
 trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
-[observed,hidden] = sample(trueModel,1,1000);
+[observed,hidden] = sample(trueModel,1,500);
 model = HmmDist('emissionDist',MvnMixDist('nmixtures',nmixcomps,'verbose',false,'nrestarts',1),'nstates',nstates);
 model = fit(model,'data',observed,'maxIter',20);
 %% DiscreteMixDist Observations
@@ -57,7 +57,6 @@ end
 pi = DiscreteDist('mu',normalize(rand(nstates,1)));
 A = DiscreteDist('mu',normalize(rand(nstates),1));
 trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
-[observed,hidden] = sample(trueModel,1,1000);
+[observed,hidden] = sample(trueModel,1,500);
 model = HmmDist('emissionDist',DiscreteMixDist('nmixtures',nmixcomps,'verbose',false),'nstates',nstates);
 model = fit(model,'data',observed,'maxIter',20);
-profile viewer

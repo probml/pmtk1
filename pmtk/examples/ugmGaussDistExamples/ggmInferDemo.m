@@ -1,5 +1,5 @@
 %% Inference in GGMs
-
+%#testPMTK
 d = 10;
 G = UndirectedGraph('type', 'loop', 'nnodes', d);
 ggm = UgmGaussDist(G, [], []);

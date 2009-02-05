@@ -1,5 +1,5 @@
 %% Plot Predictive Distribution of a KNN Classifer
-% 
+%#testPMTK
 load knnClassify3C
 figure; hold on;
 colors = {'or','ob','og'};

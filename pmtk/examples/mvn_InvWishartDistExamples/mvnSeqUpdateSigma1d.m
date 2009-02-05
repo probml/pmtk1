@@ -1,4 +1,5 @@
 %% Sequential Updating of Sigma in 1d given fixed mean
+%#testPMTK
 nu = 0.001; S = 0.001; 
 setSeed(1);
 mutrue = 5; Ctrue = 10;

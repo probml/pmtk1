@@ -1,6 +1,6 @@
 %% Inference in undirected version of sprinkler network
 % Compare to sprinklerDGMdemo
-
+%#testPMTK
 
 dgm = mkSprinklerDgm();
 ugm = convertToUgm(dgm);

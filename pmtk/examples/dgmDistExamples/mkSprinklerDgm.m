@@ -9,6 +9,7 @@
 %   v
 %   W
 %%
+%#testPMTK
 function dgm = mkSprinklerDgm()
     C = 1; S = 2; R = 3; W = 4;
     G = zeros(4,4);

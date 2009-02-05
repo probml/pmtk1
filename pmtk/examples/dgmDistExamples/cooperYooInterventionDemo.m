@@ -1,6 +1,7 @@
 %% Verify Marginal Likelihood Equation with Interventional Data
 % "Causal Discovery from a Mixture of Experimental and
 % Observational Data" Cooper & Yoo, UAI 99, sec 2.2
+%#testPMTK
 G = zeros(2,2); G(1,2) = 1;
 CPD{1} = TabularCPD([0.5 0.5], 'prior', 'BDeu');
 CPD{2} = TabularCPD(mkStochastic(ones(2,2)), 'prior', 'BDeu');

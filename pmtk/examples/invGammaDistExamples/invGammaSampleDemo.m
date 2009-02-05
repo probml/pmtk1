@@ -1,4 +1,5 @@
-%% Sample From the Distribution
+%% Draw Samples From an InvGammaDist
+%#testPMTK
 small = false;
 setSeed(0);
 if small

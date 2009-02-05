@@ -2,12 +2,12 @@ classdef ChainTransformer < Transformer
   
   properties
     transformers;
-    tmp;
   end
 
   %%  Main methods
   methods
     function obj = ChainTransformer(transformers)
+      if nargin == 0;return;end
       obj.transformers = transformers;
     end
     

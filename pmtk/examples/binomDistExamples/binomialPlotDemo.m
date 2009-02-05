@@ -1,4 +1,5 @@
 %% Plotting Binomial Distributions
+%#testPMTK
 muValues = [1/2 1/4 3/4 0.9];
 N = 10;
 figure;

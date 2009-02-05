@@ -1,4 +1,5 @@
-%% Plot Histogram
+%% Plot Histogram of Samples Generated From a DirichletDist
+%#testPMTK
 alpha = 0.1; 
 setSeed(0);
 obj = DirichletDist(alpha*ones(1,5));

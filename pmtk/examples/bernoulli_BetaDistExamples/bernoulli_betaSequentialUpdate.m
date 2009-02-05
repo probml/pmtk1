@@ -2,6 +2,7 @@
 % In this example we draw samples from a BernoulliDist and then sequentially fit
 % a Bernoulli_BetaDist model, plotting the posterior of the parameters at each
 % iteration. 
+%#testPMTK
 %% Sample
 setSeed(0);                        
 m = BernoulliDist('mu',0.7);        % 70% probability of success

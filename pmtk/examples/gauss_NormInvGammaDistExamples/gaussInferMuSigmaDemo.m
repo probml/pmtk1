@@ -1,5 +1,6 @@
 %% Demo of inferring mu and sigma for a 1d Gaussian
 % Compare to mvnInferMuSigma1d in Mvn_MvnInvWishartDistExamples
+%#testPMTK
 setSeed(1);
 
 muTrue = 5; varTrue = 10;

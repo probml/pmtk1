@@ -1,6 +1,7 @@
 %% Logistic Regression Crabs Data
 % Here we fit Logistic Regression to the crabs data set using various
 % approximations and compare the results. 
+%#testPMTK
 %% Setup
 [Xtrain, ytrain, Xtest, ytest] = makeCrabs;
 sigma2 = 32/5;  lambda = 1e-3;

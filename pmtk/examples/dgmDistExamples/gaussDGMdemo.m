@@ -1,5 +1,6 @@
 %%  Koller & Friedman Gaussian DGM Example
 % p233
+%#testPMTK
 G = zeros(3,3);
 G(1,2) = 1; G(2,3)=1;
 % LinGaussCPD(w, w0, sigma2)

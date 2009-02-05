@@ -9,6 +9,7 @@ classdef Discrete_DirichletDist < CompoundDist
   %% Main methods
   methods 
     function obj =  Discrete_DirichletDist(muDist, support)
+      if(nargin == 0),return;end
       % muDist is of type DirichletDist
       obj.muDist = muDist;
       if nargin < 2, support = 1:ndimensions(muDist); end

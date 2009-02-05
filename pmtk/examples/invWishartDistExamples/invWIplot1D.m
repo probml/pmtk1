@@ -1,4 +1,5 @@
 %% Plot Some invchi2 Distributions
+%#testPMTK
 figure;
 %nu = [1 1 1  5 5 5 ];
 nu = [1 1 1 2 2 2];

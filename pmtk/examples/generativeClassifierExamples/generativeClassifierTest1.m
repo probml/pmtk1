@@ -1,4 +1,5 @@
 %% Simple Test of the Generative Classifier Class (1)
+%#testPMTK
 Ntrain = 100; Ntest = 100;
 Nclasses = 10;
 d = 5; pi = (1/Nclasses)*ones(1,Nclasses); % uniform class labels

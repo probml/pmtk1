@@ -1,4 +1,5 @@
 %% Example of sampling from the HIW distribution
+%#testPMTK
 % Consider graph on Armstrong p27
 A = zeros(16,16);
 ndx = [1 2 6 11]; A(ndx, ndx) = 1;

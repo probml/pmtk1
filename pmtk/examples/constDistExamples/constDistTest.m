@@ -1,4 +1,5 @@
 %% Simple Test of the ConstDist Class
+%#testPMTK
 point = 10*rand(20,1);
 p = ConstDist(point);
 logprob = logprob(p,point);

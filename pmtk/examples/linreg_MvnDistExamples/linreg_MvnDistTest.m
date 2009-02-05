@@ -1,4 +1,5 @@
 %% Simple Test of Linreg_MvnDist
+%#testPMTK
 load prostate;
 lambda = 0.05;
 T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()});

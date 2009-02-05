@@ -1,6 +1,6 @@
 %% Graph Demo
 % Do the example in fig 23.4 p479 of Cormen, Leiserson and Rivest (1994)
-
+%#testPMTK
 u = 1; v = 2; w = 3; x = 4; y = 5; z = 6;
 n = 6;
 G=zeros(n,n);

@@ -14,7 +14,7 @@
 % A=1 1      10
 % p98 combines the values along rows, not along columns, so we must
 % transpose
-
+%#testPMTK
 function ugm = mkMisconceptionUGM()
     A = 1; B = 2; C = 3; D = 4;
     G = zeros(4,4);

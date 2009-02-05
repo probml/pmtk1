@@ -1,5 +1,5 @@
 %% Example of inference in water sprinkler DGM
-
+%#testPMTK
 dgm = mkSprinklerDgm();
 dgm.infEng  = EnumInfEng();
 false = 1; true = 2;

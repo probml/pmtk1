@@ -1,4 +1,5 @@
 %% MVT Plot Demo
+%#testPMTK
 useLog = true;
 figure;
 plot(MvtDist(0.1, [0 0], 0.5*eye(2)), 'useLog', useLog, 'xrange', 2*[-1 1 -1 1]);

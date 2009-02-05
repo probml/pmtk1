@@ -1,5 +1,5 @@
 %% Inference in 'misconception network' (Koller and Friedman p99)
-
+%#testPMTK
 
 model = mkMisconceptionUGM();
 model.infEng  = EnumInfEng();

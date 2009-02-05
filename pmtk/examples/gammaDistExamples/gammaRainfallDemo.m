@@ -1,5 +1,6 @@
 %% Rainfall Demo
 % Fitting a Gamma distribution to the rainfall data used in Rice (1995) p383
+%#testPMTK
 X = dlmread('rainfallData.txt');
 X = X'; X = X(:); % concatenate across rows, not columns
 X = X(1:end-5); % removing trailing 0s

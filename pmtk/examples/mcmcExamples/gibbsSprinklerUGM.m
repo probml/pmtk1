@@ -1,5 +1,5 @@
 %% Gibbs Sampling on the undirected water sprinkler
-
+%#testPMTK
 setSeed(0);
 dgm = mkSprinklerDgm();
 ugm = convertToUgm(dgm);

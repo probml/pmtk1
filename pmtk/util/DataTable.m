@@ -9,6 +9,7 @@ classdef DataTable
   
   methods
     function obj = DataTable(X, Y, Xnames, Ynames)
+      if nargin ==0; return;end
       if nargin < 1
         X = [];
       end

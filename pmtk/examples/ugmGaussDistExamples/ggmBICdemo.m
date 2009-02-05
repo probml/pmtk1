@@ -1,5 +1,5 @@
 %% BIC of GGMs on 4 nodes 
-
+%#testPMTK
 setSeed(0);
 d = 4;
 G = UndirectedGraph('type', 'loop', 'nnodes', d);

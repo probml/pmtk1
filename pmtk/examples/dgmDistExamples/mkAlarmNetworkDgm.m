@@ -1,4 +1,7 @@
+%% Create the Alarm Network DGM
+%#testPMTK
 function dgm = mkAlarmNetworkDgm()
+    
     load alarmNetwork
     N = numel(alarmNetwork.CPT);
     CPDs = cell(N,1);

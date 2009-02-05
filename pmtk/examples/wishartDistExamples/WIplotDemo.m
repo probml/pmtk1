@@ -1,4 +1,5 @@
 %% Plot Some Wishart Distributions
+%#testPMTK
 seed = 2;
 setSeed(seed);
 S=randpd(2);

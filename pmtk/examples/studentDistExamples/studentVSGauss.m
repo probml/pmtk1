@@ -1,4 +1,5 @@
 %% Student T vs Gaussian
+%#testPMTK
 useLog = true;
 dofs = [0.1 1 5];
 xr = [-4 4];

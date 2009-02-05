@@ -2,6 +2,7 @@
 % Note, it is not usually necessary to instantiate transformers directly, as in
 % this example. If you specify a transformer to a model, this will be taken care
 % of automatically. 
+%#testPMTK
 T = ChainTransformer({StandardizeTransformer, AddOnesTransformer});
 setSeed(0);
 Xtrain = rand(5,3);

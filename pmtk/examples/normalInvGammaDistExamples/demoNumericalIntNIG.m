@@ -1,5 +1,5 @@
 %% Demo of computing posterior moments of NIG using numerical integration
-
+%#testPMTK
 function demoNumericalIntNIG()
 
 setSeed(1);

@@ -1,4 +1,5 @@
 %% Sample Dist Example
+%#testPMTK
 seed = 1;
 setSeed(seed);
 m = MvnDist;

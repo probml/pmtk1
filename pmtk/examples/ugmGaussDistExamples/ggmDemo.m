@@ -1,5 +1,5 @@
 %% Samples from a GGM
-
+%#testPMTK
 d = 10;
 G = UndirectedGraph('type', 'loop', 'nnodes', d);
 obj = UgmGaussDist(G, [], []);

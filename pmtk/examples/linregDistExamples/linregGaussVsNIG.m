@@ -1,3 +1,5 @@
+%% Compare Linreg_MvnDist to LinregMvnInvGammaDist
+%#testPMTK
 function linregGaussVsNIG()
     figure;
     h(1)= helperGaussVsNIG('prior', 'mvn', 'color', 'k');

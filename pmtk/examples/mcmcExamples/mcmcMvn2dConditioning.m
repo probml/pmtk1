@@ -1,7 +1,7 @@
 %% MCMC Sampling from a multivariate Gaussian conditioned on data
 % We use a N(0, sigma*eye(2)) proposal and see the effect of changing sigma
 % We also compare to Gibbs sampling
-
+%#testPMTK
 setSeed(0);
 d = 5;
 Sigma = randpd(d);

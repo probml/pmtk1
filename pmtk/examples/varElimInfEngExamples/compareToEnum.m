@@ -1,4 +1,5 @@
 %% Validate VarElimInfEng against EnumInfEng results
+%#testPMTK
 C = 1; S = 2; R = 3; W = 4;
 % We compute every possible marginal of the sprinkler network
 powerset = {[],C,S,R,W,[C,S],[C,R],[C,W],[S,R],[S,W],[R,W],[C,S,R],[C,S,W],[C,R,W],[S,R,W],[C,S,R,W]};

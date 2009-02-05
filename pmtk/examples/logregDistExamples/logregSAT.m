@@ -1,6 +1,7 @@
 %% Binary Classification of SAT Data via Logistic Regression
 % In this example, we classify whether or not a student will pass a
 % course based on their SAT score, using logistic regression.
+%#testPMTK
 %% Load Data
 setSeed(0);
 stat = load('satData.txt');

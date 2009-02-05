@@ -1,4 +1,5 @@
 %% plot some IW distributions
+%#testPMTK
 setSeed(1);
 S=randpd(2);
 R=cov2cor(S);

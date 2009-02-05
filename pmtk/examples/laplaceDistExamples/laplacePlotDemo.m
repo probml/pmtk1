@@ -1,4 +1,5 @@
 %% Plot Laplace Distributions
+%#testPMTK
 mus = [0 0 0 -5];
 bs = [1 2 4 4];
 figure;

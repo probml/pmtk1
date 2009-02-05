@@ -1,4 +1,5 @@
 %% Simple Test of Logreg_MvnDist
+%#testPMTK
 n = 10; d = 3; C = 2;
 X = randn(n,d );
 y = sampleDiscrete((1/C)*ones(1,C), n, 1);
