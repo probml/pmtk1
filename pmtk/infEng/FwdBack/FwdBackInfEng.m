@@ -87,6 +87,9 @@ classdef FwdBackInfEng < InfEng
             eng = reset(eng);
             eng.pi = mean(model.startDist);
             eng.A = mean(model.transitionDist)';
+            if(nargin < 3 || isempty(visVars))
+                return;
+            end
             if(iscell(visVars))
                 error('conditioning on multiple variables not yet supported');
             else
@@ -166,10 +169,16 @@ classdef FwdBackInfEng < InfEng
                        if(isempty(eng.alpha))
                            [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, eng.B);
                        end
+                       if(ti > size(eng.alpha,2))
+                           error('Prediction of future states not yet implemented');
+                       end
                        m = eng.alpha(:,ti);
                    case 'smoothed'
                        if(isempty(eng.gamma))
                            [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, eng.B);
+                       end
+                       if(ti > size(eng.gamma,2))
+                           error('Prediction of future states not yet implemented');
                        end
                        m = eng.gamma(:,ti);
                    otherwise
