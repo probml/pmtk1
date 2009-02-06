@@ -87,13 +87,13 @@ classdef FwdBackInfEng < InfEng
             eng = reset(eng);
             eng.pi = mean(model.startDist);
             eng.A = mean(model.transitionDist)';
-            if(nargin < 3 || isempty(visVars))
-                return;
+            if(nargin < 4)
+                visVars = []; visValues = [];
             end
             if(iscell(visVars))
                 error('conditioning on multiple variables not yet supported');
             else
-               if(isequal(visVars,'Y'))
+               if(isequal(visVars,'Y')||isempty(visVars))
                    if(nobservations(model,visValues) > 1)
                       error('You can only condition on one observation sequence at a time'); 
                    end
@@ -148,11 +148,20 @@ classdef FwdBackInfEng < InfEng
             if(nargin < 4)
                 method = 'smoothed';
             end
+            B = eng.B;
+            if(nargin > 1)
+                horizon = max(ti+1);
+                if(size(B,2) < horizon)
+                   B = [B,ones(size(eng.A,1),horizon-size(B,2))];  % pad with ones - valid since probability of an empty event is 1
+                end
+            end
+            
+            
             
             if(nargin < 2 || (nargin > 2 && ~isempty(tj)))
                if(isempty(eng.xi))
                     if(isempty(eng.alpha)||isempty(eng.beta))
-                        [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, eng.B);
+                        [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, B);
                     end
                     eng.xi = hmmComputeTwoSlice(eng.alpha, eng.beta, eng.A, eng.B);
                end
@@ -167,19 +176,15 @@ classdef FwdBackInfEng < InfEng
                switch lower(method)
                    case 'filtered'
                        if(isempty(eng.alpha))
-                           [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, eng.B);
+                           [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, B);
                        end
-                       if(ti > size(eng.alpha,2))
-                           error('Prediction of future states not yet implemented');
-                       end
+                      
                        m = eng.alpha(:,ti);
                    case 'smoothed'
                        if(isempty(eng.gamma))
-                           [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, eng.B);
+                           [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, B);
                        end
-                       if(ti > size(eng.gamma,2))
-                           error('Prediction of future states not yet implemented');
-                       end
+                      
                        m = eng.gamma(:,ti);
                    otherwise
                         error('%s is an invalid method',method);

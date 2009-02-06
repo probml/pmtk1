@@ -121,6 +121,9 @@ classdef HmmDist < ParamJointDist
         
         function S = samplePost(model,nsamples)
         % Forwards filtering, backwards sampling    
+            if(~model.conditioned)
+                error('You must first call condition.'); 
+            end
             S = sample(model.infEng,nsamples);
         end
         
@@ -132,7 +135,11 @@ classdef HmmDist < ParamJointDist
          function localEvidence = makeLocalEvidence(model,obs)
          % the probability of the observed sequence under each state conditional density. 
          % localEvidence(i,t) = p(Y(t) | Z(t)=i)
-            localEvidence = zeros(model.nstates,size(obs,2));     
+            if nargin < 2 || isempty(obs)
+               localEvidence = ones(model.nstates,1); % probability of an empty event is 1 - size of matrix will be expanded when needed
+               return;
+            end
+            localEvidence = zeros(model.nstates,size(obs,2));
             for i = 1:model.nstates
                 localEvidence(i,:) = exp(logprob(model.emissionDist{i},obs'));
             end
