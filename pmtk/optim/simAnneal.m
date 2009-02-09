@@ -1,8 +1,8 @@
-function [xopt, fval, samples, energies, acceptanceRate] = SA(target, x0, opts)
+function [xopt, fval, samples, energies, acceptanceRate, temp] = simAnneal(target, x0, opts)
 % Simulated annealing algorithm to find the global *minimum* of a function
 % 
 % INPUTS (similar to fminunc)
-% target returns the energy function (*negative* unnormalized log posterior)
+% target is the energy function (*negative* unnormalized log posterior)
 %   called as 'E = target(x)'
 % x0 is a 1xd vector specifying the initial state
 % opts is a structure of optional arguments [defaults listed below in brackets]
@@ -48,6 +48,7 @@ x = x0(:)'; % ensure it's a row vector
 naccept = 0;
 energyOld = feval(target, x);
 T = opts.initTemp;
+temp(1) = T;
 converged = 0;
 iter = 1;
 while ~converged
@@ -78,6 +79,7 @@ while ~converged
   iter = iter + 1;
   if iter > opts.maxIter, converged = 1;  end
   T = feval(opts.temp, T, iter);
+  temp(iter) = T;
 end
 
 niter =  iter - 1;
