@@ -25,7 +25,7 @@ proposal = @(x) (x + mvnrnd(zeros(1,2), SigmaProp));
 
 %[x, naccept] = metropolisHastings(@target, proposal, xinit, Nsamples);
 
- [x, naccept] = mhSample('target', @target, 'proposal', proposal, ...
+ [x, acceptRatio] = mhSample('target', @target, 'proposal', proposal, ...
       'xinit', xinit, 'Nsamples', Nsamples);
 
 
@@ -34,7 +34,7 @@ figure;
 plot(x(:,1), 'r-');
 hold on
 plot(x(:,2), 'b:');
-title(sprintf('red=logitM, blue=logK, accept rate = %5.3f', naccept/Nsamples));
+title(sprintf('red=logitM, blue=logK, accept rate = %5.3f', acceptRatio));
 
 
 burnin = 500;
@@ -44,20 +44,23 @@ samples.logitm = x(burnin:end, 1);
 samples.logK = x(burnin:end, 2);
 
 % plot of posterior
-figure;plot(samples.logitm, samples.logK, '.')
+figure;plot(samples.logitm, samples.logK, '.');
 xlabel('logitm'); ylabel('log K')
+axis ij
 
 %figure;plot(samples.m, samples.K, '.')
 %xlabel('m'); ylabel('K')
 
-[xs, ys] = meshgrid(-8:0.05:-5, 4:0.1:12);
+%[xs, ys] = meshgrid(-8:0.05:-5, 4:0.1:12);
+[xs, ys] = meshgrid(-20:0.1:20, -20:0.1:20);
 xy = [xs(:)'; ys(:)']';
-p = exp(target(xy));
+%p = exp(target(xy));
+p = target(xy);
 p = reshape(p, size(xs));
 h = max(p(:));
-vals = [0.1*h 0.01*h 0.001*h];
-figure; contour(xs(1,:), ys(:,1), p, vals);
-figure; imagesc(p);
+%vals = [0.1*h 0.01*h 0.001*h];
+figure; contour(xs(1,:), ys(:,1), p);
+figure; imagesc(p); axis xy
 
 % posterior of theta(i) given m,K
 d = length(data.n); % ncities;
@@ -83,7 +86,7 @@ hold on;h=line([0 20], [thetaPooledMLE thetaPooledMLE]);
 set(h,'color','r','linewidth',2)
 
 
-
+keyboard
 
   function logp = target(x)
     logitM = x(:,1); logK = x(:,2);

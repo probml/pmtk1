@@ -17,8 +17,8 @@ m = min(Z(:));
 Zpos = Z+abs(m)+1;
 
 % Plot the surface at different temperatures
-temps = [100, 10];
-%temps = [10, 10, 1, 0.5, 0.1];
+%temps = [0.3];
+temps = [2, 1, 0.2, 0.1];
 %fig1 = figure; fig2= figure;
 for ti=1:length(temps)
   t = temps(ti);
@@ -26,6 +26,9 @@ for ti=1:length(temps)
   %figure(fig1); subplot(2,2,ti)
   figure;
   surf(XX,YY,Zt); title(sprintf('temp %5.3f', t));
+  if t>=1
+    set(gca,'zlim',[0 10]);
+  end
   %figure(fig2); subplot(2,2,ti);
   if doPrint, print_pdf(fullfile(folder, sprintf('SApeaksSurf%d.pdf', ti))), end
   figure;
