@@ -41,7 +41,7 @@ end
 display(pQueryDGM);
 display(pQueryHMM);
 %% Test Future Queries
-% We must extend the dgm to 12 time slices. 
+% We must extend the dgm in time. 
 dgm = convertToDgm(hmm,12);
 pQueryDGM = pmf(marginal(dgm,11));
 pQueryHMM = pmf(marginal(hmm,11));
@@ -50,7 +50,7 @@ assert(approxeq(pQueryDGM,pQueryHMM));
 pQueryDGM = pmf(marginal(dgm,[2,3]));
 pQueryHMM = pmf(marginal(hmm,[2,3]));
 assert(approxeq(pQueryDGM,pQueryHMM));
-%%
+%% Test 2-Slice Future Queries
 pQueryDGM = pmf(marginal(dgm,[11,12]));
 pQueryHMM = pmf(marginal(hmm,[11,12]));
 assert(approxeq(pQueryDGM,pQueryHMM));
@@ -58,7 +58,7 @@ assert(approxeq(pQueryDGM,pQueryHMM));
 pQueryDGM = pmf(marginal(dgm,[2,7,11]));
 pQueryHMM = pmf(marginal(hmm,[2,7,11]));
 assert(approxeq(pQueryDGM,pQueryHMM));
-%%
+
 
 
 
