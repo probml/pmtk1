@@ -61,7 +61,7 @@ classdef MhInfEng  < InfEng
        eng.samples = SampleDist(samples, hidVars);
      end
     
-     function [postQuery] = marginal(eng, queryVars)
+     function [postQuery,eng] = marginal(eng, queryVars)
        if isempty(eng.samples), error('must first call condition'); end
        postQuery = marginal(eng.samples, queryVars);
      end

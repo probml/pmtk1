@@ -28,19 +28,18 @@ classdef ParamJointDist < ParamDist
       [model.infEng] = condition(model.infEng, model, visVars, visValues);
     end
 
-    function [postQuery] = marginal(model, queryVars,varargin)
+    function [postQuery,model] = marginal(model, queryVars,varargin)
       % postQuery = p(queryVars) conditional on the most recent
       % condition operation
       if ~model.conditioned
-        %error('must first call condition');
-        %fprintf('it is recommended to first call condition\n');
         model = condition(model);
       end
       if(nargin == 1)
-          [postQuery] = marginal(model.infEng);
+          [postQuery,model.infEng] = marginal(model.infEng);
       else
-          [postQuery] = marginal(model.infEng, queryVars,varargin{:});
+          [postQuery,model.infEng] = marginal(model.infEng, queryVars,varargin{:});
       end
+      
     end
 
     function [samples] = sample(model, n)

@@ -240,15 +240,16 @@ classdef HmmDist < ParamJointDist
                    
                     %% Starting Distribution
                     if(not(clampedStart)) 
-                        essStart.counts = essStart.counts + colvec(marginal(model,1));     % marginal(model,1) is one slice marginal at t=1
+                        [firstSlice,model] = marginal(model,1);          % marginal(model,1) is one slice marginal at t=1
+                        essStart.counts = essStart.counts + colvec(firstSlice);     
                     end 
                     %% Transition Distributions
                     if(not(clampedTrans))
-                                                                  
-                        essTrans.counts = essTrans.counts + marginal(model);                % marginal(model) = full two slice marginals summed, i.e. xi_summed    
+                        [xi_summed,model] = marginal(model);                     % marginal(model) = full two slice marginals summed, i.e. xi_summed                                    
+                        essTrans.counts = essTrans.counts + xi_summed;
                     end  
                     if(not(clampedObs))
-                        gamma = marginal(model,':');                                        % marginal(model,':') all of the 1 slice marginals, i.e. gamma
+                        [gamma,model] = marginal(model,':');                                        % marginal(model,':') all of the 1 slice marginals, i.e. gamma
                         sz = size(gamma,2); idx = seqndx(j);
                         weightingMatrix(idx:idx+sz-1,:) = weightingMatrix(idx:idx+sz-1,:) + gamma';  % seqndx just keeps track of where data cases start and finish  in the stacked matrix
                         

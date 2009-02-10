@@ -24,7 +24,7 @@ end
        eng.mu = muHgivenV; eng.Sigma = SigmaHgivenV; eng.domain = hidVars;
      end
     
-    function postQuery = marginal(eng, queryVars)
+    function [postQuery,eng] = marginal(eng, queryVars)
        mu = eng.mu; Sigma = eng.Sigma; domain = eng.domain;
        Q = lookupIndices(queryVars, domain);
        postQuery = MvnDist(mu(Q), Sigma(Q,Q), 'domain', queryVars); %#ok

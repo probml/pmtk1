@@ -7,6 +7,7 @@
 %%
 % The convention in this demo is that the latent variables will be labeled 1:T
 % and the emission variables T+1:2*T.
+%#testPMTK
 
 T = 4;                          % Compare up to the first T timesteps
 %% Setup the CPDs

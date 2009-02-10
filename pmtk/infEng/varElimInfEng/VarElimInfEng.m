@@ -24,7 +24,7 @@ classdef VarElimInfEng < InfEng
             eng.visVars = visVars;
         end
         
-        function [postQuery,Z] = marginal(eng, queryVars)
+        function [postQuery,eng,Z] = marginal(eng, queryVars)
         % postQuery = sum_h p(Query,h)      
             elim = mysetdiff(mysetdiff(eng.domain(eng.ordering),queryVars),eng.visVars);
             [postQuery,Z] = normalizeFactor(VarElimInfEng.variableElimination(eng.Tfac,elim));
@@ -40,7 +40,7 @@ classdef VarElimInfEng < InfEng
         end
         
         function logZ = lognormconst(eng)
-            [Tfac,Z] = marginal(eng,eng.domain);
+            [Tfac,eng,Z] = marginal(eng,eng.domain);
             logZ = log(Z);
         end
         

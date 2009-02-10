@@ -45,12 +45,17 @@ nsamples = 1; length = 300;
     viterbiPath = mode(model);
 %%
 % This is different than the sequence of most likely states, which we can obtain
-% by calling marginal() and taking the max. The ':' returns the
-% entire path rather than values at specific points in the sequence. These are
-% the smoothed estimates, we can also obtain the filtered estimates for comparison.
-% The method also supports 2 slice and arbitrary marginals. 
-   maxmarg  = maxidx(marginal(model,':'));
-   maxmargF = maxidx(marginal(model,':','filtered'));
+% by calling marginal() and taking the max. The ':' returns the entire path
+% rather than values at specific points in the sequence. These are the smoothed
+% estimates, we can also obtain the filtered estimates for comparison. The
+% method also supports 2 slice and arbitrary marginals. 
+%
+% The forward backwards inference engine used by the HMM caches results for
+% future queries but to take advantage of this, we must save the updated model
+% after calls to marginal, as in the following line. 
+   [gamma,model]    = marginal(model,':');
+   maxmarg          = maxidx(gamma);
+   maxmargF         = maxidx(marginal(model,':','filtered'));
 %%
 % We can also sample from the posterior, fowards filtering, backwards sampling,
 % and compare the mode of these samples to the predictions above. 

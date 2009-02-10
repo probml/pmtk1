@@ -22,7 +22,7 @@ classdef EnumInfEng < InfEng
        eng.logZ = log(Z);
     end
     
-    function [postQuery] = marginal(eng, queryVars)
+    function [postQuery,eng] = marginal(eng, queryVars)
       % postQuery = sum_h p(Query,h)
       if isempty(eng.Tfac), error('must first call condition'); end
       postQuery = marginalize(eng.Tfac, queryVars);
