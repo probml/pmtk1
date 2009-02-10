@@ -240,7 +240,7 @@ classdef HmmDist < ParamJointDist
                     %% Transition Distributions
                     if(not(clampedTrans))
                                                                   
-                        essTrans.counts = essTrans.counts + marginal(model);                % marginal(model) = full two slice marginals xi     
+                        essTrans.counts = essTrans.counts + marginal(model);                % marginal(model) = full two slice marginals summed, i.e. xi_summed    
                     end  
                     if(not(clampedObs))
                         gamma = marginal(model,':');                                        % marginal(model,':') all of the 1 slice marginals, i.e. gamma

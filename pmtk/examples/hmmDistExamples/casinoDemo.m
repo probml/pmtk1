@@ -48,9 +48,9 @@ nsamples = 1; length = 300;
 % by calling marginal() and taking the max. The ':' returns the
 % entire path rather than values at specific points in the sequence. These are
 % the smoothed estimates, we can also obtain the filtered estimates for comparison.
-% The method also supports two slice marginals, hence the []. 
+% The method also supports 2 slice and arbitrary marginals. 
    maxmarg  = maxidx(marginal(model,':'));
-   maxmargF = maxidx(marginal(model,':',[],'filtered'));
+   maxmargF = maxidx(marginal(model,':','filtered'));
 %%
 % We can also sample from the posterior, fowards filtering, backwards sampling,
 % and compare the mode of these samples to the predictions above. 
@@ -87,8 +87,8 @@ fprintf('Max Marginal Filtered:  %d/%d\n',maxMargFErr,300);
 fprintf('Mode Posterior Samples: %d/%d\n',postSampErr,300);
 
 %% Marginals 
-    filtered = marginal(model,':',[],'filtered'); % filtered(i,t) = p(S(t)=i | y(1:t))
-    smoothed = marginal(model,':',[],'smoothed'); % smoothed(i,t) = p(S(t)=i | y(1:T))
+    filtered = marginal(model,':','filtered'); % filtered(i,t) = p(S(t)=i | y(1:t))
+    smoothed = marginal(model,':','smoothed'); % smoothed(i,t) = p(S(t)=i | y(1:T))
 %% 
 % Here we plot the probabilities and shade in grey the portions of the die
 % sequence where a loaded die was actually used. 
