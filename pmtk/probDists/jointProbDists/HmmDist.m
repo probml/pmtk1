@@ -87,7 +87,8 @@ classdef HmmDist < ParamJointDist
         end
         
         function dgm = convertToDgm(model,t)
-            
+        % Return a DgmDist() that is equivalent to this HMM up to time step t -
+        % that is a truncated version of this HMM. 
             CPD{1} = TabularCPD(mean(model.startDist)');
             CPD(2:t) = copy(TabularCPD(mean(model.transitionDist)'),1,t-1);
             CPD(t+1:2*t) = copy(MixtureDist('distributions',model.emissionDist),1,t);
