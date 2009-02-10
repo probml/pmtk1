@@ -7,6 +7,8 @@ properties
   mu; Sigma; domain;
 end
 
+
+
   %% main methods
   methods
     function eng = GaussInfEng()

@@ -23,6 +23,9 @@ classdef HmmDist < ParamJointDist
                                     % fit(). If only one object is specified, it
                                     % is automatically initialized and
                                     % replicated. 
+                                    
+     
+                                    
         verbose = true;             
       
     end
@@ -72,6 +75,7 @@ classdef HmmDist < ParamJointDist
                 model.emissionDist = copy(model.emissionDist,model.nstates,1);
                 model.initWithData = true;
             end
+           
             
             model.domain = struct;
             model.domain.Z = 1:model.nstates;
@@ -233,6 +237,7 @@ classdef HmmDist < ParamJointDist
                     obs = getObservation(model,data,j);
                     model = condition(model,'Y',obs);
                     currentLL = currentLL + logprob(model);
+                   
                     %% Starting Distribution
                     if(not(clampedStart)) 
                         essStart.counts = essStart.counts + colvec(marginal(model,1));     % marginal(model,1) is one slice marginal at t=1
@@ -295,9 +300,6 @@ classdef HmmDist < ParamJointDist
                     fprintf('\niteration %d, loglik = %f\n',iter,currentLL);
                 end
                 iter = iter + 1;
-                if(prevLL ~=0 && currentLL < prevLL)
-                    warning('Decrease in LL!');
-                end
                 converged = ((abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < optTol) || (iter > maxIter);
             end % end of testConvergence subfunction
             
@@ -335,29 +337,32 @@ classdef HmmDist < ParamJointDist
           
             if(model.initWithData)
                 
-                data = HmmDist.stackObservations(X);
-                if(allSameTypes(model.emissionDist))
-                    model.emissionDist = copy(fit(model.emissionDist{1},'data',data),1,model.nstates);
-                else
-                    for i=1:model.nstates
-                        model.emissionDist{i} =  fit(model.emissionDist{i},'data',data);
+                if(1) % initialize each component with all of the data, ignoring the temporal structure.
+                    data = HmmDist.stackObservations(X);
+                    if(allSameTypes(model.emissionDist))
+                        model.emissionDist = copy(fit(model.emissionDist{1},'data',data),1,model.nstates);
+                    else
+                        for i=1:model.nstates
+                            model.emissionDist{i} =  fit(model.emissionDist{i},'data',data);
+                        end
+                    end
+                else % initialize each distribution with a random batch of data, ignoring temporal structure. 
+                    nobs = nobservations(model,X);
+                    if(nobs >= model.nstates)
+                        for i=1:model.nstates
+                            
+                            model.emissionDist{i} =  fit(model.emissionDist{i},'data',getObservation(model,X,i)');
+                        end
+                    else
+                        data = HmmDist.stackObservations(X);
+                        n = size(data,1);
+                        batchSize = floor(n/model.nstates);
+                        if(batchSize < 2), batchSize = n;end
+                        for i=1:model.nstates
+                            model.emissionDist{i} =  fit(model.emissionDist{i},'data',data(sub(randperm(n),1:batchSize),:));
+                        end
                     end
                 end
-%                 nobs = nobservations(model,X);
-%                 if(nobs >= model.nstates)
-%                     for i=1:model.nstates
-%                       
-%                         model.emissionDist{i} =  fit(model.emissionDist{i},'data',getObservation(model,X,i)');
-%                     end
-%                 else
-%                     data = HmmDist.stackObservations(X);
-%                     n = size(data,1);
-%                     batchSize = floor(n/model.nstates);
-%                     if(batchSize < 2), batchSize = n;end
-%                     for i=1:model.nstates
-%                         model.emissionDist{i} =  fit(model.emissionDist{i},'data',data(sub(randperm(n),1:batchSize),:));
-%                     end
-%                 end
             end
                 
             

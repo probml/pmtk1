@@ -25,24 +25,28 @@ classdef MvnDist < ParamJointDist
     end
     
     function L = logprobUnnormalized(model, X)
-      % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
-      % variables
-      mu = model.mu; Sigma = model.Sigma;
-      X = insertVisData(model,X);
-      if numel(mu)==1
-        X = X(:); % ensure column vector
-      end
-      [N d] = size(X);
-      if length(mu) ~= d
-        error('X should be N x d')
-        % if some components have been observed, X needs to be expanded...
-      end
-      X = bsxfun(@minus,X,rowvec(mu));
-      L =-0.5*sum((X*inv(Sigma)).*X,2);
-      %if normalize
-      %    L = L - lognormconst(eng);
-      %end
+        % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
+        % variables
+        mu = model.mu; Sigma = model.Sigma;
+        
+        X = insertVisData(model,X);
+        if numel(mu)==1
+            X = X(:); % ensure column vector
+        end
+        [N d] = size(X);
+        if length(mu) ~= d
+            error('X should be N x d')
+            % if some components have been observed, X needs to be expanded...
+        end
+        X = bsxfun(@minus,X,rowvec(mu));
+        L =-0.5*sum((X*inv(Sigma)).*X,2);
     end
+    
+   
+    
+    
+    
+    
     
     function fc = makeFullConditionals(obj, visVars, visVals)
       d = length(obj.mu);
@@ -186,7 +190,10 @@ classdef MvnDist < ParamJointDist
                  error('can only plot 1 or 2d');
          end
      end
-    
+     
+     
+     
+     
     
   end % methods
 

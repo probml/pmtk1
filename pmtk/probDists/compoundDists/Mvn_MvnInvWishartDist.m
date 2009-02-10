@@ -48,8 +48,8 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
       n = SS.n;
       kn = k0 + n;
       vn = v0 + n;
-      Sn = S0 + n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-m0)*(SS.xbar-m0)';
-      mn = (k0*m0 + n*SS.xbar)/kn;
+      Sn = S0 + n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-colvec(m0))*(SS.xbar-colvec(m0))';
+      mn = (k0*colvec(m0) + n*SS.xbar)/kn;
       %obj.mu = mn; obj.Sigma = Sn; obj.dof = vn; obj.k = kn;
       obj.muSigmaDist = MvnInvWishartDist('mu', mn, 'Sigma', Sn, 'dof', vn, 'k', kn);
     %assert(~isnan(mn))
