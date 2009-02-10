@@ -1,7 +1,7 @@
 %%  A Simple Test of the HmmDist Class
 %#testPMTK
 %% Discrete Observations
-setSeed(0);
+setSeed(1);
 trueObsModel = {DiscreteDist('mu',ones(6,1)./6       ,'support',1:6)
     DiscreteDist('mu',[ones(5,1)./10;0.5],'support',1:6)};
 
@@ -35,7 +35,7 @@ nsamples = 20; length = 20;
 model = HmmDist('emissionDist',MvnDist(),'nstates',2);
 model = fit(model,'data',observed);
 %% MvnMixDist Observations
-setSeed(0);
+
 nstates = 5; d = 2; nmixcomps = 2;
 emissionDist = cell(5,1);
 for i=1:nstates
@@ -48,7 +48,7 @@ trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDis
 model = HmmDist('emissionDist',MvnMixDist('nmixtures',nmixcomps,'verbose',false,'nrestarts',1),'nstates',nstates);
 model = fit(model,'data',observed,'maxIter',20);
 %% DiscreteMixDist Observations
-setSeed(0);
+
 nstates = 5;  nmixcomps = 2; d = 3;
 emissionDist = cell(5,1);
 for i=1:nstates

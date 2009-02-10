@@ -27,11 +27,14 @@ classdef MixtureDist < ParamJointDist
            if ~isempty(nmixtures) && numel(distributions) == 1
                distributions = copy(distributions,nmixtures,1);
            end
+           if isempty(nmixtures)
+               nmixtures = numel(distributions);
+           end
            model.distributions = distributions;
            if(~isempty(nmixtures) && isempty(mixingWeights))
-               mixingWeights = DiscreteDist('mu',normalize(ones(nmixtures,1)));
+               mixingWeights = DiscreteDist('mu',normalize(ones(nmixtures,1)),'support',1:nmixtures);
            elseif(~isempty(model.distributions))
-               mixingWeights = DiscreteDist('mu',normalize(ones(numel(model.distributions,1))));
+               mixingWeights = DiscreteDist('mu',normalize(ones(numel(model.distributions,1))),'support',1:nmixtures);
            end
            model.mixingWeights = mixingWeights;
         end

@@ -42,24 +42,18 @@ classdef FwdBackInfEng < InfEng
         % Construct a new eng with the a distribution over starting 
         % states pi, a transition matrix A and a matrix of local evidence, B. 
             if(nargin > 0)
-                
                 if(~isnumeric(pi))
                    pi = mean(pi); 
                 end
-                
                 eng.pi = pi; 
-                
             end
             if(nargin > 1)
-               
                 if(~isnumeric(A))
                     A = mean(A)';
                 end
                 eng.A =  A ;
             end
-            if(nargin > 2), eng.B =  B ; end 
-           
-            
+            if(nargin > 2), eng.B =  B ; end    
         end
         
         %% Setters
@@ -71,6 +65,7 @@ classdef FwdBackInfEng < InfEng
         function eng = set.A(eng,A)
            eng = reset(eng);
            assert(approxeq(A,normalize(A,2)));
+           
            eng.A = A;
         end
         
@@ -84,8 +79,7 @@ classdef FwdBackInfEng < InfEng
         
         
         function eng = condition(eng,model,visVars,visValues)   
-            eng = reset(eng);
-            eng.pi = mean(model.startDist);
+            eng.pi = mean(model.startDist)';
             eng.A = mean(model.transitionDist)';
             if(nargin < 4)
                 visVars = []; visValues = [];
@@ -149,12 +143,12 @@ classdef FwdBackInfEng < InfEng
                 method = 'smoothed';
             end
             B = eng.B;
-            if(nargin > 1)
-                horizon = max(ti+1);
-                if(size(B,2) < horizon)
-                   B = [B,ones(size(eng.A,1),horizon-size(B,2))];  % pad with ones - valid since probability of an empty event is 1
-                end
-            end
+%             if(nargin > 1)
+%                 horizon = max(ti+1);
+%                 if(size(B,2) < horizon)
+%                    B = [B,ones(size(eng.A,1),horizon-size(B,2))];  % pad with ones - valid since probability of an empty event is 1
+%                 end
+%             end
             
             
             
@@ -163,7 +157,7 @@ classdef FwdBackInfEng < InfEng
                     if(isempty(eng.alpha)||isempty(eng.beta))
                         [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, B);
                     end
-                    eng.xi = hmmComputeTwoSlice(eng.alpha, eng.beta, eng.A, eng.B);
+                    eng.xi = hmmComputeTwoSlice(eng.alpha, eng.beta, eng.A, B);
                end
             end
             
@@ -184,7 +178,6 @@ classdef FwdBackInfEng < InfEng
                        if(isempty(eng.gamma))
                            [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, B);
                        end
-                      
                        m = eng.gamma(:,ti);
                    otherwise
                         error('%s is an invalid method',method);
@@ -198,12 +191,13 @@ classdef FwdBackInfEng < InfEng
         
       
         function [logp,eng] = logprob(eng)
-            
-            if(isempty(eng.logp))
-                [eng.alpha, eng.logp] = hmmFilter(eng.pi, eng.A, eng.B);
-            end
+            checkParams(eng);
+             if(isempty(eng.logp))
+                  [eng.gamma, eng.alpha, eng.beta, eng.logp] = hmmFwdBack(eng.pi, eng.A, eng.B);
+             end
+        
             logp = eng.logp;
-            
+            %[alpha, logp] = hmmFilter(eng.pi, eng.A, eng.B);
         end
         
         function [s,eng] = sample(eng,nsamples)
@@ -214,12 +208,12 @@ classdef FwdBackInfEng < InfEng
         function eng =  reset(eng)
         % Clears stored values used in lazy evaluation. This is called
         % automatically when the parameters are changed. 
-          eng.alpha = [];  
-          eng.beta = [];    
-          eng.gamma = [];   
-          eng.xi = [];      
-          eng.viterbiPath = []; 
-          eng.logp = [];  
+          eng.alpha         = [];  
+          eng.beta          = [];    
+          eng.gamma         = [];   
+          eng.xi            = [];      
+          eng.viterbiPath   = []; 
+          eng.logp          = [];  
         end
         
         function eng = precompute(eng)

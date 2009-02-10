@@ -54,7 +54,7 @@ nsamples = 1; length = 300;
 %%
 % We can also sample from the posterior, fowards filtering, backwards sampling,
 % and compare the mode of these samples to the predictions above. 
-   postSamp = mode(samplePost(model,500),2)';
+   postSamp = mode(samplePost(model,100),2)';
 %%
 % We now display the rolls, the corresponding die used and the Viterbi 
 % prediction. 

@@ -33,9 +33,6 @@ classdef DiscreteDist  < ParamDist
          error('Each column must sum to one'); 
       end
       obj.mu = mu;
-      if isempty(support) && nargin > 1
-          error('must specify support'); 
-      end
       obj.support = support;
       obj.prior = prior;
     end

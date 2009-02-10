@@ -27,6 +27,10 @@ classdef HmmDist < ParamJointDist
       
     end
     
+    properties(GetAccess = 'protected', SetAccess = 'protected')
+       initWithData = false; 
+    end
+    
     methods
         
         function model = HmmDist(varargin)
@@ -41,6 +45,7 @@ classdef HmmDist < ParamJointDist
         %                                             is initialized by default. 
         %           'verbose'                       - see property above
         % OUTPUT:   'model'   - the constructed HMM object
+            if nargin == 0; return; end
             [model.nstates                          ,...
              model.startDist                        ,...
              model.transitionDist                   ,...
@@ -57,6 +62,17 @@ classdef HmmDist < ParamJointDist
             if(isempty(model.nstates))
                 model.nstates = numel(model.emissionDist);
             end
+            if(isempty(model.transitionDist))
+               model.transitionDist = DiscreteDist('mu',normalize(rand(model.nstates),1),'support',1:model.nstates); 
+            end
+            if(isempty(model.startDist))
+               model.startDist = DiscreteDist('mu',normalize(rand(model.nstates,1)),'support',1:model.nstates); 
+            end
+            if(numel(model.emissionDist) == 1)
+                model.emissionDist = copy(model.emissionDist,model.nstates,1);
+                model.initWithData = true;
+            end
+            
             model.domain = struct;
             model.domain.Z = 1:model.nstates;
             model.domain.Y = [];
@@ -69,6 +85,24 @@ classdef HmmDist < ParamJointDist
                 
             end
         end
+        
+        function dgm = convertToDgm(model,t)
+            
+            CPD{1} = TabularCPD(mean(model.startDist)');
+            CPD(2:t) = copy(TabularCPD(mean(model.transitionDist)'),1,t-1);
+            CPD(t+1:2*t) = copy(MixtureDist('distributions',model.emissionDist),1,t);
+            
+            G = zeros(2*t);
+            for i=1:t-1
+               G(i,i+1) = 1;
+               G(i,i+t) = 1;
+            end
+            G(t,2*t) = 1;
+            dgm = DgmDist(G,'CPDs',CPD,'domain',1:2*t,'InfEng',VarElimInfEng());
+        end
+        
+        
+        
         
         function model = fit(model,varargin)
         % Learn the parameters of the HMM from data.  
@@ -182,6 +216,8 @@ classdef HmmDist < ParamJointDist
                 essTrans,essObs,stackedData,seqndx,weightingMatrix] = initializeVariables();
                % these variables are global to the emUpdate method
                
+               
+               
                %% EM LOOP
                while(iter <= maxIter && not(converged))
                    resetStatistics();
@@ -192,9 +228,9 @@ classdef HmmDist < ParamJointDist
                              
             function Estep()
             % Compute the expected sufficient statistics    
-               
                 for j=1:nobs
-                    model = condition(model,'Y',getObservation(model,data,j));
+                    obs = getObservation(model,data,j);
+                    model = condition(model,'Y',obs);
                     currentLL = currentLL + logprob(model);
                     %% Starting Distribution
                     if(not(clampedStart)) 
@@ -202,15 +238,16 @@ classdef HmmDist < ParamJointDist
                     end 
                     %% Transition Distributions
                     if(not(clampedTrans))
-                        essTrans.counts = essTrans.counts +  marginal(model);               % marginal(model) = full two slice marginals xi
+                                                                  
+                        essTrans.counts = essTrans.counts + marginal(model);                % marginal(model) = full two slice marginals xi     
                     end  
                     if(not(clampedObs))
                         gamma = marginal(model,':');                                        % marginal(model,':') all of the 1 slice marginals, i.e. gamma
-                        weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) =...         % seqndx just keeps track of where data cases start and finish
-                          weightingMatrix(seqndx(j):seqndx(j)+size(gamma,2)-1,:) + gamma';  % in the stacked matrix
+                        sz = size(gamma,2); idx = seqndx(j);
+                        weightingMatrix(idx:idx+sz-1,:) = weightingMatrix(idx:idx+sz-1,:) + gamma';  % seqndx just keeps track of where data cases start and finish  in the stacked matrix
+                        
                     end
                 end
-               
                 essTrans.counts = essTrans.counts';
                 %% Emission Distributions
                 
@@ -247,6 +284,8 @@ classdef HmmDist < ParamJointDist
                     end
                 end
                 
+               
+                
             end % end of Mstep subfunction
             
             function testConvergence()
@@ -255,6 +294,9 @@ classdef HmmDist < ParamJointDist
                     fprintf('\niteration %d, loglik = %f\n',iter,currentLL);
                 end
                 iter = iter + 1;
+                if(prevLL ~=0 && currentLL < prevLL)
+                    warning('Decrease in LL!');
+                end
                 converged = ((abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < optTol) || (iter > maxIter);
             end % end of testConvergence subfunction
             
@@ -289,31 +331,35 @@ classdef HmmDist < ParamJointDist
  
         function model = initializeParams(model,X)                                        
         % Initialize parameters to starting states in preperation for EM.
-            if(isempty(model.transitionDist))
-               model.transitionDist = DiscreteDist('mu',normalize(rand(model.nstates),1),'support',1:model.nstates); 
-            end
-            if(isempty(model.startDist))
-               model.startDist = DiscreteDist('mu',normalize(rand(model.nstates,1)),'support',1:model.nstates); 
-            end
-            if(numel(model.emissionDist) == 1 && ~iscell(model.emissionDist))
-                model.emissionDist = copy(model.emissionDist,model.nstates,1);
-                nobs = nobservations(model,X);
-                if(nobs >= model.nstates)
-                    for i=1:model.nstates
-                        model.emissionDist{i} =  fit(model.emissionDist{i},'data',getObservation(model,X,i)');
-                    end
+          
+            if(model.initWithData)
+                
+                data = HmmDist.stackObservations(X);
+                if(allSameTypes(model.emissionDist))
+                    model.emissionDist = copy(fit(model.emissionDist{1},'data',data),1,model.nstates);
                 else
-                    data = HmmDist.stackObservations(X);
-                    n = size(data,1);
-                    batchSize = floor(n/model.nstates);
-                    if(batchSize < 2), batchSize = n;end
                     for i=1:model.nstates
-                        model.emissionDist{i} =  fit(model.emissionDist{i},'data',data(sub(randperm(n),1:batchSize),:));
+                        model.emissionDist{i} =  fit(model.emissionDist{i},'data',data);
                     end
                 end
-                
-                
+%                 nobs = nobservations(model,X);
+%                 if(nobs >= model.nstates)
+%                     for i=1:model.nstates
+%                       
+%                         model.emissionDist{i} =  fit(model.emissionDist{i},'data',getObservation(model,X,i)');
+%                     end
+%                 else
+%                     data = HmmDist.stackObservations(X);
+%                     n = size(data,1);
+%                     batchSize = floor(n/model.nstates);
+%                     if(batchSize < 2), batchSize = n;end
+%                     for i=1:model.nstates
+%                         model.emissionDist{i} =  fit(model.emissionDist{i},'data',data(sub(randperm(n),1:batchSize),:));
+%                     end
+%                 end
             end
+                
+            
         end
         
          function data = checkData(model,data)
@@ -379,10 +425,10 @@ classdef HmmDist < ParamJointDist
         %
         % Alternatively, if data is a 3d matrix of size d-t-n, data is simply
         % reshaped into size []-d and ndx is evenly spaced.
-            
+        
             if(iscell(data))
                 X = cell2mat(data)';
-                ndx = cumsum([1,cell2mat(cellfun(@(seq)size(seq,2),data,'UniformOutput',false))]);
+                ndx = cumsum([1,cell2mat(cellfuncell(@(seq)size(seq,2),data))]);
                 ndx = ndx(1:end-1);
             else
                 X = reshape(data,[],size(data,1));

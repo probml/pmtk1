@@ -202,7 +202,6 @@ classdef MvnDist < ParamJointDist
               suffStat.xbar = sum(bsxfun(@times,X,weights))'/suffStat.n;  % bishop eq 13.20
               X = bsxfun(@minus,X,suffStat.xbar');
               suffStat.XX = bsxfun(@times,X,weights)'*X/suffStat.n;
-              
               if(0) % sanity check
                   XXtest = zeros(size(X,2));
                   for i=1:size(X,1)

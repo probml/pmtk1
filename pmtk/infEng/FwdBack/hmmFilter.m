@@ -15,4 +15,4 @@ alpha = zeros(K,T);
 for t=2:T
   [alpha(:,t), scale(t)] = normalize((transmat' * alpha(:,t-1)) .* obslik(:,t));
 end
-loglik = sum(log(scale+eps));
+loglik = sum(log(scale)+eps);
