@@ -16,6 +16,10 @@ classdef GmDist < ParamJointDist
     function d = nnodes(obj)
        d = nnodes(obj.G); % size(obj.G,1);
     end
+    
+    function h = drawGraph(obj)
+        h = draw(obj.G);
+    end
 
   end
   

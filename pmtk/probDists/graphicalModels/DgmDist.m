@@ -17,9 +17,9 @@ classdef DgmDist < GmDist
           obj.G = G;
           [obj.CPDs, obj.infEng,obj.domain]= process_options(...
               varargin, 'CPDs', [], 'infEng', [],'domain',[]);
-          %if ~isempty(CPDs) && ~isempty(infMethod)
-          %  obj = initInfEng(obj);
-          %end
+           if isempty(obj.infEng)
+              obj.infEng = VarElimInfEng(); 
+           end
       end
 
       function d = ndimensions(obj)

@@ -81,7 +81,7 @@ classdef FwdBackInfEng < InfEng
         
         function eng = condition(eng,model,visVars,visValues)   
             eng.pi = mean(model.startDist)';
-            eng.A = mean(model.transitionDist)';
+            eng.A  = mean(model.transitionDist)';
             model.infEng = []; % avoid recursive copying
             eng.model = model;
             if(nargin < 4)
@@ -247,10 +247,7 @@ classdef FwdBackInfEng < InfEng
            if(isempty(eng.pi) || isempty(eng.A) || isempty(eng.B))
               error('All of {pi,A,B} must be specified'); 
            end
-            
         end
-        
-        
     end
     
 end

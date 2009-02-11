@@ -33,6 +33,9 @@ classdef UgmTabularDist < GmDist
             if isa(G, 'double'), G = UndirectedGraph(G); end
             obj.G = G;
             obj.domain = 1:nnodes(G);
+            if isempty(obj.infEng)
+               obj.infEng = VarElimInfEng(); 
+            end
         end
         
         function Tfac = convertToTabularFactor(obj,visVars,visVals)

@@ -21,7 +21,12 @@ classdef Graph
    end
    
    function h=draw(obj)
-     h = Graphlayout('adjMatrix',obj.adjMat);
+       if obj.directed
+         h = Graphlayout('adjMatrix',obj.adjMat,'currentLayout',Treelayout());
+       else
+         h = Graphlayout('adjMatrix',obj.adjMat,'undirected',true,'currentLayout',Treelayout());
+       end
+     
    end  
    
    function d = nnodes(obj)
