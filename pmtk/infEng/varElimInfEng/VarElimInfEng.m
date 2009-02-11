@@ -32,6 +32,10 @@ classdef VarElimInfEng < InfEng
         function [postQuery,eng,Z] = marginal(eng, queryVars)
         % postQuery = sum_h p(Query,h)      
         
+            if any(ismember(queryVars,eng.model.visVars))
+               warning('VarElimInfEng:alreadyConditioned','You have already conditioned on one or more of your query variables.'); 
+            end
+            
             cfacs = (cellfun(@(x)isequal(pmf(x),1),eng.Tfac));                  % factors involving continuous, unobserved nodes
             if any(cfacs)
                cdom = cell2mat(cellfuncell(@(x)rowvec(sube(subd(x,'domain'),2)),eng.Tfac(cfacs))); % domain of unobserved continuous nodes
@@ -66,8 +70,10 @@ classdef VarElimInfEng < InfEng
         end
         
         function logZ = lognormconst(eng)
+             warning off VarElimInfEng:alreadyConditioned;
             [Tfac,eng,Z] = marginal(eng,eng.domain);
             logZ = log(Z);
+            warning on VarElimInfEng:alreadyConditioned;
         end
         
     end
