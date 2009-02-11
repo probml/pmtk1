@@ -121,7 +121,7 @@ classdef MixtureDist < ParamJointDist
         % globalDomain = indices of each parent, followed by index of child
         % all of the children must be observed
             if(isempty(visVars)) 
-               Tfac = TabularFactor(1,[]); return; % return an empty TabularFactor
+               Tfac = TabularFactor(1,globalDomain); return; % return an empty TabularFactor
             end
             if ~isequal(globalDomain(2:end),visVars)
                 error('Not all of the continuous valued children of this CPD were observed.');

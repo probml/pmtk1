@@ -5,6 +5,7 @@ classdef VarElimInfEng < InfEng
         domain;
         visVars;
         ordering;
+        model;
     end
  
     methods
@@ -22,10 +23,35 @@ classdef VarElimInfEng < InfEng
             end
             eng.domain = model.domain;
             eng.visVars = visVars;
+           
+            model.infEng = [];
+            eng.model = model;
+            eng.model.infEng = eng;
         end
         
         function [postQuery,eng,Z] = marginal(eng, queryVars)
         % postQuery = sum_h p(Query,h)      
+        
+            cfacs = (cellfun(@(x)isequal(pmf(x),1),eng.Tfac));                  % factors involving continuous, unobserved nodes
+            if any(cfacs)
+               cdom = cell2mat(cellfuncell(@(x)rowvec(sube(subd(x,'domain'),2)),eng.Tfac(cfacs))); % domain of unobserved continuous nodes
+               I = intersect(cdom,queryVars);
+               if ~isempty(I)
+                   if numel(queryVars) > numel(I)
+                       error('Cannot represent the joint over mixed node types.');
+                   elseif numel(I) > 1
+                       error('Cannot represent the joint over two or more unobserved continuous nodes.');
+                   else
+                        postQuery = extractLocalDistribution(eng.model,I);
+                        assert( isa(postQuery,'MixtureDist'));
+                        par = parents(eng.model.G, I);
+                        assert(numel(par) == 1);
+                        SS.counts = pmf(marginal(eng.model,par));
+                        postQuery.mixingWeights = fit(postQuery.mixingWeights,'suffStat',SS);
+                        return;
+                   end
+               end
+            end
             elim = mysetdiff(mysetdiff(eng.domain(eng.ordering),queryVars),eng.visVars);
             [postQuery,Z] = normalizeFactor(VarElimInfEng.variableElimination(eng.Tfac,elim));
             

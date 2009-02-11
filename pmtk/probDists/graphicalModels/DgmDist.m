@@ -152,7 +152,7 @@ classdef DgmDist < GmDist
             if(isempty(include) || ~any(include))
                  Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, [],{});
             else
-                Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, visVars(include) , visVals(include));
+                 Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, visVars(include) , visVals(include));
             end
             nstates(j) = Tfacs{j}.sizes(end);
         end
@@ -164,6 +164,10 @@ classdef DgmDist < GmDist
           visVars = []; visVals = [];
       end
       Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
+    end
+    
+    function nodeDist = extractLocalDistribution(obj,var)
+       nodeDist = obj.CPDs{var};
     end
     
     function [mu,Sigma,domain] = convertToMvnDist(dgm)

@@ -89,7 +89,8 @@ classdef TabularFactor
   methods(Static=true)
     
       function T = multiplyFactors(facs)
-          % T = multiplyFactors({fac1, fac2, ...})       
+          % T = multiplyFactors({fac1, fac2, ...})     
+          facs = facs(cellfun(@(x)~isequal(pmf(x),1),facs));                    % ignore idempotent factors
           N = numel(facs);
           dom = [];
           for i=1:N
