@@ -35,8 +35,31 @@ classdef UgmTabularDist < GmDist
             obj.domain = 1:nnodes(G);
         end
         
-        function Tfac = convertToTabularFactor(obj)
-            Tfac = TabularFactor.multiplyFactors(obj.factors);
+        function Tfac = convertToTabularFactor(obj,visVars,visVals)
+            if nargin < 3
+                visVars = []; visVals = [];
+            end
+            Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
+        end
+        
+        function [Tfacs,nstates] = convertToTabularFactors(obj,visVars,visVals)
+            if nargin == 1 && nargout == 1
+                Tfacs = obj.factors;
+                return;
+            end
+            if(nargin < 3)
+                visVars = [];  visVals = {};
+            end
+            d = length(obj.factors);
+            Tfacs = obj.factors;
+            nstates = zeros(1,d);
+            for j=1:d
+                include = ismember(visVars,Tfacs{j}.domain);
+                if(~isempty(include) && any(include))
+                    Tfacs{j} = slice(Tfacs{j},visVars(include),visVals(include));
+                end
+                nstates(j) = Tfacs{j}.sizes(end);
+            end
         end
         
         function fc = makeFullConditionals(obj, visVars, visVals)
