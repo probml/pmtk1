@@ -46,22 +46,19 @@ classdef UgmTabularDist < GmDist
         end
         
         function [Tfacs,nstates] = convertToTabularFactors(obj,visVars,visVals)
-            if nargin == 1 && nargout == 1
+            if nargin == 1 || isempty(visVars)
                 Tfacs = obj.factors;
+                nstates = obj.nstates;
                 return;
             end
-            if(nargin < 3)
-                visVars = [];  visVals = {};
-            end
+            
             d = length(obj.factors);
             Tfacs = obj.factors;
-            nstates = zeros(1,d);
             for j=1:d
                 include = ismember(visVars,Tfacs{j}.domain);
                 if(~isempty(include) && any(include))
                     Tfacs{j} = slice(Tfacs{j},visVars(include),visVals(include));
                 end
-                nstates(j) = Tfacs{j}.sizes(end);
             end
         end
         
