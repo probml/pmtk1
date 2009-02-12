@@ -158,7 +158,7 @@ classdef DgmDist < GmDist
         end
     end
     
-    function Tfac = convertToTabularFactor(obj,visVars,visVals)
+    function Tfac = convertToJointTabularFactor(obj,visVars,visVals)
       % Represent the joint distribution as a single large factor
       if nargin < 3
           visVars = []; visVals = [];

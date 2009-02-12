@@ -1,7 +1,7 @@
 classdef EnumInfEng < InfEng 
   % tabular (multi-dimensional array) distribution
   % Model must support following method:
-  % Tfac = convertToTabularFactor(model)
+  % Tfac = convertToJointTabularFactor(model)
   
   properties
     Tfac;
@@ -16,7 +16,7 @@ classdef EnumInfEng < InfEng
     end
 
     function eng = condition(eng, model, visVars, visValues)
-       Tfac = convertToTabularFactor(model);
+       Tfac = convertToJointTabularFactor(model);
        [Tfac, Z] = normalizeFactor(slice(Tfac, visVars, visValues)); % p(H,v)
        eng.Tfac = Tfac;
        eng.logZ = log(Z);

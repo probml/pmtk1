@@ -17,17 +17,15 @@ function [canonized,support] = canonizeLabels(labels,support)
 %
 %%
 % Suppose we know the support is say 10:20 but our labels are [11:15,17,19] and
-% we want 11 to be coded 1 not 2 since our support begins at 10 and similarly
-% for 15, it should be 6 not 2. We can specify the actual support to achieve
+% we want 11 to be coded as 2 since our support begins at 10 and similarly
+% 19 codes as 10 and 20 as 11. We can specify the actual support to achieve
 % this.
 %
-% canonizeLabels([11:15,17,19])                - without specifying support
-% ans =
-%     1     2     3     4     5     6     7
-% 
-% canonizeLabels([11:15,17,19],10:20)          - with specifying support
-% ans =
-%     2     3     4     5     6     8    10
+% canonizeLabels([10,11,19,20])          - without specifying support
+% ans =  1     2     3     4
+%    
+% canonizeLabels([10,11,19,20],10:20)        - with specifying support
+% ans =  1     2    10    11
 % 
     [nrows,ncols] = size(labels);
     labels = labels(:);

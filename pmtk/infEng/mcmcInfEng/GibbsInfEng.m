@@ -41,7 +41,7 @@ classdef GibbsInfEng  < InfEng
        % the variables, so we need to 'label' the columns with the right
        % domain
        hidVars = mysetdiff(model.domain, visVars);
-       eng.samples = SampleDist(samples, hidVars);
+       eng.samples = SampleDist(samples, hidVars); % , model.support(hidVars));
     end
     
     

@@ -11,7 +11,8 @@ classdef SampleDist < ParamFreeDist
              % sth sample for the dth dimension of the ith pdf is stored in 
              % samples(s,d,i)
     domain; 
-    
+    support; % support{d,i} = range of possible values
+             % Only used for discrete valued domains, default 1:K
     %{
     % We need to remember which dimension corresponds to which variable,
     % since when we marginalize down, we extract a subset of the variables.
@@ -24,11 +25,21 @@ classdef SampleDist < ParamFreeDist
 
   %%  Main methods
   methods
-    function m = SampleDist(X, domain)
+    function m = SampleDist(X, domain, support)
       if nargin < 1, X = []; end
       m.samples = X;
       if nargin < 2, domain = 1:size(X,2); end
       m.domain = domain;
+      if nargin < 3
+        [n,d,npdfs] = size(X);  
+        for j=1:d
+          for p=1:npdfs
+            K = unique(X(:,j,p));
+            support{j,p} = K;
+          end
+        end
+      end
+      m.support = support;
     end
     
     function mu = mean(obj) 
@@ -114,6 +125,27 @@ classdef SampleDist < ParamFreeDist
     end
     
     function p = pmf(obj)
+      % p(j) = p(X=j), j=1:nstates of the joint configuration
+      [Nsamples Ndims Ndistrib] = size(obj.samples); % samples(s,d,i)
+      assert(Ndistrib==1)
+      XX = obj.samples;
+      for d=1:Ndims
+        XX(:,d) = canonizeLabels(XX(:,d), obj.support{d});
+        nstates(d) = length(obj.support{d});
+      end
+      if Ndims==1
+        p = normalize(hist(XX, obj.support{d}));
+        return;
+      end
+      ndx = subv2ind(nstates, XX);
+      K = prod(nstates);
+      counts = hist(ndx, 1:K);
+      p = reshape(counts,nstates)/Nsamples;
+    end
+    
+   
+     %{
+    function p = pmf(obj)
       % p(j,d) = p(X=j|distrib d), j=1:nstates, d=1:ndistrib
       [Nsamples Ndims Ndistrib] = size(obj.samples); % samples(s,d,i)
       K = length(unique(obj.samples));
@@ -123,7 +155,7 @@ classdef SampleDist < ParamFreeDist
         p(:,d) = histc(obj.samples(:,d), 1:K)'/Nsamples;
       end
     end
-    
+    %}
     
     function s = sample(obj,n)
       NN = size(obj.samples, 1);
@@ -166,5 +198,23 @@ classdef SampleDist < ParamFreeDist
     end
   end
   
+  methods(Static = true)
+   function testPmf()
+      % nstates = 2 3
+      X = [1 1;
+           1 2;
+           1 2; 
+           1 3;
+           2 2; 
+           2 2;
+           2 2;
+           2 3;
+           2 3;
+           2 3];
+         %SampleDist(X, domain, support)
+         obj = SampleDist(X, 1:2, {1:2, 1:3});
+         pp = pmf(obj)
+   end
+  end
   
 end
