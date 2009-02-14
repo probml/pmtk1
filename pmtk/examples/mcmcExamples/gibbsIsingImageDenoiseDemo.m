@@ -1,3 +1,4 @@
+function gibbsIsingImageDenoiseDemo()
 %% Gibbs Sampling for image denoising
 
 setSeed(0);
@@ -17,10 +18,25 @@ y = img2 + sigma*randn(size(img2)); %y = noisy signal
 % prior = Ising
 J = 1; % coupling strenght
 % Observation model
-CPD  = MvnMixDist('distributions',{MvnDist(-1,sigma^2), MvnDist(+1,sigma^2)});
-model = IsingGridDist(J, CPD);
+CPDs = {MvnDist(-1,sigma^2), MvnDist(+1,sigma^2)};
+model = IsingGridDist(J, CPDs);
 
-% Infernece
-model.infEng = GibbsIsingGridInfEng('Nsamples', 1000);
-model = condition(model, 'visible', y);
-postmean = mean(marginal(model, 'hidden'));
+% Inference
+model.infEng = GibbsIsingGridInfEng('Nsamples', 50000, 'Nburnin', 1000, ...
+  'progressFn', @plotter);
+avgX = postMean(model, 'visible', y);
+
+figure; imagesc(y); colormap('gray'); colorbar; title('noisy image');
+figure; imagesc(avgX); colormap('gray'); colorbar; title('posterior mean');
+
+ % plot intermediate results
+  function plotter(X, iter)
+    if rem(iter,10000) == 0,
+      figure;
+      imagesc(X);  axis('square'); colormap gray; axis off;
+      title(sprintf('sample %d', iter));
+      drawnow
+    end
+  end
+
+end

@@ -89,7 +89,6 @@ classdef ParamJointDist < ParamDist
       if(~ismember('lognormconst',methods(model.infEng)))
          error('The current inference engine does not support this operation'); 
       end
-      
       logZ = lognormconst(model.infEng);
     end
 

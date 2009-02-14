@@ -31,3 +31,13 @@ subplot(4,1,4); bar(thetaPostMean);title('posterior mean (red line=pooled MLE)')
 hold on;h=line([0 20], [thetaPooledMLE thetaPooledMLE]);
 set(h,'color','r','linewidth',2)
 
+% 95% credible interval
+figure;
+for i=1:d
+  q = betainv([0.025 0.975], aPost(i), bPost(i));
+  h = line([q(1) q(2)], [i i]);
+  median = betainv(0.5, aPost(i), bPost(i));
+  h=plot(q,i,'*');
+end
+
+

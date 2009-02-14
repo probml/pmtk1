@@ -42,12 +42,6 @@ classdef MvnDist < ParamJointDist
         L =-0.5*sum((X*inv(Sigma)).*X,2);
     end
     
-   
-    
-    
-    
-    
-    
     function fc = makeFullConditionals(obj, visVars, visVals)
       d = length(obj.mu);
       if nargin < 2
@@ -190,9 +184,6 @@ classdef MvnDist < ParamJointDist
                  error('can only plot 1 or 2d');
          end
      end
-     
-     
-     
      
     
   end % methods

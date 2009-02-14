@@ -13,6 +13,11 @@ classdef IsingGridDist < GmDist
            obj.CPDs = CPDs;
         end
            
+        function avgX = postMean(model, visVars, visVals)
+          % visVars is ignored
+          % visVals should be an n*m matrix
+          avgX = postMean(model.infEng, model, visVars, visVals);
+        end
     end
     
     
