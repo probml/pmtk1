@@ -20,6 +20,10 @@ classdef DgmDist < GmDist
            if isempty(obj.infEng)
               obj.infEng = VarElimInfEng(); 
            end
+           if isempty(obj.domain)
+               obj.domain = 1:numel(obj.CPDs);
+           end
+               
       end
 
       function d = ndimensions(obj)

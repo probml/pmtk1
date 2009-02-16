@@ -22,7 +22,7 @@ assert(approxeq(pSgivenRW.T,pSgivenRW2.T));
 %% Conditional Test 2
 [dgm] = mkSprinklerDgm;
 dgm.infEng = VarElimInfEng();
-Tfac = convertToTabularFactor(dgm);
+Tfac = convertToJointTabularFactor(dgm);
 J = Tfac.T; % CSRW
 C = 1; S = 2; R = 3; W = 4;
 dgm = condition(dgm, [C W], [1 1]);

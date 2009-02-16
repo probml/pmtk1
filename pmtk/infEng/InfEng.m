@@ -8,5 +8,13 @@ classdef InfEng
       samples         = sample   (eng, n)                       % return samples
       
   end
+  
+  methods
+      
+      function eng = InfEng()
+         eng;  %#ok 
+      end
+      
+  end
  
 end

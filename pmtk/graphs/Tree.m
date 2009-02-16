@@ -9,7 +9,7 @@ classdef Tree < UndirectedGraph
      end
      obj.adjMat = adjMat;
      if ~checkAcyclic(obj)
-       warning('BLT:tree', 'not a tree!')
+       warning('PMTK:tree', 'not a tree!')
      end
    end
   

@@ -1,8 +1,8 @@
 %% Test EnumInfEng 
 %#testPMTK
 [dgm] = mkSprinklerDgm;
-dgm.infEng = EnumInfEng;
-Tfac = convertToTabularFactor(dgm);
+dgm.infEng = EnumInfEng();
+Tfac = convertToJointTabularFactor(dgm);
 J = Tfac.T; % CSRW
 C = 1; S = 2; R = 3; W = 4;
 dgm = condition(dgm, [C W], [1 1]);

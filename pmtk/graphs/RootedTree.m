@@ -19,7 +19,7 @@ classdef RootedTree <  DirectedGraph
      directed = 0;
      [d, obj.preorder, obj.postorder, hascycle, f, obj.parent] = dfs(obj, root, directed);
      if hascycle
-       warning('BLT:tree', 'not a tree!')
+       warning('PMTK:tree', 'not a tree!')
      end
      pred = obj.parent;
      for i=1:length(pred)

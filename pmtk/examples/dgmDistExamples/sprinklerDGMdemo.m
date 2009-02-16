@@ -22,7 +22,7 @@ assert(approxeq(pSgivenWR(true), 0.1945)); % explaining away
 
 
 % Display joint
-joint = convertToTabularFactor(dgm);
+joint = convertToJointTabularFactor(dgm);
 joint = joint.T;
 lab=cellfun(@(x) {sprintf('%d ',x)}, num2cell(ind2subv([2 2 2 2],1:16),2));
 figure;

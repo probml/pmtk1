@@ -31,6 +31,7 @@ classdef TabularFactor
       if nargin < 2, n = 1; end
       S = ind2subv(T.sizes, sample(T.T(:), n));
     end
+    
     function smallpot = marginalize(bigpot, onto, maximize)
         % smallpot = marginalizeFactor(bigpot, onto, maximize)
         if nargin < 3, maximize = 0; end
@@ -81,7 +82,9 @@ classdef TabularFactor
         Tsmall = TabularFactor(Tsmall, H);
     end
     
-   
+    function cellArray = copy(obj,varargin)
+        cellArray = num2cell(repmat(obj,varargin{:}));
+    end
    
     
   end % methods
