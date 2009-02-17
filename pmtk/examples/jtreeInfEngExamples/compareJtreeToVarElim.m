@@ -3,7 +3,6 @@
 dgmVE = mkAlarmNetworkDgm;
 dgmJT = dgmVE;
 dgmJT.infEng = JtreeInfEng();
-
 for i=1:37
     [piVE,dgmVE] = marginal(dgmVE,i);
     [piJT,dgmJT] = marginal(dgmJT,i);
