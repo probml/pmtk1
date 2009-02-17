@@ -4,11 +4,12 @@ classdef SampleDistDiscrete < SampleDist
  % sample. 
     
     properties
-        support;
+        
     end
     
     methods
         function m = SampleDistDiscrete(X,support)
+            if nargin == 0; return; end
         % Constructor    
             if nargin < 1, X = []; end
             if(nargin < 2), support = 1:size(X,2);end

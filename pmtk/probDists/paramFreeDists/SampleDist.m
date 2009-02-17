@@ -26,6 +26,7 @@ classdef SampleDist < ParamFreeDist
   %%  Main methods
   methods
     function m = SampleDist(X, domain, support)
+      if nargin == 0; return; end
       if nargin < 1, X = []; end
       m.samples = X;
       if nargin < 2, domain = 1:size(X,2); end

@@ -5,6 +5,7 @@ classdef JtreeInfEng < InfEng
    properties
         factors;                % the original tabular factors - unaltered
         domain;                 % the entire domain of the client model
+        nstates;                % the number of states in each variable of the domain. 
         cliques;                % a cell array of TabularFactors, representing the cliques
         sepsets;                % sepsets{i,j} = cliques{i}.domain intersect cliques{j}.domain (symmetric)
         iscalibrated = false;   % true iff the clique tree is calibrated so that each clique represents the unnormalized joint over the variables in its scope. 
@@ -17,69 +18,25 @@ classdef JtreeInfEng < InfEng
    
    methods
        
+       function eng = JtreeInfEng()
+           eng; %#ok
+       end
+       
        function eng = condition(eng,model,visVars,visVals)
-           
            if eng.iscalibrated && (nargin < 3 || isempty(visVars))
                return; % nothing to do
            end
-           if(nargin < 4)
-              visVars = []; visVals = {};
+           
+           if eng.iscalibrated && nargin == 4
+               eng = recalibrate(eng,visVars,visValues); % recalibrate based on new evidence. 
+               return;
            end
-           [eng.factors,nstates] = convertToTabularFactors(model,visVars,visVals);
+           
+           if(nargin < 4), visVars = []; visVals = {}; end
+           [eng.factors,eng.nstates] = convertToTabularFactors(model,visVars,visVals);
            eng.domain = model.domain;
            if isempty(eng.cliques)
-               G = model.G;
-               if G.directed
-                  G = moralize(G); 
-               end
-           
-               adjmat = G.adjMat;
-               tree = Jtree(adjmat);
-               adjmat = tree.adjMat;
-               eng.cliqueScope = tree.cliques;
-               ncliques = numel(eng.cliqueScope);
-               eng.cliqueLookup = false(numel(eng.domain),ncliques);
-               for c=1:ncliques
-                    eng.cliqueLookup(eng.cliqueScope{c},c) = true;
-               end
-               nfactors = numel(eng.factors);
-               factorLookup = false(nfactors,ncliques);
-               for f=1:nfactors
-                    candidateCliques = all(eng.cliqueLookup(eng.factors{f}.domain,:),1);
-                    c = minidx(cellfun(@(x)numel(x),eng.cliqueScope(candidateCliques)));
-                    factorLookup(f,sub(find(candidateCliques),c)) = true;
-               end
-             
-               emptyCliques = find(~any(factorLookup,1));
-               adjmat = triu(mkSymmetric(adjmat));
-               for i=1:numel(emptyCliques)
-                   ec = emptyCliques(i);
-                   P = parents(adjmat,ec);
-                   C = children(adjmat,ec);
-                   adjmat(P,C) = 1;
-               end
-               adjmat(emptyCliques,:)   = [];
-               adjmat(:,emptyCliques)   = [];
-               eng.cliqueScope(emptyCliques)    = [];
-               eng.cliqueLookup(:,emptyCliques) = [];
-               factorLookup(:,emptyCliques) = [];
-               ncliques = size(eng.cliqueLookup,2);
-               
-               eng.cliques = cell(ncliques,1);
-               for c=1:ncliques
-                   eng.cliques{c} = TabularFactor.multiplyFactors({TabularFactor(1,eng.cliqueScope{c}),eng.factors{factorLookup(:,c)}});
-               end
-             
-               eng.sepsets = cell(ncliques);
-               [is,js] = find(adjmat);
-               for k=1:numel(is)
-                   i = is(k); j = js(k);
-                   eng.sepsets{i,j} = myintersect(eng.cliques{i}.domain,eng.cliques{j}.domain);
-                   eng.sepsets{j,i} = eng.sepsets{i,j};
-               end
-              
-               eng.cliqueTree = adjmat;
-               
+               eng = setupCliqueTree(eng,model.G);  
            end
            eng = calibrate(eng);
        end
@@ -108,7 +65,64 @@ classdef JtreeInfEng < InfEng
     
     methods(Access = 'protected')
         
-
+        
+        function eng = setupCliqueTree(eng,G)
+           
+            nfactors = numel(eng.factors);
+            ncliques = buildCliqueTree();
+            addFactorsToCliques();
+            constructSeparatingSets();
+             
+            function ncliques =  buildCliqueTree()
+                if G.directed, G = moralize(G);  end
+                initialGraph = G.adjMat;            % graph of the client model
+                for f=1:nfactors
+                    dom = eng.factors{f}.domain;
+                    initialGraph(dom,dom) = 1;      % connect up factors whose scope overlap to ensure they will live in the same cliques. 
+                end
+                initialGraph = setdiag(initialGraph,0);
+                treeObj = Jtree(initialGraph);      % The jtree class triangulates and forms a cluster tree satisfying RIP
+                eng.cliqueTree  = treeObj.adjMat;   % the adjacency matrix of the clique tree
+                eng.cliqueScope = treeObj.cliques;  % the scope of each clique
+                ncliques = numel(eng.cliqueScope);
+                eng.cliqueLookup = false(numel(eng.domain),ncliques);
+                for c=1:ncliques
+                    eng.cliqueLookup(eng.cliqueScope{c},c) = true; % cliqueLookup(v,c) = true iff variable v is in the scope of clique c
+                end
+            end
+            
+            function addFactorsToCliques()
+                factorLookup = false(nfactors,ncliques);
+                for f=1:nfactors
+                    candidateCliques = all(eng.cliqueLookup(eng.factors{f}.domain,:),1);
+                    c = minidx(cellfun(@(x)numel(x),eng.cliqueScope(candidateCliques))); % add the factor to the smallest accommodating clique
+                    factorLookup(f,sub(find(candidateCliques),c)) = true;
+                end
+                eng.cliques = cell(ncliques,1);
+                for c=1:ncliques
+                    scope = eng.cliqueScope{c};
+                    T = ones(eng.nstates(scope));
+                    eng.cliques{c} = TabularFactor.multiplyFactors({TabularFactor(T,scope),eng.factors{factorLookup(:,c)}});
+                end
+            end
+            
+            function constructSeparatingSets()
+                eng.sepsets = cell(ncliques);
+                [is,js] = find(eng.cliqueTree);
+                for k=1:numel(is)
+                    i = is(k); j = js(k);
+                    eng.sepsets{i,j} = myintersect(eng.cliques{i}.domain,eng.cliques{j}.domain);
+                    eng.sepsets{j,i} = eng.sepsets{i,j};
+                end
+            end
+            
+        end % end of setupCliqueTree method
+        
+        
+        function eng = recalibrate(eng,visVars, visVals)
+           error('recalibration of an already calibrated tree based on new evidence is not yet implemented'); 
+        end
+        
         
         function postQuery = outOfCliqueQuery(eng,queryVars)
             error('out of clique query not yet implemented.');
@@ -127,34 +141,33 @@ classdef JtreeInfEng < InfEng
         end
         
         function eng = calibrate(eng)
-            adjmat           = eng.cliqueTree;
+            adjmat = triu(mkSymmetric(eng.cliqueTree)); % We treat the clique tree as directed here to easily define a topological ordering of the nodes.
+           
             ncliques = numel(eng.cliques);
             eng.messages = cell(ncliques);
             rm = @(c)c(cellfun(@(x)~isempty(x),c));
             allexcept = @(x)[1:x-1,(x+1):ncliques];
            
             root = sub(1:ncliques,not(sum(adjmat,1))); 
-   
-            assert(numel(root) == 1);
+            assert(numel(root) == 1); % otherwise its not a tree!
             readyToSend = false(1,ncliques);
-            readyToSend(not(sum(adjmat,2))) = true; % leaves are ready
+            readyToSend(not(sum(adjmat,2))) = true; % leaves are ready 
             % upwards pass
             while not(readyToSend(root))    
-                current          = sub(sub(1:ncliques,readyToSend),1);
-                parent           = parents(adjmat,current);
+                current          = sub(sub(1:ncliques,readyToSend),1);          % this is the first ready in the queue
+                parent           = parents(adjmat,current);                     
                 assert(numel(parent) == 1);
                 messagesIn       = rm(eng.messages(allexcept(parent),current));
-                if isempty(messagesIn)
-                   messageOut = marginalize(eng.cliques{current},eng.sepsets{current,parent}); 
-                else
-                   messageOut = marginalize(TabularFactor.multiplyFactors({eng.cliques{current},messagesIn{:}}),eng.sepsets{current,parent}); 
-                end
+                sepset = eng.sepsets{current,parent};
+                assert(~isempty(sepset))
+                messageOut = marginalize(TabularFactor.multiplyFactors(rm({eng.cliques{current},messagesIn{:}})),sepset); 
                 eng.messages{current,parent} = messageOut;
                 readyToSend(current) = false;
                 C = children(adjmat,parent);
                 readyToSend(parent) = all(cellfun(@(x)~isempty(x),eng.messages(C,parent))); % parent ready to send if there are messages from all of its children
             end
             assert(sum(readyToSend) == 1 && readyToSend(root)) % only root left
+            
             % downwards pass
             while(any(readyToSend))
                 current  = sub(sub(1:ncliques,readyToSend),1);
@@ -163,11 +176,7 @@ classdef JtreeInfEng < InfEng
                     child = C(i);
                     parent = parents(adjmat,current);
                     messagesIn = rm(eng.messages(parent,current));
-                    if isempty(messagesIn)
-                        eng.messages{current,child} = marginalize(eng.cliques{current},eng.sepsets{current,child});
-                    else
-                        eng.messages{current,child} = marginalize(TabularFactor.multiplyFactors({eng.cliques{current},messagesIn{:}}),eng.sepsets{current,child});
-                    end
+                    eng.messages{current,child} = marginalize(TabularFactor.multiplyFactors(rm({eng.cliques{current},messagesIn{:}})),eng.sepsets{current,child});
                     readyToSend(child) = true;
                 end
                 readyToSend(current) = false;
@@ -176,8 +185,6 @@ classdef JtreeInfEng < InfEng
             for c=1:ncliques
                eng.cliques{c} = TabularFactor.multiplyFactors(rm({eng.cliques{c},eng.messages{:,c}})); 
             end
-            
-  
             eng.iscalibrated = true;
         end
       
