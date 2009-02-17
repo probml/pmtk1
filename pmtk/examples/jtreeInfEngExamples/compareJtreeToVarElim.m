@@ -6,8 +6,8 @@ dgmVE = mkAlarmNetworkDgm;
 dgmJT = dgmVE;
 dgmJT.infEng = JtreeInfEng();
 
-[pVE,dgmVE] = marginal(dgmVE,1);
-[pJT,dgmJT] = marginal(dgmJT,1);
+[pVE,dgmVE] = marginal(dgmVE,32);
+[pJT,dgmJT] = marginal(dgmJT,32);
 %[pEnum,dgmEnum] = marginal(dgmEnum,[1,2]);
 display(pmf(pVE));
 display(pmf(pJT));

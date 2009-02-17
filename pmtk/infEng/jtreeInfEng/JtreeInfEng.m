@@ -141,55 +141,51 @@ classdef JtreeInfEng < InfEng
         end
         
         function eng = calibrate(eng)
-            adjmat = triu(mkSymmetric(eng.cliqueTree)); % We treat the clique tree as directed here to easily define a topological ordering of the nodes.
+            jtree = triu(eng.cliqueTree); 
+            % We treat the clique tree as directed here to implicitly define a
+            % topological ordering of the nodes - traversal will queue based,
+            % (i.e. breadth first search), starting with the leaves. The 'queue'
+            % is the readyToSend logical vector defined below. 
            
             ncliques = numel(eng.cliques);
-            eng.messages = cell(ncliques);
-            rm = @(c)c(cellfun(@(x)~isempty(x),c));
-            allexcept = @(x)[1:x-1,(x+1):ncliques];
-           
-            root = sub(1:ncliques,not(sum(adjmat,1))); 
-            assert(numel(root) == 1); % otherwise its not a tree!
-            readyToSend = false(1,ncliques);
-            readyToSend(not(sum(adjmat,2))) = true; % leaves are ready 
+            eng.messages = cell(ncliques);            % we store all of the messages to allow for faster recalibration given new evidence. 
+            rm = @(c)c(cellfun(@(x)~isempty(x),c));   % simple function to remove empty entries in a cell array
+            allexcept = @(x)[1:x-1,(x+1):ncliques];   % returns the same answer as setdiff(1:ncliques,x)
+            root = sub(1:ncliques,not(sum(jtree,1))); % nodes with no parents (inwards links in the directed clique tree)
+            assert(numel(root) == 1);                 % otherwise its not a directed tree!
+            readyToSend = false(1,ncliques);          % readyToSend(c) = true iff clique c is ready to send its message to its parent in the upwards pass or its children in the downwards pass
+            readyToSend(not(sum(jtree,2))) = true;    % leaves are ready to send
+            
             % upwards pass
             while not(readyToSend(root))    
-                current          = sub(sub(1:ncliques,readyToSend),1);          % this is the first ready in the queue
-                parent           = parents(adjmat,current);                     
-                assert(numel(parent) == 1);
-                messagesIn       = rm(eng.messages(allexcept(parent),current));
-                sepset = eng.sepsets{current,parent};
-                assert(~isempty(sepset))
-                messageOut = marginalize(TabularFactor.multiplyFactors(rm({eng.cliques{current},messagesIn{:}})),sepset); 
-                eng.messages{current,parent} = messageOut;
+                current = sub(sub(1:ncliques,readyToSend),1); % this is the first ready clique in the queue
+                parent = parents(jtree,current); assert(numel(parent) == 1);     
+                psi = TabularFactor.multiplyFactors(rm({eng.cliques{current},eng.messages{allexcept(parent),current}}));
+                eng.messages{current,parent} = marginalize(psi,eng.sepsets{current,parent});
                 readyToSend(current) = false;
-                C = children(adjmat,parent);
-                readyToSend(parent) = all(cellfun(@(x)~isempty(x),eng.messages(C,parent))); % parent ready to send if there are messages from all of its children
+                % parent ready to send if there are messages from all of its children
+                readyToSend(parent)  = all(cellfun(@(x)~isempty(x),eng.messages(children(jtree,parent),parent))); 
             end
-            assert(sum(readyToSend) == 1 && readyToSend(root)) % only root left
+            assert(sum(readyToSend) == 1) % only root left to send
             
             % downwards pass
             while(any(readyToSend))
-                current  = sub(sub(1:ncliques,readyToSend),1);
-                C = children(adjmat,current);
+                current = sub(sub(1:ncliques,readyToSend),1);
+                C = children(jtree,current);
                 for i=1:numel(C)
                     child = C(i);
-                    parent = parents(adjmat,current);
-                    messagesIn = rm(eng.messages(parent,current));
-                    eng.messages{current,child} = marginalize(TabularFactor.multiplyFactors(rm({eng.cliques{current},messagesIn{:}})),eng.sepsets{current,child});
+                    psi = TabularFactor.multiplyFactors(rm({eng.cliques{current},eng.messages{allexcept(child),current}}));
+                    eng.messages{current,child} = marginalize(psi,eng.sepsets{current,child});
                     readyToSend(child) = true;
                 end
                 readyToSend(current) = false;
             end
             
+            % combine messages
             for c=1:ncliques
                eng.cliques{c} = TabularFactor.multiplyFactors(rm({eng.cliques{c},eng.messages{:,c}})); 
             end
             eng.iscalibrated = true;
-        end
-      
-    end
-    
-    
-    
-end
+        end % end of calibrate method
+    end % end of protected methods block
+end % end of class
