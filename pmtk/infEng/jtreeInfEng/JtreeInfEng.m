@@ -5,14 +5,15 @@ classdef JtreeInfEng < InfEng
    properties
         factors;                % the original tabular factors - unaltered
         domain;                 % the entire domain of the client model
-        nstates;                % the number of states in each variable of the domain. 
+        nstates;                % nstates{i} = the number of states in variable domain(i)
         cliques;                % a cell array of TabularFactors, representing the cliques
         sepsets;                % sepsets{i,j} = cliques{i}.domain intersect cliques{j}.domain (symmetric)
-        iscalibrated = false;   % true iff the clique tree is calibrated so that each clique represents the unnormalized joint over the variables in its scope. 
         messages;               % a 2D cell array s.t. messages{i,j} = the message passed from clique i to clique j. Each message is a TabularFactor.
         cliqueLookup;           % cliqueLookup(i,j) = true iff variable i is in the scope of clique j
+        factorLookup;           % factorLookup(f,c) = true iff eng.factors{f} was used in the construction of eng.cliques{c}
         cliqueTree;             % The clique tree as an adjacency matrix
         cliqueScope;            % a cell array s.t. cliqueScope{i} = the scope,(domain) of the ith clique.
+        iscalibrated = false;   % true iff the clique tree is calibrated so that each clique represents the unnormalized joint over the variables in its scope. 
    end
    
    
@@ -67,13 +68,16 @@ classdef JtreeInfEng < InfEng
         
         
         function eng = setupCliqueTree(eng,G)
-           
+        % create a clique tree from the initial graph G, add factors to the
+        % cliques, and create the separating sets. 
+        
             nfactors = numel(eng.factors);
-            ncliques = buildCliqueTree();
+            ncliques = [];
+            buildCliqueTree();
             addFactorsToCliques();
             constructSeparatingSets();
              
-            function ncliques =  buildCliqueTree()
+            function buildCliqueTree()
                 if G.directed, G = moralize(G);  end
                 initialGraph = G.adjMat;            % graph of the client model
                 for f=1:nfactors
@@ -92,21 +96,23 @@ classdef JtreeInfEng < InfEng
             end
             
             function addFactorsToCliques()
-                factorLookup = false(nfactors,ncliques);
+            % add each factor to the smallest accommodating clique   
+                eng.factorLookup = false(nfactors,ncliques);
                 for f=1:nfactors
                     candidateCliques = all(eng.cliqueLookup(eng.factors{f}.domain,:),1);
-                    c = minidx(cellfun(@(x)numel(x),eng.cliqueScope(candidateCliques))); % add the factor to the smallest accommodating clique
-                    factorLookup(f,sub(find(candidateCliques),c)) = true;
+                    c = minidx(cellfun(@(x)numel(x),eng.cliqueScope(candidateCliques))); 
+                    eng.factorLookup(f,sub(find(candidateCliques),c)) = true;
                 end
                 eng.cliques = cell(ncliques,1);
                 for c=1:ncliques
                     scope = eng.cliqueScope{c};
                     T = ones(eng.nstates(scope));
-                    eng.cliques{c} = TabularFactor.multiplyFactors({TabularFactor(T,scope),eng.factors{factorLookup(:,c)}});
+                    eng.cliques{c} = TabularFactor.multiplyFactors({TabularFactor(T,scope),eng.factors{eng.factorLookup(:,c)}});
                 end
             end
             
             function constructSeparatingSets()
+            % for each edge in the clique tree, construct the separating set.     
                 eng.sepsets = cell(ncliques);
                 [is,js] = find(eng.cliqueTree);
                 for k=1:numel(is)
@@ -118,17 +124,19 @@ classdef JtreeInfEng < InfEng
             
         end % end of setupCliqueTree method
         
-        
         function eng = recalibrate(eng,visVars, visVals)
+         % recalibrate based on new evidence.    
            error('recalibration of an already calibrated tree based on new evidence is not yet implemented'); 
         end
         
         
         function postQuery = outOfCliqueQuery(eng,queryVars)
+        % perform variable elimination to answer the out of clique query    
             error('out of clique query not yet implemented.');
         end
         
         function ndx = findClique(eng,queryVars)
+        % find a clique to answer the answer the query, if any.
             dom = 1:size(eng.cliqueLookup,1);
             candidates = dom(all(eng.cliqueLookup(queryVars,:),1));
             if isempty(candidates)
@@ -141,6 +149,9 @@ classdef JtreeInfEng < InfEng
         end
         
         function eng = calibrate(eng)
+        % perform an upwards and downwards pass so that each clique represents 
+        % the unnormalized distribution over the variables in its scope.
+            
             jtree = triu(eng.cliqueTree); 
             % We treat the clique tree as directed here to implicitly define a
             % topological ordering of the nodes - traversal will queue based,
@@ -154,7 +165,7 @@ classdef JtreeInfEng < InfEng
             root = sub(1:ncliques,not(sum(jtree,1))); % nodes with no parents (inwards links in the directed clique tree)
             assert(numel(root) == 1);                 % otherwise its not a directed tree!
             readyToSend = false(1,ncliques);          % readyToSend(c) = true iff clique c is ready to send its message to its parent in the upwards pass or its children in the downwards pass
-            readyToSend(not(sum(jtree,2))) = true;    % leaves are ready to send
+            readyToSend(not(sum(jtree,2))) = true;    % leaves are ready to send up
             
             % upwards pass
             while not(readyToSend(root))    
@@ -162,7 +173,7 @@ classdef JtreeInfEng < InfEng
                 parent = parents(jtree,current); assert(numel(parent) == 1);     
                 psi = TabularFactor.multiplyFactors(rm({eng.cliques{current},eng.messages{allexcept(parent),current}}));
                 eng.messages{current,parent} = marginalize(psi,eng.sepsets{current,parent});
-                readyToSend(current) = false;
+                readyToSend(current) = false; % already sent
                 % parent ready to send if there are messages from all of its children
                 readyToSend(parent)  = all(cellfun(@(x)~isempty(x),eng.messages(children(jtree,parent),parent))); 
             end
@@ -174,14 +185,14 @@ classdef JtreeInfEng < InfEng
                 C = children(jtree,current);
                 for i=1:numel(C)
                     child = C(i);
-                    psi = TabularFactor.multiplyFactors(rm({eng.cliques{current},eng.messages{allexcept(child),current}}));
+                    psi = TabularFactor.multiplyFactors(rm({eng.cliques{current},eng.messages{allexcept(child),current}})); 
                     eng.messages{current,child} = marginalize(psi,eng.sepsets{current,child});
                     readyToSend(child) = true;
                 end
                 readyToSend(current) = false;
             end
             
-            % combine messages
+            % update the cliques with all of the messages sent to them
             for c=1:ncliques
                eng.cliques{c} = TabularFactor.multiplyFactors(rm({eng.cliques{c},eng.messages{:,c}})); 
             end
