@@ -19,7 +19,7 @@ classdef JtreeInfEng < InfEng
        
        function eng = condition(eng,model,visVars,visVals)
            
-           if eng.iscalibrated && (nargin < 3 || isemtpy(visVars))
+           if eng.iscalibrated && (nargin < 3 || isempty(visVars))
                return; % nothing to do
            end
            if(nargin < 4)
@@ -32,15 +32,8 @@ classdef JtreeInfEng < InfEng
                if G.directed
                   G = moralize(G); 
                end
-               %ordering = best_first_elim_order(G.adjMat,nstates);
-               %[eng.cliqueTree,eng.cliques,eng.sepsets] = jtreeByVarElim(eng.factors,ordering); 
+           
                adjmat = G.adjMat;
-%                 for f = 1:numel(eng.factors)
-%                    dom = eng.factors{f}.domain;
-%                    adjmat(dom,dom) = 1;
-%                end
-%                adjmat = setdiag(adjmat,0);
-               
                tree = Jtree(adjmat);
                adjmat = tree.adjMat;
                eng.cliqueScope = tree.cliques;
@@ -87,22 +80,6 @@ classdef JtreeInfEng < InfEng
               
                eng.cliqueTree = adjmat;
                
-%                ncliques = size(factorLookup,2);
-%                eng.cliques   = cell(ncliques,1);
-%                cliqueDomains = cell(ncliques,1);
-%                for c=1:ncliques
-%                   eng.cliques{c}   = TabularFactor.multiplyFactors(eng.factors(factorLookup(:,c))); 
-%                   cliqueDomains{c} = eng.cliques{c}.domain;
-%                end
-               
-               
-               
-               %ncliques = numel(eng.cliques);
-               %eng.cliqueLookup = false(numel(eng.domain),ncliques);
-%                eng.cliqueScope = cellfuncell(@(c)c.domain,eng.cliques);
-%                for c=1:ncliques
-%                    eng.cliqueLookup(eng.cliqueScope{c},c) = true;
-%                end
            end
            eng = calibrate(eng);
        end
@@ -151,14 +128,11 @@ classdef JtreeInfEng < InfEng
         
         function eng = calibrate(eng)
             adjmat           = eng.cliqueTree;
-            %[junk,orderUp] = dfs(adjmat,1,1);         %#ok depth first search traversal induces a topological ordering of the nodes
-            %orderDown   = orderUp(end:-1:1);
             ncliques = numel(eng.cliques);
             eng.messages = cell(ncliques);
             rm = @(c)c(cellfun(@(x)~isempty(x),c));
             allexcept = @(x)[1:x-1,(x+1):ncliques];
-            %initialCliques = eng.cliques;
-            
+           
             root = sub(1:ncliques,not(sum(adjmat,1))); 
    
             assert(numel(root) == 1);
@@ -181,31 +155,13 @@ classdef JtreeInfEng < InfEng
                 readyToSend(parent) = all(cellfun(@(x)~isempty(x),eng.messages(C,parent))); % parent ready to send if there are messages from all of its children
             end
             assert(sum(readyToSend) == 1 && readyToSend(root)) % only root left
-%             
-%             C = children(adjmat,root);
-%            
-%             for i=1:numel(C)
-%                 child = C(i);
-%                 messagesInExceptChild    = rm(eng.messages(allexcept(child),root));
-%                 if isempty(messagesInExceptChild)
-%                    eng.messages{root,child} = marginalize(eng.cliques{root},eng.sepsets{root,child}); 
-%                 else
-%                     eng.messages{root,child} = marginalize(TabularFactor.multiplyFactors({eng.cliques{root},messagesInExceptChild{:}}),eng.sepsets{root,child});
-%                 end
-%             end
-%             readyToSend(root) = false;
-%             readyToSend(C) = true;
-
-            
-
-            
+            % downwards pass
             while(any(readyToSend))
                 current  = sub(sub(1:ncliques,readyToSend),1);
                 C = children(adjmat,current);
                 for i=1:numel(C)
                     child = C(i);
                     parent = parents(adjmat,current);
-                    %messagesIn = rm({eng.messages{parent,current},eng.messages{allexcept(current),parent}});
                     messagesIn = rm(eng.messages(parent,current));
                     if isempty(messagesIn)
                         eng.messages{current,child} = marginalize(eng.cliques{current},eng.sepsets{current,child});
@@ -221,46 +177,7 @@ classdef JtreeInfEng < InfEng
                eng.cliques{c} = TabularFactor.multiplyFactors(rm({eng.cliques{c},eng.messages{:,c}})); 
             end
             
-            
-            
-%             
-%             % upwards pass     
-%             for k=1:numel(orderUp)-1
-%                i = orderUp(k);
-%                j = parents(adjmat,i);
-%                assert(~isempty(j) && numel(j) < 2);  % otherwise its not a tree
-%                %eng.messages{i,j} = marginalize(TabularFactor.multiplyFactors(rm({eng.cliques{i},eng.messages{:,i}})),eng.sepsets{i,j});
-%                eng.messages{i,j} = marginalize(eng.cliques{i},eng.sepsets{i,j});
-%                eng.cliques{j}    = TabularFactor.multiplyFactors({eng.cliques{j},eng.messages{i,j}});
-%             end
-%                
-%             % collect
-%              
-% %             root = orderUp(end);
-% %             C = children(adjmat,root);
-% %             for j=1:numel(C)
-% %                 child = C(j);
-% %                 eng.messages{root,child} = marginalize(TabularFactor.multiplyFactors(rm({initialCliques{root},eng.messages{allexcept(child),root}})),eng.sepsets{root,child});
-% %             end
-%             
-%             % downwards pass
-%             
-%             for d=2:numel(orderDown)
-%                j = orderDown(d);
-%                C = children(adjmat,j);
-%                for k=1:numel(C)
-%                   i = C(k); 
-%                   eng.messages{j,i} = marginalize(TabularFactor.multiplyFactors(rm({initialCliques{j},eng.messages{allexcept(j),j}})),eng.sepsets{j,i}); 
-%                   %eng.cliques{i} = TabularFactor.multiplyFactors({eng.cliques{i},eng.messages{j,i}}); % NOT READY TO SEND YET
-%                end
-%                
-%             end
-%             
-%             for d =2:numel(orderDown)
-%                 i = orderDown(d);
-%                eng.cliques{i} = TabularFactor.multiplyFactors(rm({eng.cliques{i},eng.messages{orderDown(2:d-1),i}}));
-%             end
-
+  
             eng.iscalibrated = true;
         end
       

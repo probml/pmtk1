@@ -11,3 +11,4 @@ function dgm = mkAlarmNetworkDgm()
     dgm = DgmDist(alarmNetwork.G, 'CPDs', CPDs);
     dgm.domain = 1:N;
 end
+
