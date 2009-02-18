@@ -14,6 +14,7 @@ classdef JtreeInfEng < InfEng
         cliqueTree;             % The clique tree as an adjacency matrix
         cliqueScope;            % a cell array s.t. cliqueScope{i} = the scope,(domain) of the ith clique.
         iscalibrated = false;   % true iff the clique tree is calibrated so that each clique represents the unnormalized joint over the variables in its scope. 
+        orderDown;              % the order in which the cliques were visited in the downwards pass of calibration. 
    end
    
    
@@ -132,7 +133,31 @@ classdef JtreeInfEng < InfEng
         
         function postQuery = outOfCliqueQuery(eng,queryVars)
         % perform variable elimination to answer the out of clique query    
-            error('out of clique query not yet implemented.');
+            
+            ntotalCliques = numel(eng.cliques);
+            includeCliques = false(1,ntotalCliques);
+            varsRemaining = queryVars;
+            while not(isempty(varsRemaining))  
+                bestClique = maxidx(sum(eng.cliqueLookup(varsRemaining,:),1)); % clique that contains the most number of vars in varsRemaining.
+                includeCliques(bestClique) = true;
+                varsRemaining = mysetdiff(varsRemaining,eng.cliques{bestClique}.domain);
+            end
+            subtree = minSubTree(eng.cliqueTree,sub(1:ntotalCliques,includeCliques));
+            cliqueNDX = find(sum(subtree,1) | sum(subtree,2)');
+            [junk,cliqueNDX] = ismember(cliqueNDX,eng.orderDown);
+            cliqueNDX = cliqueNDX(end:-1:1);
+           
+            nfactors = numel(cliqueNDX);
+            factors = cell(1,nfactors);
+           
+            for f=1:nfactors-1
+               c = cliqueNDX(f);
+               mu = marginalize(eng.cliques{c},eng.sepsets{c,cliqueNDX(f+1)});
+               factors{f} = divideBy(eng.cliques{c},mu);
+            end
+            factors(nfactors) = eng.cliques(cliqueNDX(end));
+            elim = mysetdiff(unique(cell2mat(cellfuncell(@(fac)rowvec(fac.domain),factors))),queryVars);
+            postQuery = normalizeFactor(variableElimination(factors,elim));
         end
         
         function ndx = findClique(eng,queryVars)
@@ -178,10 +203,13 @@ classdef JtreeInfEng < InfEng
                 readyToSend(parent)  = all(cellfun(@(x)~isempty(x),eng.messages(children(jtree,parent),parent))); 
             end
             assert(sum(readyToSend) == 1) % only root left to send
-            
+            eng.orderDown = zeros(1,ncliques);
+            counter = 1;
             % downwards pass
             while(any(readyToSend))
                 current = sub(sub(1:ncliques,readyToSend),1);
+                eng.orderDown(counter) = current;
+                counter = counter + 1;
                 C = children(jtree,current);
                 for i=1:numel(C)
                     child = C(i);

@@ -9,5 +9,3 @@ for i=1:37
     assert(approxeq(pmf(piVE),pmf(piJT)));
 end
 
-
-
