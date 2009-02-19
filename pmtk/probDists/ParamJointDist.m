@@ -49,6 +49,7 @@ classdef ParamJointDist < ParamDist
         end
         
         function L = logprob(model, X)
+          error('deprecated')
             % L(i) = log p(X(i,:) | params), where columns are hidden nodes
             if ~model.conditioned, model = condition(model); end
             %L = logprob(model.infEng, X, normalize);
@@ -140,6 +141,7 @@ classdef ParamJointDist < ParamDist
             end
         end
         
+        %{
         function [Xc,model] = emImpute(model,X)
             % Fill in NaN entries of X using the EM algorithm
             warning('buggy') % KPM
@@ -169,6 +171,7 @@ classdef ParamJointDist < ParamDist
                 fprintf('iter: %d\n',count)
             end
         end
+        %}
         
         
     end

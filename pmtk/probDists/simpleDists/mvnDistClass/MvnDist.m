@@ -4,6 +4,7 @@ classdef MvnDist < ParamJointDist
   properties
     mu; Sigma;
     prior;
+    fitArgs;
   end
  
   %% main methods
@@ -15,14 +16,44 @@ classdef MvnDist < ParamJointDist
       if nargin == 0
         mu = []; Sigma = [];
       end
-      [m.infEng, m.domain, m.prior] = process_options(varargin, ...
-        'infEng', GaussInfEng(), 'domain', 1:numel(mu), 'prior', 'none');
+      [m.infEng, m.domain, m.prior, m.fitArgs] = process_options(varargin, ...
+        'infEng', GaussInfEng(), 'domain', 1:numel(mu), 'prior', 'none', 'fitArgs', {});
       m.mu = mu; m.Sigma = Sigma;
     end
 
-    function [mu,Sigma,domain] = convertToMvnDist(m)
+    function [mu,Sigma,domain] = convertToMvnDist(m) % weird name - already is mvnDist...
       mu = m.mu; Sigma = m.Sigma; domain = m.domain; 
     end
+    
+    function L = logprob(model,X)
+      % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
+      mu = model.mu; Sigma = model.Sigma;
+      d = length(mu);
+      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
+       XC = bsxfun(@minus,X,rowvec(mu));
+       L = -0.5*sum((XC*inv(Sigma)).*XC,2);
+      L = L - logZ;
+      if false % debugging
+        SS = MvnDist.mkSuffStat(X);
+        LL = logprobSS(model, SS);
+        assert(approxeq(LL, sum(L)));
+      end
+    end
+
+    function L = logprobSS(model, SS)
+      % L = sum_i log p(SS(i) | params)
+      % SS.n
+      % SS.xbar = 1/n sum_i X(i,:)'
+      % SS.XX2(j,k) = 1/n sum_i X(i,j) X(i,k)
+      mu = model.mu; Sigma = model.Sigma;
+      n = SS.n;
+      % SS = sum_i xi xi' + mu mu' - 2mu' xi
+      S = n*SS.XX2 + n*mu*mu' - 2*mu*n*SS.xbar';
+      d = length(mu);
+      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
+      L = -0.5*trace(inv(Sigma) * S) - n*logZ;
+    end
+
     
     function L = logprobUnnormalized(model, X)
         % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
@@ -40,6 +71,7 @@ classdef MvnDist < ParamJointDist
         X = bsxfun(@minus,X,rowvec(mu));
         L =-0.5*sum((X*inv(Sigma)).*X,2);
     end
+    
     
     function fc = makeFullConditionals(obj, visVars, visVals)
       d = length(obj.mu);
@@ -84,6 +116,7 @@ classdef MvnDist < ParamJointDist
     function obj = mkRndParams(obj, d)
       if nargin < 2, d = ndimensions(obj); end
       if(~isscalar(d) || d~=round(d))
+        error('what does this code do?')
           perm = randperm(size(d,1));
           obj.mu = d(perm(1),:);
           obj.Sigma = 0.05*cov(d);
@@ -115,43 +148,42 @@ classdef MvnDist < ParamJointDist
        %                     is automatically calculated.
        %
        % 'prior'    -        This can be a string chosen from
-       %       {'none', 'covshrink'}
+       %       {'none', 'covshrink', 'niw'}
        %      or an MvnInvWishartDist object.
        %  If prior = none, we compute the MLE, otherwise a MAP estimate.
        %
        % 'covtype'  -        Restrictions on the covariance: 'full' | 'diag' |
        %                     'isotropic'
 
-       [X,SS,prior,covtype] = process_options(varargin,...
+       [X,SS,prior,covtype, fitArgs] = process_options(varargin,...
          'data'              ,[]         ,...
          'suffStat'          ,[]         ,...
          'prior'             ,obj.prior         ,...
-         'covtype'           ,'full');
+         'covtype'           ,'full', ...
+         'fitArgs'           , obj.fitArgs);
        if(~strcmpi(covtype,'full')),error('Restricted covtypes not yet implemented');end
        if any(isnan(X))
-         obj = fitMvnEcm(obj, X, prior); return;
+         obj = fitMvnEcm(obj, X, prior, fitArgs{:}); return;
        end
        if isempty(SS), SS = MvnDist.mkSuffStat(X); end
        switch class(prior)
          case 'char'
-           switch prior
+           switch lower(prior)
              case 'none'
                obj.mu = SS.xbar;
                obj.Sigma = SS.XX;
              case 'covshrink',
                obj.mu =  mean(X);
                obj.Sigma =  covshrink(X); % should rewrite in terms of SS
+             case 'niw'
+               prior = MvnDist.mkNiwPrior(X);
+               [obj.mu, obj.Sigma] = MvnDist.mapEstimateNiw(prior, SS);
              otherwise
                error(['unknown prior ' prior])
            end
-         case 'MvnInvWishartDist'  % MAP estimation
-           m = Mvn_MvnInvWishartDist(prior);
-           m = fit(m, 'suffStat',SS);
-           post = m.muSigmaDist; % paramDist(m); % NIW
-           m = mode(post);
-           obj.mu = m.mu;
-           obj.Sigma = m.Sigma;
-           otherwise
+         case 'MvnInvWishartDist'  
+           [obj.mu, obj.Sigma] = MvnDist.mapEstimateNiw(prior,  SS);
+         otherwise
            error('unknown prior ')
        end
      end
@@ -192,13 +224,32 @@ classdef MvnDist < ParamJointDist
  
 
   methods(Static = true)
+    
+    function prior = mkNiwPrior(data)
+      [n,d] = size(data);
+      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
+      nu0 = d+1; T0 = diag(nanvar(data)); % Smallest valid prior on Sigma
+      prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
+    end
+    
+    function [mu, Sigma] = mapEstimateNiw(prior,  SS)
+      m = Mvn_MvnInvWishartDist(prior);
+      m = fit(m, 'suffStat',SS);
+      post = m.muSigmaDist; % paramDist(m); % NIW
+      m = mode(post);
+      mu = m.mu;
+      Sigma = m.Sigma;
+    end
+           
       function suffStat = mkSuffStat(X,weights)
           % SS.n
           % SS.xbar = 1/n sum_i X(i,:)'
-          % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k)
+          % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k) - centered around xbar
+          % SS.XX2(j,k) = 1/n sum_i X(i,j) X(i,k)  - not mean centered
           if(nargin > 1) % weighted sufficient statistics, e.g. for EM
               suffStat.n = sum(weights,1);
               suffStat.xbar = sum(bsxfun(@times,X,weights))'/suffStat.n;  % bishop eq 13.20
+              suffStat.XX2 = bsxfun(@times,X,weights)'*X/suffStat.n;
               X = bsxfun(@minus,X,suffStat.xbar');
               suffStat.XX = bsxfun(@times,X,weights)'*X/suffStat.n;
               if(0) % sanity check
@@ -213,6 +264,7 @@ classdef MvnDist < ParamJointDist
               n = size(X,1);
               suffStat.n = n;
               suffStat.xbar = sum(X,1)'/n; % column vector
+              suffStat.XX2 = (X'*X)/n;
               X = bsxfun(@minus,X,suffStat.xbar');
               suffStat.XX = (X'*X)/n;
           end

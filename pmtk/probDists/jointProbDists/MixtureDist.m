@@ -107,7 +107,8 @@ classdef MixtureDist < ParamJointDist
         function pred = predict(model,data)
         % pred.mu(k,i) = p(Z_k | data(i,:),params)   
             logRik = calcResponsibilities(model,data);
-            Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2))); 
+            %Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2))); 
+            Rik = exp(normalizeLogspace(logRik));
             pred = DiscreteDist('mu',Rik');
         end
          

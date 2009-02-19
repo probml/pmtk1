@@ -6,7 +6,7 @@ setSeed(seed);
 % Given a new d-variate Normal MvnDist, populate with random parameters
 model = mkRndParams(MvnDist, d);
 % Set the variable conditioned = 1.  This is the same as model.conditioned = 1
-model = condition(model);
+%model = condition(model);
 n = 5;
 % Samples n observations from the model.  Returns as Xfull
 Xfull = sample(model, n);

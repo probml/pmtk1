@@ -32,6 +32,13 @@ classdef MvnInvWishartDist < ParamDist
       lnZ = (v*d/2)*log(2) + mvtGammaln(d,v/2) -(v/2)*logdet(S) + (d/2)*log(2*pi/k);
     end
      
+     function L = logprob(obj, mu, Sigma)
+      pgauss = MvnDist(obj.mu, Sigma/obj.k); 
+      piw = InvWishartDist(obj.dof, obj.Sigma);
+      L = logprob(pgauss, mu(:)') + logprob(piw, Sigma);
+     end
+     
+    %{
     function L = logprob(obj, X)
       % For 1d, L(i) = log p(X(i,:) | theta), where X(i,:) = [mu sigma]
       d = length(obj.mu);
@@ -43,6 +50,7 @@ classdef MvnInvWishartDist < ParamDist
       assert(size(X,2)==2);
       L = logprob(pgauss, X(:,1)) + logprob(piw, X(:,2));
     end
+    %}
       
     function m = mode(obj)
       % Returns a structure
