@@ -1,10 +1,10 @@
 %% Imputation for an MVN 
 
-d = 10; seed = 0; pcMissing = 0.3;
+d = 4; seed = 0; pcMissing = 0.3;
 setSeed(seed);
 model = mkRndParams(MvnDist, d);
 %model = condition(model);
-n = 50;
+n = 20;
 
 % If we are always missing the first K columns, we can never estimate their
 % params, even using EM... So we use a random missing pattern, which is
@@ -37,8 +37,8 @@ models = {trueModel, ...
  % fit(baseModel, 'data', Xmiss, 'prior', 'none')};
 methods = {'true', 'obs MLE', 'obs MAP', 'EM MAP'};
 for i=1:length(models)
-  Ximpute = impute(models{i}, Xmiss); % all the work happens here
-  figure;  imagesc(Ximpute); colorbar
-  mse(i) = mean((Ximpute - Xfull).^2);
-  title(sprintf('imputed with %s, mse %5.3f ', methods{i}, mse(i));
+  Ximpute = impute(models{i}, Xmiss); 
+  figure;  imagesc(Ximpute); colorbar;
+  mse(i) = sum(sum(Ximpute - Xfull).^2)/prod(size(Ximpute));
+  title(sprintf('imputed with %s, mse %5.3f ', methods{i}, mse(i)));
 end

@@ -85,7 +85,7 @@ while(~converged)
       currentLL = currentLL + logprob(prior, mu, Sigma);
     end
     loglikTrace(iter) = currentLL;
-    if currentLL < prevLL, error('EM did not increase objective'); end
+    if currentLL < prevLL, sprintf('warning: EM did not increase objective'); end
     if verbose, fprintf('%d: LL = %5.3f\n', iter, currentLL); end
     iter = iter + 1;
     converged = iter >=maxIter || (abs(currentLL - prevLL) / (abs(currentLL) + abs(prevLL) + eps)/2) < opttol;
