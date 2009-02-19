@@ -25,7 +25,7 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
     function obj = mode(model)
       obj.mu = model.muSigmaDist.mu;
       d = length(obj.mu);
-      obj.Sigma = model.muSigmaDist.Sigma / (model.muSigmaDist.dof + d + 1);
+      obj.Sigma = model.muSigmaDist.Sigma / (model.muSigmaDist.dof + d + 2);
     end
     
     function pp = marginal(model)

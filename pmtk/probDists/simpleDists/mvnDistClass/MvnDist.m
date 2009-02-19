@@ -28,7 +28,6 @@ classdef MvnDist < ParamJointDist
         % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
         % variables
         mu = model.mu; Sigma = model.Sigma;
-        
         X = insertVisData(model,X);
         if numel(mu)==1
             X = X(:); % ensure column vector

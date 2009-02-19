@@ -198,7 +198,8 @@ classdef MixtureDist < ParamJointDist
              end
              logRik = calcResponsibilities(model,data);
              logGamma2 = bsxfun(@plus,logRik,log(weights+eps));           % combine alpha,beta,local evidence messages
-             logGamma2 = bsxfun(@minus,logGamma2,logsumexp(logGamma2,2)); % normalize while avoiding numerical underflow
+             %logGamma2 = bsxfun(@minus,logGamma2,logsumexp(logGamma2,2)); % normalize while avoiding numerical underflow
+             logGamma2 = normalizeLogspace(logGamma2);
              gamma2 = exp(logGamma2);
              nmixtures = numel(model.distributions);
              ess = cell(nmixtures,1);
