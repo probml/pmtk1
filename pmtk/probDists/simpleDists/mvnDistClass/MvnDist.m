@@ -128,8 +128,10 @@ classdef MvnDist < ParamJointDist
          'suffStat'          ,[]         ,...
          'prior'             ,obj.prior         ,...
          'covtype'           ,'full');
-       
        if(~strcmpi(covtype,'full')),error('Restricted covtypes not yet implemented');end
+       if any(isnan(X))
+         obj = fitMvnEcm(obj, X, prior); return;
+       end
        if isempty(SS), SS = MvnDist.mkSuffStat(X); end
        switch class(prior)
          case 'char'
@@ -139,7 +141,7 @@ classdef MvnDist < ParamJointDist
                obj.Sigma = SS.XX;
              case 'covshrink',
                obj.mu =  mean(X);
-               obj.Sigma =  covshrink(X);
+               obj.Sigma =  covshrink(X); % should rewrite in terms of SS
              otherwise
                error(['unknown prior ' prior])
            end
@@ -155,7 +157,7 @@ classdef MvnDist < ParamJointDist
        end
      end
 
-
+     
      function [postmu, logevidence] = softCondition(pmu, py, A, y)
          % Bayes rule for MVNs
          Syinv = inv(py.Sigma);

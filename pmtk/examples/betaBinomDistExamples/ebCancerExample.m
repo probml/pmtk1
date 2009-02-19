@@ -32,12 +32,12 @@ hold on;h=line([0 20], [thetaPooledMLE thetaPooledMLE]);
 set(h,'color','r','linewidth',2)
 
 % 95% credible interval
-figure;
+figure; hold on;
 for i=1:d
   q = betainv([0.025 0.975], aPost(i), bPost(i));
   h = line([q(1) q(2)], [i i]);
   median = betainv(0.5, aPost(i), bPost(i));
-  h=plot(q,i,'*');
+  h=plot(median,i,'*');
 end
-
+title('95% credible interval on theta, *=median')
 

@@ -22,6 +22,12 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
       d= length(m.muSigmaDist.mu); % m.ndims;
     end
      
+    function obj = mode(model)
+      obj.mu = model.muSigmaDist.mu;
+      d = length(obj.mu);
+      obj.Sigma = model.muSigmaDist.Sigma / (model.muSigmaDist.dof + d + 1);
+    end
+    
     function pp = marginal(model)
       % integrate out mu and Sigma
       muSigmaDist = model.muSigmaDist;

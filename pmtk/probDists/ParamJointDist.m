@@ -142,6 +142,7 @@ classdef ParamJointDist < ParamDist
         
         function [Xc,model] = emImpute(model,X)
             % Fill in NaN entries of X using the EM algorithm
+            warning('buggy') % KPM
             [n] = size(X,1);
             Xc = X;
             
