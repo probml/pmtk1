@@ -64,11 +64,21 @@ classdef TabularCPD < CondProbDist
     end
     
     function y = sample(obj, X, n)
+      % X(1:n, 1:#Parents)
       y = zeros(n,1);
-      sz = mysize(obj.T); r = sz(end); q = prod(sz(1:end-1));
-      T = reshape(obj.T, q, r);
-      for i=1:n
-        y(i) = sampleDiscrete(obj.T(X(i,:),:));
+      sz = mysize(obj.T); r = sz(end);
+      psz = sz(1:end-1);
+      q = prod(psz);
+      % q = #parent states, r = #child states
+      if length(sz)==1
+        y = sampleDiscrete(obj.T, n, 1);
+      else
+        assert(n==size(X,1))
+        T = reshape(obj.T, q, r);
+        ndx = subv2ind(psz, X); 
+        for i=1:n
+          y(i) = sampleDiscrete(T(ndx(i),:));
+        end
       end
     end
   end

@@ -3,6 +3,18 @@
 G1 = 1; G2 = 2; G3 = 3;
 X1 = 4; X2 = 5; X3 = 6;
 
+%    X1
+%    |
+%    G1
+%   /  \
+%  G2   G3
+%  |     |
+%  X2    X3
+
+% The Gi are binary (healthy or unhealthy gene),
+% The Xi are cts observations
+% If we observe X2 or X2,X3 the goal is to infer G1
+
 graph = zeros(6);
 graph(G1,X1) = 1;
 graph(G1,G2) = 1;
