@@ -80,6 +80,7 @@ if(nargin == 2 && nunique ~=K)
        error('When K is explicitly specified and differs from numel(unique(y)), y cannot contain any labels outside of the range 1:K'); 
     end
     
+    ymapped = ymapped + numel(1:map(1)-1);
     map = 1:K;
 else
    K = nunique; 
