@@ -32,10 +32,9 @@ baseModel = mkRndParams(trueModel); % to prevent cheating
 models = {trueModel, ...
   fit(baseModel, 'data', Xfull, 'prior', 'niw'), ...
   fit(baseModel, 'data', Xfull, 'prior', 'none'), ...
-  fit(baseModel, 'data', Xmiss, 'prior', 'niw', 'fitArgs', {'verbose', true})
-  };
- % fit(baseModel, 'data', Xmiss, 'prior', 'none')};
-methods = {'true', 'obs MLE', 'obs MAP', 'EM MAP'};
+  fit(baseModel, 'data', Xmiss, 'prior', 'niw', 'fitArgs', {'verbose', true}), ...
+  fit(baseModel, 'data', Xmiss, 'prior', 'none')};
+methods = {'true', 'obs MAP', 'obs MLE', 'EM MAP', 'EM MLE'};
 for i=1:length(models)
   Ximpute = impute(models{i}, Xmiss); 
   figure;  imagesc(Ximpute); colorbar;

@@ -48,7 +48,8 @@ classdef MvnDist < ParamJointDist
       mu = model.mu; Sigma = model.Sigma;
       n = SS.n;
       % SS = sum_i xi xi' + mu mu' - 2mu' xi
-      S = n*SS.XX2 + n*mu*mu' - 2*mu*n*SS.xbar';
+      %S = n*SS.XX2 + n*mu*mu' - 2*mu*n*SS.xbar';
+			S = n*SS.XX2 - n*SS.xbar*mu' - mu*n*SS.xbar' + n*mu*mu';
       d = length(mu);
       logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
       L = -0.5*trace(inv(Sigma) * S) - n*logZ;

@@ -53,9 +53,11 @@ classdef MvnInvWishartDist < ParamDist
     %}
       
     function m = mode(obj)
+			d = size(obj.Sigma,1);
       % Returns a structure
       m.mu = obj.mu;
-      m.Sigma = obj.Sigma; % this may be the wrong formula...
+      % m.Sigma = obj.Sigma; % this may be the wrong formula...
+      m.Sigma = obj.Sigma / (obj.dof + d + 2); % this should be the correct formula...
     end
     
     function mm = marginal(obj, queryVar)
