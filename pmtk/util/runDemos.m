@@ -42,10 +42,12 @@ demoDataTable
 pause(2); close('all'); clear('all');
 
 %% dgmDist
+chainLengthUgmDgmDemo
 cooperYooInterventionDemo
 gaussDGMdemo
 inheritedDiseaseVarElim
 mkAlarmNetworkDgm
+mkFluDgm
 mkSprinklerDgm
 rainyDayDemo
 sprinklerDGMdemo
@@ -119,6 +121,10 @@ invWIplot1D
 invWIplot2D
 pause(2); close('all'); clear('all');
 
+%% jtreeInfEng
+compareJtreeToVarElim
+pause(2); close('all'); clear('all');
+
 %% knnDist
 Knn3ClassHeatMaps
 mnistClassifyDemo
@@ -166,6 +172,7 @@ logreg_MvnDistTest
 pause(2); close('all'); clear('all');
 
 %% mcmc
+gibbsIsingImageDenoiseDemo
 gibbsSprinklerUGM
 mcmcMvn2d
 mcmcMvn2dConditioning
@@ -184,6 +191,8 @@ pause(2); close('all'); clear('all');
 mvnCondition2D
 mvnHeightWeight
 mvnImputationDemo
+mvnImputationDemo2
+mvnImputationEMdemo
 mvnPlot2Ddemo
 mvnSoftCondition
 pause(2); close('all'); clear('all');
@@ -259,6 +268,8 @@ misconceptionRank
 misconceptionUGMdemo
 mkMisconceptionUGM
 sprinklerUGMdemo
+sprinklerUGMvarelim
+undirectedChainFwdBackDemo
 pause(2); close('all'); clear('all');
 
 %% varElimInfEng

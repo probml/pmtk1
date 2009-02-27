@@ -230,6 +230,14 @@ pause(2); close('all'); clear('all');
 sampleDistDemo
 pause(2); close('all'); clear('all');
 
+%% simAnneal
+SAcoolingSchedule
+SAdemoCamel
+SAdemoHisto
+SAdemoMOG
+SAdemoPeaks
+pause(2); close('all'); clear('all');
+
 %% studentDist
 gaussVsToutlierDemo
 studentVSGauss
@@ -256,7 +264,7 @@ pause(2); close('all'); clear('all');
 %% varElimInfEng
 %alarmNetwork - slow!
 compareToEnum
-%compareToHMM - not yet finished
+compareToHMM
 pause(2); close('all'); clear('all');
 
 %% wishartDist
