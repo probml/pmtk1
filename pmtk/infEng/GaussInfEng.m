@@ -12,6 +12,7 @@ end
   %% main methods
   methods
     function eng = GaussInfEng()
+      error('deprecated')
       eng.mu = []; eng.Sigma = []; eng.domain = [];
     end
      

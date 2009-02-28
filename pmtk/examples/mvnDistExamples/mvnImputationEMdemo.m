@@ -1,5 +1,8 @@
 %% Imputation for an MVN 
 %#testPMTK
+
+error('this has been renamed mvnImputationDemo2')
+
 d = 10; seed = 0; pcMissing = 0.3;
 setSeed(seed);
 

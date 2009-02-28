@@ -15,16 +15,13 @@ img2 = +1*(img>m) + -1*(img<m); % -1 or +1
 y = img2 + sigma*randn(size(img2)); %y = noisy signal
 
 % Create model
-% prior = Ising
 J = 1; % coupling strenght
-% Observation model
 CPDs = {MvnDist(-1,sigma^2), MvnDist(+1,sigma^2)};
 model = IsingGridDist(J, CPDs);
 
-% Inference
-model.infEng = GibbsIsingGridInfEng('Nsamples', 50000, 'Nburnin', 1000, ...
-  'progressFn', @plotter);
-avgX = postMean(model, 'visible', y);
+avgX = postMean(model, y, 'infMethod', 'gibbs', ...
+  'infArgs', {'Nsamples', 50000, 'Nburnin', 1000, ...
+  'progressFn', @plotter});
 
 figure; imagesc(y); colormap('gray'); colorbar; title('noisy image');
 figure; imagesc(avgX); colormap('gray'); colorbar; title('posterior mean');

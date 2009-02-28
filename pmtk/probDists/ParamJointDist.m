@@ -18,6 +18,7 @@ classdef ParamJointDist < ParamDist
     methods
         
         function model = condition(model, visVars, visValues)
+          error('deprecated');
             % enter evidence that visVars=visValues
             if nargin < 2
                 visVars = []; visValues = [];
@@ -28,7 +29,8 @@ classdef ParamJointDist < ParamDist
             [model.infEng] = condition(model.infEng, model, visVars, visValues);
         end
         
-        function [postQuery,model] = marginal(model, queryVars,varargin)
+        function [postQuery,model] = marginal(model, queryVars,varargin
+          error('deprecated')
             % postQuery = p(queryVars) conditional on the most recent
             % condition operation
             if ~model.conditioned
@@ -126,6 +128,7 @@ classdef ParamJointDist < ParamDist
         end
         
         function Xc = impute(model, X)
+          error('deprecated')
             % Fill in NaN entries of X using posterior mode on each row
             [n] = size(X,1);
             Xc = X;

@@ -11,7 +11,7 @@ function precMat = covselPython(C, G)
 
 G = setdiag(G,1);
 TT = tril(C .* G);
-pp = fullfile(PMTKroot(), 'probDists\graphicalModels\ugmGaussClass2');
+pp = fullfile(PMTKroot(), 'probDists\graphicalModels\ugmGaussClass');
 curDir = pwd;
 cd(pp);
 dlmwrite('input.data',TT,'delimiter', ' ');

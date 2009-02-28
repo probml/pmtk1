@@ -6,11 +6,12 @@ ugm = convertToUgm(dgm);
 
 % Exact
 ugmExact = ugm;
-ugmExact.infEng = EnumInfEng;
-ugmExact = condition(ugmExact);
+ugmExact.infMethod = 'enum'; 
 Texact = zeros(2,4);
+marg = marginal(ugmExact, {1,2,3,4,[1,2,3,4]});
+
 for j=1:4
-  Texact(:,j) = pmf(marginal(ugmExact, j));
+  %Texact(:,j) = pmf(marginal(ugmExact, j));
 end
 jointExact = pmf(marginal(ugmExact, [1 2 3 4]));
 %joint = convertToTabularFactor(ugm);
@@ -18,6 +19,8 @@ jointExact = pmf(marginal(ugmExact, [1 2 3 4]));
 disp('exact marginals')
 Texact %#ok
 figure; bar(jointExact(:)); title('exact joint')
+
+break
 
 % Gibbs
 N = 100;

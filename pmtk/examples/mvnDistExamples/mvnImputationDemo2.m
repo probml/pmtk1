@@ -3,7 +3,6 @@
 d = 4; seed = 0; pcMissing = 0.3;
 setSeed(seed);
 model = mkRndParams(MvnDist, d);
-%model = condition(model);
 n = 20;
 
 % If we are always missing the first K columns, we can never estimate their
@@ -32,7 +31,7 @@ baseModel = mkRndParams(trueModel); % to prevent cheating
 models = {trueModel, ...
   fit(baseModel, 'data', Xfull, 'prior', 'niw'), ...
   fit(baseModel, 'data', Xfull, 'prior', 'none'), ...
-  fit(baseModel, 'data', Xmiss, 'prior', 'niw', 'fitArgs', {'verbose', true}), ...
+  fit(baseModel, 'data', Xmiss, 'prior', 'niw', 'fitArgs', {'verbose', false}), ...
   fit(baseModel, 'data', Xmiss, 'prior', 'none')};
 methods = {'true', 'obs MAP', 'obs MLE', 'EM MAP', 'EM MLE'};
 for i=1:length(models)

@@ -1,29 +1,74 @@
-classdef MvnDist < ParamJointDist 
+classdef MvnDist < ParamDist 
 % multivariate normal p(X|mu,Sigma) 
 
   properties
     mu; Sigma;
     prior;
     fitArgs;
+    domain;
   end
  
   %% main methods
   methods
       
       
-      
     function m = MvnDist(mu, Sigma,  varargin)
       if nargin == 0
         mu = []; Sigma = [];
       end
-      [m.infEng, m.domain, m.prior, m.fitArgs] = process_options(varargin, ...
-        'infEng', GaussInfEng(), 'domain', 1:numel(mu), 'prior', 'none', 'fitArgs', {});
+      [m.domain, m.prior, m.fitArgs] = process_options(varargin, ...
+        'domain', 1:numel(mu), 'prior', 'none', 'fitArgs', {});
       m.mu = mu; m.Sigma = Sigma;
     end
 
-    function [mu,Sigma,domain] = convertToMvnDist(m) % weird name - already is mvnDist...
-      mu = m.mu; Sigma = m.Sigma; domain = m.domain; 
+    function mu = mean(model)
+      mu = model.mu;
     end
+
+    function mu = mode(model)
+      mu = model.mu;
+    end
+
+    function C = cov(model)
+      C = model.Sigma;
+    end
+
+    function C = var(model)
+      C = diag(model.Sigma);
+    end
+    
+   function samples = sample(model, n)
+      % Samples(i,:) is i'th sample 
+      if(nargin < 2), n = 1; end;
+      mu = model.mu; Sigma = model.Sigma; 
+      A = chol(Sigma,'lower'); % could be cached
+      Z = randn(length(mu),n);
+      samples = bsxfun(@plus,mu(:), A*Z)'; %#ok
+    end
+    
+    function [postQuery] = marginal(model, queryVars)
+      % p(Q)
+      mu = model.mu; Sigma = model.Sigma; domain = model.domain;
+      Q = lookupIndices(queryVars, domain);
+      postQuery = MvnDist(mu(Q), Sigma(Q,Q), 'domain', queryVars); %#ok
+    end
+
+    function postQuery = conditional(model, visVars, visValues)
+      % p(H|V=v)
+      mu = model.mu; Sigma = model.Sigma; domain = model.domain;
+      V = lookupIndices(visVars, domain);
+      hidVars = mysetdiff(domain, visVars);
+      [muHgivenV, SigmaHgivenV] = gaussianConditioning(...
+        mu, Sigma, V, visValues);
+      postQuery = MvnDist(muHgivenV, SigmaHgivenV, 'domain', hidVars);
+    end
+    
+    function logZ = lognormconst(model)
+      mu = model.mu; Sigma = model.Sigma;
+      d = length(mu);
+      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma); % could be pre-computed
+    end
+    
     
     function L = logprob(model,X)
       % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
@@ -57,10 +102,11 @@ classdef MvnDist < ParamJointDist
 
     
     function L = logprobUnnormalized(model, X)
-        % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
+      error('deprecated')  
+      % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
         % variables
         mu = model.mu; Sigma = model.Sigma;
-        X = insertVisData(model,X);
+        %X = insertVisData(model,X);
         if numel(mu)==1
             X = X(:); % ensure column vector
         end
@@ -219,7 +265,22 @@ classdef MvnDist < ParamJointDist
          end
      end
      
-    
+     function Xc = impute(model, X)
+       % Fill in NaN entries of X using posterior mode on each row
+       % There is nothing specific to Mvn's in this implementation
+       % However, it doesn't make sense to store it in the ParamDist class.
+       [n] = size(X,1);
+       Xc = X;
+       for i=1:n
+         hidNodes = find(isnan(X(i,:)));
+         if isempty(hidNodes), continue, end;
+         visNodes = find(~isnan(X(i,:)));
+         visValues = X(i,visNodes);
+         postH = conditional(model, visNodes, visValues);
+         Xc(i,hidNodes) = rowvec(mode(postH));
+       end
+     end
+        
   end % methods
 
  

@@ -1,11 +1,10 @@
-classdef UgmTabularDist < GmDist
+classdef UgmTabularDist < UgmDist 
     % undirected graphical model with tabular potentials
     
     properties
-        %G;
+        %G; infMethod;
         factors;
         nstates;
-        %domain; % in ParamJoint
     end
     
     %%  Main methods
@@ -14,11 +13,11 @@ classdef UgmTabularDist < GmDist
             % UgmTabularDist(...)
             % 'G' - graph structure
             % 'factors' - cell array of tabularFactor
-            % 'infEng'
+            % 'infMethod' - {'varElim', 'enum'}
             % nstates(j) - number of states for node j
             if(nargin == 0);return;end
-            [G, obj.factors, obj.infEng, obj.nstates] = process_options(varargin, ...
-                'G', [], 'factors', [], 'infEng', [], 'nstates', []);
+            [G, obj.factors, obj.infMethod, obj.nstates] = process_options(varargin, ...
+                'G', [], 'factors', [], 'infMethod', 'varElim', 'nstates', []);
             if isempty(G)
                 % infer graph topology from factors
                 d = length(obj.nstates);
@@ -33,17 +32,8 @@ classdef UgmTabularDist < GmDist
             if isa(G, 'double'), G = UndirectedGraph(G); end
             obj.G = G;
             obj.domain = 1:nnodes(G);
-            if isempty(obj.infEng)
-               obj.infEng = VarElimInfEng(); 
-            end
         end
-        
-        function Tfac = convertToTabularFactor(obj,visVars,visVals)
-            if nargin < 3
-                visVars = []; visVals = [];
-            end
-            Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
-        end
+       
         
         function [Tfacs,nstates] = convertToTabularFactors(obj,visVars,visVals)
             if nargin == 1 || isempty(visVars)
@@ -51,7 +41,6 @@ classdef UgmTabularDist < GmDist
                 nstates = obj.nstates;
                 return;
             end
-            
             d = length(obj.factors);
             Tfacs = obj.factors;
             for j=1:d
@@ -59,7 +48,16 @@ classdef UgmTabularDist < GmDist
                 if(~isempty(include) && any(include))
                     Tfacs{j} = slice(Tfacs{j},visVars(include),visVals(include));
                 end
+                nstates(j) = Tfacs{j}.sizes(end);
             end
+        end
+        
+        function Tfac = convertToJointTabularFactor(obj,visVars,visVals)
+          % Represent the joint distribution as a single large factor
+          if nargin < 3
+            visVars = []; visVals = [];
+          end
+          Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
         end
         
         function fc = makeFullConditionals(obj, visVars, visVals)

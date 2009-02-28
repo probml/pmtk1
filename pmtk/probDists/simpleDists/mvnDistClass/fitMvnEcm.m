@@ -5,7 +5,7 @@ function [model, loglikTrace] = fitMvnEcm(model, data, prior, varargin)
 % prior is either 'none' or 'NIW' or an MvnInvWishartDist object
 % If prior='NIW', we use vague default hyper-params
 
-% Based on code by Cody Severinski, modified by Kevin Murphy
+% Written by Cody Severinski and Kevin Murphy
 
 [maxIter, opttol, verbose] = process_options(varargin, ...
   'maxIter', 100, 'tol', 1e-4, 'verbose', false); 

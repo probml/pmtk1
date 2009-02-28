@@ -3,28 +3,23 @@ classdef DgmDist < GmDist
   
   properties
     CPDs;
-    %infEng;
-    %infMethod;
+    % infMethod in GM class
     % G field is in parent class
   end
 
   
   %%  Main methods
   methods
-      function obj = DgmDist(G, varargin)
-          if(nargin == 0);G = [];end
-          if isa(G,'double'), G=Dag(G); end
-          obj.G = G;
-          [obj.CPDs, obj.infEng,obj.domain]= process_options(...
-              varargin, 'CPDs', [], 'infEng', [],'domain',[]);
-           if isempty(obj.infEng)
-              obj.infEng = VarElimInfEng(); 
-           end
-           if isempty(obj.domain)
-               obj.domain = 1:numel(obj.CPDs);
-           end
-               
+    function obj = DgmDist(G, varargin)
+      if(nargin == 0);G = [];end
+      if isa(G,'double'), G=Dag(G); end
+      obj.G = G;
+      [obj.CPDs, obj.infMethod, obj.domain]= process_options(...
+        varargin, 'CPDs', [], 'infMethod', 'varElim', 'domain',[]);
+      if isempty(obj.domain)
+        obj.domain = 1:numel(obj.CPDs);
       end
+    end
 
       function d = ndimensions(obj)
           d = nnodes(obj.G);
@@ -50,7 +45,6 @@ classdef DgmDist < GmDist
     
     function X = sample(obj, n)
         % X(i,:) = i'th forwards (ancestral) sample
-        %X = sample(obj.infEng, n); % not necessary to use joint!!
         d = ndimensions(obj);
         X = zeros(n,d);
         for j=1:d
@@ -59,7 +53,30 @@ classdef DgmDist < GmDist
         end
     end
     
-  
+   
+    %{
+    function postQuery = varElimCts(model, Tfac, cfacs, queryVars)
+      cdom = cell2mat(cellfuncell(@(x)rowvec(sube(subd(x,'domain'),2)),Tfac(cfacs)));
+      % domain of unobserved continuous nodes
+      I = intersect(cdom,queryVars);
+      if ~isempty(I)
+        if numel(queryVars) > numel(I)
+          error('Cannot represent the joint over mixed node types.');
+        elseif numel(I) > 1
+          error('Cannot represent the joint over two or more unobserved continuous nodes.');
+        else
+          postQuery = extractLocalDistribution(model,I);
+          assert( isa(postQuery,'MixtureDist'));
+          par = parents(model.G, I);
+          assert(numel(par) == 1);
+          SS.counts = pmf(marginal(model,par));
+          postQuery.mixingWeights = fit(postQuery.mixingWeights,'suffStat',SS);
+          return;
+        end
+      end
+    end
+%}
+    
     %{
     function postQuery = predict(obj, visVars, visVals, queryVars, varargin)
       % sum_h p(Q,h|V=v)
@@ -118,6 +135,7 @@ classdef DgmDist < GmDist
     end
     
    
+    %{
    function dgm = mkRndParams(dgm, varargin)
        d = ndimensions(dgm);
        [CPDtype, arity] = process_options(varargin, ...
@@ -137,68 +155,15 @@ classdef DgmDist < GmDist
        end
        %dgm = initInfEng(dgm);
    end
+   %}
+    
    
-    function M = convertToUgm(obj)
-      [Tfacs, nstates] = convertToTabularFactors(obj);
-      M = UgmTabularDist('factors', Tfacs, 'nstates', nstates);
-    end
-    
-    function [Tfacs, nstates] = convertToTabularFactors(obj,visVars,visVals)
-        if(nargin < 3)
-           visVars = [];  visVals = {};
-        end
-        d = length(obj.CPDs);
-        Tfacs = cell(1,d);
-        nstates = zeros(1,d);
-        for j=1:d
-            dom = [parents(obj.G, j), j];
-            include = ismember(visVars,dom);
-            if(isempty(include) || ~any(include))
-                 Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, [],{});
-            else
-                 Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, visVars(include) , visVals(include));
-            end
-            nstates(j) = Tfacs{j}.sizes(end);
-        end
-    end
-    
-    function Tfac = convertToJointTabularFactor(obj,visVars,visVals)
-      % Represent the joint distribution as a single large factor
-      if nargin < 3
-          visVars = []; visVals = [];
-      end
-      Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
-    end
     
     function nodeDist = extractLocalDistribution(obj,var)
+      error('what is this for?')
        nodeDist = obj.CPDs{var};
     end
     
-    function [mu,Sigma,domain] = convertToMvnDist(dgm)
-        % Koller and Friedman p233
-        d = nnodes(dgm.G);
-        mu = zeros(d,1);
-        Sigma = zeros(d,d);
-        for j=1:d
-            if isa(dgm.CPDs{j}, 'ConstDist') % node was set by intervention
-                b0 = 0; w = 0; sigma2 = 0;
-            else
-                b0 = dgm.CPDs{j}.w0;
-                w = dgm.CPDs{j}.w;
-                sigma2 = dgm.CPDs{j}.v;
-            end
-            pred = parents(dgm.G,j);
-            beta = zeros(j-1,1);
-            beta(pred) = w;
-            mu(j) = b0 + beta'*mu(1:j-1);
-            Sigma(j,j) = sigma2 + beta'*Sigma(1:j-1,1:j-1)*beta;
-            s = Sigma(1:j-1,1:j-1)*beta;
-            Sigma(1:j-1,j) = s;
-            Sigma(j,1:j-1) = s';
-        end
-        %dist = MvnDist(mu,Sigma);
-        domain = 1:length(mu);
-    end
     
   end
 

@@ -1,6 +1,7 @@
-function G = precmatToGraph(Lambda)
+function G = precmatToAdjmat(Lambda, thresh)
 
+if nargin < 2, thresh = 1e-9; end
 G = Lambda;
-G(abs(G) < 1e-4) = 0;
+G(abs(G) < thresh) = 0;
 G = abs(sign(G));
 G = setdiag(G,0);

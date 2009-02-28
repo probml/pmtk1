@@ -1,23 +1,20 @@
 %% Example of inference in water sprinkler DGM
 %#testPMTK
 dgm = mkSprinklerDgm();
-dgm.infEng  = EnumInfEng();
+dgm.infMethod  = 'enum';
 false = 1; true = 2;
 C = 1; S = 2; R = 3; W = 4;
 
 % unconditional marginals
-dgm = condition(dgm);
 mW = pmf(marginal(dgm, W));
 mSW = pmf(marginal(dgm, [S W]));
 assert(approxeq(mW(true), 0.6471))
 assert(approxeq(mSW(true,true), 0.2781))
 
 % conditional marginals
-dgm = condition(dgm, W, true);
-pSgivenW = pmf(marginal(dgm, S));
+pSgivenW = pmf(conditional(dgm, W, true, S));
 assert(approxeq(pSgivenW(true), 0.4298));
-dgm = condition(dgm, [W R], [true, true]);
-pSgivenWR = pmf(marginal(dgm, S));
+pSgivenWR = pmf(conditional(dgm, [W R], [true, true], S));
 assert(approxeq(pSgivenWR(true), 0.1945)); % explaining away
 
 

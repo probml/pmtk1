@@ -77,13 +77,14 @@ for trial=1:length(ns)
     precMat{m} = feval(methods{m}, S, G);
     t=toc;
     correct = approxeq(precMat{m}, precMat{1}, 1e-1);
-    fprintf('method %s correct %d, time %5.3f\n', ...
-      methods{m}, correct, t);
+    Ghat = precmatToAdjmat(precMat);
+    valid = isequal(G, Ghat);
+    fprintf('method %s eq1 %d, valid %d, time %5.3f\n', ...
+      methods{m}, correct, valid, t);
     subplot(2,2,m); imagesc(precMat{m}); 
     title(sprintf('n%d, d%d, %s', n, d, methods{m}));
   end
   
   
 end
-
 
