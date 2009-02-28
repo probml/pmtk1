@@ -4,6 +4,7 @@ classdef MvnDist < ParamDist
   properties
     mu; Sigma;
     prior;
+    fitMethod;
     fitArgs;
     domain;
   end
@@ -16,8 +17,8 @@ classdef MvnDist < ParamDist
       if nargin == 0
         mu = []; Sigma = [];
       end
-      [m.domain, m.prior, m.fitArgs] = process_options(varargin, ...
-        'domain', 1:numel(mu), 'prior', 'none', 'fitArgs', {});
+      [m.domain, m.prior, m.fitMethod, m.fitArgs] = process_options(varargin, ...
+        'domain', 1:numel(mu), 'prior', 'none', 'fitMethod', 'mle', 'fitArgs', {});
       m.mu = mu; m.Sigma = Sigma;
     end
 
@@ -207,7 +208,8 @@ classdef MvnDist < ParamDist
          'suffStat'          ,[]         ,...
          'prior'             ,obj.prior         ,...
          'covtype'           ,'full', ...
-         'fitArgs'           , obj.fitArgs);
+         'fitArgs'           , obj.fitArgs, ...
+         'fitMethod'         , obj.fitMethod);
        if(~strcmpi(covtype,'full')),error('Restricted covtypes not yet implemented');end
        if any(isnan(X))
          obj = fitMvnEcm(obj, X, prior, fitArgs{:}); return;
