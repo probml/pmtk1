@@ -55,13 +55,13 @@ classdef DgmTabularDist < DgmDist
     end
     end
     
-     function Tfac = convertToJointTabularFactor(obj,visVars,visVals)
-          % Represent the joint distribution as a single large factor
-          if nargin < 3
-            visVars = []; visVals = [];
-          end
-          Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
-        end  
+    function Tfac = convertToJointTabularFactor(obj,visVars,visVals)
+      % Represent the joint distribution as a single large factor
+      if nargin < 3
+        visVars = []; visVals = [];
+      end
+      Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
+    end
   end
 
 

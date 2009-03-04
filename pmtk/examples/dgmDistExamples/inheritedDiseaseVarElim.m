@@ -1,4 +1,4 @@
-%% Inherited Disease DGM Example
+%% Inherited Disease DGM Example - Stat521A Spring 2009 Hw2 Q4
 %#testPMTK
 G1 = 1; G2 = 2; G3 = 3;
 X1 = 4; X2 = 5; X3 = 6;
@@ -37,15 +37,16 @@ CPD{X1}   = MvnMixDist('distributions',{XgivenG_H,XgivenG_U});
 CPD{X2}   = CPD{X1};
 CPD{X3}   = CPD{X1};
 
-dgm = DgmDist(graph,'CPDs', CPD,'infEng',VarElimInfEng(),'domain',1:6);
+dgm = DgmTabularDist(graph,'CPDs', CPD,'infMethod', 'varElim');
 
 evidence = {[50,50], [50], [60,60], [50,60]};
 for i=1:length(evidence)
   ev = evidence{i};
   if length(ev)==2
-    dgm  = condition(dgm,[X2,X3],ev);
+    cond = [X2, X3];
   else
-    dgm  = condition(dgm,[X2],ev);
+    cond = [X1];
   end
-  pG1VE(i) = sub(pmf(marginal(dgm,G1)),1); 
+  pG1(i) = sub(pmf(conditional(dgm, cond, ev, G1)),1); 
 end
+assert(approxeq(pG1, [0.9863 0.8946 0.0137 0.5]))

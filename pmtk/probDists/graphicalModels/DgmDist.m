@@ -17,7 +17,7 @@ classdef DgmDist < GmDist
       [obj.CPDs, obj.infMethod, obj.domain]= process_options(...
         varargin, 'CPDs', [], 'infMethod', 'varElim', 'domain',[]);
       if isempty(obj.domain)
-        obj.domain = 1:numel(obj.CPDs);
+        obj.domain = 1:nnodes(G);
       end
     end
 

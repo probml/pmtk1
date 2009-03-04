@@ -77,14 +77,22 @@ classdef GmDist < ParamDist
   end
   
    methods(Access = 'protected')
-    function [postQuery, logZ] = varElim(model, visVars, visVals, queryVars)
+    function [postQuery, logZ] = varElimInf(model, visVars, visVals, queryVars)
       % Here we have hard-coded the assumption variables are discrete!
       [Tfac,nstates] = convertToTabularFactors(model,visVars,visVals);
-      cfacs = (cellfun(@(x)isequal(pmf(x),1),Tfac));
+      cfacs = find(cellfun(@(x)isequal(pmf(x),1),Tfac));
       % factors involving continuous, unobserved nodes
-      if any(cfacs)
-        %postQuery = varElimCts(model, Tfac, cfacs, queryVars)
-        error('cannot handle cts latent nodes (even children)')
+      % We exploit the fact that MixtureDist returns a TabularFactor of 1
+      % if both the discrete indicator and the (possibly cts) child are
+      % hidden
+      %postQuery = varElimCts(model, Tfac, cfacs, queryVars)
+      % Find the hidden cts child nodes
+      for i=1:length(cfacs)
+        dom = Tfac{cfacs(i)}.domain;
+        child = dom(end);
+        if ismember(child, queryVars)
+          error('cannot query the child of a latent mixture node')
+        end
       end
       if(model.G.directed)
         moralGraph = moralize(model.G);
@@ -98,6 +106,8 @@ classdef GmDist < ParamDist
     end
     
     
+   
+               
     function [samples, convDiag] = gibbsInf(model, visVars, visVals, ...
         Nsamples, Nchains, Nburnin, thin, verbose)
       fullCond = makeFullConditionals(model, visVars, visVals);

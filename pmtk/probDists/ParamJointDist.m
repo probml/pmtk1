@@ -29,7 +29,7 @@ classdef ParamJointDist < ParamDist
             [model.infEng] = condition(model.infEng, model, visVars, visValues);
         end
         
-        function [postQuery,model] = marginal(model, queryVars,varargin
+        function [postQuery,model] = marginal(model, queryVars,varargin)
           error('deprecated')
             % postQuery = p(queryVars) conditional on the most recent
             % condition operation
