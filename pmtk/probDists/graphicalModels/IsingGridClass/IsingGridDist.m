@@ -15,13 +15,17 @@ classdef IsingGridDist < UgmDist %& GmTabularDist
             
         function avgX = postMean(model, visVals, varargin)
           % visVals should be an n*m matrix
-          % infMethod - one of {'gibbs'}, default model.infMethod
+          % infMethod - one of {'gibbs', 'meanfield'}, default model.infMethod
           % infArgs - default {}
           [infMethod, infArgs] = process_options(varargin, ...
             'infMethod', model.infMethod, 'infArgs', {});
-          switch infMethod
+          switch lower(infMethod)
             case 'gibbs',
               avgX = gibbsIsingGrid(model.J, model.CPDs, visVals, infArgs{:});
+            case 'meanfield',
+              avgX = meanFieldIsingGrid(model.J, model.CPDs, visVals, infArgs{:});
+            case 'meanfieldbo',
+              avgX = meanFieldIsingGridBo(model.J, model.CPDs, visVals, infArgs{:});
             otherwise
               error(['unrecognized method ' model.infMethod])
           end
