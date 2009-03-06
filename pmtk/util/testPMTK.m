@@ -1,194 +1,75 @@
 %% Test PMTK
 
 try
-%% bernoulliDist
-bernoulliDistTest
-close('all'); clear('all');
-%% bernoulli_BetaDist
-bernoulli_betaSequentialUpdate
-close('all'); clear('all');
-
-%% betaBinomDist
-ebCancerExample
-close('all'); clear('all');
-
-%% binomDist
-binomialPlotDemo
-close('all'); clear('all');
-
-%% binom_betaDist
-binomial_betaPosteriorDemo
-binom_betaPostPredDemo
-close('all'); clear('all');
-
-%% chainTransformer
-chainTransformerTest
-close('all'); clear('all');
-
-%% chordalGraph
-chordalGraphDemo
-close('all'); clear('all');
-
-%% constDist
-constDistTest
-close('all'); clear('all');
-
-%% dataTable
-demoDataTable
-close('all'); clear('all');
-
-%% dgmDist
-cooperYooInterventionDemo
-gaussDGMdemo
-inheritedDiseaseVarElim
-mkAlarmNetworkDgm
-mkSprinklerDgm
-rainyDayDemo
-sprinklerDGMdemo
-close('all'); clear('all');
-
-%% dirichletDist
-dirichletHistPlotDemo
-close('all'); clear('all');
-
-%% discreteDist
-discreteDistTest
-close('all'); clear('all');
-
-%% enumInfEng
-enumSprinkler
-close('all'); clear('all');
-
-%% gammaDist
-gammaPlotDemo
-gammaRainfallDemo
-close('all'); clear('all');
-
-%% gauss_NormInvGammaDist
-gaussInferMuSigmaDemo
-gauss_NormInvGammDistTest
-close('all'); clear('all');
-
-%% generativeClassifier
-generativeClassifierTest1
-generativeClassifierTest2
-close('all'); clear('all');
-
-%% graph
-graphClassDemo
-close('all'); clear('all');
-
-%% hiwDist
-sampleHIWdemo
-close('all'); clear('all');
-
-%% hmmDist
-hmmDistTest
-close('all'); clear('all');
-
-%% invGammaDist
-invGammaSampleDemo
-close('all'); clear('all');
-
-%% invWishartDist
-invWIplot1D
-invWIplot2D
-close('all'); clear('all');
-
-%% knnDist
-Knn3ClassHeatMaps
-close('all'); clear('all');
-
-%% laplaceDist
-laplacePlotDemo
-close('all'); clear('all');
-
-%% linregDist
-linregAllMethods
-linregGaussVsNIG
-close('all'); clear('all');
-
-%% linreg_MvnDist
-linreg_MvnDistTest
-close('all'); clear('all');
-
-%% linreg_MvnInvGammaDist
-linreg_MvnInvGammaDistTest
-close('all'); clear('all');
-
-%% logregDist
-logregFitCrabs
-logregSAT
-close('all'); clear('all');
-
-%% logreg_MvnDist
-logreg_MvnDistTest
-close('all'); clear('all');
-
-%% mcmc
-gibbsSprinklerUGM
-mcmcMvn2dConditioning
-close('all'); clear('all');
-
-%% mvnDist
-mvnImputationDemo
-mvnPlot2Ddemo
-mvnSoftCondition
-close('all'); clear('all');
-
-%% mvnMixDist
-gaussMixPlot
-oldFaithfulDemo
-close('all'); clear('all');
-
-%% mvn_InvWishartDist
-mvnSeqUpdateSigma1d
-close('all'); clear('all');
-
-%% mvn_MvnInvWishartDist
-mvnSeqlUpdateMuSigma1D
-close('all'); clear('all');
-
-%% mvtDist
-mvtPlotDemo
-close('all'); clear('all');
-
-%% normalInvGammaDist
-demoNumericalIntNIG
-close('all'); clear('all');
-
-%% poissonDist
-poissonPlotDemo
-close('all'); clear('all');
-
-%% sampleDist
-sampleDistDemo
-close('all'); clear('all');
-
-%% studentDist
-studentVSGauss
-close('all'); clear('all');
-
-%% ugmGaussDist
-ggmBICdemo
-ggmDemo
-ggmInferDemo
-close('all'); clear('all');
-
-%% ugmTabularDist
-misconceptionUGMdemo
-mkMisconceptionUGM
-sprinklerUGMdemo
-close('all'); clear('all');
-
-%% varElimInfEng
-compareToEnum
-close('all'); clear('all');
-
-%% wishartDist
-WIplotDemo
-close('all'); clear('all');
-
+%% 
+bernoulliDistTest;                     cls;
+bernoulli_betaSequentialUpdate;        cls;
+binomialPlotDemo;                      cls;
+binomial_betaPosteriorDemo;            cls;
+binom_betaPostPredDemo;                cls;
+cancerRatesEb;                         cls;
+chainTransformerTest;                  cls;
+chordalGraphDemo;                      cls;
+compareJtreeToVarElim;                 cls;
+compareToEnum;                         cls;
+constDistTest;                         cls;
+cooperYooInterventionDemo;             cls;
+demoDataTable;                         cls;
+demoNumericalIntNIG;                   cls;
+dirichletHistPlotDemo;                 cls;
+discreteDistTest;                      cls;
+enumSprinkler;                         cls;
+gammaPlotDemo;                         cls;
+gammaRainfallDemo;                     cls;
+gaussDGMdemo;                          cls;
+gaussInferMuSigmaDemo;                 cls;
+gaussMixPlot;                          cls;
+gauss_NormInvGammDistTest;             cls;
+generativeClassifierTest1;             cls;
+generativeClassifierTest2;             cls;
+ggmBICdemo;                            cls;
+ggmDemo;                               cls;
+ggmInferDemo;                          cls;
+gibbsSprinklerUGM;                     cls;
+graphClassDemo;                        cls;
+hmmDistTest;                           cls;
+inheritedDiseaseVarElim;               cls;
+invGammaSampleDemo;                    cls;
+invWIplot1D;                           cls;
+invWIplot2D;                           cls;
+Knn3ClassHeatMaps;                     cls;
+laplacePlotDemo;                       cls;
+linregAllMethods;                      cls;
+linregGaussVsNIG;                      cls;
+linreg_MvnDistTest;                    cls;
+linreg_MvnInvGammaDistTest;            cls;
+logregFitCrabs;                        cls;
+logregSAT;                             cls;
+logreg_MvnDistTest;                    cls;
+mcmcMvn2dConditioning;                 cls;
+misconceptionUGMdemo;                  cls;
+mkAlarmNetworkDgm;                     cls;
+mkFluDgm;                              cls;
+mkMisconceptionUGM;                    cls;
+mkSprinklerDgm;                        cls;
+mvnImputationDemo;                     cls;
+mvnImputationEMdemo;                   cls;
+mvnPlot2Ddemo;                         cls;
+mvnSeqlUpdateMuSigma1D;                cls;
+mvnSeqUpdateSigma1d;                   cls;
+mvnSoftCondition;                      cls;
+mvtPlotDemo;                           cls;
+oldFaithfulDemo;                       cls;
+poissonPlotDemo;                       cls;
+rainyDayDemo;                          cls;
+sampleDistDemo;                        cls;
+sampleHIWdemo;                         cls;
+sprinklerDGMdemo;                      cls;
+sprinklerUGMdemo;                      cls;
+sprinklerUGMvarelim;                   cls;
+studentVSGauss;                        cls;
+undirectedChainFwdBackDemo;            cls;
+WIplotDemo;                            cls;
 % try instantiating every class...
 objectCreationTest
 

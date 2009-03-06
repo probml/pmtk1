@@ -48,12 +48,12 @@ function makeRunDemos()
                         elseif(inprogress)
                             fprintf(fid,' - not yet finished\n');
                         else
-                            fprintf(fid,'\n');
-                        end 
+                            fprintf(fid,';%spclear;\n',blanks(max(5,40-length(mfile))));
+                        end        
                     end
                     
              end
-             fprintf(fid,'pause(2); close(''all''); clear(''all'');\n\n');           
+             
        end
         
     end

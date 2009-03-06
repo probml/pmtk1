@@ -1,273 +1,131 @@
 %% Run Every Demo
 
-%% bernoulliDist
-bernoulliDistTest
-pause(2); close('all'); clear('all');
-
-%% bernoulli_BetaDist
-bernoulli_betaSequentialUpdate
-pause(2); close('all'); clear('all');
-
-%% betaBinomDist
-ebCancerExample
-pause(2); close('all'); clear('all');
-
-%% betaDist
-betaPlotDemo
-pause(2); close('all'); clear('all');
-
-%% binomDist
-binomialPlotDemo
-pause(2); close('all'); clear('all');
-
-%% binom_betaDist
-binomial_betaPosteriorDemo
-binom_betaPostPredDemo
-pause(2); close('all'); clear('all');
-
-%% chainTransformer
-chainTransformerTest
-pause(2); close('all'); clear('all');
-
-%% chordalGraph
-chordalGraphDemo
-pause(2); close('all'); clear('all');
-
-%% constDist
-constDistTest
-pause(2); close('all'); clear('all');
-
-%% dataTable
-demoDataTable
-pause(2); close('all'); clear('all');
-
-%% dgmDist
-cooperYooInterventionDemo
-gaussDGMdemo
-inheritedDiseaseVarElim
-mkAlarmNetworkDgm
-mkSprinklerDgm
-rainyDayDemo
-sprinklerDGMdemo
-pause(2); close('all'); clear('all');
-
-%% dirichletDist
-dirichletHistPlotDemo
-pause(2); close('all'); clear('all');
-
-%% discreteDist
-discreteDistTest
-pause(2); close('all'); clear('all');
-
-%% discreteMixDist
-clusterMnistDigits
-pause(2); close('all'); clear('all');
-
-%% discrete_DirichletDist
-discrete_DirichletDistTest
-pause(2); close('all'); clear('all');
-
-%% enumInfEng
-enumSprinkler
-pause(2); close('all'); clear('all');
-
-%% gammaDist
-gammaPlotDemo
-gammaRainfallDemo
-pause(2); close('all'); clear('all');
-
-%% gaussDist
-gaussCVfitDemo
-gaussHeightWeight
-gaussPlotDemo
-pause(2); close('all'); clear('all');
-
-%% gauss_NormInvGammaDist
-gaussInferMuSigmaDemo
-gauss_NormInvGammDistTest
-pause(2); close('all'); clear('all');
-
-%% generativeClassifier
-generativeClassifierTest1
-generativeClassifierTest2
-naiveBayesBernoulliExample
-pause(2); close('all'); clear('all');
-
-%% graph
-graphClassDemo
-pause(2); close('all'); clear('all');
-
-%% hiwDist
-sampleHIWdemo
-pause(2); close('all'); clear('all');
-
-%% hmmDist
-casinoDemo
-hmmDistTest
-isolatedWordClassification
-plotMFCC
-wordSegmentation
-pause(2); close('all'); clear('all');
-
-%% invGammaDist
-invGammaPlotDemo
-invGammaSampleDemo
-pause(2); close('all'); clear('all');
-
-%% invWishartDist
-invWIplot1D
-invWIplot2D
-pause(2); close('all'); clear('all');
-
-%% knnDist
-Knn3ClassHeatMaps
-mnistClassifyDemo
-mnistErrorVsN
-pause(2); close('all'); clear('all');
-
-%% laplaceDist
-laplacePlotDemo
-pause(2); close('all'); clear('all');
-
-%% linregDist
-linregAllMethods
-linregBasis
-linregGaussVsNIG
-linregPolyFitDegree
-linregPolyFitErrorBars
-linregPolyFitN
-linregPolyFitNoErrorBars
-linregPolyFitRidge
-linregPolyFitRidgeBIC
-linregPolyFitRidgeCV
-linregPolyFitRidgeU
-linregRbf
-pause(2); close('all'); clear('all');
-
-%% linreg_MvnDist
-linreg_MvnDistTest
-pause(2); close('all'); clear('all');
-
-%% linreg_MvnInvGammaDist
-linreg_MvnInvGammaDistTest
-pause(2); close('all'); clear('all');
-
-%% logregDist
-logregCompareOptimizers
-logregCompareOptimizers2
-logregFitCrabs
-logregLaplaceGirolami
-logregSAT
-logregVisualizePredictive
-pause(2); close('all'); clear('all');
-
-%% logreg_MvnDist
-logreg_MvnDistTest
-pause(2); close('all'); clear('all');
-
-%% mcmc
-gibbsSprinklerUGM
-mcmcMvn2d
-mcmcMvn2dConditioning
-mhGmmDemo
-mhMissouriCancer
-mhMvn2d
-mhMvn2dConditioning
-pause(2); close('all'); clear('all');
-
-%% modelSelection
-modelSelect1D
-modelSelect2D
-pause(2); close('all'); clear('all');
-
-%% mvnDist
-mvnCondition2D
-mvnHeightWeight
-mvnImputationDemo
-mvnPlot2Ddemo
-mvnSoftCondition
-pause(2); close('all'); clear('all');
-
-%% mvnInvWishartDist
-mvnInvWIplotDemo
-pause(2); close('all'); clear('all');
-
-%% mvnMixDist
-gaussMixPlot
-mvnMixDistTest
-oldFaithfulDemo
-pause(2); close('all'); clear('all');
-
-%% mvn_InvWishartDist
-mvnInferParamsSigma2d
-mvnSeqUpdateSigma1d
-pause(2); close('all'); clear('all');
-
-%% mvn_MvnDist
-mvnInferParamsMean1d
-mvnInferParamsMean2d
-mvnSeqUpdateMu1d
-pause(2); close('all'); clear('all');
-
-%% mvn_MvnInvWishartDist
-mvnInferMuSigma1D
-mvnSeqlUpdateMuSigma1D
-pause(2); close('all'); clear('all');
-
-%% mvtDist
-mvtPlotDemo
-pause(2); close('all'); clear('all');
-
-%% normalInvGammaDist
-demoNumericalIntNIG
-pause(2); close('all'); clear('all');
-
-%% poissonDist
-poissonPlotDemo
-pause(2); close('all'); clear('all');
-
-%% sampleDist
-sampleDistDemo
-pause(2); close('all'); clear('all');
-
-%% simAnneal
-SAcoolingSchedule
-SAdemoCamel
-SAdemoHisto
-SAdemoMOG
-SAdemoPeaks
-pause(2); close('all'); clear('all');
-
-%% studentDist
-gaussVsToutlierDemo
-studentVSGauss
-pause(2); close('all'); clear('all');
-
-%% ugmChordalGaussDist
-demoPostModelsExhaustive
-GGMchordalModelSelection
-pause(2); close('all'); clear('all');
-
-%% ugmGaussDist
-ggmBICdemo
-ggmDemo
-ggmInferDemo
-pause(2); close('all'); clear('all');
-
-%% ugmTabularDist
-misconceptionRank
-misconceptionUGMdemo
-mkMisconceptionUGM
-sprinklerUGMdemo
-pause(2); close('all'); clear('all');
-
-%% varElimInfEng
+%% 
 %alarmNetwork - slow!
-compareToEnum
-compareToHMM
-pause(2); close('all'); clear('all');
-
-%% wishartDist
-WIplotDemo
-pause(2); close('all'); clear('all');
-
+bernoulliDistTest;      pclear;
+bernoulli_betaSequentialUpdate;     pclear;
+betaPlotDemo;           pclear;
+binomialPlotDemo;       pclear;
+binomial_betaPosteriorDemo;     pclear;
+binom_betaPostPredDemo;     pclear;
+cancerRatesEb;          pclear;
+cancerRatesMh;          pclear;
+casinoDemo;             pclear;
+chainLengthUgmDgmDemo;     pclear;
+chainTransformerTest;     pclear;
+chordalGraphDemo;       pclear;
+clusterMnistDigits;     pclear;
+compareJtreeToVarElim;     pclear;
+compareToEnum;          pclear;
+compareToHMM;           pclear;
+constDistTest;          pclear;
+cooperYooInterventionDemo;     pclear;
+demoDataTable;          pclear;
+demoNumericalIntNIG;     pclear;
+demoPostModelsExhaustive;     pclear;
+dirichletHistPlotDemo;     pclear;
+discreteDistTest;       pclear;
+discrete_DirichletDistTest;     pclear;
+enumSprinkler;          pclear;
+familyTreeGeneDataMystery;     pclear;
+gammaPlotDemo;          pclear;
+gammaRainfallDemo;      pclear;
+gaussCVfitDemo;         pclear;
+gaussDGMdemo;           pclear;
+gaussHeightWeight;      pclear;
+gaussInferMuSigmaDemo;     pclear;
+gaussMixPlot;           pclear;
+gaussPlotDemo;          pclear;
+gaussVsToutlierDemo;     pclear;
+gauss_NormInvGammDistTest;     pclear;
+generativeClassifierTest1;     pclear;
+generativeClassifierTest2;     pclear;
+ggmBICdemo;             pclear;
+GGMchordalModelSelection;     pclear;
+ggmDemo;                pclear;
+ggmInferDemo;           pclear;
+gibbsSprinklerUGM;      pclear;
+graphClassDemo;         pclear;
+hmmDistTest;            pclear;
+hoffPimaImputation;     pclear;
+inheritedDiseaseVarElim;     pclear;
+invGammaPlotDemo;       pclear;
+invGammaSampleDemo;     pclear;
+invWIplot1D;            pclear;
+invWIplot2D;            pclear;
+isingImageDenoiseDemo;     pclear;
+isolatedWordClassification;     pclear;
+Knn3ClassHeatMaps;      pclear;
+laplacePlotDemo;        pclear;
+linregAllMethods;       pclear;
+linregBasis;            pclear;
+linregGaussVsNIG;       pclear;
+linregPolyFitDegree;     pclear;
+linregPolyFitErrorBars;     pclear;
+linregPolyFitN;         pclear;
+linregPolyFitNoErrorBars;     pclear;
+linregPolyFitRidge;     pclear;
+linregPolyFitRidgeBIC;     pclear;
+linregPolyFitRidgeCV;     pclear;
+linregPolyFitRidgeU;     pclear;
+linregRbf;              pclear;
+linreg_MvnDistTest;     pclear;
+linreg_MvnInvGammaDistTest;     pclear;
+logregCompareOptimizers;     pclear;
+logregCompareOptimizers2;     pclear;
+logregFitCrabs;         pclear;
+logregLaplaceGirolami;     pclear;
+logregSAT;              pclear;
+logregVisualizePredictive;     pclear;
+logreg_MvnDistTest;     pclear;
+mcmcMvn2d;              pclear;
+mcmcMvn2dConditioning;     pclear;
+mhGmmDemo;              pclear;
+mhMvn2d;                pclear;
+mhMvn2dConditioning;     pclear;
+misconceptionRank;      pclear;
+misconceptionUGMdemo;     pclear;
+mkAlarmNetworkDgm;      pclear;
+mkFluDgm;               pclear;
+mkMisconceptionUGM;     pclear;
+mkSprinklerDgm;         pclear;
+mnistClassifyDemo;      pclear;
+mnistErrorVsN;          pclear;
+modelSelect1D;          pclear;
+modelSelect2D;          pclear;
+mvnCondition2D;         pclear;
+mvnHeightWeight;        pclear;
+mvnImputationDemo;      pclear;
+mvnImputationDemo2;     pclear;
+mvnImputationEMdemo;     pclear;
+mvnInferMuSigma1D;      pclear;
+mvnInferParamsMean1d;     pclear;
+mvnInferParamsMean2d;     pclear;
+mvnInferParamsSigma2d;     pclear;
+mvnInvWIplotDemo;       pclear;
+mvnMixDistTest;         pclear;
+mvnPlot2Ddemo;          pclear;
+mvnSeqlUpdateMuSigma1D;     pclear;
+mvnSeqUpdateMu1d;       pclear;
+mvnSeqUpdateSigma1d;     pclear;
+mvnSoftCondition;       pclear;
+mvtPlotDemo;            pclear;
+naiveBayesBernoulliExample;     pclear;
+oldFaithfulDemo;        pclear;
+plotMFCC;               pclear;
+poissonPlotDemo;        pclear;
+rainyDayDemo;           pclear;
+SAcoolingSchedule;      pclear;
+SAdemoCamel;            pclear;
+SAdemoHisto;            pclear;
+SAdemoMOG;              pclear;
+SAdemoPeaks;            pclear;
+sampleDistDemo;         pclear;
+sampleHIWdemo;          pclear;
+sprinklerDGMdemo;       pclear;
+sprinklerUGMdemo;       pclear;
+sprinklerUGMvarelim;     pclear;
+studentVSGauss;         pclear;
+undirectedChainFwdBackDemo;     pclear;
+WIplotDemo;             pclear;
+wordSegmentation;       pclear;

@@ -49,10 +49,10 @@ function makeTestPMTK()
                  elseif(inprogress)
                      fprintf(fid,' - not yet finished\n');
                  else
-                     fprintf(fid,'\n');
+                     fprintf(fid,';%scls;\n',blanks(max(5,40-length(testFile))));
                  end
              end
-             fprintf(fid,'close(''all''); clear(''all'');\n\n');           
+             
        end
     end
     fprintf(fid,'%% try instantiating every class...\n');
