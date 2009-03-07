@@ -1,41 +1,39 @@
-function X = meanFieldIsingGrid(J, CPDs, visVals, varargin)
-% visVals should be an n*m matrix
-% pon(i,j) = p(X(i,j)=1|y) where X(i,j) in {0,1}
+function mu = meanFieldIsingGrid(J, CPDs, img, varargin)
+% img should be an m*n  matrix 
+% CPDs{1}=p(y|s=-1), CPDs{2}=p(y|s=1) 
+% mu(i,j) = E(S(i,j)|y) where S(i,j) in {-1,1}
 
-[maxIter, progressFn, parallelUpdates] = process_options(...
-  varargin, 'maxiter', 100, 'progressFn', [], 'parallelUpdates', false);
+[maxIter, progressFn,  inplaceUpdates, rate] = process_options(...
+  varargin, 'maxiter', 100, 'progressFn', [], ...
+  'inplaceUpdates', true, 'updateRate', 1);
 
-[M,N] = size(visVals);
-Npixels = M*N;
+[M,N] = size(img);
 offState = 1; onState = 2;
-localEvidence = zeros(Npixels, 2);
-for k=1:2
-  localEvidence(:,k) = exp(logprob(CPDs{k}, visVals(:)));
-end
-logodds = log(localEvidence(:,onState)) - log(localEvidence(:,offState));
+logodds = logprob(CPDs{onState}, img(:)) - logprob(CPDs{offState}, img(:));
+logodds = reshape(logodds, M, N);
 
-p1 = localEvidence( :, 2 ) ./ sum( localEvidence( :, 1:2 ), 2); % init
-X = 2*p1-1;
-X = reshape(X, M, N);
-Xnew  = X;
+% init
+p1 = sigmoid(logodds);
+mu = 2*p1-1;
+mu = reshape(mu, M, N);
+ 
 for iter = 1:maxIter
+  muNew = mu;
   for ix=1:N
     for iy=1:M
       pos = iy + M*(ix-1);
       neighborhood = pos + [-1,1,-M,M];
       neighborhood(([iy==1,iy==M,ix==1,ix==N])) = [];
-      Sbar = J*sum(X(neighborhood));
-      if parallelUpdates
-        Xnew(pos) = tanh(Sbar + 0.5*logodds(pos));
+      Sbar = J*sum(mu(neighborhood));
+      if ~inplaceUpdates
+        muNew(pos) = (1-rate)*muNew(pos) + rate*tanh(Sbar + 0.5*logodds(pos));
       else
-        X(pos) = tanh(Sbar + 0.5*logodds(pos));
+        mu(pos) = (1-rate)*mu(pos) + rate*tanh(Sbar + 0.5*logodds(pos));
       end
     end
   end
-  if parallelUpdates, X = Xnew; end
-  if ~isempty(progressFn)
-    feval(progressFn, X, iter);
-  end
+  if ~inplaceUpdates, mu = muNew; end
+  if ~isempty(progressFn), feval(progressFn, mu, iter); end
 end
  
 end

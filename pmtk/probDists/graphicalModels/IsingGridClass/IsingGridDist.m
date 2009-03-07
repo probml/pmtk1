@@ -24,8 +24,6 @@ classdef IsingGridDist < UgmDist %& GmTabularDist
               avgX = gibbsIsingGrid(model.J, model.CPDs, visVals, infArgs{:});
             case 'meanfield',
               avgX = meanFieldIsingGrid(model.J, model.CPDs, visVals, infArgs{:});
-            case 'meanfieldbo',
-              avgX = meanFieldIsingGridBo(model.J, model.CPDs, visVals, infArgs{:});
             otherwise
               error(['unrecognized method ' model.infMethod])
           end
