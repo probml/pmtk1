@@ -8,5 +8,5 @@ function indices = argmin(v)
 % argmin(X) = [1 1], i.e., row 1 column 1
 
 [m i] = min(v(:));
-indices = ind2subv(mysize(v), i);
-%indices = ind2subv(size(v), i);
+indices = ind2subv(sizePMTK(v), i);
+%indices = ind2subv(sizePMTK(v), i);

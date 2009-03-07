@@ -66,7 +66,7 @@ classdef UgmTabularDist < UgmDist
                 % Sample from the unconditional distribution
                 visVars = []; visVals = [];
             end
-            V = visVars; H = mysetdiff(1:d, V);
+            V = visVars; H = setdiffPMTK(1:d, V);
             x = zeros(1,d); x(V) = visVals;
             fc = cell(length(H),1);
             for i=1:length(H)
@@ -80,7 +80,7 @@ classdef UgmTabularDist < UgmDist
             % xh is current state of Gibbs sampler
             x(H) = xh; % insert sampled hidden values into hidden slot
             %x(i) = []; % remove value for i'th node, which will be sampled
-            visVars = mysetdiff(Tfac.domain, i);
+            visVars = setdiffPMTK(Tfac.domain, i);
             visValues = x(visVars);
             p = normalizeFactor(slice(Tfac, visVars, visValues));
         end
@@ -88,7 +88,7 @@ classdef UgmTabularDist < UgmDist
         function Tfac = jointMarkovBlanket(obj, node)
             Tfacs = {};
             for j=1:length(obj.factors)
-                inter = myintersect(obj.factors{j}.domain, node);
+                inter = intersectPMTK(obj.factors{j}.domain, node);
                 if ~isempty(inter)
                     Tfacs{end+1} = obj.factors{j}; %#ok
                 end
@@ -107,7 +107,7 @@ classdef UgmTabularDist < UgmDist
             % So we just sample a random vector from the uniform distribution
             % (this might be inconsistent with hard constraints!!)
             domain = 1:ndimensions(model);
-            hidVars = mysetdiff(domain, visVars);
+            hidVars = setdiffPMTK(domain, visVars);
             V = lookupIndices(visVars, domain);
             H = lookupIndices(hidVars, domain);
             sz = model.nstates(H);

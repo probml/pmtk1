@@ -19,7 +19,7 @@ function margFactor = variableElimination(factors,elimOrdering)
         % eliminate a single variable
         inscope = cellfun(@(fac)any(variable == fac.domain),factors);           % inscope(f) is true iff the variable is in the scope of factors{f}
         psi = TabularFactor.multiplyFactors(factors(inscope));
-        tau = marginalize(psi,mysetdiff(psi.domain,variable));                  % marginalize out the elimination variable
+        tau = marginalize(psi,setdiffPMTK(psi.domain,variable));                  % marginalize out the elimination variable
         newFactors = {factors{not(inscope)},tau};
     end
     

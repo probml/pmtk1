@@ -8,4 +8,4 @@ function indices = argmax(v)
 % argmax(X) = [2 3], i.e., row 2 column 3
 
 [m i] = max(v(:));
-indices = ind2subv(mysize(v), i);
+indices = ind2subv(sizePMTK(v), i);

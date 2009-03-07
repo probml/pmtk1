@@ -25,7 +25,7 @@ expVals = zeros(d,n);
 expProd = zeros(d,d,n);
 
 % If there is no missing data, then just plug-in -- ECM not needed
-for i=mysetdiff(1:n,missingRows)
+for i=setdiffPMTK(1:n,missingRows)
   expVals(:,i) = X(:,i);
   expProd(:,:,i) = X(:,i)*X(:,i)';
 end

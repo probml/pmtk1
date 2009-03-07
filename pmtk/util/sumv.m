@@ -20,5 +20,5 @@ T = squeeze(T);
 % loop much faster than vectorized solution
 % dims = 1:ndims(M);
 % s = size(M);
-% keep = mysetdiff(dims,ndx);
+% keep = setdiffPMTK(dims,ndx);
 % M = squeeze(sum(reshape(permute(M,[ndx,keep]),[prod(s(ndx)),s(keep)]),1));

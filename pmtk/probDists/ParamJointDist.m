@@ -71,7 +71,7 @@ classdef ParamJointDist < ParamDist
             XX = zeros(n, nhid+nvis);
             domain = model.domain;
             V = lookupIndices(model.visVars, domain);
-            hidVars = mysetdiff(domain, model.visVars);
+            hidVars = setdiffPMTK(domain, model.visVars);
             H = lookupIndices(hidVars, domain);
             nv = size(model.visVals,1);
             if nv==1 && n>1

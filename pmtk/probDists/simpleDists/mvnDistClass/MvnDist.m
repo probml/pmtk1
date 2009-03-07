@@ -58,7 +58,7 @@ classdef MvnDist < ParamDist
       % p(H|V=v)
       mu = model.mu; Sigma = model.Sigma; domain = model.domain;
       V = lookupIndices(visVars, domain);
-      hidVars = mysetdiff(domain, visVars);
+      hidVars = setdiffPMTK(domain, visVars);
       [muHgivenV, SigmaHgivenV] = gaussianConditioning(...
         mu, Sigma, V, visValues);
       postQuery = MvnDist(muHgivenV, SigmaHgivenV, 'domain', hidVars);
@@ -127,7 +127,7 @@ classdef MvnDist < ParamDist
         % Sample from the unconditional distribution
         visVars = []; visVals = [];
       end
-      V = visVars; H = mysetdiff(1:d, V);
+      V = visVars; H = setdiffPMTK(1:d, V);
       x = zeros(1,d); x(V) = visVals;
       fc = cell(length(H),1);
       for i=1:length(H)
@@ -155,7 +155,7 @@ classdef MvnDist < ParamDist
        % observed data.
        % Instead we sample the hidden nodes from their prior
        domain = model.domain;
-       hidVars = mysetdiff(domain, visVars);
+       hidVars = setdiffPMTK(domain, visVars);
        V = lookupIndices(visVars, domain);
        H = lookupIndices(hidVars, domain);
        xinit = mvnrnd(model.mu(H), model.Sigma(H,H)); 

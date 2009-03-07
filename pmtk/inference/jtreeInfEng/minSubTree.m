@@ -42,7 +42,7 @@ function rnodes = min_subtree_nodes(tree, nodes)
                 break;
             end
             nns = neighbors(tree, inode);
-            add_nodes = mysetdiff(nns, tnodes);
+            add_nodes = setdiffPMTK(nns, tnodes);
             newnodes = union(newnodes, add_nodes);
         end
         if added

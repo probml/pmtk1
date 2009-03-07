@@ -31,7 +31,7 @@ classdef GmDist < ParamDist
     function [postQuery,logZ] = conditional(model, visVars, visVals, queryVars, varargin)
       % p(Q|V=v) where Q defaults to all the hidden variables
       domain = model.domain;
-      if nargin < 4, queryVars = mysetdiff(domain, visVars); end
+      if nargin < 4, queryVars = setdiffPMTK(domain, visVars); end
       [infMethod, infArgs] = process_options(varargin, ...
         'infMethod', model.infMethod, 'infArgs', model.infArgs);
       switch lower(infMethod)
@@ -100,7 +100,7 @@ classdef GmDist < ParamDist
         moralGraph = model.G;
       end
       ordering = best_first_elim_order(moralGraph.adjMat,nstates);
-      elim = mysetdiff(mysetdiff(model.domain(ordering),queryVars),visVars);
+      elim = setdiffPMTK(setdiffPMTK(model.domain(ordering),queryVars),visVars);
       [postQuery, Z] = normalizeFactor(variableElimination(Tfac, elim));
       logZ = log(Z);
     end
@@ -130,7 +130,7 @@ classdef GmDist < ParamDist
        % The samples only contain values of the hidden variables, not all
        % the variables, so we need to 'label' the columns with the right
        % domain, so subsequent calls to marginal will work correctly.
-       hidVars = mysetdiff(model.domain, visVars);
+       hidVars = setdiffPMTK(model.domain, visVars);
        samples = SampleDist(samples, hidVars); % , model.support(hidVars));
       end
     

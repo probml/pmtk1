@@ -11,10 +11,10 @@ classdef TabularFactor
   methods
     function m = TabularFactor(T, domain)
       if nargin < 1, T = []; end
-      if nargin < 2, domain = 1:myndims(T); end
+      if nargin < 2, domain = 1:ndimsPMTK(T); end
       m.T = T;
       m.domain = domain;
-      m.sizes = mysize(T);
+      m.sizes = sizePMTK(T);
     end
 
     function p = pmf(obj)
@@ -78,7 +78,7 @@ classdef TabularFactor
         Vndx = lookupIndices(visVars, Tbig.domain);
         ndx = mk_multi_index(d, Vndx, visValues);
         Tsmall = squeeze(Tbig.T(ndx{:}));
-        H = mysetdiff(Tbig.domain, visVars);
+        H = setdiffPMTK(Tbig.domain, visVars);
         Tsmall = TabularFactor(Tsmall, H);
     end
     
@@ -109,7 +109,7 @@ classdef TabularFactor
           if sz>10000
               sprintf('creating tabular factor with %d entries', sz)
           end
-          T = TabularFactor(myones(ns(dom)), dom);
+          T = TabularFactor(onesPMTK(ns(dom)), dom);
           for i=1:N
               Ti = facs{i};
               T = multiplyBy(T, Ti);

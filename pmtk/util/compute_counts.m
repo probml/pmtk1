@@ -13,5 +13,5 @@ P = prod(sz);
 indices = subv2ind(sz, data'); % each row of data' is a case 
 %count = histc(indices, 1:P);
 count = hist(indices, 1:P);
-count = myreshape(count, sz);
+count = reshapePMTK(count, sz);
 

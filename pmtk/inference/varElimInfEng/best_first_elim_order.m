@@ -35,13 +35,13 @@ order = zeros(1,n);
 t = 1;  % Counts which time slice we are on        
 for i=1:n
   U = find(uneliminated);
-  valid = myintersect(U, stage{t});
+  valid = intersectPMTK(U, stage{t});
   % Choose the best node from the set of valid candidates
   min_fill = zeros(1,length(valid));
   min_weight = zeros(1,length(valid));
   for j=1:length(valid)
     k = valid(j);
-    nbrs = myintersect(neighbors(G, k), U);
+    nbrs = intersectPMTK(neighbors(G, k), U);
     l = length(nbrs);
     M = MG(nbrs,nbrs);
     min_fill(j) = l^2 - sum(M(:)); % num. added edges
@@ -56,7 +56,7 @@ for i=1:n
   k = valid(j);
   uneliminated(k) = 0;
   order(i) = k;
-  ns = myintersect(neighbors(G, k), U);
+  ns = intersectPMTK(neighbors(G, k), U);
   if ~isempty(ns)
     G(ns,ns) = 1;
     G = setdiag(G,0);

@@ -40,7 +40,7 @@ classdef GibbsInfEng  < InfEng
        % The samples only contain values of the hidden variables, not all
        % the variables, so we need to 'label' the columns with the right
        % domain
-       hidVars = mysetdiff(model.domain, visVars);
+       hidVars = setdiffPMTK(model.domain, visVars);
        eng.samples = SampleDist(samples, hidVars); % , model.support(hidVars));
     end
     

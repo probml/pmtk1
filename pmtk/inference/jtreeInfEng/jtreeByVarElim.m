@@ -37,7 +37,7 @@ function [jtree,cliques,sepsets] = jtreeByVarElim(factors,elimOrdering)
         jtree(nonzeros(activeTau(inscope)),variable) = 1;
         psi = TabularFactor.multiplyFactors(factors(inscope));
         cliques{i} = psi;
-        tau = marginalize(psi,mysetdiff(psi.domain,variable));                  
+        tau = marginalize(psi,setdiffPMTK(psi.domain,variable));                  
         factors = {factors{not(inscope)},tau};
         activeTau = [activeTau(not(inscope)),variable];
     end
@@ -83,7 +83,7 @@ function [jtree,cliques,sepsets] = jtreeByVarElim(factors,elimOrdering)
     [is,js] = find(jtree);
     for k=1:numel(is)
        i = is(k); j = js(k);
-       sepsets{i,j} = myintersect(cliques{i}.domain,cliques{j}.domain);
+       sepsets{i,j} = intersectPMTK(cliques{i}.domain,cliques{j}.domain);
        sepsets{j,i} = sepsets{i,j};
     end
     

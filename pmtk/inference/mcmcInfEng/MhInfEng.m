@@ -32,7 +32,7 @@ classdef MhInfEng  < InfEng
        %end
        %targetFn = @(xh) logprobUnnormalized(model, MhInfEng.addVisData(xh, V, visVals));
        targetFn = @(xh) logprobUnnormalized(model, xh);
-       %hidVars = mysetdiff(model.domain, visVars);
+       %hidVars = setdiffPMTK(model.domain, visVars);
        %targetFn = @(xh) logprobUnnormalized(model, xh, 'domain', hidVars, ...
        %  'visVars', visVars, 'visVals', visVals);
       xinit = mcmcInitSample(model, visVars, visVals);
@@ -57,7 +57,7 @@ classdef MhInfEng  < InfEng
        % The samples only contain values of the hidden variables, not all
        % the variables, so we need to 'label' the columns with the right
        % domain
-       hidVars = mysetdiff(model.domain, visVars);
+       hidVars = setdiffPMTK(model.domain, visVars);
        eng.samples = SampleDist(samples, hidVars);
      end
     

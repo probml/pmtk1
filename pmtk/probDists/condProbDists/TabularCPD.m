@@ -10,16 +10,16 @@ classdef TabularCPD < CondProbDist
   methods
       function obj = TabularCPD(T, varargin)
           if(nargin == 0),T=[];end
-          obj.sizes = mysize(T);
+          obj.sizes = sizePMTK(T);
           sz = obj.sizes; r = sz(end); q = prod(sz(1:end-1));
           [prior] = process_options(varargin, ...
               'prior', 'none');
           obj.T = T;
           %obj.domain = domain;
           switch lower(prior)
-              case 'bdeu', C = myones(sz)*1/(q*r);
-              case 'laplace', C = myones(sz)*1;
-              case 'none', C = 0*myones(sz);
+              case 'bdeu', C = onesPMTK(sz)*1/(q*r);
+              case 'laplace', C = onesPMTK(sz)*1;
+              case 'none', C = 0*onesPMTK(sz);
           end
           obj.pseudoCounts = C;
       end
@@ -35,7 +35,7 @@ classdef TabularCPD < CondProbDist
     function ll = logprob(obj, Xpa, Xself)
       % ll(i) = log p(X(i,self) | X(i,pa), params)
       X = [Xpa Xself];
-      sz = mysize(obj.T);
+      sz = sizePMTK(obj.T);
       ndx = subv2ind(sz, X); % convert data pattern into array index
       ll = log(obj.T(ndx));
       ll = ll(:);
@@ -66,7 +66,7 @@ classdef TabularCPD < CondProbDist
     function y = sample(obj, X, n)
       % X(1:n, 1:#Parents)
       y = zeros(n,1);
-      sz = mysize(obj.T); r = sz(end);
+      sz = sizePMTK(obj.T); r = sz(end);
       psz = sz(1:end-1);
       q = prod(psz);
       % q = #parent states, r = #child states

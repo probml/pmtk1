@@ -15,7 +15,7 @@ iter = 1;
 done = false;
 while ~done
   for i = 1:p
-    noti = mysetdiff(1:p, i);
+    noti = setdiffPMTK(1:p, i);
     s_12 = S(noti,i);
     W_11 = W(noti,noti);
     w = shooting(W_11, s_12, lambda); % ** implement this function

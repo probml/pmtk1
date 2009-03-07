@@ -118,7 +118,7 @@ classdef JtreeInfEng < InfEng
                 [is,js] = find(eng.cliqueTree);
                 for k=1:numel(is)
                     i = is(k); j = js(k);
-                    eng.sepsets{i,j} = myintersect(eng.cliques{i}.domain,eng.cliques{j}.domain);
+                    eng.sepsets{i,j} = intersectPMTK(eng.cliques{i}.domain,eng.cliques{j}.domain);
                     eng.sepsets{j,i} = eng.sepsets{i,j};
                 end
             end
@@ -140,7 +140,7 @@ classdef JtreeInfEng < InfEng
             while not(isempty(varsRemaining))  
                 bestClique = maxidx(sum(eng.cliqueLookup(varsRemaining,:),1)); % clique that contains the most number of vars in varsRemaining.
                 includeCliques(bestClique) = true;
-                varsRemaining = mysetdiff(varsRemaining,eng.cliques{bestClique}.domain);
+                varsRemaining = setdiffPMTK(varsRemaining,eng.cliques{bestClique}.domain);
             end
             subtree = minSubTree(eng.cliqueTree,sub(1:ntotalCliques,includeCliques));
             cliqueNDX = find(sum(subtree,1) | sum(subtree,2)');
@@ -156,7 +156,7 @@ classdef JtreeInfEng < InfEng
                factors{f} = divideBy(eng.cliques{c},mu);
             end
             factors(nfactors) = eng.cliques(cliqueNDX(end));
-            elim = mysetdiff(unique(cell2mat(cellfuncell(@(fac)rowvec(fac.domain),factors))),queryVars);
+            elim = setdiffPMTK(unique(cell2mat(cellfuncell(@(fac)rowvec(fac.domain),factors))),queryVars);
             postQuery = normalizeFactor(variableElimination(factors,elim));
         end
         

@@ -10,7 +10,7 @@ function B = extend_domain_table(A, smalldom, smallsz, bigdom, bigsz)
 % so B(i,j,k,l) = A(i,k) for i in 1:2, j in 1:1, k in 1:4, l in 1:5
 
 if isequal(size(A), [1 1]) % a scalar
-  B = A; % * myones(bigsz);
+  B = A; % * onesPMTK(bigsz);
   return;
 end
 
@@ -18,8 +18,8 @@ end
 map = lookupIndices(smalldom, bigdom);
 sz = ones(1, length(bigdom));
 sz(map) = smallsz;
-B = myreshape(A, sz); % add dimensions for the stuff not in A
+B = reshapePMTK(A, sz); % add dimensions for the stuff not in A
 sz = bigsz;
 sz(map) = 1; % don't replicate along A's dimensions
-B = myrepmat(B, sz(:)');
+B = repmatPMTK(B, sz(:)');
                            
