@@ -2,7 +2,7 @@
 %#author Cody Severinski
 
 setSeed(0);
-pima = csvread('./data/pima-r/pimatr.csv',1,0);
+pima = csvread('pimatr.csv',1,0);
 pima = pima(:,3:6);
 pimaNan = pima;
 [n,p] = size(pima);
@@ -36,11 +36,11 @@ end
 end
 end
 
+
 % For comparison we also consider the 'best' model -- the model fitted given that we have access to all the data
 fittedModel = {fit(model,'data',pima,'prior','none'), ...
-	fit(model,'data',pima,'prior','niw'), ...
-	fit(model,'data',pimaNan,'prior','none','fitArgs', {'verbose', true}), ...
-	fit(model,'data',pimaNan,'prior','niw','fitArgs', {'verbose', true})};
+	fit(model,'data',pimaNan,'prior','none','fitArgs', {'verbose', false})};
+
 
 % Impute the missing data and compute mse for each fitted model
 for i = 1:length(fittedModel)
@@ -48,40 +48,24 @@ for i = 1:length(fittedModel)
 	mse(i) = sum(sum(pimaImputed{i} - pima).^2)/prod(size(pimaImputed));
 end
 
+
+fitMethodNames = {'fully observed', 'partially observed'};
 feature = {'glu', 'bp', 'skin', 'bmi'};
-
 % Plot the imputed vs. the true values, with a 45 degree line to indicate "perfect" imputation
-%for mod = 1:length(fittedModel)
-figure();
-for j = 1:p
-subplot(2,2,j); hold on;
-p1 = plot(pima(miss(:,j) == 0,j), pimaImputed{1}(miss(:,j) == 0,j),'b+');
-xlabel(sprintf('true %s', feature{j})); ylabel(sprintf('imputed %s', feature{j}));
-p2 = plot(pima(miss(:,j) == 0,j), pimaImputed{2}(miss(:,j) == 0,j),'r+');
-xlabel(sprintf('true %s', feature{j})); ylabel(sprintf('imputed %s', feature{j}));
-p3 = plot(pima(miss(:,j) == 0,j), pimaImputed{3}(miss(:,j) == 0,j),'bx');
-xlabel(sprintf('true %s', feature{j})); ylabel(sprintf('imputed %s', feature{j}));
-p4 = plot(pima(miss(:,j) == 0,j), pimaImputed{4}(miss(:,j) == 0,j),'rx');
-xlabel(sprintf('true %s', feature{j})); ylabel(sprintf('imputed %s', feature{j}));
-title(titles{j})
-V = axis; lowLim = max(V(1),V(3)); upLim = min(V(2),V(4));
-plot(lowLim:0.1:upLim, lowLim:0.1:upLim, 'g');
+for mod = 1:length(fittedModel)
+  figure;
+  for j = 1:p
+    subplot(2,2,j); hold on;
+    ndx = miss(:,j)==0;
+    p1 = plot(pima(ndx,j), pimaImputed{mod}(ndx,j),'b+');
+    %title(titles{j})
+    xlabel(sprintf('true %s', feature{j}));
+    ylabel(sprintf('imputed %s', feature{j}));
+    axis equal
+    V = axis; lowLim = max(V(1),V(3)); upLim = min(V(2),V(4));
+    plot(lowLim:0.1:upLim, lowLim:0.1:upLim, 'r', 'linewidth', 3);
+  end
+  suptitle(sprintf('imputation usign %s data', fitMethodNames{mod}));
 end
-l = legend('All data, no prior', 'All data, niw prior', 'Visible data, no prior', 'Visible data, niw prior');
-set(l,'Position',[0.45,0,0.1,0.05],'Orientation','horizontal','Box','off','FontSize',8);
-%suplabel('Imputed vs real values')
 
-% Plot differences
-figure();
-for j = 1:p
-subplot(2,2,j); hold on;
-plot(pima(miss(:,j) == 0,j) - pimaImputed{1}(miss(:,j) == 0,j),'b+');
-plot(pima(miss(:,j) == 0,j) - pimaImputed{2}(miss(:,j) == 0,j),'r+');
-plot(pima(miss(:,j) == 0,j) - pimaImputed{3}(miss(:,j) == 0,j),'bx');
-plot(pima(miss(:,j) == 0,j) - pimaImputed{4}(miss(:,j) == 0,j),'rx');
-end
-subplot(2,2,1);
-l = legend('All data, no prior', 'All data, niw prior', 'Visible data, no prior', 'Visible data, niw prior','location','SouthEastOutside')
-set(l,'Position',[0.45,0,0.1,0.05],'Orientation','horizontal','Box','off','FontSize',8);
-suplabel('Difference in imputed values (real - imputed)')
 
