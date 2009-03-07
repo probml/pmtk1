@@ -1,5 +1,7 @@
-seed = 0;
-setSeed(seed);
+% Impute missing entries of the 4d Pima Indians data using an MVN  
+%#author Cody Severinski
+
+setSeed(0);
 pima = csvread('./data/pima-r/pimatr.csv',1,0);
 pima = pima(:,3:6);
 pimaNan = pima;
