@@ -72,8 +72,10 @@ classdef Logreg_MvnDist < CondProbDist
                     proposalFn = @(w) mvnrnd(w(:)',C);
                     %initFn = @() mvnrnd(wMAP', 0.1*C);
                     xinit = wMAP;
-                    samples = mhSample('symmetric', true, 'target', targetFn, 'xinit', xinit, ...
-                        'Nsamples', 1000, 'Nburnin', 100, 'proposal',  proposalFn);
+                    
+                    samples = metrop(targetFn,proposalFn,xinit,1000);
+                    %samples = mhSample('symmetric', true, 'target', targetFn, 'xinit', xinit, ...
+                    %    'Nsamples', 1000, 'Nburnin', 100, 'proposal',  proposalFn);
                     obj.wDist = SampleDist(samples);
                 otherwise
                     error(['unrecognized infMethod ' infMethod])
