@@ -15,7 +15,7 @@ if nargout >= 2
   Sn = Rinv*Rinv';
 end
 
-if 1 % naive way, for debugging
+if false % naive way, for debugging
   s2 = sigma^2;
   Sninv = Lam0 + (1/s2)*(X'*X);
   Sn2 = inv(Sninv);

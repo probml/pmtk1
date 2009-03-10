@@ -31,15 +31,14 @@ classdef DgmTabularDist < DgmDist
       end
     end
    
-     function M = convertToUgm(obj)
-      [Tfacs, nstates] = convertToTabularFactors(obj);
+     function M = convertToUgm(obj, visVars, visVals)
+       if(nargin < 2), visVars = [];  visVals = {}; end
+      [Tfacs, nstates] = convertToTabularFactors(obj, visVars, visVals);
       M = UgmTabularDist('factors', Tfacs, 'nstates', nstates);
      end
     
     function [Tfacs, nstates] = convertToTabularFactors(obj,visVars,visVals)
-    if(nargin < 3)
-      visVars = [];  visVals = {};
-    end
+    if(nargin < 2), visVars = [];  visVals = {}; end
     d = length(obj.CPDs);
     Tfacs = cell(1,d);
     nstates = zeros(1,d);

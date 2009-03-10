@@ -1,7 +1,8 @@
 %% Example of inference in water sprinkler DGM
 %#testPMTK
 dgm = mkSprinklerDgm();
-dgm.infMethod  = 'enum';
+%dgm.infMethod  = 'enum';
+dgm.infMethod  = 'varElim';
 false = 1; true = 2;
 C = 1; S = 2; R = 3; W = 4;
 

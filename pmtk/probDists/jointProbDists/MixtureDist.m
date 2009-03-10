@@ -118,17 +118,21 @@ classdef MixtureDist < ParamJointDist
         end
         
         
-        function Tfac = convertToTabularFactor(model, globalDomain,visVars,visVals)
-        % globalDomain = indices of each parent, followed by index of child
-        % all of the children must be observed
-            if(isempty(visVars)) 
-               Tfac = TabularFactor(1,globalDomain); return; % return an empty TabularFactor
-            end
-            if ~isequal(globalDomain(2:end),visVars)
-                error('Not all of the continuous valued children of this CPD were observed.');
-            end
-            T = exp(calcResponsibilities(model,visVals));
-            Tfac = TabularFactor(T,globalDomain(1)); % only a factor of the parent now
+        function Tfac = convertToTabularFactor(model, domain,visVars,visVals)
+          % domain = indices of each parent, followed by index of child
+          % all of the children must be observed
+          if(isempty(visVars))
+            Tfac = TabularFactor(1,domain); return; % return an empty TabularFactor
+          end
+          pdom = domain(1); cdom = domain(2:end);
+          if ~isequal(cdom,visVars)
+            % If we have a mixture of factored bernoullis
+            % the factor would be all discrete, but we don't handle this
+            % case.
+            error('Not all of the children of this CPD were observed.');
+          end
+          T = exp(calcResponsibilities(model,visVals));
+          Tfac = TabularFactor(T,pdom); % only a factor of the parent now
         end
         
         

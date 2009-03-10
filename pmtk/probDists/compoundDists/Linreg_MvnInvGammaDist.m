@@ -36,7 +36,7 @@ classdef Linreg_MvnInvGammaDist < CondProbDist
             end
             a0 = model.wSigmaDist.a;
             b0 = model.wSigmaDist.b;
-            w0 = model.wSigmaDist.mu;
+            w0 = model.wSigmaDist.mu(:);
             S0 = model.wSigmaDist.Sigma;
             v0 = 2*a0; s02 = 2*b0/v0;
             d = length(w0);
