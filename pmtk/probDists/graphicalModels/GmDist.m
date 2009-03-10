@@ -24,12 +24,16 @@ classdef GmDist < ParamDist
     end
       
     function postQuery = marginal(model, queryVars, varargin)
-      % p(Q)
+      % Same as conditional(model, queryVars, [], [], ...)
       postQuery = conditional(model, [], [], queryVars, varargin{:});
     end
       
     function [postQuery,logZ] = conditional(model, visVars, visVals, queryVars, varargin)
       % p(Q|V=v) where Q defaults to all the hidden variables
+      % If queryVars is a cell array, so is postQuery
+      % Optional args:
+      % infMethod - 'varElim', 'enum', 'jtree', 'gibbs'
+      % infArgs - cell array
       domain = model.domain;
       if nargin < 4, queryVars = setdiffPMTK(domain, visVars); end
       [infMethod, infArgs] = process_options(varargin, ...
@@ -42,6 +46,16 @@ classdef GmDist < ParamDist
             for q=1:length(queryVars)
               [postQuery{q}, logZ(q)] = varElimInf(model, visVars, visVals, ...
                 queryVars{q}, infArgs{:});
+            end
+          end
+        case 'jtree'
+          eng = condition(JtreeInfEng(), model, visVars, visVals);
+          logZ = []; % not yet implemented
+          if ~iscell(queryVars)
+             postQuery = marginalize(eng, queryVars);
+          else
+            for q=1:length(queryVars)
+              postQuery{q} = marginalize(eng, queryVars{q});
             end
           end
         case 'enum'

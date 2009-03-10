@@ -1,4 +1,4 @@
-classdef JtreeInfEng < InfEng
+classdef JtreeInfEng 
 % Performs calibration using sum-product message passing on the clique tree
 % induced by the client model. 
     
@@ -53,6 +53,7 @@ classdef JtreeInfEng < InfEng
            end
        end
        
+       %{
        function samples = sample(eng,n)
            samples = sample(normalizeFactor(TabularFactor.multiplyFactors(eng.factors)),n);
        end
@@ -61,7 +62,8 @@ classdef JtreeInfEng < InfEng
             [Tfac,Z] = normalizeFactor(TabularFactor.multiplyFactors(eng.factors)); %#ok
             logZ = log(Z);
        end
-
+       %}
+       
    end
     
     
