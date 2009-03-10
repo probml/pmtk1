@@ -1,5 +1,8 @@
 function avgX = gibbsIsingGrid(J, CPDs, visVals, varargin)
-% visVals should be an n*m matrix
+% Gibbs sampling in a 2d Ising grid
+% J = coupling (edge) strength
+% CPDs{1}=p(y|x=-1), CPDs{2}=p(y|x=+1)
+% visVals should be an m*n matrix
 % Returns p(X(i,j)=1|y)
 
 %#author Brani Vidakovic

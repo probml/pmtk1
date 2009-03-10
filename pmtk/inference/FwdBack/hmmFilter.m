@@ -8,6 +8,7 @@ function [alpha, loglik] = hmmFilter(initDist, transmat, obslik)
 % alpha(i,t)  = p(Q(t)=i| y(1:t))
 % loglik = log p(y(1:T))
 
+error('deprecated');
 [K T] = size(obslik);
 scale = zeros(T,1);
 alpha = zeros(K,T);

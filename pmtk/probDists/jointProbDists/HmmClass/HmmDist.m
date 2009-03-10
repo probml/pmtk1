@@ -1,4 +1,4 @@
-classdef HmmDist < ParamJointDist
+classdef HmmDist 
 % This class represents a Hidden Markov Model. 
     properties                           
         nstates;                    % number of hidden states
@@ -26,7 +26,8 @@ classdef HmmDist < ParamJointDist
                                     
      
                                     
-        verbose = true;             
+        verbose = true;   
+        infMethod; % defaults to 'fwdBack'
       
     end
     
@@ -53,14 +54,14 @@ classdef HmmDist < ParamJointDist
              model.startDist                        ,...
              model.transitionDist                   ,...
              model.emissionDist                     ,...
-             model.infEng                           ,...
+             model.infMethod                           ,...
              model.verbose                          ]...
              = process_options(varargin,...
                 'nstates'                           ,[],...
                 'startDist'                         ,[],...
                 'transitionDist'                    ,[],...
                 'emissionDist'                      ,{},...
-                'infEng'                            ,FwdBackInfEng(),...
+                'infMethod'                            ,'fwdBack',...
                 'verbose'                           ,true);
             if(isempty(model.nstates))
                 model.nstates = numel(model.emissionDist);
@@ -110,41 +111,36 @@ classdef HmmDist < ParamJointDist
         
         
         function model = fit(model,varargin)
-        % Learn the parameters of the HMM from data.  
-        %
-        % FORMAT:   model = fit(model,'name1',val1,'name2',val2,...)
-        %
-        % INPUT:   'data'    - a set of observation sequences - let 'n' be the
-        %                      number of observed sequences, and 'd' be the
-        %                      dimensionality of these sequences. If they are
-        %                      all of the same length, 't', then data is of size
-        %                      d-by-t-by-n, otherwise, data is a cell array such
-        %                      that data{ex}{i,j} is the ith dimension at time
-        %                      step j in example ex.
-        
-             [data,options] = process_options(varargin,'data',[]);
-             data = checkData(model,data);
-             model = emUpdate(model,data,options{:});
+          % Learn the parameters of the HMM from data.
+          %
+          % FORMAT:   model = fit(model,'name1',val1,'name2',val2,...)
+          %
+          % INPUT:   'data'    - a set of observation sequences - let 'n' be the
+          %                      number of observed sequences, and 'd' be the
+          %                      dimensionality of these sequences. If they are
+          %                      all of the same length, 't', then data is of size
+          %                      d-by-t-by-n, otherwise, data is a cell array such
+          %                      that data{ex}{i,j} is the ith dimension at time
+          %                      step j in example ex.
+          [data,options] = process_options(varargin,'data',[]);
+          data = checkData(model,data);
+          model = emUpdate(model,data,options{:});
         end
         
         function logp = logprob(model,Y)
-        % logp(i) = log p(Y{i} | model)
-        % If Y specified, the model is first conditioned on Y. Y may store
-        % multiple observations, in which case the model is conditioned on each
-        % in turn. 
-            if(nargin ==1)
-                if(~model.conditioned)
-                   error('You must call condition first or specify an observation'); 
-                end
-                [logp,model.infEng] = logprob(model.infEng);
-            else
-                n = nobservations(model,Y);
-                logp = zeros(n,1);
-                for i=1:n
-                    model = condition(model,'Y',getObservation(model,Y,i));
-                    [logp(i),model.infEng] = logprob(model.infEng);
-                end
-            end
+          % logp = log p(Y|model) where Y is a d*T vector of *visible*
+          % values
+          % For multiple sequences of different lengths, Y{i} is d*T
+          % For multiple sequences of same length, Y is d*T*n
+          n = nobservations(model,Y);
+          logp = zeros(n,1);
+          A = model.transitionDist;
+          pi = model.startDist;
+          for i=1:n
+            seq = getObservation(model, Y, i);
+            B =  makeLocalEvidence(model,seq);
+            [logp(i)] = hmmFwd(pi, A, B);
+          end
         end
         
         function [observed,hidden] = sample(model,nsamples,length)
