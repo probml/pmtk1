@@ -77,8 +77,7 @@ classdef FwdBackInfEng < InfEng
     end
     
     methods
-        
-        
+           
         function eng = condition(eng,model,visVars,visValues)   
             eng.pi = mean(model.startDist)';
             eng.A  = mean(model.transitionDist)';

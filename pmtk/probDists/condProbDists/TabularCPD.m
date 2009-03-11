@@ -9,6 +9,11 @@ classdef TabularCPD < CondProbDist
   
   methods
       function obj = TabularCPD(T, varargin)
+        % TabularCPD(T, ...)
+        % T(a,b,...z) is distributipn of z given parent values a,b,...
+        % Optional arguments
+        % prior - {'bdeu', 'laplace', 'none'}
+        
           if(nargin == 0),T=[];end
           obj.sizes = sizePMTK(T);
           sz = obj.sizes; r = sz(end); q = prod(sz(1:end-1));

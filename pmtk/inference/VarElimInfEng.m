@@ -67,10 +67,10 @@ classdef VarElimInfEng < InfEng
         end
        
         
-    end
+    end % methods
     
     
-    methods(Static = true, Access = 'protected')
+    methods(Static = true)
        
         function margFactor = variableElimination(factors,elimOrdering)
         % Perform sum-product variable elimination    
@@ -98,7 +98,7 @@ classdef VarElimInfEng < InfEng
         end
         
         
-    end
+    end % static methods
     
     
     

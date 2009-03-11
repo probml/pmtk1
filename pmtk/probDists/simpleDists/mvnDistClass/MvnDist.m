@@ -325,7 +325,7 @@ classdef MvnDist < ParamDist
          if isempty(hidNodes), continue, end;
          visNodes = find(~isnan(X(i,:)));
          visValues = X(i,visNodes);
-         postH = conditional(model, visNodes, visValues);
+         postH = marginal(model, hidNodes, visNodes, visValues);
          Xc(i,hidNodes) = rowvec(mode(postH));
        end
      end

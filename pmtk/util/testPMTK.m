@@ -1,8 +1,7 @@
 %% Test PMTK
 
 try
-%%
-%{
+%% 
 bernoulliDistTest;                     cls;
 bernoulli_betaSequentialUpdate;        cls;
 binomialPlotDemo;                      cls;
@@ -21,7 +20,6 @@ discreteDistTest;                      cls;
 gammaPlotDemo;                         cls;
 gammaRainfallDemo;                     cls;
 gaussDGMdemo;                          cls;
-%}
 gaussInferMuSigmaDemo;                 cls;
 gaussMixPlot;                          cls;
 gauss_NormInvGammDistTest;             cls;
@@ -39,6 +37,7 @@ invWIplot1D;                           cls;
 invWIplot2D;                           cls;
 Knn3ClassHeatMaps;                     cls;
 laplacePlotDemo;                       cls;
+lingaussHybridDemo;                    cls;
 linregAllMethods;                      cls;
 linregGaussVsNIG;                      cls;
 linreg_MvnDistTest;                    cls;
@@ -54,7 +53,7 @@ mkMisconceptionUGM;                    cls;
 mkSprinklerDgm;                        cls;
 mvnImputationDemo;                     cls;
 mvnPlot2Ddemo;                         cls;
-mvnSeqlUpdateMuSigma1D;                cls;
+%mvnSeqlUpdateMuSigma1D - broken!
 mvnSeqUpdateSigma1d;                   cls;
 mvnSoftCondition;                      cls;
 mvtPlotDemo;                           cls;

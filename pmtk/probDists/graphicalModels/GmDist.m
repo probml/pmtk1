@@ -1,4 +1,4 @@
-classdef GmDist < ParamDist
+classdef GmDist 
   % graphical model
   
   properties
@@ -22,6 +22,7 @@ classdef GmDist < ParamDist
         h = draw(obj.G);
     end
       
+  
     function [postQuery, logZ, other] = marginal(model, queryVars, visVars, visVals)
       if nargin < 3, visVars = []; visVals = []; end
       [eng, logZ, other] = condition(model.infEng, model, visVars, visVals);

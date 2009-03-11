@@ -17,7 +17,7 @@ classdef LinGaussHybridCPD < CondProbDist
     function obj = LinGaussHybridCPD(w0, wc, wd,  v, dparentNdx, dparentArity)
       % dparentNdx specifies which of the parents are discrete
       % dparentArity(i) is the number of discrete states for discrete parent i
-      if(nargin == 0),wc=[];wd=[];w0=[];v=[]; dparentNdx = []; end
+      if(nargin == 0),wc=[];wd=[];w0=[];v=[]; dparentNdx = []; dparentArity=[]; end
       obj.wc = wc; obj.wd = wd; obj.w0 = w0; obj.v = v;
       obj.dparentNdx = dparentNdx; obj.dparentArity = dparentArity;
     end
@@ -49,6 +49,7 @@ classdef LinGaussHybridCPD < CondProbDist
        mu = CPD.w0 + CPD.wc(:)'*xc(:) + CPD.wd(:)'*xd(:);
        T(i) = normpdf(y, mu, sigma);
      end
+     T = reshapePMTK(T, CPD.dparentArity);
      Tfac = TabularFactor(T, discreteParents);
     end
     

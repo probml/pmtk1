@@ -36,7 +36,9 @@ classdef UgmTabularDist < UgmDist
        
         
         function [Tfacs,nstates] = convertToTabularFactors(obj,visVars,visVals)
-            if nargin == 1 || isempty(visVars)
+            if 0 % nargin == 1 || isempty(visVars)
+              % we want to comptue nstates from factors in case it is not
+              % specified
                 Tfacs = obj.factors;
                 nstates = obj.nstates;
                 return;

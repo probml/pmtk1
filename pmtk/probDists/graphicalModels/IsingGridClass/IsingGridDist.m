@@ -9,6 +9,7 @@ classdef IsingGridDist < UgmDist %& GmTabularDist
     %%  Main methods
     methods
         function obj = IsingGridDist(J, CPDs)
+          if nargin == 0, J = []; CPDs = []; end
            obj.J = J;
            obj.CPDs = CPDs;
         end

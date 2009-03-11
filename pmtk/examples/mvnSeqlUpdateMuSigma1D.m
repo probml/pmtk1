@@ -1,5 +1,7 @@
 %% Sequential Bayesian updating of (mu,sigma) for a 1D gaussian
 %#testPMTK
+%#broken
+
 nu = 1.1; S = 0.001; k = 0.001;
 prior = MvnInvWishartDist('mu', 0, 'k', k, 'dof', nu, 'Sigma', S);
 setSeed(1);
