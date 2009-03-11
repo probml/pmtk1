@@ -1,7 +1,8 @@
 %% Test PMTK
 
 try
-%% 
+%%
+%{
 bernoulliDistTest;                     cls;
 bernoulli_betaSequentialUpdate;        cls;
 binomialPlotDemo;                      cls;
@@ -10,18 +11,17 @@ binom_betaPostPredDemo;                cls;
 cancerRatesEb;                         cls;
 chainTransformerTest;                  cls;
 chordalGraphDemo;                      cls;
-compareJtreeToVarElim;                 cls;
-compareToEnum;                         cls;
+compareVarElimToEnum;                  cls;
+compareVarElimToJtree;                 cls;
 constDistTest;                         cls;
 cooperYooInterventionDemo;             cls;
-demoDataTable;                         cls;
-demoNumericalIntNIG;                   cls;
+dataTableDemo;                         cls;
 dirichletHistPlotDemo;                 cls;
 discreteDistTest;                      cls;
-enumSprinkler;                         cls;
 gammaPlotDemo;                         cls;
 gammaRainfallDemo;                     cls;
 gaussDGMdemo;                          cls;
+%}
 gaussInferMuSigmaDemo;                 cls;
 gaussMixPlot;                          cls;
 gauss_NormInvGammDistTest;             cls;
@@ -53,12 +53,12 @@ mkFluDgm;                              cls;
 mkMisconceptionUGM;                    cls;
 mkSprinklerDgm;                        cls;
 mvnImputationDemo;                     cls;
-mvnImputationEMdemo;                   cls;
 mvnPlot2Ddemo;                         cls;
 mvnSeqlUpdateMuSigma1D;                cls;
 mvnSeqUpdateSigma1d;                   cls;
 mvnSoftCondition;                      cls;
 mvtPlotDemo;                           cls;
+numericalIntNIGdemo;                   cls;
 oldFaithfulDemo;                       cls;
 poissonPlotDemo;                       cls;
 rainyDayDemo;                          cls;

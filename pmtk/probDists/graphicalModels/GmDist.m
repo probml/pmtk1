@@ -24,7 +24,7 @@ classdef GmDist < ParamDist
       
     function [postQuery, logZ, other] = marginal(model, queryVars, visVars, visVals)
       if nargin < 3, visVars = []; visVals = []; end
-      [eng, logZ, other] = condition(eng, model, visVars, visVals);
+      [eng, logZ, other] = condition(model.infEng, model, visVars, visVals);
       if ~iscell(queryVars)
         [postQuery] = marginal(eng, queryVars);
       else

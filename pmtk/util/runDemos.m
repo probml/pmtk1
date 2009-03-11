@@ -1,6 +1,7 @@
 %% Run Every Demo
 
-%% 
+%%
+%{
 %alarmNetwork - slow!
 bernoulliDistTest;                     pclear;
 bernoulli_betaSequentialUpdate;        pclear;
@@ -16,17 +17,16 @@ chainTransformerTest;                  pclear;
 chordalGraphDemo;                      pclear;
 clusterMnistDigits;                    pclear;
 compareJtreeToVarElim;                 pclear;
-compareToEnum;                         pclear;
 compareToHMM;                          pclear;
+compareVarElimToEnum;                  pclear;
+compareVarElimToFwdBack;               pclear;
+compareVarElimToJtree;                 pclear;
 constDistTest;                         pclear;
 cooperYooInterventionDemo;             pclear;
-demoDataTable;                         pclear;
-demoNumericalIntNIG;                   pclear;
-demoPostModelsExhaustive;              pclear;
+dataTableDemo;                         pclear;
 dirichletHistPlotDemo;                 pclear;
 discreteDistTest;                      pclear;
 discrete_DirichletDistTest;            pclear;
-enumSprinkler;                         pclear;
 familyTreeGeneDataMystery;             pclear;
 gammaPlotDemo;                         pclear;
 gammaRainfallDemo;                     pclear;
@@ -47,7 +47,7 @@ ggmInferDemo;                          pclear;
 gibbsSprinklerUGM;                     pclear;
 graphClassDemo;                        pclear;
 hmmDistTest;                           pclear;
-hoffPimaImputation;                    pclear;
+%}
 inheritedDiseaseVarElim;               pclear;
 invGammaPlotDemo;                      pclear;
 invGammaSampleDemo;                    pclear;
@@ -57,6 +57,7 @@ isingImageDenoiseDemo;                 pclear;
 isolatedWordClassification;            pclear;
 Knn3ClassHeatMaps;                     pclear;
 laplacePlotDemo;                       pclear;
+lingaussHybridDemo;                    pclear;
 linregAllMethods;                      pclear;
 linregBasis;                           pclear;
 linregGaussVsNIG;                      pclear;
@@ -81,7 +82,6 @@ logreg_MvnDistTest;                    pclear;
 mcmcMvn2d;                             pclear;
 mcmcMvn2dConditioning;                 pclear;
 mhGmmDemo;                             pclear;
-mhMvn2d;                               pclear;
 mhMvn2dConditioning;                   pclear;
 misconceptionRank;                     pclear;
 misconceptionUGMdemo;                  pclear;
@@ -96,8 +96,8 @@ modelSelect2D;                         pclear;
 mvnCondition2D;                        pclear;
 mvnHeightWeight;                       pclear;
 mvnImputationDemo;                     pclear;
-mvnImputationDemo2;                    pclear;
-mvnImputationEMdemo;                   pclear;
+mvnImputationEmDemo;                   pclear;
+mvnImputationPima;                     pclear;
 mvnInferMuSigma1D;                     pclear;
 mvnInferParamsMean1d;                  pclear;
 mvnInferParamsMean2d;                  pclear;
@@ -111,9 +111,11 @@ mvnSeqUpdateSigma1d;                   pclear;
 mvnSoftCondition;                      pclear;
 mvtPlotDemo;                           pclear;
 naiveBayesBernoulliExample;            pclear;
+numericalIntNIGdemo;                   pclear;
 oldFaithfulDemo;                       pclear;
 plotMFCC;                              pclear;
 poissonPlotDemo;                       pclear;
+postModelsExhaustiveDemo;              pclear;
 rainyDayDemo;                          pclear;
 SAcoolingSchedule;                     pclear;
 SAdemoCamel;                           pclear;

@@ -1,11 +1,9 @@
 function pclear(nsecs)
     
 if(nargin == 0)
-    nsecs = 2;
+    nsecs = 1;
 end
 pause(nsecs);
 cls;
-    
-    
-    
+
 end

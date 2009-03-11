@@ -7,12 +7,10 @@ G(1,2) = 1; G(2,3)=1;
 CPDs{1} = LinGaussCPD([], 1, 4);
 CPDs{2} = LinGaussCPD(0.5, -5, 4);
 CPDs{3} = LinGaussCPD(-1, 4, 3);
-dgm = DgmDist(G, 'CPDs', CPDs, 'infEng', GaussInfEng());
-%p = predict(dgm, 2, -3.1, [1 3]);
-tmp = condition(dgm, 2, -3.1);
-query = marginal(tmp, [1 3])
+dgm = DgmGaussDist(G, 'CPDs', CPDs, 'infEng', GaussInfEng());
+query = marginal(dgm, [1 3], 2, -3.1)
 X = sample(dgm, 1000);
-dgm2 = DgmDist(G);
+dgm2 = DgmGaussDist(G);
 dgm2 = mkRndParams(dgm2, 'CPDtype', 'LinGaussCPD');
 dgm2 = fit(dgm2, X);
 for j=1:3

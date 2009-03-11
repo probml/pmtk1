@@ -4,7 +4,7 @@ function [samples] = hmmSamplePost(initDist, transmat, obslik, nsamples)
 % samples(t,s) = value of S(t)  in sample s
 
 [K T] = size(obslik);
-alpha = hmmFilter(initDist, transmat, obslik);
+[loglik, alpha] = hmmFwd(initDist, transmat, obslik);
 samples = zeros(T, nsamples);
 dist = normalize(alpha(:,T));
 samples(T,:) = sampleDiscrete(dist, 1,nsamples);

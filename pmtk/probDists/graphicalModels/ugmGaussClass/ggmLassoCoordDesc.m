@@ -5,7 +5,7 @@ function [precMat, covMat] = ggmLassoCoordDesc(S, lambda, varargin)
 % graphical lasso", Friedman 2007
 % See "Elements of statistical learning" 2ed p636
 
-
+error('not finished')
 optTol = 0.00001;
 p = size(S,1);
 maxIter = 20;

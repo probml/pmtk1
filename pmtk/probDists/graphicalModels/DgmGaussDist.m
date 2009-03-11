@@ -10,7 +10,17 @@ classdef DgmGaussDist < DgmDist
   
   %%  Main methods
   methods
-   
+    function obj = DgmGaussDist(G, varargin)
+      if(nargin == 0);G = [];end
+      if isa(G,'double'), G=Dag(G); end
+      obj.G = G;
+      [obj.CPDs, obj.infEng, obj.domain]= process_options(...
+        varargin, 'CPDs', [], 'infEng', GaussInfEng(), 'domain',[]);
+      if isempty(obj.domain)
+        obj.domain = 1:nnodes(G);
+      end
+    end
+    
      function dgm = mkRndParams(dgm, varargin)
        d = ndimensions(dgm);
        for j=1:d

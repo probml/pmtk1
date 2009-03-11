@@ -16,6 +16,7 @@ classdef UgmGaussDist < UgmDist
         if nargin < 3, Sigma = []; end
         obj.G = G; obj.mu = mu; obj.Sigma = Sigma;
         obj.domain = 1:length(mu);
+        obj.infEng = GaussInfEng();
       end
       
       
@@ -66,15 +67,16 @@ classdef UgmGaussDist < UgmDist
         [X, SS] = process_options(...
           varargin, 'data', [], 'suffStat', []);
         obj.mu = mean(X);
-        [precMat, covMat] = gaussIPF(cov(X), obj.G.adjMat);
+        [precMat, covMat] = covselIPF(cov(X), obj.G.adjMat);
         obj.Sigma = covMat;
       end
 
       function obj = fitStructure(obj, varargin)
         [method, lambda, X] = process_options(...
           varargin, 'method', 'L1BCD', 'lambda', 1e-3, 'data', []);
+        C = cov(X);
         switch method
-          case 'L1BCD', [precMat, covMat] = L1precisionBCD(X, 'regularizer', lambda);
+          case 'L1BCD', [precMat, covMat] =ggmLassoCoordDescQP(C, lambda);
             obj.mu = mean(X);
             obj.Sigma = covMat;
             obj.G = UndirectedGraph(precmatToAdjmat(precMat));

@@ -211,7 +211,7 @@ classdef MvnDist < ParamDist
     function obj = mkRndParams(obj, d)
       if nargin < 2, d = ndimensions(obj); end
       if(~isscalar(d) || d~=round(d))
-        error('what does this code do?')
+        % d is data n*D
           perm = randperm(size(d,1));
           obj.mu = d(perm(1),:);
           obj.Sigma = 0.05*cov(d);

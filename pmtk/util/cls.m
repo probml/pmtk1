@@ -10,4 +10,4 @@ try
     dbquit('all');
 catch
 end
-clc;
+%clc;

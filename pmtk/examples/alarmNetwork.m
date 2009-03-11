@@ -10,7 +10,7 @@ profile on;
 for i=1:37
     m2 = marginal(dgm, i, mod(i,37)+2, 2);
 end
-break;
+
 
 profile viewer;
 %% Large Marginal Test

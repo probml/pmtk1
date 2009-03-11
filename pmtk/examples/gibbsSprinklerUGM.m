@@ -2,7 +2,7 @@
 %#testPMTK
 setSeed(0);
 dgm = mkSprinklerDgm();
-ugm = convertToUgmTabular(dgm);
+ugm = convertToUgm(dgm);
 
 % Exact
 ugmExact = ugm;

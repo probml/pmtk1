@@ -202,7 +202,7 @@ classdef FwdBackInfEng < InfEng
         function [logp,eng] = logprob(eng)
             checkParams(eng);
             if(isempty(eng.logp))
-                [eng.alpha, eng.logp] = hmmFilter(eng.pi, eng.A, eng.B);
+                [eng.logp] = hmmFwd(eng.pi, eng.A, eng.B);
                 logp = eng.logp;
             end
             
