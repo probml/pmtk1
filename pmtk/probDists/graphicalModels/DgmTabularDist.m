@@ -12,6 +12,7 @@ classdef DgmTabularDist < DgmDist
   methods
    
      function obj = DgmTabularDist(G, varargin)
+       error('deprecated');
       if(nargin == 0);G = [];end
       if isa(G,'double'), G=Dag(G); end
       obj.G = G;
@@ -31,36 +32,7 @@ classdef DgmTabularDist < DgmDist
       end
     end
    
-     function M = convertToUgm(obj, visVars, visVals)
-       if(nargin < 2), visVars = [];  visVals = {}; end
-      [Tfacs, nstates] = convertToTabularFactors(obj, visVars, visVals);
-      M = UgmTabularDist('factors', Tfacs, 'nstates', nstates);
-     end
     
-    function [Tfacs, nstates] = convertToTabularFactors(obj,visVars,visVals)
-    if(nargin < 2), visVars = [];  visVals = {}; end
-    d = length(obj.CPDs);
-    Tfacs = cell(1,d);
-    nstates = zeros(1,d);
-    for j=1:d
-      dom = [parents(obj.G, j), j];
-      include = ismember(visVars,dom);
-      if(isempty(include) || ~any(include))
-        Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, [],{});
-      else
-        Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, visVars(include) , visVals(include));
-      end
-      nstates(j) = Tfacs{j}.sizes(end);
-    end
-    end
-    
-    function Tfac = convertToJointTabularFactor(obj,visVars,visVals)
-      % Represent the joint distribution as a single large factor
-      if nargin < 3
-        visVars = []; visVals = [];
-      end
-      Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
-    end
   end
 
 

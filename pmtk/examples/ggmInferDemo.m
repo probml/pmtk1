@@ -8,11 +8,11 @@ mvn = MvnDist(ggm.mu, ggm.Sigma);
 
 V = 1:2; H = setdiffPMTK(1:d, V); xv = randn(2,1);
 
-ggm = condition(ggm, V, xv); pggm = marginal(ggm, H);
-mvn = condition(mvn, V, xv); pmvn = marginal(mvn, H);
+% This is a rather vacuous test since current UgmGaussDist
+% actually uses MvnDist's inference method
 
-%pggm = predict(ggm, V, xv, H);
-%pmvn = predict(mvn, V, xv, H);
+pggm = marginal(ggm, H, V, xv);
+pmvn = marginal(mvn, H, V, xv);
 
 assert(approxeq(mean(pggm), mean(pmvn)))
 assert(approxeq(cov(pggm), cov(pmvn)))

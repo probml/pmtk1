@@ -15,32 +15,37 @@ classdef JtreeInfEng
         cliqueScope;            % a cell array s.t. cliqueScope{i} = the scope,(domain) of the ith clique.
         iscalibrated = false;   % true iff the clique tree is calibrated so that each clique represents the unnormalized joint over the variables in its scope. 
         orderDown;              % the order in which the cliques were visited in the downwards pass of calibration. 
+        verbose;
    end
    
    
    methods
        
-       function eng = JtreeInfEng()
-           eng; %#ok
+       function eng = JtreeInfEng(varargin)
+           [eng.verbose] = process_options(varargin, ...
+             'verbose', false);
        end
        
-       function eng = condition(eng,model,visVars,visVals)
+       function [eng, logZ, other] = condition(eng,model,visVars,visVals)
+         verbose = eng.verbose;
            if eng.iscalibrated && (nargin < 3 || isempty(visVars))
                return; % nothing to do
-           end
-           
+           end 
            if eng.iscalibrated && nargin == 4
                eng = recalibrate(eng,visVars,visValues); % recalibrate based on new evidence. 
                return;
            end
-           
            if(nargin < 4), visVars = []; visVals = {}; end
            [eng.factors,eng.nstates] = convertToTabularFactors(model,visVars,visVals);
            eng.domain = model.domain;
            if isempty(eng.cliques)
+             if verbose, fprintf('setting up clique tree\n'); end
                eng = setupCliqueTree(eng,model.G);  
            end
+           if verbose, fprintf('calibrating clique tree\n'); end
            eng = calibrate(eng);
+           if verbose, fprintf('done\n'); end
+           logZ = []; other = [];
        end
        
        function [postQuery,eng] = marginal(eng,queryVars)

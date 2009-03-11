@@ -25,13 +25,13 @@ classdef MhInfEng  < InfEng
     end
    
      
-     function [eng] = condition(eng, model, visVars, visVals)
+     function [eng, logZ, other] = condition(eng, model, visVars, visVals)
        V = lookupIndices(visVars, model.domain);
        %function x = addVisData(x, V, visVars)
        %  x(V) = visVars;
        %end
-       %targetFn = @(xh) logprobUnnormalized(model, MhInfEng.addVisData(xh, V, visVals));
-       targetFn = @(xh) logprobUnnormalized(model, xh);
+       targetFn = @(xh) logprobUnnormalized(model, MhInfEng.addVisData(xh, V, visVals));
+       %targetFn = @(xh) logprobUnnormalized(model, xh);
        %hidVars = setdiffPMTK(model.domain, visVars);
        %targetFn = @(xh) logprobUnnormalized(model, xh, 'domain', hidVars, ...
        %  'visVars', visVars, 'visVals', visVals);
@@ -40,7 +40,7 @@ classdef MhInfEng  < InfEng
       samples = zeros(eng.Nsamples, ndims, eng.Nchains);
       for c=1:eng.Nchains
         if eng.verbose
-          fprintf('starting to collect %d samples from chain %d of %d\n', ...
+          fprintf('MH: starting to collect %d samples from chain %d of %d\n', ...
             eng.Nsamples, c, eng.Nchains);
         end
         if c>1, xinit = mcmcInitSample(model, visVars, visVals); end
@@ -59,6 +59,8 @@ classdef MhInfEng  < InfEng
        % domain
        hidVars = setdiffPMTK(model.domain, visVars);
        eng.samples = SampleDist(samples, hidVars);
+       logZ = [];
+       other = eng.convDiag;
      end
     
      function [postQuery,eng] = marginal(eng, queryVars)

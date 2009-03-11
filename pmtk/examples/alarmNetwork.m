@@ -1,19 +1,22 @@
 %% Test VarElimInfEng on the Alarm Network
 %#slow
 
-%% Alarm Network Test
+% This code does not check the answers are correct,
+% merely that the functions can be called...
 dgm = mkAlarmNetworkDgm();
-dgm.infEng = VarElimInfEng();
+%dgm.infMethod = 'varElim';
+dgm.infEng = VarElimInfEng('verbose', false);
 profile on;
 for i=1:37
-    m = marginal(dgm,[i,mod(i,37)+1]);
-    dgm2 = condition(dgm,mod(i,37)+2,2);
-    m2 = marginal(dgm2,i);
+    m2 = marginal(dgm, i, mod(i,37)+2, 2);
 end
+break;
+
 profile viewer;
 %% Large Marginal Test
 dgm = mkAlarmNetworkDgm();
 dgm.infEng = VarElimInfEng();
 profile on
 m = marginal(dgm,1:20); % 36 million entries!
+%m = marginal(dgm,1:5); 
 profile viewer

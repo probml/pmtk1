@@ -14,8 +14,8 @@ classdef DgmDist < GmDist
       if(nargin == 0);G = [];end
       if isa(G,'double'), G=Dag(G); end
       obj.G = G;
-      [obj.CPDs, obj.infMethod, obj.domain]= process_options(...
-        varargin, 'CPDs', [], 'infMethod', 'varElim', 'domain',[]);
+      [obj.CPDs, obj.infEng, obj.domain]= process_options(...
+        varargin, 'CPDs', [], 'infEng', JtreeInfEng(), 'domain',[]);
       if isempty(obj.domain)
         obj.domain = 1:nnodes(G);
       end
@@ -25,6 +25,37 @@ classdef DgmDist < GmDist
           d = nnodes(obj.G);
       end
       
+      function M = convertToUgm(obj, visVars, visVals)
+        if(nargin < 2), visVars = [];  visVals = {}; end
+        [Tfacs, nstates] = convertToTabularFactors(obj, visVars, visVals);
+        M = UgmTabularDist('factors', Tfacs, 'nstates', nstates);
+      end
+    
+    function [Tfacs, nstates] = convertToTabularFactors(obj,visVars,visVals)
+    if(nargin < 2), visVars = [];  visVals = {}; end
+    d = length(obj.CPDs);
+    Tfacs = cell(1,d);
+    nstates = zeros(1,d);
+    for j=1:d
+      dom = [parents(obj.G, j), j];
+      include = ismember(visVars,dom);
+      if(isempty(include) || ~any(include))
+        Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, [],{});
+      else
+        Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, visVars(include) , visVals(include));
+      end
+      nstates(j) = Tfacs{j}.sizes(end);
+    end
+    end
+    
+    function Tfac = convertToJointTabularFactor(obj,visVars,visVals)
+      % Represent the joint distribution as a single large factor
+      if nargin < 3
+        visVars = []; visVals = [];
+      end
+      Tfac = TabularFactor.multiplyFactors(convertToTabularFactors(obj,visVars,visVals));
+    end
+    
     function obj = fit(obj, X, varargin)
         % We fit each CPD separately assuming no missing data
         % and no param tying
@@ -53,29 +84,7 @@ classdef DgmDist < GmDist
         end
     end
     
-   
-    %{
-    function postQuery = varElimCts(model, Tfac, cfacs, queryVars)
-      cdom = cell2mat(cellfuncell(@(x)rowvec(sube(subd(x,'domain'),2)),Tfac(cfacs)));
-      % domain of unobserved continuous nodes
-      I = intersect(cdom,queryVars);
-      if ~isempty(I)
-        if numel(queryVars) > numel(I)
-          error('Cannot represent the joint over mixed node types.');
-        elseif numel(I) > 1
-          error('Cannot represent the joint over two or more unobserved continuous nodes.');
-        else
-          postQuery = extractLocalDistribution(model,I);
-          assert( isa(postQuery,'MixtureDist'));
-          par = parents(model.G, I);
-          assert(numel(par) == 1);
-          SS.counts = pmf(marginal(model,par));
-          postQuery.mixingWeights = fit(postQuery.mixingWeights,'suffStat',SS);
-          return;
-        end
-      end
-    end
-%}
+  
     
     %{
     function postQuery = predict(obj, visVars, visVals, queryVars, varargin)
@@ -135,28 +144,26 @@ classdef DgmDist < GmDist
     end
     
    
-    %{
-   function dgm = mkRndParams(dgm, varargin)
-       d = ndimensions(dgm);
-       [CPDtype, arity] = process_options(varargin, ...
-           'CPDtype', 'TabularCPD', 'arity', 2*ones(1,d));
-       for j=1:d
-           pa = parents(dgm.G, j);
-           switch lower(CPDtype)
-               case 'lingausscpd',
-                   q  = length(pa);
-                   dgm.CPDs{j} = LinGaussCPD(randn(q,1), randn(1,1), rand(1,1));
-               case 'tabularcpd'
-                   q  = length(pa);
-                   dgm.CPDs{j} = TabularCPD(mkStochastic(rand(arity([pa j]))));
-               otherwise
-                   error(['unknown type ' CPDtype])
-           end
-       end
-       %dgm = initInfEng(dgm);
-   end
-   %}
     
+    function dgm = mkRndParams(dgm, varargin)
+      d = ndimensions(dgm);
+      [CPDtype, arity] = process_options(varargin, ...
+        'CPDtype', 'TabularCPD', 'arity', 2*ones(1,d));
+      for j=1:d
+        pa = parents(dgm.G, j);
+        switch lower(CPDtype)
+          case 'lingausscpd',
+            q  = length(pa);
+            dgm.CPDs{j} = LinGaussCPD(randn(q,1), randn(1,1), rand(1,1));
+          case 'tabularcpd'
+            q  = length(pa);
+            dgm.CPDs{j} = TabularCPD(mkStochastic(rand(arity([pa j]))));
+          otherwise
+            error(['unknown type ' CPDtype])
+        end
+      end
+    end
+
    
     
     function nodeDist = extractLocalDistribution(obj,var)

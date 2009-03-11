@@ -7,6 +7,7 @@ classdef MvnDist < ParamDist
     fitMethod;
     fitArgs;
     domain;
+    infEng;
   end
  
   %% main methods
@@ -17,8 +18,9 @@ classdef MvnDist < ParamDist
       if nargin == 0
         mu = []; Sigma = [];
       end
-      [m.domain, m.prior, m.fitMethod, m.fitArgs] = process_options(varargin, ...
-        'domain', 1:numel(mu), 'prior', 'none', 'fitMethod', 'mle', 'fitArgs', {});
+      [m.domain, m.prior, m.fitMethod, m.fitArgs, m.infEng] = process_options(varargin, ...
+        'domain', 1:numel(mu), 'prior', 'none', 'fitMethod', 'mle', ...
+        'fitArgs', {}, 'infEng', GaussInfEng());
       m.mu = mu; m.Sigma = Sigma;
     end
 
@@ -38,15 +40,8 @@ classdef MvnDist < ParamDist
       C = diag(model.Sigma);
     end
     
-   function samples = sample(model, n)
-      % Samples(i,:) is i'th sample 
-      if(nargin < 2), n = 1; end;
-      mu = model.mu; Sigma = model.Sigma; 
-      A = chol(Sigma,'lower'); % could be cached
-      Z = randn(length(mu),n);
-      samples = bsxfun(@plus,mu(:), A*Z)'; %#ok
-    end
     
+    %{
     function [postQuery] = marginal(model, queryVars)
       % p(Q)
       mu = model.mu; Sigma = model.Sigma; domain = model.domain;
@@ -63,7 +58,60 @@ classdef MvnDist < ParamDist
         mu, Sigma, V, visValues);
       postQuery = MvnDist(muHgivenV, SigmaHgivenV, 'domain', hidVars);
     end
+    %}
+   
+    function [mu,Sigma,domain] = convertToMvn(m)
+      % This is required by  the GaussInfEng object
+        mu = m.mu; Sigma = m.Sigma;
+        domain = 1:length(m.mu);
+    end
     
+    function [samples, other] = sample(model, n, visVars, visVals)
+      % Samples(i,:) is i'th sample 
+      if(nargin < 2), n = 1; end;
+      if nargin < 3, visVars = []; visVals = []; end
+      [eng, logZ, other] = condition(model.infEng, model, visVars, visVals);
+      [samples] = sample(eng, n);
+   end
+    
+     function [postQuery, logZ, other] = marginal(model, queryVars, visVars, visVals)
+      if nargin < 3, visVars = []; visVals = []; end
+      [eng, logZ, other] = condition(model.infEng, model, visVars, visVals);
+      if ~iscell(queryVars)
+        [postQuery] = marginal(eng, queryVars);
+      else
+        for q=1:length(queryVars)
+          postQuery{q} = marginal(eng, queryVars{q}); %#ok
+        end
+      end
+     end
+    
+     %{
+    function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
+      mu = model.mu; Sigma = model.Sigma; domain = model.domain;
+      if nargin < 3
+        visVars = []; 
+        muHgivenV = mu;
+        SigmaHgivenV = Sigma;
+      else
+        V = lookupIndices(visVars, domain);
+        [muHgivenV, SigmaHgivenV] = gaussianConditioning(mu, Sigma, V, visValues);
+      end
+      hidVars = setdiffPMTK(domain, visVars);
+      if ~iscell(queryVars)
+        queryVars = {queryVars};
+        singleQuery = true;
+      else
+        singleQuery = false;
+      end
+      for i=1:length(queryVars)
+        Q = lookupIndices(queryVars{i}, hidVars);
+        postQuery{i} = MvnDist(muHgivenV(Q), SigmaHgivenV(Q,Q), 'domain', queryVars{i});
+      end
+      if singleQuery, postQuery = postQuery{1}; end
+    end
+    %}
+     
     function logZ = lognormconst(model)
       mu = model.mu; Sigma = model.Sigma;
       d = length(mu);
@@ -103,7 +151,6 @@ classdef MvnDist < ParamDist
 
     
     function L = logprobUnnormalized(model, X)
-      error('deprecated')  
       % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
         % variables
         mu = model.mu; Sigma = model.Sigma;

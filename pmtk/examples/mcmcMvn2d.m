@@ -1,44 +1,41 @@
 %% MCMC Sampling from a 2d Gaussians
+% Compare MH and Gibbs
 % We use a N(0, sigma*eye(2)) proposal and see the effect of changing sigma
-% We also compare to Gibbs sampling
 
 Sigma = [1 -0.5; -0.5 1];
 mu = [1; 1];
-m = MvnDist(mu, Sigma, 'infEng', GaussInfEng());
-assert(ndimensions(m)==2)
+N = 500; 
+model = MvnDist(mu, Sigma);
 for i=1:2
-  margExact{i} = marginal(m, i); %#ok
+  margExact{i} = marginal(model, i); %#ok
 end
 
- 
-N = 500; 
 
-% In this code, we use the PMTK object system.
-% See mhMvn2d for how to call mhSample directly.
-% (One can also call gibbsSample directly, but it gets tricky...)
+%targetFn = @(x) log(gausspdfUnnormalized(x, mu, Sigma));
+targetFn = @(x) logprobUnnormalized(model,x);
+xinit = mvnrnd(mu, Sigma);
+S{1} = mhSample('target', targetFn, 'xinit', xinit, ...
+  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 1*eye(2)));
+S{2} = mhSample('target', targetFn, 'xinit', xinit, ...
+  'Nsamples', N, 'proposal',  @(x) mvnrnd(x, 0.01*eye(2)));
+fullCond = makeFullConditionals(model);
+S{3} = gibbsSample(fullCond, xinit, N);
+  
+names= {'mh I', 'mh 0.01 I', 'gibbs'};
 
-mcmc{1} = MvnDist(mu, Sigma, 'infEng', GibbsInfEng('Nsamples', N));
-mcmc{2} = MvnDist(mu, Sigma, 'infEng', ...
-  MhInfEng('Nsamples', N, 'proposal', @(x) mvnrnd(x, 1*eye(2))));
-mcmc{3} = MvnDist(mu, Sigma, 'infEng', ...
-  MhInfEng('Nsamples', N, 'proposal', @(x) mvnrnd(x, 0.01*eye(2))));
-
-names= {'gibbs', 'mh I', 'mh 0.01 I', 'gibbs'};
-
-for j=1:length(mcmc)
-    ms = mcmc{j};
-    ms = condition(ms); % run sampler
-    S = sample(ms, N); 
+for j=1:length(S)
+    samples = S{j};
     ttl = names{j};
     figure;
-    plot(m, 'useContour', 'true');
+    gaussPlot2d(mu, Sigma);
     hold on
-    plot(S(:,1), S(:,2), '.');
+    plot(samples(:,1), samples(:,2), '.');
     title(ttl)
     
     figure;
+    samplesDist = SampleDist(samples, [1 2]); % convert raw samples to distribution
     for i=1:2
-      margApprox{i} = marginal(ms,i); %#ok
+      margApprox{i} = marginal(samplesDist,i); %#ok
       subplot2(2,2,i,1);
       [h, histArea] = plot(margApprox{i}, 'useHisto', true);
       hold on
@@ -54,7 +51,7 @@ for j=1:length(mcmc)
     figure;
     for i=1:2
       subplot(1,2,i);
-      stem(acf(S(:,i), 30));
+      stem(acf(samples(:,i), 30));
       title(ttl)
     end
 end

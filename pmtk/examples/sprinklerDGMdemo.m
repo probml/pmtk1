@@ -1,8 +1,6 @@
 %% Example of inference in water sprinkler DGM
 %#testPMTK
 dgm = mkSprinklerDgm();
-%dgm.infMethod  = 'enum';
-dgm.infMethod  = 'varElim';
 false = 1; true = 2;
 C = 1; S = 2; R = 3; W = 4;
 
@@ -13,11 +11,10 @@ assert(approxeq(mW(true), 0.6471))
 assert(approxeq(mSW(true,true), 0.2781))
 
 % conditional marginals
-pSgivenW = pmf(conditional(dgm, W, true, S));
+pSgivenW = pmf(marginal(dgm, S, W, true));
 assert(approxeq(pSgivenW(true), 0.4298));
-pSgivenWR = pmf(conditional(dgm, [W R], [true, true], S));
+pSgivenWR = pmf(marginal(dgm, S, [W R], [true, true]));
 assert(approxeq(pSgivenWR(true), 0.1945)); % explaining away
-
 
 % Display joint
 joint = convertToJointTabularFactor(dgm);

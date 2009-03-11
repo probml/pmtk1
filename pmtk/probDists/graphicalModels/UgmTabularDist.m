@@ -16,8 +16,8 @@ classdef UgmTabularDist < UgmDist
             % 'infMethod' - {'varElim', 'enum'}
             % nstates(j) - number of states for node j
             if(nargin == 0);return;end
-            [G, obj.factors, obj.infMethod, obj.nstates] = process_options(varargin, ...
-                'G', [], 'factors', [], 'infMethod', 'varElim', 'nstates', []);
+            [G, obj.factors, obj.infEng, obj.nstates] = process_options(varargin, ...
+                'G', [], 'factors', [], 'infEng', JtreeInfEng(), 'nstates', []);
             if isempty(G)
                 % infer graph topology from factors
                 d = length(obj.nstates);
