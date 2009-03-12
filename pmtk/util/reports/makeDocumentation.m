@@ -7,7 +7,7 @@ function makeDocumentation(destination)
 
     demodirectory = './examples';                               % location relative to the root of PMTK where the demos live
     viewName1     = 'PMTKdocsByFuncName.html';                  % name of root HTML file for the docs
-    defaultDocDir = 'C:\PMTKdocs';                              % default directory to store the documentation
+    defaultDocDir = 'C:\kmurphy\pmtkLocal\doc';                              % default directory to store the documentation
     doNotEvalTag  = '%#!';                                      % If this tag is present in the function's documentation, it is not evaluated when published
     excludeList = {};                                           % Functions listed here are not displayed in the "Functions Used" column
     if(exist('trivialFunctionList.txt','file'))

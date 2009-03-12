@@ -73,6 +73,7 @@ classdef TabularFactor
     
     function Tsmall = slice(Tbig, visVars, visValues)
         % Return Tsmall(hnodes) = Tbig(visNodes=visValues, hnodes=:)
+        % visVars are global names, which are looked up in the domain
         if isempty(visVars), Tsmall = Tbig; return; end
         d = ndimensions(Tbig);
         Vndx = lookupIndices(visVars, Tbig.domain);

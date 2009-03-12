@@ -4,7 +4,6 @@ classdef UgmTabularDist < UgmDist
     properties
         %G; infMethod;
         factors;
-        nstates;
     end
     
     %%  Main methods
@@ -32,6 +31,7 @@ classdef UgmTabularDist < UgmDist
             if isa(G, 'double'), G = UndirectedGraph(G); end
             obj.G = G;
             obj.domain = 1:nnodes(G);
+            obj.discreteNodes = 1:nnodes(G);
         end
        
         

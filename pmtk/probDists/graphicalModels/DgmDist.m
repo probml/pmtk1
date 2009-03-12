@@ -14,10 +14,21 @@ classdef DgmDist < GmDist
       if(nargin == 0);G = [];end
       if isa(G,'double'), G=Dag(G); end
       obj.G = G;
-      [obj.CPDs, obj.infEng, obj.domain]= process_options(...
-        varargin, 'CPDs', [], 'infEng', JtreeInfEng(), 'domain',[]);
+      N = nnodes(G);
+      [obj.CPDs, obj.infEng, obj.domain, ...
+        obj.discreteNodes, obj.nstates]= process_options(...
+        varargin, 'CPDs', [], 'infEng', JtreeInfEng(), 'domain',[], ...
+        'discreteNodes', 1:N, 'nstates', ones(1,N));
       if isempty(obj.domain)
         obj.domain = 1:nnodes(G);
+      end
+      if ~isempty(obj.CPDs) && ~isempty(G)
+        assert(length(obj.CPDs) == nnodes(G)) % not true if there is param tying
+      end
+      if ~isempty(obj.CPDs)
+        obj.discreteNodes = find(cellfun(@isDiscrete, obj.CPDs));
+        obj.ctsNodes = setdiffPMTK(1:N, obj.discreteNodes);
+        obj.nstates = cellfun(@nstates, obj.CPDs);
       end
     end
 
@@ -26,17 +37,22 @@ classdef DgmDist < GmDist
       end
       
       function M = convertToUgm(obj, visVars, visVals)
-        if(nargin < 2), visVars = [];  visVals = {}; end
+        if(nargin < 2), visVars = [];  visVals = []; end
         [Tfacs, nstates] = convertToTabularFactors(obj, visVars, visVals);
         M = UgmTabularDist('factors', Tfacs, 'nstates', nstates);
       end
     
-    function [Tfacs, nstates] = convertToTabularFactors(obj,visVars,visVals)
-    if(nargin < 2), visVars = [];  visVals = {}; end
-    d = length(obj.CPDs);
-    Tfacs = cell(1,d);
-    nstates = zeros(1,d);
-    for j=1:d
+      function [Tfacs, nstates] = convertToTabularFactors(obj,visVars,visVals)
+        if(nargin < 2), visVars = [];  visVals = {}; end
+        d = nnodes(obj.G);
+        data = sparse(1,d);
+        data(visVars) = visVals;
+        visible = false(1,d);
+        visible(visVars) = true;
+        Tfacs = cell(1,d);
+        nstates = zeros(1,d);
+        for j=1:d
+          %{
       dom = [parents(obj.G, j), j];
       include = ismember(visVars,dom);
       if(isempty(include) || ~any(include))
@@ -44,9 +60,17 @@ classdef DgmDist < GmDist
       else
         Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, dom, visVars(include) , visVals(include));
       end
-      nstates(j) = Tfacs{j}.sizes(end);
-    end
-    end
+          %}
+          ps = parents(obj.G, j);
+          ctsParents = intersectPMTK(ps, obj.ctsNodes);
+          dParents = intersectPMTK(ps, obj.discreteNodes);
+          child = j;
+          Tfacs{j} = convertToTabularFactor(obj.CPDs{j}, child, ctsParents, dParents, visible, data, obj.nstates);
+          nstates(j) = Tfacs{j}.sizes(end);
+          %assert(nstates(j)==obj.nstates(j)); % nstates is after seeing
+          %evidence
+        end
+      end
     
     function Tfac = convertToJointTabularFactor(obj,visVars,visVals)
       % Represent the joint distribution as a single large factor

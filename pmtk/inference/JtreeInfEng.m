@@ -28,6 +28,11 @@ classdef JtreeInfEng
        
        function [eng, logZ, other] = condition(eng,model,visVars,visVals)
          verbose = eng.verbose;
+          N = nnodes(model.G);
+            visible = false(1,N); visible(visVars) = true;
+            if ~all(visible(model.ctsNodes))
+              error('JtreeInfEng requires all cts nodes to be observed')
+            end
            if eng.iscalibrated && (nargin < 3 || isempty(visVars))
                return; % nothing to do
            end 

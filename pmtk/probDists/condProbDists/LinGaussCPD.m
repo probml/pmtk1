@@ -16,6 +16,18 @@ classdef LinGaussCPD < CondProbDist
       obj.w = w; obj.w0 = w0; obj.v = v;
     end
     
+      function p = isDiscrete(CPD) %#ok
+        p = false;
+      end
+      
+      function q = nstates(CPD)  %#ok
+        q = 1;
+      end
+      
+      function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates) %#ok
+        error('cannot convert LinGaussCPD to tabular')
+      end
+      
     function obj = fit(obj, varargin)
         % X(i,:) are the values of the parents in the i'th case
         % y(i) is the value of the child

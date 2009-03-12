@@ -6,10 +6,21 @@ classdef InputCPD < CondProbDist
   
   methods
     
-   function Tfac = convertToTabularFactor(model, domain,visVars,visVals) %#ok
-     Tfac = TabularFactor(1,domain); return; % return an empty TabularFactor
+   function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates) %#ok
+     assert(isempty(ctsParents))
+     assert(isempty(dParents))
+     assert(visible(child))
+     Tfac = TabularFactor(1,child);  % return an empty TabularFactor
    end
-          
+   
+   function p = isDiscrete(CPD) %#ok
+     p = false;
+   end
+
+   function q = nstates(CPD)  %#ok
+     q = 1;
+   end
+      
   end % methods
   
 end

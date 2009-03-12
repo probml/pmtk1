@@ -8,6 +8,8 @@ classdef MvnDist < ParamDist
     fitArgs;
     domain;
     infEng;
+    %discreteNodes;
+    %ctsNodes;
   end
  
   %% main methods
@@ -22,6 +24,7 @@ classdef MvnDist < ParamDist
         'domain', 1:numel(mu), 'prior', 'none', 'fitMethod', 'mle', ...
         'fitArgs', {}, 'infEng', GaussInfEng());
       m.mu = mu; m.Sigma = Sigma;
+      %m.ctsNodes = 1:length(mu);
     end
 
     function mu = mean(model)

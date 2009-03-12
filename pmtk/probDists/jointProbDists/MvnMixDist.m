@@ -20,6 +20,7 @@ classdef MvnMixDist < MixtureDist
             
         end
         
+       
          function model = mkRndParams(model, d,K)
             model.distributions = copy(MvnDist(),K,1);
             model = mkRndParams@MixtureDist(model,d,K);

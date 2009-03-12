@@ -18,6 +18,12 @@ classdef VarElimInfEng < InfEng
       
         function [eng, logZ, other] = condition(eng, model, visVars, visVals)    
             if(nargin < 4), visVars = []; visVals = {};end
+            N = nnodes(model.G);
+            visible = false(1,N); visible(visVars) = true;
+            hidCts = model.ctsNodes(~visible(model.ctsNodes));
+            if any(arrayfun(@(i) ~isleaf(model.G, i), hidCts))
+              error('VarElimInfEng requires all hidden cts nodes to be leaves')
+            end
             [eng.Tfac,nstates] = convertToTabularFactors(model,visVars,visVals);
             if isempty(eng.ordering)
                 if(model.G.directed)

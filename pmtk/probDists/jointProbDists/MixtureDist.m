@@ -39,6 +39,15 @@ classdef MixtureDist < ParamJointDist
            model.mixingWeights = mixingWeights;
         end
         
+         function p = isDiscrete(CPD) %#ok
+          p = false;
+        end
+
+        function q = nstates(CPD)  %#ok
+          q = length(CPD.mixingWeights);
+        end
+        
+        
         function model = fit(model,varargin)
         % Fit via EM    
            [data,opttol,maxiter,nrestarts,SS,prior,init] = process_options(varargin,...
@@ -117,10 +126,30 @@ classdef MixtureDist < ParamJointDist
               logp = logsumexp(calcResponsibilities(model,data),2);
         end
         
-        
-        function Tfac = convertToTabularFactor(model, domain,visVars,visVals)
+         function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates)
+        %function Tfac = convertToTabularFactor(model, domain,visVars,visVals)
           % domain = indices of each parent, followed by index of child
           % all of the children must be observed
+          assert(isempty(ctsParents))
+          assert(length(dParents)==1)
+          if visible(child)
+            T = exp(calcResponsibilities(model,data(child)));
+            Tfac = TabularFactor(T,dParents);
+          else
+            % barren leaf removal
+            Tfac = TabularFactor(ones(1,nstates(dParents)), dParents);
+          end
+         end
+        
+         %{
+         function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates);
+        %function Tfac = convertToTabularFactor(model, domain,visVars,visVals)
+          % domain = indices of each parent, followed by index of child
+          % all of the children must be observed
+          assert(isempty(ctsParents))
+          assert(length(dParents)==1)
+          assert(visible(child))
+          visVals = data(child);
           if(isempty(visVars))
             Tfac = TabularFactor(1,domain); return; % return an empty TabularFactor
           end
@@ -133,7 +162,8 @@ classdef MixtureDist < ParamJointDist
           end
           T = exp(calcResponsibilities(model,visVals));
           Tfac = TabularFactor(T,pdom); % only a factor of the parent now
-        end
+         end
+        %}
         
         
         function model = mkRndParams(model, d,K)

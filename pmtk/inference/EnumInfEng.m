@@ -15,6 +15,9 @@ classdef EnumInfEng < InfEng
     end
 
     function [eng, logZ, other] = condition(eng, model, visVars, visValues)
+      if ~all(model.discreteNodes)
+        error('EnumInfEng requires all nodes to be discrete')
+      end
        Tfac = convertToJointTabularFactor(model);
        [Tfac, Z] = normalizeFactor(slice(Tfac, visVars, visValues)); % p(H,v)
        eng.Tfac = Tfac;

@@ -5,6 +5,9 @@ classdef GmDist
     G; %  a graph object
     domain;
     infEng;
+    discreteNodes;
+    ctsNodes;
+    nstates; % nstates(i) is number of discrete values, or size of vector valued node
   end
 
   %%  Main methods

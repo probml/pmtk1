@@ -28,7 +28,34 @@ classdef TabularCPD < CondProbDist
           end
           obj.pseudoCounts = C;
       end
-    
+      
+      function p = isDiscrete(CPD) %#ok
+        p = true;
+      end
+      
+      function q = nstates(CPD)  %#ok
+        q = CPD.sizes(end);
+      end
+      
+      function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates) %#ok
+        assert(isempty(ctsParents))
+        fam = [dParents(:)' child];
+        Tfac = TabularFactor(CPD.T, fam);
+        visFam = fam(visible(fam));
+        Tfac = slice(Tfac, visFam, data(visFam));
+      end
+      
+      %{
+    function Tfac = convertToTabularFactor(CPD, child, childVal, dparents, dparentVals, cparents, cparentVals, ...
+        nstatesChild, nstatesCparents, nstatesDparents) %#ok
+      assert(isempty(cparents))
+      Tfac = TabularFactor(CPD.T, [dparents child]);
+      visDparents = find(~isnan(dparentVals));
+      Tfac = slice(Tfac, visDparents, dparentVals(visDparents));
+    end
+    %}
+      
+      %{
     function Tfac = convertToTabularFactor(obj, domain,visVars,visVals)
        % domain = indices of each parent, followed by index of child
       Tfac = TabularFactor(obj.T, domain);
@@ -36,7 +63,8 @@ classdef TabularCPD < CondProbDist
           Tfac = slice(Tfac,visVars,visVals);
       end
     end
-    
+    %}
+        
     function ll = logprob(obj, Xpa, Xself)
       % ll(i) = log p(X(i,self) | X(i,pa), params)
       X = [Xpa Xself];

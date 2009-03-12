@@ -15,15 +15,18 @@ end
       eng.mu = []; eng.Sigma = []; eng.domain = [];
     end
      
-     function [eng, logZ, other] = condition(eng, model, visVars, visValues)
-       [mu, Sigma, domain] = convertToMvn(model);
-       V = lookupIndices(visVars, domain);
-       hidVars = setdiffPMTK(domain, visVars);
-       [muHgivenV, SigmaHgivenV] = gaussianConditioning(...
-         mu, Sigma, V, visValues);
-       eng.mu = muHgivenV; eng.Sigma = SigmaHgivenV; eng.domain = hidVars;
-       logZ = []; other = [];
-     end
+    function [eng, logZ, other] = condition(eng, model, visVars, visValues)
+      %if ~isempty(model.discreteNodes)
+      %  error('GaussInfEng requires all  nodes to be Gaussian')
+      %end
+      [mu, Sigma, domain] = convertToMvn(model);
+      V = lookupIndices(visVars, domain);
+      hidVars = setdiffPMTK(domain, visVars);
+      [muHgivenV, SigmaHgivenV] = gaussianConditioning(...
+        mu, Sigma, V, visValues);
+      eng.mu = muHgivenV; eng.Sigma = SigmaHgivenV; eng.domain = hidVars;
+      logZ = []; other = [];
+    end
     
     function [postQuery,eng] = marginal(eng, queryVars)
        mu = eng.mu; Sigma = eng.Sigma; domain = eng.domain;
