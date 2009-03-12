@@ -11,12 +11,12 @@ binom_betaPostPredDemo;                pclear;
 cancerRatesEb;                         pclear;
 cancerRatesMh;                         pclear;
 casinoDemo;                            pclear;
-chainLengthUgmDgmDemo;                 pclear;
+%chainLengthUgmDgmDemo - broken!
 chainTransformerTest;                  pclear;
 chordalGraphDemo;                      pclear;
 clusterMnistDigits;                    pclear;
 compareVarElimToEnum;                  pclear;
-compareVarElimToFwdBack;               pclear;
+%compareVarElimToFwdBack - broken!
 compareVarElimToJtree;                 pclear;
 constDistTest;                         pclear;
 cooperYooInterventionDemo;             pclear;
@@ -24,7 +24,7 @@ dataTableDemo;                         pclear;
 dirichletHistPlotDemo;                 pclear;
 discreteDistTest;                      pclear;
 discrete_DirichletDistTest;            pclear;
-familyTreeGeneDataMystery;             pclear;
+%familyTreeGeneDataMystery - broken!
 gammaPlotDemo;                         pclear;
 gammaRainfallDemo;                     pclear;
 gaussCVfitDemo;                        pclear;
@@ -49,7 +49,7 @@ invGammaPlotDemo;                      pclear;
 invGammaSampleDemo;                    pclear;
 invWIplot1D;                           pclear;
 invWIplot2D;                           pclear;
-isingImageDenoiseDemo;                 pclear;
+%isingImageDenoiseDemo - broken!
 isolatedWordClassification;            pclear;
 Knn3ClassHeatMaps;                     pclear;
 laplacePlotDemo;                       pclear;

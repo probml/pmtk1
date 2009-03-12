@@ -2,7 +2,7 @@ function SAdemoPeaks()
 % Demo of Simulated Annealing for finding the most probable
 % point of a peaky 2D surface
 
-doPrint = 1;
+doPrint = 0;
 
 %folder = 'C:\kmurphy\PML\pdfFigures';
 folder = 'C:\temp\';
@@ -37,7 +37,7 @@ for ti=1:length(temps)
   if doPrint, print_pdf(fullfile(folder, sprintf('SApeaksSurfImagesc%d.pdf', ti))), end
 end
 
-keyboard
+
 
 % find optimum by exhaustive search
 M = max(Z(:)); % 8.0752

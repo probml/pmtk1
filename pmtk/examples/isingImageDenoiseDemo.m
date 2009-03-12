@@ -1,6 +1,6 @@
 function isingImageDenoiseDemo()
 %% image denoising using Ising prior and Gibbs sampling or mean field
-
+%#broken
 setSeed(0);
 % Generate Data
 sigma = 2; % noise level

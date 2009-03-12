@@ -1,5 +1,5 @@
 %% Generate data from a family tree - parameter values are hidden 
-
+%#broken
 setSeed(0);
 doPrint = 1;
 

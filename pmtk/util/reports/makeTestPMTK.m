@@ -49,7 +49,7 @@ function makeTestPMTK()
                  elseif(inprogress)
                      fprintf(fid,' - not yet finished\n');
                  else
-                     fprintf(fid,';%scls;\n',blanks(max(5,40-length(testFile))));
+                     fprintf(fid,';%spclear(0);\n',blanks(max(5,40-length(testFile))));
                  end
              end
              
@@ -57,6 +57,7 @@ function makeTestPMTK()
     end
     fprintf(fid,'%% try instantiating every class...\n');
     fprintf(fid,'objectCreationTest\n\n');
+    fprintf(fid,'pclear(0);\n\n');
     fprintf(fid,'catch ME\n');
     fprintf(fid,'\tclc; close all\n');
     fprintf(fid,'\tfprintf(''PMTK Tests FAILED!\\npress enter to see the error...\\n\\n'')\n');

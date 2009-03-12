@@ -1,5 +1,5 @@
 %% Hierarchical Bayesian Estimation of Some Binomial Proportions
-function mhMissouriCancer()
+function cancerRatesMh()
 % Johnson and Albert  p67
 % mhDemoJohnsonHierBino C:\kmurphy\pmtkLocal\BLTold\PMLcode\Book
 
@@ -86,7 +86,7 @@ hold on;h=line([0 20], [thetaPooledMLE thetaPooledMLE]);
 set(h,'color','r','linewidth',2)
 
 
-keyboard
+
 
   function logp = target(x)
     logitM = x(:,1); logK = x(:,2);
