@@ -34,7 +34,7 @@ T(aa, aa, :) = [0 0 1];
 CPD{Gnodes(3)} = TabularCPD(T);
 CPD{Gnodes(4)} = CPD{Gnodes(3)};
 
-dgm = DgmDist(G,'CPDs', CPD,'infMethod', 'enum','domain',1:size(G,1));
+dgm = DgmDist(G,'CPDs', CPD);
 
 % Sample from the prior
 Nf = 50; % num families
@@ -77,10 +77,18 @@ for m=1:Nmodels
     Y(:,i) = XG(:,:,i)*beta + randn(Nf,1)*sqrt(1/lambda);
   end
 
-  nu1 = nu; nu2 = nu;
+   nu1 = nu; nu2 = nu;
+  %{
   obs = [(1-nu2)/2, nu2,(1-nu2)/2;...
           nu1, (1-2*nu1), nu1;...
          (1-nu2)/2, nu2,(1-nu2)/2];
+  %}
+  %'AA' is  unlikely to be called as 'aa' and vice versa
+  % But Aa may be called as AA or aa
+  obs = [1-nu2, nu2,0;...
+         nu1, (1-2*nu1), nu1;...
+         0, nu2,1-nu2];
+       
   Ocpd = TabularCPD(obs);
   O = zeros(Nf, N, Ng);
   for g=1:Ng
