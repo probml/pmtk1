@@ -261,7 +261,10 @@ classdef Graphlayout < handle
                 process_options(inputs,  'adjMatrix', [],'currentLayout',[]          ,...
                                          'nodeLabels',{},'nodeDescriptions',{},...
                                          'nodeColors',{},'undirected',false,...
-                                         'splitLabels',true);                                     
+                                         'splitLabels',true);       
+            if(~isempty(currentLayout) && ~isavailable(currentLayout))
+              currentLayout = [];
+            end
             if(isempty(adjMatrix))
                 adjMatrix = [0 0 0 0; 1 0 0 0; 1 1 0 0; 1 1 1 0]; % example graph
             end

@@ -1,7 +1,6 @@
 %% Run Every Demo
 
-%%
-%{
+%% 
 %alarmNetwork - slow!
 bernoulliDistTest;                     pclear;
 bernoulli_betaSequentialUpdate;        pclear;
@@ -16,8 +15,6 @@ chainLengthUgmDgmDemo;                 pclear;
 chainTransformerTest;                  pclear;
 chordalGraphDemo;                      pclear;
 clusterMnistDigits;                    pclear;
-compareJtreeToVarElim;                 pclear;
-compareToHMM;                          pclear;
 compareVarElimToEnum;                  pclear;
 compareVarElimToFwdBack;               pclear;
 compareVarElimToJtree;                 pclear;
@@ -47,7 +44,6 @@ ggmInferDemo;                          pclear;
 gibbsSprinklerUGM;                     pclear;
 graphClassDemo;                        pclear;
 hmmDistTest;                           pclear;
-%}
 inheritedDiseaseVarElim;               pclear;
 invGammaPlotDemo;                      pclear;
 invGammaSampleDemo;                    pclear;
@@ -105,7 +101,7 @@ mvnInferParamsSigma2d;                 pclear;
 mvnInvWIplotDemo;                      pclear;
 mvnMixDistTest;                        pclear;
 mvnPlot2Ddemo;                         pclear;
-mvnSeqlUpdateMuSigma1D;                pclear;
+%mvnSeqlUpdateMuSigma1D - broken!
 mvnSeqUpdateMu1d;                      pclear;
 mvnSeqUpdateSigma1d;                   pclear;
 mvnSoftCondition;                      pclear;
