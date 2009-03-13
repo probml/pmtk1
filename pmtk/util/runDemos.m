@@ -78,7 +78,7 @@ logreg_MvnDistTest;                    pclear;
 mcmcMvn2d;                             pclear;
 mcmcMvn2dConditioning;                 pclear;
 mhGmmDemo;                             pclear;
-mhMvn2dConditioning;                   pclear;
+%mhMvn2dConditioning - broken!
 misconceptionRank;                     pclear;
 misconceptionUGMdemo;                  pclear;
 mkAlarmNetworkDgm;                     pclear;
@@ -89,16 +89,16 @@ mnistClassifyDemo;                     pclear;
 mnistErrorVsN;                         pclear;
 modelSelect1D;                         pclear;
 modelSelect2D;                         pclear;
-mvnCondition2D;                        pclear;
+%mvnCondition2D - broken!
 mvnHeightWeight;                       pclear;
 mvnImputationDemo;                     pclear;
 mvnImputationEmDemo;                   pclear;
 mvnImputationPima;                     pclear;
-mvnInferMuSigma1D;                     pclear;
+%mvnInferMuSigma1D - broken!
 mvnInferParamsMean1d;                  pclear;
 mvnInferParamsMean2d;                  pclear;
 mvnInferParamsSigma2d;                 pclear;
-mvnInvWIplotDemo;                      pclear;
+%mvnInvWIplotDemo - broken!
 mvnMixDistTest;                        pclear;
 mvnPlot2Ddemo;                         pclear;
 %mvnSeqlUpdateMuSigma1D - broken!

@@ -1,6 +1,7 @@
 %% Conditioning a 2D MVN
 % Take a horizontal slice thru a 2d Gaussian and plot the resulting
 % conditional
+%#broken
 mu = [0 0]';
 rho = 0.5;
 %S  = [4 1; 1 1];
