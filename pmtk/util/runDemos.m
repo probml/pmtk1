@@ -49,7 +49,7 @@ invGammaPlotDemo;                      pclear;
 invGammaSampleDemo;                    pclear;
 invWIplot1D;                           pclear;
 invWIplot2D;                           pclear;
-%isingImageDenoiseDemo - broken!
+isingImageDenoiseDemo;                 pclear;
 isolatedWordClassification;            pclear;
 Knn3ClassHeatMaps;                     pclear;
 laplacePlotDemo;                       pclear;

@@ -1,6 +1,5 @@
 function isingImageDenoiseDemo()
 %% image denoising using Ising prior and Gibbs sampling or mean field
-%#broken
 setSeed(0);
 % Generate Data
 sigma = 2; % noise level
@@ -53,7 +52,8 @@ for m=1:length(methods)
     otherwise
     methodName = method;
   end
-  mu = postMean(model, y, 'infMethod', methodName, 'infArgs',args);
+  
+  mu = postMean(model, y,'infMethod',methodName,'infArgs',args);
   
   figure; imagesc(mu); colormap('gray');
   colorbar; title(sprintf('mean after %d sweeps of %s', maxIter, method));

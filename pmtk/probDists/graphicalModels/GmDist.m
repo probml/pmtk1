@@ -4,7 +4,7 @@ classdef GmDist
   properties
     G; %  a graph object
     domain;
-    infEng;
+    infMethod;
     discreteNodes;
     ctsNodes;
     nstates; % nstates(i) is number of discrete values, or size of vector valued node
@@ -28,7 +28,7 @@ classdef GmDist
   
     function [postQuery, logZ, other] = marginal(model, queryVars, visVars, visVals)
       if nargin < 3, visVars = []; visVals = []; end
-      [eng, logZ, other] = condition(model.infEng, model, visVars, visVals);
+      [eng, logZ, other] = condition(model.infMethod, model, visVars, visVals);
       if ~iscell(queryVars)
         [postQuery] = marginal(eng, queryVars);
       else
