@@ -7,8 +7,8 @@ powerset = {[],C,S,R,W,[C,S],[C,R],[C,W],[S,R],[S,W],[R,W],[C,S,R],[C,S,W],[C,R,
 for i=1:numel(powerset)
     dgmVE   = mkSprinklerDgm;
     dgmENUM = dgmVE;
-    dgmVE.infEng = VarElimInfEng(); 
-    dgmENUM.infEng = EnumInfEng();
+    dgmVE.infMethod = VarElimInfEng(); 
+    dgmENUM.infMethod = EnumInfEng();
     margVE = marginal(dgmVE,powerset{i});
     margENUM = marginal(dgmENUM,powerset{i});
     assert(approxeq(pmf(margVE),pmf(margENUM)));

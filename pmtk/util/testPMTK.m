@@ -31,7 +31,7 @@ ggmInferDemo;                          pclear(0);
 gibbsSprinklerUGM;                     pclear(0);
 graphClassDemo;                        pclear(0);
 hmmDistTest;                           pclear(0);
-inheritedDiseaseVarElim;               pclear(0);
+%inheritedDiseaseVarElim - broken!
 invGammaSampleDemo;                    pclear(0);
 invWIplot1D;                           pclear(0);
 invWIplot2D;                           pclear(0);

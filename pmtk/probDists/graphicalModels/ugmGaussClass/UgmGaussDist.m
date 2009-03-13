@@ -16,7 +16,7 @@ classdef UgmGaussDist < UgmDist
         if nargin < 3, Sigma = []; end
         obj.G = G; obj.mu = mu; obj.Sigma = Sigma;
         obj.domain = 1:length(mu);
-        obj.infEng = GaussInfEng();
+        obj.infMethod = GaussInfEng();
       end
       
       

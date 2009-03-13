@@ -5,11 +5,11 @@
 
 
 dgm = mkSprinklerDgm();
-dgmVE = dgm; dgmVE.infEng = VarElimInfEng;
-dgmEnum = dgm; dgmEnum.infEng = EnumInfEng;
+dgmVE = dgm; dgmVE.infMethod = VarElimInfEng;
+dgmEnum = dgm; dgmEnum.infMethod = EnumInfEng;
 ugm = convertToUgm(dgm);
-ugmVE = ugm; ugmVE.infEng = VarElimInfEng;
-ugmEnum = ugm; ugmEnum.infEng = EnumInfEng;
+ugmVE = ugm; ugmVE.infMethod = VarElimInfEng;
+ugmEnum = ugm; ugmEnum.infMethod = EnumInfEng;
 
 false = 1; true = 2;
 C = 1; 

@@ -2,9 +2,9 @@
 %#testPMTK
 
 model = mkMisconceptionUGM();
-model.infEng  = EnumInfEng(); 
-%model.infEng  = VarElimInfEng(); 
-%model.infEng  = JtreeInfEng(); 
+model.infMethod  = EnumInfEng(); 
+%model.infMethod = VarElimInfEng(); 
+%model.infMethod  = JtreeInfEng(); 
 
 false = 1; true = 2;
 A = 1; B = 2; C = 3; D = 4;

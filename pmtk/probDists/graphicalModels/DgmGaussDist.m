@@ -14,8 +14,8 @@ classdef DgmGaussDist < DgmDist
       if(nargin == 0);G = [];end
       if isa(G,'double'), G=Dag(G); end
       obj.G = G;
-      [obj.CPDs, obj.infEng, obj.domain]= process_options(...
-        varargin, 'CPDs', [], 'infEng', GaussInfEng(), 'domain',[]);
+      [obj.CPDs, obj.infMethod, obj.domain]= process_options(...
+        varargin, 'CPDs', [], 'infMethod', GaussInfEng(), 'domain',[]);
       if isempty(obj.domain)
         obj.domain = 1:nnodes(G);
       end

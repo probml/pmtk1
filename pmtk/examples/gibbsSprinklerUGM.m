@@ -6,14 +6,14 @@ ugm = convertToUgm(dgm);
 
 % Exact
 ugmExact = ugm;
-ugmExact.infEng = EnumInfEng(); 
+ugmExact.infMethod = EnumInfEng(); 
 Jexact = pmf(marginal(ugmExact, [1 2 3 4]));
 figure; bar(Jexact(:)); title('exact joint')
 
 
 % Gibbs
 ugmGibbs = ugm;
-ugmGibbs.infEng = GibbsInfEng('Nsamples', 100, 'verbose', true, 'Nchains', 2);
+ugmGibbs.infMethod = GibbsInfEng('Nsamples', 100, 'verbose', true, 'Nchains', 2);
 [jointGibbs, junk, convDiag] = marginal(ugmGibbs, [1 2 3 4]);
 disp('gibbs marginals')
 Jgibbs = pmf(jointGibbs);

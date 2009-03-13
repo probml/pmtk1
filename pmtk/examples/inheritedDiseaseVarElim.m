@@ -1,5 +1,6 @@
 %% Inherited Disease DGM Example - Stat521A Spring 2009 Hw2 Q4
 %#testPMTK
+%#broken
 G1 = 1; G2 = 2; G3 = 3;
 X1 = 4; X2 = 5; X3 = 6;
 
@@ -39,7 +40,7 @@ CPD{X3}   = CPD{X1};
 
 % currently jtree cannot handle this example
 % because X1 is a hidden cts leaf
-dgm = DgmDist(graph,'CPDs', CPD,'infEng', VarElimInfEng());
+dgm = DgmDist(graph,'CPDs', CPD,'infMethod', VarElimInfEng());
 
 evidence = {[50,50], [50], [60,60], [50,60]};
 for i=1:length(evidence)
