@@ -52,6 +52,7 @@ mkFluDgm;                              pclear(0);
 mkMisconceptionUGM;                    pclear(0);
 mkSprinklerDgm;                        pclear(0);
 mvnImputationDemo;                     pclear(0);
+mvnInvWIplotDemo;                      pclear(0);
 mvnPlot2Ddemo;                         pclear(0);
 %mvnSeqlUpdateMuSigma1D - broken!
 mvnSeqUpdateSigma1d;                   pclear(0);

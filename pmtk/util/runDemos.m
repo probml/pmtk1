@@ -98,7 +98,7 @@ mvnImputationPima;                     pclear;
 mvnInferParamsMean1d;                  pclear;
 mvnInferParamsMean2d;                  pclear;
 mvnInferParamsSigma2d;                 pclear;
-%mvnInvWIplotDemo - broken!
+mvnInvWIplotDemo;                      pclear;
 mvnMixDistTest;                        pclear;
 mvnPlot2Ddemo;                         pclear;
 %mvnSeqlUpdateMuSigma1D - broken!

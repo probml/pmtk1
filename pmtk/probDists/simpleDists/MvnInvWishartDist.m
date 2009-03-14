@@ -16,7 +16,7 @@ classdef MvnInvWishartDist < ParamDist
       d = length(mu);
       if isempty(k), k = d; end
       m.mu = mu; m.Sigma = Sigma; m.dof = dof; m.k = k;
-      if dof < d, warning('dof should be bigger than dimensionality'); end
+      if dof < d, warning('MvnInvWishartDist:dofSize','dof should be bigger than dimensionality'); end
     end
     
     function d = ndimensions(obj)
@@ -33,11 +33,20 @@ classdef MvnInvWishartDist < ParamDist
     end
      
      function L = logprob(obj, mu, Sigma)
-      pgauss = MvnDist(obj.mu, Sigma/obj.k); 
-      piw = InvWishartDist(obj.dof, obj.Sigma);
-      L = logprob(pgauss, mu(:)') + logprob(piw, Sigma);
+        pgauss = MvnDist(obj.mu, Sigma/obj.k); 
+        piw = InvWishartDist(obj.dof, obj.Sigma);
+        L = logprob(pgauss, mu(:)') + logprob(piw, Sigma);
      end
      
+     function plot(obj,varargin)
+        subplot(1,2,1);
+        plot(marginal(obj,'mu'),varargin{:});
+        xlabel('Marginal on ''mu''');
+        subplot(1,2,2);
+        plot(marginal(obj,'Sigma'),varargin{:});
+        xlabel('Marginal on ''Sigma''');
+     end
+       
     %{
     function L = logprob(obj, X)
       % For 1d, L(i) = log p(X(i,:) | theta), where X(i,:) = [mu sigma]
