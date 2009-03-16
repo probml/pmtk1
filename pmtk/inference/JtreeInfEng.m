@@ -48,9 +48,9 @@ classdef JtreeInfEng
                eng = setupCliqueTree(eng,model.G);
            end
            if verbose, fprintf('calibrating clique tree\n'); end
-           eng = calibrate(eng);
+           [eng,logZ] = calibrate(eng);
            if verbose, fprintf('done\n'); end
-           logZ = []; other = [];
+           other = [];
        end
        
        function [postQuery,eng] = marginal(eng,queryVars)
@@ -59,7 +59,7 @@ classdef JtreeInfEng
            if isempty(cliqueNDX)
                postQuery = outOfCliqueQuery(eng,queryVars);
            else
-               postQuery = normalizeFactor(marginalize(eng.cliques{cliqueNDX},queryVars));
+               [postQuery] = normalizeFactor(marginalize(eng.cliques{cliqueNDX},queryVars));
            end
        end
        
@@ -162,7 +162,7 @@ classdef JtreeInfEng
             end
         end
         
-        function eng = calibrate(eng)
+        function [eng,logZ] = calibrate(eng)
         % perform an upwards and downwards pass so that each clique represents 
         % the unnormalized distribution over the variables in its scope.
             
@@ -190,6 +190,11 @@ classdef JtreeInfEng
                 readyToSend(current) = false; % already sent
                 % parent ready to send if there are messages from all of its children
                 readyToSend(parent)  = all(cellfun(@(x)~isempty(x),eng.messages(children(jtree,parent),parent))); 
+            end
+            logZ = 0;
+            for c=1:ncliques
+               [junk,Z] = normalizeFactor(eng.cliques{c});
+               logZ = logZ + log(Z + eps);
             end
             assert(sum(readyToSend) == 1) % only root left to send
             eng.orderDown = zeros(1,ncliques);

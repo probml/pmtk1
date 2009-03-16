@@ -27,15 +27,15 @@ classdef GmDist
       
   
     function [postQuery, logZ, other] = marginal(model, queryVars, visVars, visVals)
-      if nargin < 3, visVars = []; visVals = []; end
-      [eng, logZ, other] = condition(model.infMethod, model, visVars, visVals);
-      if ~iscell(queryVars)
-        [postQuery] = marginal(eng, queryVars);
-      else
-        for q=1:length(queryVars)
-          postQuery{q} = marginal(eng, queryVars{q}); %#ok
+        if nargin < 3, visVars = []; visVals = []; end
+        [eng, logZ, other] = condition(model.infMethod, model, visVars, visVals);
+        if ~iscell(queryVars)
+            [postQuery] = marginal(eng, queryVars);
+        else
+            for q=1:length(queryVars)
+                postQuery{q} = marginal(eng, queryVars{q}); %#ok
+            end
         end
-      end
     end
        
    
