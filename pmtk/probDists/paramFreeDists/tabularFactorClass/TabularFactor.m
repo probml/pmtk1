@@ -9,13 +9,17 @@ classdef TabularFactor
   
   %% main methods
   methods
-    function m = TabularFactor(T, domain)
-      if nargin < 1, T = []; end
-      if nargin < 2, domain = 1:ndimsPMTK(T); end
-      m.T = T;
-      m.domain = domain;
-      m.sizes = sizePMTK(T);
-    end
+      function m = TabularFactor(T, domain)
+          if nargin < 1, T = []; end
+          if nargin < 2, domain = 1:ndimsPMTK(T); end
+          m.T = T;
+          m.domain = domain;
+          if(isvector(T) && numel(domain) > 1)
+              m.sizes = size(T);
+          else
+              m.sizes = sizePMTK(T);
+          end
+      end
 
     function p = pmf(obj)
       % p(j,k,...) = p(X=(j,k,...)), multidim array

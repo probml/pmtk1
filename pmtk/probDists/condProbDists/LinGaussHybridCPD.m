@@ -29,25 +29,25 @@ classdef LinGaussHybridCPD < CondProbDist
     
         
       function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates)
-        if ~visible(child) || ~all(visible(ctsParents))
-          error('must observed all cts nodes')
-        end
-        if any(visible(dParents))
-          error('currently we assume all discrete parents are hidden')
-        end
-        y = data(child);
-        xc = data(ctsParents);
-        sigma = sqrt(CPD.v);
-        K = prod(nstates(dParents));
-        T = zeros(1, K);
-        for i=1:K
-          discreteParentVals = ind2subv(nstates(dParents), i);
-          xd = discreteParentVals-1;
-          mu = CPD.w0 + CPD.wc(:)'*xc(:) + CPD.wd(:)'*xd(:);
-          T(i) = normpdf(y, mu, sigma);
-        end
-        T = reshapePMTK(T, nstates(dParents));
-        Tfac = TabularFactor(T, dParents);
+          if ~visible(child) || ~all(visible(ctsParents))
+              error('must observed all cts nodes')
+          end
+          if any(visible(dParents))
+              error('currently we assume all discrete parents are hidden')
+          end
+          y = data(child);
+          xc = data(ctsParents);
+          sigma = sqrt(CPD.v);
+          K = prod(nstates(dParents));
+          T = zeros(1, K);
+          for i=1:K
+              discreteParentVals = ind2subv(nstates(dParents), i);
+              xd = discreteParentVals-1;
+              mu = CPD.w0 + CPD.wc(:)'*xc(:) + CPD.wd(:)'*xd(:);
+              T(i) = normpdf(y, mu, sigma);
+          end
+          T = reshapePMTK(T, nstates(dParents));
+          Tfac = TabularFactor(T, dParents);
       end
 
     %{

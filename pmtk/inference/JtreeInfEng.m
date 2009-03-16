@@ -119,8 +119,9 @@ classdef JtreeInfEng
                 eng.cliques = cell(ncliques,1);
                 for c=1:ncliques
                     scope = eng.cliqueScope{c};
-                    T = ones(eng.nstates(scope));
-                    eng.cliques{c} = TabularFactor.multiplyFactors({TabularFactor(T,scope),eng.factors{eng.factorLookup(:,c)}});
+                    T = TabularFactor(ones(eng.nstates(scope)),scope);
+                    eng.cliques{c} = TabularFactor.multiplyFactors({T,eng.factors{eng.factorLookup(:,c)}});
+                    %eng.cliques{c} = TabularFactor.multiplyFactors(eng.factors(eng.factorLookup(:,c)));
                 end
             end
             
