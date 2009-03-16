@@ -2,7 +2,6 @@
 % In this example, we examine how the length of a chain effects marginals in a
 % UGM, (so long as the factors are not locally normalized), but not in a DGM. 
 %% Setup
-%#broken
 smallSize = 5;
 bigSize   = 10;
 queryNode = 2;   

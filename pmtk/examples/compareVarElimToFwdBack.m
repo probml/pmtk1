@@ -7,7 +7,6 @@
 %%
 % The convention in this demo is that the latent variables will be labeled 1:T
 % and the emission variables T+1:2*T.
-%#broken
 T = 4;                          % Compare up to the first T timesteps
 %% Setup the CPDs
 transmat = [0.2,0.8;0.9,0.1];   % Transition matrix for the HMM, also the CPTs for the latent nodes
@@ -31,10 +30,10 @@ queries  = {1,2,3,4};
 
 for e=1:size(evidence,1)
     for q = 1:numel(queries)
-        dgm       = condition(dgm ,T+1:2*T ,evidence(e,:));
         hmm       = condition(hmm ,'Y'     ,evidence(e,:));
-        pQueryDGM = pmf(marginal (dgm, queries{q}));
-        pQueryHMM = pmf(marginal( hmm, queries{q}));
+        pQueryDGM = pmf(marginal(dgm, queries{q},T+1:2*T,evidence(e,:)));
+        pQueryHMM = pmf(marginal( hmm, queries{q})); 
+        % warning the HMM marginal interface will soon change to match the DGM case above
         assert(approxeq(pQueryDGM,pQueryHMM));
     end
 end

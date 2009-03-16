@@ -188,12 +188,12 @@ classdef DgmDist < GmDist
       end
     end
 
-   
-    
-    function nodeDist = extractLocalDistribution(obj,var)
-      error('what is this for?')
-       nodeDist = obj.CPDs{var};
-    end
+%    function nodeDist = extractLocalDistribution(obj,var)
+%    % Used to extract the distribution over a discrete parent of a 
+%    % continuous node to get the mixing weights for the induced MixtureDist.
+%        nodeDist = obj.CPDs{var};
+%     end
+  
     
     
   end

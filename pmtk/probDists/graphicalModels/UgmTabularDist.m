@@ -36,21 +36,25 @@ classdef UgmTabularDist < UgmDist
        
         
         function [Tfacs,nstates] = convertToTabularFactors(obj,visVars,visVals)
-            if 0 % nargin == 1 || isempty(visVars)
-              % we want to comptue nstates from factors in case it is not
-              % specified
+            
+            if (nargin == 1 || isempty(visVars)) && ~isempty(obj.nstates)
+                % we want to comptue nstates from factors in case it is not
+                % specified
                 Tfacs = obj.factors;
                 nstates = obj.nstates;
-                return;
-            end
-            d = length(obj.factors);
-            Tfacs = obj.factors;
-            for j=1:d
-                include = ismember(visVars,Tfacs{j}.domain);
-                if(~isempty(include) && any(include))
-                    Tfacs{j} = slice(Tfacs{j},visVars(include),visVals(include));
+            else % the number of factors does not necessarily equal the number the nodes. 
+                nstates = obj.nstates;
+                assert(~isempty(nstates));
+                d = length(obj.factors);
+                Tfacs = obj.factors;
+                for j=1:d
+                    include = ismember(visVars,Tfacs{j}.domain);
+                    if(~isempty(include) && any(include))
+                        Tfacs{j} = slice(Tfacs{j},visVars(include),visVals(include));
+                        nstates(j) = Tfacs{j}.sizes(end);
+                    end
+                    
                 end
-                nstates(j) = Tfacs{j}.sizes(end);
             end
         end
         

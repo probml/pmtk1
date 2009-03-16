@@ -1,7 +1,7 @@
 %% Generate data from a family tree - parameter values are hidden 
-%#broken
+%#inprogress
 setSeed(0);
-doPrint = 1;
+doPrint = 0;
 
 %{
    G1    G2
@@ -52,7 +52,7 @@ XG = zeros(Nf, Ng+2, N);
 for i=1:N
   XG(:,:,i) = [reshape(Gs(:,i,:)-1, Nf, Ng), X, ones(Nf,1)];
 end
-  
+ 
 snrs = {MYSTERY }; % Signal to Noise
 nus = {  MYSTERY }; % bit flip probability
 srcs = {  MYSTERY  }; % which genes cause the effect?

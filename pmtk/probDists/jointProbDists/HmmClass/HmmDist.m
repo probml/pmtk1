@@ -103,7 +103,7 @@ classdef HmmDist < ParamJointDist
                G(i,i+t) = 1;
             end
             G(t,2*t) = 1;
-            dgm = DgmDist(G,'CPDs',CPD,'domain',1:2*t,'InfEng',VarElimInfEng());
+            dgm = DgmDist(G,'CPDs',CPD,'domain',1:2*t,'InfMethod',VarElimInfEng());
         end
         
         

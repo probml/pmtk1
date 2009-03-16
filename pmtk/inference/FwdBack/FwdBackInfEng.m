@@ -190,9 +190,10 @@ classdef FwdBackInfEng < InfEng
                 visVals = eng.model.visVals;
                 n = numel(visVals);
                 if n > 0
-                   dgm = condition(dgm,horizon+1:horizon+n,visVals);
+                    m = marginal(dgm,onto,horizon+1:horizon+n,visVals);
+                else
+                    m = marginal(dgm,onto);
                 end
-                m = marginal(dgm,onto);
             end
             
             %}
