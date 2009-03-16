@@ -101,7 +101,7 @@ mvnInferParamsSigma2d;                 pclear;
 mvnInvWIplotDemo;                      pclear;
 mvnMixDistTest;                        pclear;
 mvnPlot2Ddemo;                         pclear;
-%mvnSeqlUpdateMuSigma1D - broken!
+mvnSeqlUpdateMuSigma1D;                pclear;
 mvnSeqUpdateMu1d;                      pclear;
 mvnSeqUpdateSigma1d;                   pclear;
 mvnSoftCondition;                      pclear;

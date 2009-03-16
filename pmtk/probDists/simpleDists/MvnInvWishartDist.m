@@ -32,20 +32,39 @@ classdef MvnInvWishartDist < ParamDist
       lnZ = (v*d/2)*log(2) + mvtGammaln(d,v/2) -(v/2)*logdet(S) + (d/2)*log(2*pi/k);
     end
      
-     function L = logprob(obj, mu, Sigma)
-        pgauss = MvnDist(obj.mu, Sigma/obj.k); 
-        piw = InvWishartDist(obj.dof, obj.Sigma);
-        L = logprob(pgauss, mu(:)') + logprob(piw, Sigma);
-     end
+    function L = logprob(obj, mu, Sigma)
+        if(nargin == 2) % as in logprob(obj,X) used by plot
+            % vectorized w.r.t. both mu and Sigma
+            X = mu;
+            mu = X(:,1);
+            if(size(X,2) ~= 2)
+                error('MvnInvWishartDist.logprob(obj,X) syntax only supported when X(:,1) = mu and X(:,2) = Sigma. Use logprob(obj,mu,Sigma) instead.');
+            end
+            piw = InvWishartDist(obj.dof, obj.Sigma);
+            N = size(X,1);
+            L = zeros(N,1);
+            pgauss = MvnDist(obj.mu,[]);  % faster not to recreate the object each iteration
+            k = obj.k;                    
+            for i=1:N
+               Sigma = X(i,2);
+               pgauss.Sigma = Sigma/k;
+               L(i) = logprob(pgauss,mu(i)) + logprob(piw,Sigma);
+            end
+        else
+            pgauss = MvnDist(obj.mu, Sigma/obj.k);
+            piw = InvWishartDist(obj.dof, obj.Sigma);
+            L = logprob(pgauss, mu(:)') + logprob(piw, Sigma);
+        end
+    end
      
-     function plot(obj,varargin)
-        subplot(1,2,1);
-        plot(marginal(obj,'mu'),varargin{:});
-        xlabel('Marginal on ''mu''');
-        subplot(1,2,2);
-        plot(marginal(obj,'Sigma'),varargin{:});
-        xlabel('Marginal on ''Sigma''');
-     end
+%      function plot(obj,varargin)
+%         subplot(1,2,1);
+%         plot(marginal(obj,'mu'),varargin{:});
+%         xlabel('Marginal on ''mu''');
+%         subplot(1,2,2);
+%         plot(marginal(obj,'Sigma'),varargin{:});
+%         xlabel('Marginal on ''Sigma''');
+%      end
        
     %{
     function L = logprob(obj, X)
