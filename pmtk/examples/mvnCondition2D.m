@@ -1,7 +1,6 @@
 %% Conditioning a 2D MVN
 % Take a horizontal slice thru a 2d Gaussian and plot the resulting
 % conditional
-%#broken
 mu = [0 0]';
 rho = 0.5;
 %S  = [4 1; 1 1];
@@ -31,7 +30,8 @@ plot(xs, 0+ps, 'b', 'linewidth',2 );
 %post = predict(obj, 2, x2); % 2 is the y axis
 %obj = condition(obj, 2, x2);
 %post = marginal(obj, 1);
-post = marginal(conditional(obj, 2, x2), 1);
+%post = marginal(conditional(obj, 2, x2), 1);
+post = marginal(obj,1, 2, x2);
 %plot(post, 'xrange', [-4 4]);
 xs = -5:0.1:5;
 ps = exp(logprob(post, xs(:)));

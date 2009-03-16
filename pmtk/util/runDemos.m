@@ -89,7 +89,7 @@ mnistClassifyDemo;                     pclear;
 mnistErrorVsN;                         pclear;
 modelSelect1D;                         pclear;
 modelSelect2D;                         pclear;
-%mvnCondition2D - broken!
+mvnCondition2D;                        pclear;
 mvnHeightWeight;                       pclear;
 mvnImputationDemo;                     pclear;
 mvnImputationEmDemo;                   pclear;
