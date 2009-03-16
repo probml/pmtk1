@@ -27,25 +27,25 @@ classdef JtreeInfEng
        end
        
        function [eng, logZ, other] = condition(eng,model,visVars,visVals)
-         verbose = eng.verbose;
-          N = nnodes(model.G);
-            visible = false(1,N); visible(visVars) = true;
-            if ~all(visible(model.ctsNodes))
-              error('JtreeInfEng requires all cts nodes to be observed')
-            end
+           verbose = eng.verbose;
+           N = nnodes(model.G);
+           visible = false(1,N); visible(visVars) = true;
+           if ~all(visible(model.ctsNodes))
+               error('JtreeInfEng requires all cts nodes to be observed')
+           end
            if eng.iscalibrated && (nargin < 3 || isempty(visVars))
                return; % nothing to do
-           end 
+           end
            if eng.iscalibrated && nargin == 4
-               eng = recalibrate(eng,visVars,visValues); % recalibrate based on new evidence. 
+               eng = recalibrate(eng,visVars,visValues); % recalibrate based on new evidence.
                return;
            end
            if(nargin < 4), visVars = []; visVals = {}; end
            [eng.factors,eng.nstates] = convertToTabularFactors(model,visVars,visVals);
            eng.domain = model.domain;
            if isempty(eng.cliques)
-             if verbose, fprintf('setting up clique tree\n'); end
-               eng = setupCliqueTree(eng,model.G);  
+               if verbose, fprintf('setting up clique tree\n'); end
+               eng = setupCliqueTree(eng,model.G);
            end
            if verbose, fprintf('calibrating clique tree\n'); end
            eng = calibrate(eng);
@@ -145,31 +145,8 @@ classdef JtreeInfEng
         
         function postQuery = outOfCliqueQuery(eng,queryVars)
         % perform variable elimination to answer the out of clique query    
-            
-            ntotalCliques = numel(eng.cliques);
-            includeCliques = false(1,ntotalCliques);
-            varsRemaining = queryVars;
-            while not(isempty(varsRemaining))  
-                bestClique = maxidx(sum(eng.cliqueLookup(varsRemaining,:),1)); % clique that contains the most number of vars in varsRemaining.
-                includeCliques(bestClique) = true;
-                varsRemaining = setdiffPMTK(varsRemaining,eng.cliques{bestClique}.domain);
-            end
-            subtree = minSubTree(eng.cliqueTree,sub(1:ntotalCliques,includeCliques));
-            cliqueNDX = find(sum(subtree,1) | sum(subtree,2)');
-            [junk,cliqueNDX] = ismember(cliqueNDX,eng.orderDown);
-            cliqueNDX = cliqueNDX(end:-1:1);
-           
-            nfactors = numel(cliqueNDX);
-            factors = cell(1,nfactors);
-           
-            for f=1:nfactors-1
-               c = cliqueNDX(f);
-               mu = marginalize(eng.cliques{c},eng.sepsets{c,cliqueNDX(f+1)});
-               factors{f} = divideBy(eng.cliques{c},mu);
-            end
-            factors(nfactors) = eng.cliques(cliqueNDX(end));
-            elim = setdiffPMTK(unique(cell2mat(cellfuncell(@(fac)rowvec(fac.domain),factors))),queryVars);
-            postQuery = normalizeFactor(variableElimination(factors,elim));
+         
+            error('Out of clique queries not yet implemented - use VarElimInfEng instead');
         end
         
         function ndx = findClique(eng,queryVars)
