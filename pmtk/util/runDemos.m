@@ -94,7 +94,7 @@ mvnHeightWeight;                       pclear;
 mvnImputationDemo;                     pclear;
 mvnImputationEmDemo;                   pclear;
 mvnImputationPima;                     pclear;
-%mvnInferMuSigma1D - broken!
+mvnInferMuSigma1D;                     pclear;
 mvnInferParamsMean1d;                  pclear;
 mvnInferParamsMean2d;                  pclear;
 mvnInferParamsSigma2d;                 pclear;
