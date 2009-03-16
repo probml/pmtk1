@@ -1,6 +1,6 @@
 % Perform classification on spam demo, using dataset from Hastie, Tribshirani,and Friedman
 %#author Cody Severinski
-
+%#broken
 function [model,baseModel] = spamDemo()
 
 tic;

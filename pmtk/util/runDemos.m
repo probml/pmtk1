@@ -120,7 +120,7 @@ SAdemoMOG;                             pclear;
 SAdemoPeaks;                           pclear;
 sampleDistDemo;                        pclear;
 sampleHIWdemo;                         pclear;
-spamClassifierDemo;                    pclear;
+%spamClassifierDemo - broken!
 sprinklerDGMdemo;                      pclear;
 sprinklerUGMdemo;                      pclear;
 sprinklerUGMvarelim;                   pclear;
