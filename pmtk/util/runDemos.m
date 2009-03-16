@@ -78,7 +78,7 @@ logreg_MvnDistTest;                    pclear;
 mcmcMvn2d;                             pclear;
 mcmcMvn2dConditioning;                 pclear;
 mhGmmDemo;                             pclear;
-%mhMvn2dConditioning - broken!
+mhMvn2dConditioning;                   pclear;
 misconceptionRank;                     pclear;
 misconceptionUGMdemo;                  pclear;
 mkAlarmNetworkDgm;                     pclear;

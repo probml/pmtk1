@@ -4,7 +4,6 @@
 
 % This code calls mcmc sampling directly, not via inference engines.
 % See mcmcMvn2dConditioning for the simpler infengine version.
-%#broken
 setSeed(0);
 d = 5;
 Sigma = randpd(d);
@@ -13,13 +12,13 @@ mFull = MvnDist(mu, Sigma);
 V = 3:d;
 data = randn(1,length(V));
 %mCond = predict(mFull, V, data); % p(h|V=v) is a 2d Gaussian
-mCond = condition(mFull, V, data);
+%mCond = condition(mFull, V, data);
 for i=1:2
-  margExact{i} = marginal(mCond, i); %#ok
+  margExact{i} = marginal(mFull, i,V,data); %#ok
 end
 % target is logprob of hidden vars augmeneted with visible data
-%targetFn = @(x) logprobUnnormalized(mFull,[x data]);
-targetFn = @(x) logprobUnnormalized(mCond,x);
+targetFn = @(x) logprobUnnormalized(mFull,[x data]);
+%targetFn = @(x) logprobUnnormalized(mCond,x);
 fc = makeFullConditionals(mFull, V, data);
 
 N = 500;
@@ -36,7 +35,8 @@ for j=1:length(mcmc)
     ms = mcmc{j};
     ttl = names{j};
     figure;
-    plot(mCond, 'useContour', 'true');
+    %plot(mCond, 'useContour', 'true');
+    plot(marginal(mFull,setdiff(mFull.domain,V),V,data),'useContour','true');
     hold on
     plot(ms);
     title(ttl)
