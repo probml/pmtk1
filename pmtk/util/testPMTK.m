@@ -31,7 +31,7 @@ ggmInferDemo;                          pclear(0);
 gibbsSprinklerUGM;                     pclear(0);
 graphClassDemo;                        pclear(0);
 hmmDistTest;                           pclear(0);
-%inheritedDiseaseVarElim - broken!
+inheritedDiseaseVarElim;               pclear(0);
 invGammaSampleDemo;                    pclear(0);
 invWIplot1D;                           pclear(0);
 invWIplot2D;                           pclear(0);
@@ -52,9 +52,7 @@ mkFluDgm;                              pclear(0);
 mkMisconceptionUGM;                    pclear(0);
 mkSprinklerDgm;                        pclear(0);
 mvnImputationDemo;                     pclear(0);
-mvnInvWIplotDemo;                      pclear(0);
 mvnPlot2Ddemo;                         pclear(0);
-%mvnSeqlUpdateMuSigma1D - broken!
 mvnSeqUpdateSigma1d;                   pclear(0);
 mvnSoftCondition;                      pclear(0);
 mvtPlotDemo;                           pclear(0);
