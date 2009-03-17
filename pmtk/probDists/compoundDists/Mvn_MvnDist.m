@@ -35,7 +35,7 @@ classdef Mvn_MvnDist < CompoundDist
       [X,SS] = process_options(varargin,...
         'data'              ,[]         ,...
         'suffStat'          ,[]);
-      if isempty(SS), SS = MvnDist.mkSuffStat(X); end
+      if isempty(SS), SS = MvnDist().mkSuffStat(X); end
       S0 = obj.muDist.Sigma; S0inv = inv(S0);
       mu0 = obj.muDist.mu;
       S = obj.Sigma; Sinv = inv(S);

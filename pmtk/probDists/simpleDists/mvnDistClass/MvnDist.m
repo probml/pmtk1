@@ -8,6 +8,7 @@ classdef MvnDist < ParamDist
     fitArgs;
     domain;
     infEng;
+		covtype;
     %discreteNodes;
     %ctsNodes;
   end
@@ -20,9 +21,9 @@ classdef MvnDist < ParamDist
       if nargin == 0
         mu = []; Sigma = [];
       end
-      [m.domain, m.prior, m.fitMethod, m.fitArgs, m.infEng] = process_options(varargin, ...
+      [m.domain, m.prior, m.fitMethod, m.fitArgs, m.covtype, m.infEng] = process_options(varargin, ...
         'domain', 1:numel(mu), 'prior', 'none', 'fitMethod', 'mle', ...
-        'fitArgs', {}, 'infEng', GaussInfEng());
+        'fitArgs', {}, 'covtype', 'full', 'infEng', GaussInfEng());
       m.mu = mu; m.Sigma = Sigma;
       %m.ctsNodes = 1:length(mu);
     end
@@ -257,14 +258,15 @@ classdef MvnDist < ParamDist
          'data'              ,[]         ,...
          'suffStat'          ,[]         ,...
          'prior'             ,obj.prior         ,...
-         'covtype'           ,'full', ...
+         'covtype'           ,obj.covtype, ...
          'fitArgs'           , obj.fitArgs, ...
          'fitMethod'         , obj.fitMethod);
-       if(~strcmpi(covtype,'full')),error('Restricted covtypes not yet implemented');end
+       %if(~strcmpi(covtype,'full')),error('Restricted covtypes not yet implemented');end
        if any(isnan(X))
          obj = fitMvnEcm(obj, X, prior, fitArgs{:}); return;
        end
-       if isempty(SS), SS = MvnDist.mkSuffStat(X); end
+				obj = MvnDist(); obj.covtype = covtype;
+       if isempty(SS), SS = mkSuffStat(obj,X); end
        switch class(prior)
          case 'char'
            switch lower(prior)
@@ -277,6 +279,9 @@ classdef MvnDist < ParamDist
              case 'niw'
                prior = MvnDist.mkNiwPrior(X);
                [obj.mu, obj.Sigma] = MvnDist.mapEstimateNiw(prior, SS);
+						 case 'nig'
+							 prior = MvnDist.mkNigPrior(X);
+							 [obj.mu, obj.Sigma] = MvnDist.mapEstimateNig(prior, SS);
              otherwise
                error(['unknown prior ' prior])
            end
@@ -332,35 +337,13 @@ classdef MvnDist < ParamDist
          Xc(i,hidNodes) = rowvec(mode(postH));
        end
      end
-        
-  end % methods
 
- 
-
-  methods(Static = true)
-    
-    function prior = mkNiwPrior(data)
-      [n,d] = size(data);
-      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
-      nu0 = d+1; T0 = diag(nanvar(data)); % Smallest valid prior on Sigma
-      prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
-    end
-    
-    function [mu, Sigma] = mapEstimateNiw(prior,  SS)
-      m = Mvn_MvnInvWishartDist(prior);
-      m = fit(m, 'suffStat',SS);
-      post = m.muSigmaDist; % paramDist(m); % NIW
-      m = mode(post);
-      mu = m.mu;
-      Sigma = m.Sigma;
-    end
-           
-      function suffStat = mkSuffStat(X,weights)
+      function suffStat = mkSuffStat(obj,X,weights)
           % SS.n
           % SS.xbar = 1/n sum_i X(i,:)'
           % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k) - centered around xbar
           % SS.XX2(j,k) = 1/n sum_i X(i,j) X(i,k)  - not mean centered
-          if(nargin > 1) % weighted sufficient statistics, e.g. for EM
+          if(nargin > 2) % weighted sufficient statistics, e.g. for EM
               suffStat.n = sum(weights,1);
               suffStat.xbar = sum(bsxfun(@times,X,weights))'/suffStat.n;  % bishop eq 13.20
               suffStat.XX2 = bsxfun(@times,X,weights)'*X/suffStat.n;
@@ -376,13 +359,65 @@ classdef MvnDist < ParamDist
               end
           else
               n = size(X,1);
+							d = length(obj.domain);
               suffStat.n = n;
-              suffStat.xbar = sum(X,1)'/n; % column vector
-              suffStat.XX2 = (X'*X)/n;
-              X = bsxfun(@minus,X,suffStat.xbar');
-              suffStat.XX = (X'*X)/n;
+				      suffStat.xbar = sum(X,1)'/n; % column vector
+							switch lower(obj.covtype)
+								case 'full'
+				          suffStat.XX2 = (X'*X)/n;
+				          X = bsxfun(@minus,X,suffStat.xbar');
+				          suffStat.XX = (X'*X)/n;
+								case 'diagonal'
+				          suffStat.XX2 = (X'*X)/n;
+				          X = bsxfun(@minus,X,suffStat.xbar');
+				          suffStat.XX = diag(diag( (X'*X) ))/n;
+								case 'spherical'
+				          suffStat.XX2 = diag(diag( (X'*X)))/(n*d);
+				          X = bsxfun(@minus,X,suffStat.xbar');
+				          suffStat.XX = diag(sum(diag( (X'*X) )))/(n*d);
+							end
           end
       end
+
+        
+  end % methods
+
+ 
+
+  methods(Static = true)
+    
+    function prior = mkNiwPrior(data)
+      [n,d] = size(data);
+      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
+      nu0 = d+1; T0 = diag(nanvar(data)); % Smallest valid prior on Sigma
+      prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
+    end
+
+    function prior = mkNigPrior(data)
+      [n,d] = size(data);
+      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
+      nu0 = 3; b0 = nanvar(data) + 0.01*ones(size(nanvar(data))); % Smallest valid prior on Sigma
+      prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+    end
+    
+    function [mu, Sigma] = mapEstimateNiw(prior,  SS)
+      m = Mvn_MvnInvWishartDist(prior);
+      m = fit(m, 'suffStat',SS);
+      post = m.muSigmaDist; % paramDist(m); % NIW
+      m = mode(post);
+      mu = m.mu;
+      Sigma = m.Sigma;
+    end
+
+    function [mu, Sigma] = mapEstimateNig(prior,  SS)
+      m = Mvn_MvnInvGammaDist(prior);
+      m = fit(m, 'suffStat',SS);
+      post = m.muSigmaDist; % paramDist(m); % NIW
+      m = mode(post);
+      mu = m.mu;
+      Sigma = m.Sigma;
+    end
+           
 
   end
   

@@ -15,6 +15,18 @@ classdef MvnInvGammaDist < ParamDist
                 varargin, 'mu', [], 'Sigma', [], 'a', [], 'b', []);
             m.mu = mu; m.Sigma = Sigma; m.a = a; m.b = b;
         end
+
+    		function m = mode(obj)
+					d = length(obj.mu);
+   		   	% Returns a structure
+		      m.mu = obj.mu;
+      		% m.Sigma = obj.Sigma; % this may be the wrong formula...
+					if(length(obj.b) == 1) % the case of the spherical covariance
+	      		m.Sigma = (obj.b / (obj.a + 1/2*(d + 2) )) * eye(d); % this should be the correct formula...
+					else % the case of the diagonal covariance
+						m.Sigma = diag(obj.b / (obj.a + 1/2*(1 + 2)));
+					end
+    		end
         
         
         function mm = marginal(obj, queryVar)
