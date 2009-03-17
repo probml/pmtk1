@@ -1,13 +1,12 @@
 function makeRunDemos()
 % This function automatically generates the runDemos.m file, which contains
-% code to run all of the PMTK demos located in the examples directory. 
-%
-% Version 1.0
+% code to run all of the PMTK scripts located in the examples directory. 
+% Various tags can be used to exclude certain scripts.
     
     excludeTag = '%#exclude';       % do not include in runDemos
-    slowTag    = '%#slow';          % include in runDemos but comment out with slow tag
-    brokenTag  = '%#broken';        % include in runDemos but comment out with broken tag
-    inprogressTag = '%#inprogress';
+    slowTag    = '%#slow';          % include  but comment with slow tag
+    brokenTag  = '%#broken';        % include  but comment with broken tag
+    inprogressTag = '%#inprogress'; % include but comment with in progress tag
 
     reportDir = fileparts(which('makeRunDemos'));
     cd(reportDir);  cd ..;

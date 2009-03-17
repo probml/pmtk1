@@ -1,9 +1,8 @@
 function makeTestPMTK()
 % This function automatically generates the testPMTK.m file, which contains
 % code to run all of the PMTK tests located in the examples directory. A test
-% is a demo with the %#testPMTK tag. 
-%
-% Version 1.0
+% is a script with the %#testPMTK tag. 
+
     
     includeTag    = '%#testPMTK';
     slowTag       = '%#slow';       % include in testPMTK but comment out with slow tag
