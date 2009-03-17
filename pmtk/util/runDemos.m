@@ -24,7 +24,6 @@ dataTableDemo;                         pclear;
 dirichletHistPlotDemo;                 pclear;
 discreteDistTest;                      pclear;
 discrete_DirichletDistTest;            pclear;
-%familyTreeGeneDataMystery - not yet finished
 gammaPlotDemo;                         pclear;
 gammaRainfallDemo;                     pclear;
 gaussCVfitDemo;                        pclear;
@@ -120,7 +119,7 @@ SAdemoMOG;                             pclear;
 SAdemoPeaks;                           pclear;
 sampleDistDemo;                        pclear;
 sampleHIWdemo;                         pclear;
-%spamClassifierDemo - broken!
+spamClassifierDemo;                    pclear;
 sprinklerDGMdemo;                      pclear;
 sprinklerUGMdemo;                      pclear;
 sprinklerUGMvarelim;                   pclear;

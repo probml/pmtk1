@@ -1,8 +1,10 @@
+function [model,baseModel] = spamClassifierDemo()
+%% Spam Classifier Demo
 % Perform classification on spam demo, using dataset from Hastie, Tribshirani,and Friedman
 %#author Cody Severinski
-%#broken
-function [model,baseModel] = spamDemo()
 
+doprint = false;    
+    
 tic;
 % For reproducibility
 setSeed(0);
@@ -127,16 +129,19 @@ baseModel{6}.modelselection = ModelSelection(              ...
 			'CVnfolds'		, 5);        
 baseModel{6}.lambda = baseModel{6}.modelselection.bestModel{1};
 baseModel{6}.model = baseModel{6}.model(baseModel{6}.lambda);
-
+model = cell(nModels,K);
 for mod=1:nModels
 	fprintf('Fitting: %s, %s \n', modelName{mod}, dataName{mod});
 	% Fit the naive bayes classifier
+    
 	for fold=1:K
 		model{mod,fold}.classifier	= fit( baseModel{mod}.model,'X',baseModel{mod}.X(trainfolds{fold},:),'y',classLabel(trainfolds{fold}) );
 		model{mod,fold}.predict			= predict( model{mod,fold}.classifier, baseModel{mod}.X(testfolds{fold},:) );
 		model{mod,fold}.yhat				= mode( model{mod,fold}.predict );
 		model{mod,fold}.err					= mean( model{mod,fold}.yhat ~= classLabel(testfolds{fold}) );
-		[model{mod,fold}.FPrate,model{mod,fold}.TPrate,model{mod,fold}.auc, model{mod,fold}.threshold] = computeROC( model{mod,fold}.predict.mu(2,:),classLabel(testfolds{fold}) );
+		%[model{mod,fold}.FPrate,model{mod,fold}.TPrate,model{mod,fold}.auc, model{mod,fold}.threshold] = computeROC( model{mod,fold}.predict.mu(2,:),classLabel(testfolds{fold}) );
+        pmat = pmf(model{mod,fold}.predict);
+        [model{mod,fold}.FPrate,model{mod,fold}.TPrate,model{mod,fold}.auc, model{mod,fold}.threshold] = computeROC( pmat(2,:),classLabel(testfolds{fold}) );
 	end
 end
 % Get the errors
@@ -166,7 +171,9 @@ figure(); hold on;
 plot(model{mod,foldidx}.FPrate, model{mod,foldidx}.TPrate,'linewidth',3);
 line([0,1],[1,0],'color','k','linewidth',3);
 xlabel('false positive rate'); ylabel('true positive rate'); title(sprintf('ROC Curve: %s (%s Data)',modelName{mod},dataName{mod}));
-pdfcrop; print_pdf(sprintf('roc-%s-%s',modelName{mod},dataName{mod}));
+if(doprint)
+    pdfcrop; print_pdf(sprintf('roc-%s-%s',modelName{mod},dataName{mod}));
+end
 end
 
 for mod=5:6
@@ -181,7 +188,9 @@ line([(1:d);(1:d)],[credibles(:,1)';credibles(:,2)'], 'color','k','linewidth',3)
 line([0,d],[0,0],'color','r','linewidth',3);
 title(sprintf('Marginal posterior credible intervals.  %s (%s Data)',modelName{mod},dataName{mod}));
 xlabel('Magnitude'); ylabel('Feature index');
-pdfcrop; print_pdf(sprintf('laplaceapprox-marginal-%s',num2str(mod)));
+if(doprint)
+    pdfcrop; print_pdf(sprintf('laplaceapprox-marginal-%s',num2str(mod)));
+end
 end
 
 
@@ -192,7 +201,7 @@ end
 
 % Now compute mutual information
 theta = [mean(binspam(classLabel == 0,:))', mean(binspam(classLabel == 1,:))'];
-[mi,pw] = NBmi(theta);
+[mi] = NBmi(theta);
 toc;
 
 % If the book will not be printed in color, then this is better 
@@ -213,14 +222,17 @@ spam = line([(1:d);(1:d)],[zeros(size(1:d));theta(:,2)'],'color','r','linewidth'
 title('Frequency of features in spam and nonspam email');
 legend([nonspam(1),spam(1)],'nonspam', 'spam','location','best');
 xlabel('Feature label'); ylabel('Empirical Frequency');
-pdfcrop; print_pdf('featurefreq-class');
-
+if(doprint)
+    pdfcrop; print_pdf('featurefreq-class');
+end
 % Plot the mutual information for the features minus the last three which are uninformative
 figure(); hold on;
 line([1:54;1:54],[zeros(1,54);mi(1:54)],'color','k','linewidth',3);
 title('Mutual information for features (excluding uninformative features)');
 xlabel('Feature label'); ylabel('Mutual Information');
-pdfcrop; print_pdf('featuremi');
+if(doprint)
+    pdfcrop; print_pdf('featuremi');
+end
 
 
 
