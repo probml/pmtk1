@@ -39,7 +39,8 @@ CPD{X3}   = CPD{X1};
 
 % currently jtree cannot handle this example
 % because X1 is a hidden cts leaf
-dgm = DgmDist(graph,'CPDs', CPD,'infMethod', VarElimInfEng());
+%dgm = DgmDist(graph,'CPDs', CPD,'infMethod', VarElimInfEng());
+dgm = DgmDist(graph,'CPDs', CPD,'infMethod', JtreeInfEng());
 
 evidence = {[50,50], [50], [60,60], [50,60]};
 for i=1:length(evidence)

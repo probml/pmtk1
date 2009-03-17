@@ -29,9 +29,11 @@ classdef JtreeInfEng
        function [eng, logZ, other] = condition(eng,model,visVars,visVals)
            verbose = eng.verbose;
            N = nnodes(model.G);
-           visible = false(1,N); visible(visVars) = true;
-           if ~all(visible(model.ctsNodes))
-               error('JtreeInfEng requires all cts nodes to be observed')
+           nonVisCts = setdiff(model.ctsNodes,visVars);
+           for c=nonVisCts
+               if(any(ismember(descendants(model.G.adjMat,c),visVars))) 
+                  error('Unobserved continuous nodes must have no observed children.');
+               end
            end
            if eng.iscalibrated && (nargin < 3 || isempty(visVars))
                return; % nothing to do
