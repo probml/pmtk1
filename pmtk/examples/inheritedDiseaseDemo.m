@@ -1,4 +1,4 @@
-%% Inherited Disease DGM Example - Stat521A Spring 2009 Hw2 Q4
+%% Inherited Disease DGM Example 
 %#testPMTK
 G1 = 1; G2 = 2; G3 = 3;
 X1 = 4; X2 = 5; X3 = 6;
@@ -37,10 +37,8 @@ CPD{X1}   = MvnMixDist('distributions',{XgivenG_H,XgivenG_U});
 CPD{X2}   = CPD{X1};
 CPD{X3}   = CPD{X1};
 
-% currently jtree cannot handle this example
-% because X1 is a hidden cts leaf
-%dgm = DgmDist(graph,'CPDs', CPD,'infMethod', VarElimInfEng());
-dgm = DgmDist(graph,'CPDs', CPD,'infMethod', JtreeInfEng());
+dgm = DgmDist(graph,'CPDs', CPD,'infMethod', VarElimInfEng());
+%dgm = DgmDist(graph,'CPDs', CPD,'infMethod', JtreeInfEng());
 
 evidence = {[50,50], [50], [60,60], [50,60]};
 for i=1:length(evidence)
@@ -50,10 +48,10 @@ for i=1:length(evidence)
     else
         cond = [X2];
     end
-    %pG1(i) = sub(pmf(marginal(dgm, G1, cond, ev)),1);
     pG1a = marginal(dgm, G1, cond, ev); % a tabularFactor
     pG1b = pmf(pG1a); % a vector of numbers
     pG1(i) = pG1b(1); % probability in state 1 (healthy)
+    %pG1(i) = sub(pmf(marginal(dgm, G1, cond, ev)),1); % 1 line version of above
 end
 assert(approxeq(pG1, [0.9863 0.8946 0.0137 0.5]))
 
