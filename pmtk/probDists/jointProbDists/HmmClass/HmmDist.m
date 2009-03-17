@@ -66,10 +66,10 @@ classdef HmmDist < ParamJointDist
                 model.nstates = numel(model.emissionDist);
             end
             if(isempty(model.transitionDist))
-               model.transitionDist = DiscreteDist('mu',normalize(rand(model.nstates),1),'support',1:model.nstates); 
+               model.transitionDist = DiscreteDist('T',normalize(rand(model.nstates),1),'support',1:model.nstates); 
             end
             if(isempty(model.startDist))
-               model.startDist = DiscreteDist('mu',normalize(rand(model.nstates,1)),'support',1:model.nstates); 
+               model.startDist = DiscreteDist('T',normalize(rand(model.nstates,1)),'support',1:model.nstates); 
             end
             if(numel(model.emissionDist) == 1)
                 model.emissionDist = copy(model.emissionDist,model.nstates,1);

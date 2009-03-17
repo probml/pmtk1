@@ -10,7 +10,7 @@ classdef MvnMixDist < MixtureDist
            if(~isempty(distributions)),nmixtures = numel(distributions);end
                
            if(isempty(mixingWeights) && ~isempty(nmixtures))
-               mixingWeights = DiscreteDist('mu',normalize(ones(nmixtures,1)));
+               mixingWeights = DiscreteDist('T',normalize(ones(nmixtures,1)));
            end
            model.mixingWeights = mixingWeights;
            if(isempty(distributions)&&~isempty(model.mixingWeights))
@@ -74,7 +74,7 @@ end
             if(size(data,2) == 2)
                 nmixtures = numel(model.distributions);
                 if(nmixtures == 2)
-                    colors = subd(predict(model,data),'mu')';
+                    colors = subd(predict(model,data),'T')';
                     scatter(data(:,1),data(:,2),18,[colors(:,1),zeros(size(colors,1),1),colors(:,2)],'filled');
                 else
                     plot(data(:,1),data(:,2),'.','MarkerSize',10);

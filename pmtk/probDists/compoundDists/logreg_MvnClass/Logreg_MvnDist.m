@@ -127,13 +127,13 @@ classdef Logreg_MvnDist < CondProbDist
 %                 end
 %                 P = P / nsamples;
 %                 
-%                 pred = DiscreteDist('mu', P, 'support', obj.classSupport);
+%                 pred = DiscreteDist('T', P, 'support', obj.classSupport);
               case 'integral'
                 if(obj.nclasses ~=2),error('This method is only available in the 2 class case');end
                 if ~isa(obj.wDist,'MvnDist'), error('Only available for Gaussian posteriors'); end
                 p = sigmoidTimesGauss(X, obj.wDist.mu(:), obj.wDist.Sigma);
                 p = p(:);
-                pred = DiscreteDist('mu',[p,1-p]','support',obj.classSupport);
+                pred = DiscreteDist('T',[p,1-p]','support',obj.classSupport);
               otherwise
                 error('%s is an unsupported prediction method',method);
             end

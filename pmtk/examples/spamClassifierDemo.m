@@ -43,7 +43,7 @@ fprintf('Constructing Base models: %s, %s \n', modelName{1}, dataName{1});
 % Naive Bayes
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes; Define equal probability priors
 baseModel{1}.classConditionals = copy(DiscreteDist('support',[0,1]),1,2);
-baseModel{1}.classPrior = DiscreteDist('mu',normalize(ones(2,1)),'support',0:1);
+baseModel{1}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
 baseModel{1}.model = GenerativeClassifierDist('classConditionals',baseModel{1}.classConditionals,'classPrior',baseModel{1}.classPrior);
 baseModel{1}.X = binspam;
 
@@ -70,7 +70,7 @@ fprintf('Constructing Base models: %s, %s \n', modelName{3}, dataName{3});
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes
 baseModel{3}.classConditionals = copy(MvnDist(1/2*ones(1,d),diag(0.3*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
 % Define equal probability priors
-baseModel{3}.classPrior = DiscreteDist('mu',normalize(ones(2,1)),'support',0:1);
+baseModel{3}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
 baseModel{3}.model = GenerativeClassifierDist('classConditionals',baseModel{3}.classConditionals,'classPrior',baseModel{3}.classPrior);
 baseModel{3}.X = logspam;
 

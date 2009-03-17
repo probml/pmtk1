@@ -51,7 +51,7 @@ classdef GenerativeClassifierDist < ParamDist
             %L = L - repmat(logsumexp(L,2),1,C);
             %post = exp(L);
             post = exp(normalizeLogspace(L));
-            pred = DiscreteDist('mu', post', 'support', obj.classPrior.support);
+            pred = DiscreteDist('T', post', 'support', obj.classPrior.support);
         end
         
         function d = ndimensions(obj)

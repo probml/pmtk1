@@ -3,7 +3,7 @@ classdef DiscreteDist  < ParamDist
 % (Multinoulli distribution).
 
   properties
-    mu; %num states * num distributions
+    T; %num states * num distributions
     prior;
     support;
   end
@@ -14,53 +14,53 @@ classdef DiscreteDist  < ParamDist
       % obj = DiscreteDist([vector of probabilities])
       % or
       % obj = DiscreteDist(option arguments):
-      % 'mu' - mu is K*d, for K states and d distributions.
-      %   Each *column* of mu represents a different discrete distribution. 
+      % 'T' - T is K*d, for K states and d distributions.
+      %   Each *column* of T represents a different discrete distribution. 
       % 'support' - Support is a set of K numbers, defining the domain.
       % Each distribution has the same support.
       % 'prior' - 'none' or DirichletDist. Same prior is used for each distribution.
       if nargin > 0 && ~ischar(varargin{1})
-        mu = varargin{1}; support = []; prior = 'none';
+        T = varargin{1}; support = []; prior = 'none';
       else
-        [mu, support, prior] = process_options(varargin, ...
-          'mu', [], 'support', [], 'prior', 'none');
+        [T, support, prior] = process_options(varargin, ...
+          'T', [], 'support', [], 'prior', 'none');
       end
-      if isempty(support) && ~isempty(mu)
-        [nstates] = size(mu,1);
+      if isempty(support) && ~isempty(T)
+        [nstates] = size(T,1);
         support = 1:nstates;
       end
-      if(~approxeq(normalize(mu,1),mu))
+      if(~approxeq(normalize(T,1),T))
          error('Each column must sum to one'); 
       end
-      obj.mu = mu;
+      obj.T = T;
       obj.support = support;
       obj.prior = prior;
     end
 
     function d = ndistrib(obj)
-      d = size(obj.mu, 2);
+      d = size(obj.T, 2);
     end
     
     function K = nstates(obj)
-      K = length(obj.support); % size(obj.mu, 1);
+      K = length(obj.support); % size(obj.T, 1);
     end
     
     
     function p = pmf(obj)
       % p(j,d) = p(X=j | params(d)), j=1:nstates, d=1:ndistrib
-      p = obj.mu;
+      p = obj.T;
     end
     
     function m = mean(obj)
-       m = obj.mu; 
+       m = obj.T; 
     end
     
     function v = var(obj)   
-        v = obj.mu.*(1-obj.mu);
+        v = obj.T.*(1-obj.T);
     end
   
     function L = logprob(obj,X)
-        %L(i,j) = logprob(X(i) | mu(j)) or logprob(X(i,j) | mu(j)) for X(i,j)
+        %L(i,j) = logprob(X(i) | T(j)) or logprob(X(i,j) | T(j)) for X(i,j)
         %in support
         n = size(X,1);
         d = ndistrib(obj);
@@ -68,13 +68,13 @@ classdef DiscreteDist  < ParamDist
         L = zeros(n,d);
         X = canonizeLabels(X,obj.support);
         for j=1:d
-            L(:,j) = log(eps + obj.mu(X(:,j),j)); % requires XX to be in 1..K
+            L(:,j) = log(eps + obj.T(X(:,j),j)); % requires XX to be in 1..K
         end
     end
     
     function p = predict(obj)
       % p(j) = p(X=j)
-      p = obj.mu;
+      p = obj.T;
     end
     
     
@@ -82,7 +82,7 @@ classdef DiscreteDist  < ParamDist
        if(nargin < 3)
            ndistrib = 1;
        end
-       obj.mu = normalize(rand(d,ndistrib),1);
+       obj.T = normalize(rand(d,ndistrib),1);
        obj.support = 1:d;
     end
     
@@ -135,15 +135,15 @@ classdef DiscreteDist  < ParamDist
     switch class(prior)
       case 'DirichletDist'
         pseudoCounts = repmat(prior.alpha(:),1,d);
-        model.mu = normalize(SS.counts + pseudoCounts, 1);
+        model.T = normalize(SS.counts + pseudoCounts, 1);
       case 'char'
         switch lower(prior)
           case 'none'
-            model.mu = normalize(SS.counts,1);
+            model.T = normalize(SS.counts,1);
            
           case 'dirichlet'
             pseudoCounts = repmat(priorStrength,K,d);
-            model.mu = normalize(SS.counts + pseudoCounts,1);
+            model.T = normalize(SS.counts + pseudoCounts,1);
           otherwise
             error(['unknown prior %s ' prior])
         end
@@ -159,7 +159,7 @@ classdef DiscreteDist  < ParamDist
       K = nstates(obj); d = ndistrib(obj);
       x = zeros(n, d);
       for j=1:d
-        p = obj.mu(:,j); cdf = cumsum(p);
+        p = obj.T(:,j); cdf = cumsum(p);
         [dum, y] = histc(rand(n,1),[0 ;cdf]);
         x(:,j) = obj.support(y);
       end
@@ -176,18 +176,18 @@ classdef DiscreteDist  < ParamDist
         if d > 1, error('cannot plot more than 1 distribution'); end
         [plotArgs] = process_options(varargin, 'plotArgs' ,{});
         if ~iscell(plotArgs), plotArgs = {plotArgs}; end
-        h=bar(obj.mu, plotArgs{:});
+        h=bar(obj.T, plotArgs{:});
         set(gca,'xticklabel',obj.support);
     end
     
     function y = mode(obj)
-      % y(i) = arg max mu(i,:)
-      y = obj.support(maxidx(obj.mu,[],1));
+      % y(i) = arg max T(i,:)
+      y = obj.support(maxidx(obj.T,[],1));
       y = y(:);
     end
     
     function m = marginal(obj,queryvars)
-       m = DiscreteDist('mu',normalize(obj.mu(queryvars,:),1),'support',obj.support,'prior',obj.prior); 
+       m = DiscreteDist('T',normalize(obj.T(queryvars,:),1),'support',obj.support,'prior',obj.prior); 
     end
     
   end

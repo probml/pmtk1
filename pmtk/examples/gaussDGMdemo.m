@@ -7,7 +7,7 @@ G(1,2) = 1; G(2,3)=1;
 CPDs{1} = LinGaussCPD([], 1, 4);
 CPDs{2} = LinGaussCPD(0.5, -5, 4);
 CPDs{3} = LinGaussCPD(-1, 4, 3);
-dgm = DgmGaussDist(G, 'CPDs', CPDs, 'infEng', GaussInfEng());
+dgm = DgmGaussDist(G, 'CPDs', CPDs, 'infMethod', GaussInfEng());
 query = marginal(dgm, [1 3], 2, -3.1)
 X = sample(dgm, 1000);
 dgm2 = DgmGaussDist(G);

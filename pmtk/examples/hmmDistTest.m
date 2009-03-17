@@ -2,11 +2,11 @@
 %#testPMTK
 %% Discrete Observations
 setSeed(0);
-trueObsModel = {DiscreteDist('mu',ones(6,1)./6       ,'support',1:6)
-    DiscreteDist('mu',[ones(5,1)./10;0.5],'support',1:6)};
+trueObsModel = {DiscreteDist('T',ones(6,1)./6       ,'support',1:6)
+    DiscreteDist('T',[ones(5,1)./10;0.5],'support',1:6)};
 
-trueTransDist = DiscreteDist('mu',[0.8,0.2;0.3,0.70]','support',1:2);
-trueStartDist = DiscreteDist('mu',[0.5,0.5]','support',1:2);
+trueTransDist = DiscreteDist('T',[0.8,0.2;0.3,0.70]','support',1:2);
+trueStartDist = DiscreteDist('T',[0.5,0.5]','support',1:2);
 trueModel = HmmDist('startDist'     ,trueStartDist,...
     'transitionDist',trueTransDist,...
     'emissionDist'  ,trueObsModel);
@@ -25,8 +25,8 @@ viterbi = mode(model)
 maxmarg = maxidx(marginal(model,':'))
 %% MVN Observations
 trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
-trueTransDist = DiscreteDist('mu',[0.8,0.2;0.1,0.90]','support',1:2);
-trueStartDist = DiscreteDist('mu',[0.5;0.5],'support',1:2);
+trueTransDist = DiscreteDist('T',[0.8,0.2;0.1,0.90]','support',1:2);
+trueStartDist = DiscreteDist('T',[0.5;0.5],'support',1:2);
 trueModel = HmmDist('startDist'     ,trueStartDist,...
     'transitionDist',trueTransDist,...
     'emissionDist'  ,trueObsModel);
@@ -41,8 +41,8 @@ emissionDist = cell(5,1);
 for i=1:nstates
     emissionDist{i} = mkRndParams(MvnMixDist('nrestarts',5,'verbose',false),d,nmixcomps);
 end
-pi = DiscreteDist('mu',normalize(ones(nstates,1)));
-A = DiscreteDist('mu',normalize(rand(nstates),1));
+pi = DiscreteDist('T',normalize(ones(nstates,1)));
+A = DiscreteDist('T',normalize(rand(nstates),1));
 trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
 [observed,hidden] = sample(trueModel,1,500);
 model = HmmDist('emissionDist',MvnMixDist('nmixtures',nmixcomps,'verbose',false,'nrestarts',1),'nstates',nstates);
@@ -54,8 +54,8 @@ emissionDist = cell(5,1);
 for i=1:nstates
     emissionDist{i} = mkRndParams(DiscreteMixDist('nmixtures',nmixcomps),d,nmixcomps);
 end
-pi = DiscreteDist('mu',normalize(rand(nstates,1)));
-A = DiscreteDist('mu',normalize(rand(nstates),1));
+pi = DiscreteDist('T',normalize(rand(nstates,1)));
+A = DiscreteDist('T',normalize(rand(nstates),1));
 trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
 [observed,hidden] = sample(trueModel,1,500);
 model = HmmDist('emissionDist',DiscreteMixDist('nmixtures',nmixcomps,'verbose',false),'nstates',nstates);

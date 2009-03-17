@@ -10,7 +10,7 @@ classdef DiscreteMixDist < MixtureDist
             [nmixtures,mixingWeights,distributions,model.transformer,model.nrestarts,model.verbose] = process_options(varargin,...
                 'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[],'nrestarts',model.nrestarts,'verbose',true);
             if(isempty(mixingWeights) && ~isempty(nmixtures))
-                mixingWeights = DiscreteDist('mu',normalize(ones(nmixtures,1)));
+                mixingWeights = DiscreteDist('T',normalize(ones(nmixtures,1)));
             end
             model.mixingWeights = mixingWeights;
             if(isempty(distributions)&&~isempty(model.mixingWeights))

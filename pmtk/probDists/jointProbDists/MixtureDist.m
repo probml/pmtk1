@@ -32,9 +32,9 @@ classdef MixtureDist < ParamJointDist
            end
            model.distributions = distributions;
            if(~isempty(nmixtures) && isempty(mixingWeights))
-               mixingWeights = DiscreteDist('mu',normalize(ones(nmixtures,1)),'support',1:nmixtures);
+               mixingWeights = DiscreteDist('T',normalize(ones(nmixtures,1)),'support',1:nmixtures);
            elseif(~isempty(model.distributions))
-               mixingWeights = DiscreteDist('mu',normalize(ones(numel(model.distributions,1))),'support',1:nmixtures);
+               mixingWeights = DiscreteDist('T',normalize(ones(numel(model.distributions,1))),'support',1:nmixtures);
            end
            model.mixingWeights = mixingWeights;
         end
@@ -118,7 +118,7 @@ classdef MixtureDist < ParamJointDist
             logRik = calcResponsibilities(model,data);
             %Rik = exp(bsxfun(@minus,logRik,logsumexp(logRik,2))); 
             Rik = exp(normalizeLogspace(logRik));
-            pred = DiscreteDist('mu',Rik');
+            pred = DiscreteDist('T',Rik');
         end
          
         function logp = logprob(model,data)
@@ -170,7 +170,7 @@ classdef MixtureDist < ParamJointDist
             for i=1:K
                 model.distributions{i} = mkRndParams(model.distributions{i},d);
             end
-            model.mixingWeights = DiscreteDist('mu',normalize(rand(K,1)));
+            model.mixingWeights = DiscreteDist('T',normalize(rand(K,1)));
         end
         
         function model = condition(model, visVars, visValues)
