@@ -16,6 +16,7 @@ classdef JtreeInfEng
         iscalibrated = false;   % true iff the clique tree is calibrated so that each clique represents the unnormalized joint over the variables in its scope. 
         orderDown;              % the order in which the cliques were visited in the downwards pass of calibration. 
         verbose;
+        barrenNodes;            % a list of nodes that cannot be queried.
    end
    
    
@@ -30,11 +31,15 @@ classdef JtreeInfEng
            verbose = eng.verbose;
            N = nnodes(model.G);
            nonVisCts = setdiff(model.ctsNodes,visVars);
+           eng.barrenNodes = [];
            for c=nonVisCts
-               if(any(ismember(descendants(model.G.adjMat,c),visVars))) 
+               desc = descendants(model.G.adjMat,c);
+               eng.barrenNodes = [eng.barrenNodes,c,desc];
+               if(any(ismember(desc,visVars))) 
                   error('Unobserved continuous nodes must have no observed children.');
                end
            end
+           
            if eng.iscalibrated && (nargin < 3 || isempty(visVars))
                return; % nothing to do
            end
@@ -57,6 +62,9 @@ classdef JtreeInfEng
        
        function [postQuery,eng] = marginal(eng,queryVars)
            assert(eng.iscalibrated);
+           if any(ismember(queryVars,eng.barrenNodes))
+              error('JtreeInfEng does not currently support querying unobserved continuous nodes or their descendants.'); 
+           end
            cliqueNDX = findClique(eng,queryVars);
            if isempty(cliqueNDX)
                postQuery = outOfCliqueQuery(eng,queryVars);
