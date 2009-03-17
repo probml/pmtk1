@@ -46,7 +46,7 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
       [X,SS] = process_options(varargin,...
         'data'              ,[]         ,...
         'suffStat'          ,[]);
-      if isempty(SS), SS = MvnDist.mkSuffStat(X); end
+      if isempty(SS), SS = MvnDist().mkSuffStat(X); end
       %k0 = obj.k; m0 = obj.mu; S0 = obj.Sigma; v0 = obj.dof;
       k0 = obj.muSigmaDist.k; m0 = obj.muSigmaDist.mu;
       S0 = obj.muSigmaDist.Sigma; v0 = obj.muSigmaDist.dof;
