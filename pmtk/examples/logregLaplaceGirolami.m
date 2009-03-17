@@ -30,9 +30,9 @@ grid=[reshape(x1,nx*nx,1) reshape(x2,nx*nx,1)];
 % Plot data and plug-in predictive
 figure;
 m = fit(LogregDist, 'X', X, 'y', y+1);
-pred = predict(m,grid);
+pred = pmf(predict(m,grid));
 
-contour(x1,x2,reshape(pred.mu(2,:)',[nx,nx]),30);
+contour(x1,x2,reshape(pred(2,:)',[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
@@ -61,15 +61,16 @@ hold on
 [i,j]=max(Log_Joint);                                                               
 plot(W(j,1),W(j,2),'.','MarkerSize',40);
 %Compute the Laplace Approximation
-tic
+
 m = fit(Logreg_MvnDist(),'X',X,'y',y+1,'priorStrength',1/alpha,'infMethod','laplace');
-toc
-wMAP = m.wDist.mu;
-C = m.wDist.Sigma;
+
+[wMAP,C] = convertToMvn(m.wDist);
+%wMAP = m.wDist.mu;
+%C = m.wDist.Sigma;
 Log_Laplace_Posterior = log(mvnpdf(W, -wMAP', C)+eps);
 subplot(J,K,4);
 contour(w1,w2,reshape(-Log_Laplace_Posterior,[n,n]),30);
-hold
+hold on
 plot(W(j,1),W(j,2),'.','MarkerSize',40);
 title('Laplace Approximation to Posterior')
 % Posterior predictive
@@ -77,8 +78,8 @@ title('Laplace Approximation to Posterior')
 figure;
 subplot(2,2,1)
 pred = predict(m,grid);
-
-contour(x1,x2,reshape(pred.mu(2,:)',[nx,nx]),30);
+pmat = pmf(pred);
+contour(x1,x2,reshape(pmat(2,:)',[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');
@@ -109,9 +110,9 @@ plot(X((y==0),1),X((y==0),2),'bo');
 
 title('MC approx of p(y=1|x)')
 subplot(2,2,4)
-pred = predict(m,grid,'method','integral');
+pred = pmf(predict(m,grid,'method','integral'));
 
-contour(x1,x2,reshape(pred.mu(2,:)',[nx,nx]),30);
+contour(x1,x2,reshape(pred(2,:)',[nx,nx]),30);
 hold on
 plot(X((y==1),1),X((y==1),2),'r.');
 plot(X((y==0),1),X((y==0),2),'bo');

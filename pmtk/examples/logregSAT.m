@@ -28,7 +28,8 @@ m = fit(m, 'X', X, 'y', y);
 %% Classify Training Examples
 pred = predict(m,X);                      % predict on the training examples using MLE
 yhat = mode(pred);                        % most probable class labels 
-yprob = pred.mu(2,:)';                     % probability of passing given SAT score and fitted weights
+pmat = pmf(pred);                         % convert to a Matlab matrix
+yprob = pmat(2,:)';                       % probability of passing given SAT score and fitted weights
 %% Plot MLE
 figure; hold on
 plot(X, y , 'ko', 'linewidth', 3,   'markersize', 12);    
