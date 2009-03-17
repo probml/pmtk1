@@ -13,7 +13,8 @@ m = fit(DiscreteMixDist('nmixtures',numel(lookfor)),'data',X,'nrestarts',1);
 %% Visualize
 for i=1:numel(lookfor)
     figure;
-    imagesc(reshape(m.distributions{i}.mu(2,:),28,28));
+    mu = pmf(m.distributions{i});
+    imagesc(reshape(mu(2,:),28,28));
 end
 placeFigures('Square',true)
 %% Display Samples
