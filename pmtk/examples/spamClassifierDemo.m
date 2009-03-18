@@ -41,95 +41,110 @@ cvCustom = @(obj,model)scoreFunction(obj,model);
 modelName = {'Naive Bayes', 'Logistic Regression', 'Diagonal Gaussian', 'Logistic Regression', 'Laplace Approximation', 'Laplace Approximation'};
 dataName = {'Binary', 'Binary', 'log-transformed', 'log-transformed', 'continuous', 'log-transformed'};
 
-fprintf('Constructing Base models: %s, %s \n', modelName{1}, dataName{1});
+midx = 1;
+fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % Naive Bayes
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes; Define equal probability priors
-baseModel{1}.classConditionals = copy(DiscreteDist('support',[0,1]),1,2);
-baseModel{1}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
-baseModel{1}.model = GenerativeClassifierDist('classConditionals',baseModel{1}.classConditionals,'classPrior',baseModel{1}.classPrior);
-baseModel{1}.X = binspam;
+baseModel{midx}.classConditionals = copy(DiscreteDist('support',[0,1]),1,2);
+baseModel{midx}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
+baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);
+baseModel{midx}.X = binspam;
 
-fprintf('Constructing Base models: %s, %s \n', modelName{2}, dataName{2});
+midx = 2;
+fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % Logistic regression on binary data
-baseModel{2}.model = @(lambda)LogregDist('prior','l2','priorStrength',lambda);
-baseModel{2}.modelspace = ModelSelection.makeModelSpace(lambda);
-baseModel{2}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
+baseModel{midx}.model = @(lambda)LogregDist('prior','l2','priorStrength',lambda);
+baseModel{midx}.modelspace = ModelSelection.makeModelSpace(lambda);
+baseModel{midx}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
 	mode(predict(fit(baseModel{2}.model(lambda),'X',Xtrain,'y',ytrain),Xtest));
-baseModel{2}.X = binspam;
-baseModel{2}.modelselection = ModelSelection(              ...
-		  'predictFunction',baseModel{2}.predictFunction ,...      % the test function we just created
+baseModel{midx}.X = binspam;
+baseModel{midx}.modelselection = ModelSelection(              ...
+		  'predictFunction',baseModel{midx}.predictFunction ,...      % the test function we just created
 			'scoreFunction',cvCustom ,...
-		  'Xdata'       ,baseModel{2}.X         ,...      % all of the X data we have available
+		  'Xdata'       ,baseModel{midx}.X         ,...      % all of the X data we have available
 		  'Ydata'       ,classLabel             ,...      % all of the y data we have available
 		  'verbose'     ,true            ,...      % turn off progress report
-		  'models'      ,baseModel{2}.modelspace					,...% the model space created above
+		  'models'      ,baseModel{midx}.modelspace					,...% the model space created above
 			'CVnfolds'		, 5 );
-baseModel{2}.lambda = baseModel{2}.modelselection.bestModel{1};
-baseModel{2}.model = baseModel{2}.model(baseModel{2}.lambda);
+baseModel{midx}.lambda = baseModel{midx}.modelselection.bestModel{1};
+baseModel{midx}.model = baseModel{midx}.model(baseModel{midx}.lambda);
 
-fprintf('Constructing Base models: %s, %s \n', modelName{3}, dataName{3});
+midx = 3;
+fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % Diagonal Gaussian on log transformed
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes
-baseModel{3}.classConditionals = copy(MvnDist(1/2*ones(1,d),diag(0.3*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
+%baseModel{midx}.classConditionals = copy(MvnDist(1/2*ones(1,d),diag(0.3*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
+baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'covtype','diagonal'),1,2);
 % Define equal probability priors
-baseModel{3}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
-baseModel{3}.model = GenerativeClassifierDist('classConditionals',baseModel{3}.classConditionals,'classPrior',baseModel{3}.classPrior);
-baseModel{3}.X = logspam;
+baseModel{midx}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
+baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);
+baseModel{midx}.X = logspam;
 
-fprintf('Constructing Base models: %s, %s \n', modelName{4}, dataName{4});
+midx = 4;
+fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % logistic regression using log transformed
-baseModel{4}.model = @(lambda)LogregDist('prior','l2','priorStrength',lambda);
-baseModel{4}.modelspace = ModelSelection.makeModelSpace(lambda);
-baseModel{4}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
+baseModel{midx}.model = @(lambda)LogregDist('prior','l2','priorStrength',lambda);
+baseModel{midx}.modelspace = ModelSelection.makeModelSpace(lambda);
+baseModel{midx}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
    mode(predict(fit(baseModel{4}.model(lambda),'X',Xtrain,'y',ytrain),Xtest));
-baseModel{4}.X = logspam;
-baseModel{4}.modelselection = ModelSelection(              ...
-		  'predictFunction',baseModel{4}.predictFunction ,...      % the test function we just created
+baseModel{midx}.X = logspam;
+baseModel{midx}.modelselection = ModelSelection(              ...
+		  'predictFunction',baseModel{midx}.predictFunction ,...      % the test function we just created
 			'scoreFunction',cvCustom ,...
-		  'Xdata'       ,baseModel{4}.X          ,...      % all of the X data we have available
+		  'Xdata'       ,baseModel{midx}.X          ,...      % all of the X data we have available
 		  'Ydata'       ,classLabel             ,...      % all of the y data we have available
 		  'verbose'     ,true            ,...      % turn off progress report
-		  'models'      ,baseModel{4}.modelspace ,...
+		  'models'      ,baseModel{midx}.modelspace ,...
 			'CVnfolds'		, 5					);        % the model space created above
-baseModel{4}.lambda = baseModel{4}.modelselection.bestModel{1};
-baseModel{4}.model = baseModel{4}.model(baseModel{4}.lambda);
+baseModel{midx}.lambda = baseModel{midx}.modelselection.bestModel{1};
+baseModel{midx}.model = baseModel{midx}.model(baseModel{midx}.lambda);
 
-fprintf('Constructing Base models: %s, %s \n', modelName{5}, dataName{5});
+midx = 5;
+fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % now the laplace approximation to the continuous data
-baseModel{5}.model = @(lambda)Logreg_MvnDist('infMethod','laplace','priorStrength',lambda);
-baseModel{5}.modelspace = ModelSelection.makeModelSpace(lambda);
-baseModel{5}.X = spam;
-baseModel{5}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
-   mode(predict(fit(baseModel{5}.model(lambda),'X',Xtrain,'y',ytrain),Xtest));
+baseModel{midx}.model = @(lambda)Logreg_MvnDist('infMethod','laplace','priorStrength',lambda);
+baseModel{midx}.modelspace = ModelSelection.makeModelSpace(lambda);
+baseModel{midx}.X = spam;
+baseModel{midx}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
+   mode(predict(fit(baseModel{midx}.model(lambda),'X',Xtrain,'y',ytrain),Xtest));
 baseModel{5}.modelselection = ModelSelection(              ...
-		  'predictFunction',baseModel{5}.predictFunction ,...      % the test function we just created
+		  'predictFunction',baseModel{midx}.predictFunction ,...      % the test function we just created
 			'scoreFunction',cvCustom ,...
-		  'Xdata'       ,baseModel{5}.X          ,...      % all of the X data we have available
+		  'Xdata'       ,baseModel{midx}.X          ,...      % all of the X data we have available
 		  'Ydata'       ,classLabel             ,...      % all of the y data we have available
 		  'verbose'     ,true            ,...      % turn off progress report
-		  'models'      ,baseModel{5}.modelspace     ,...% the model space created above
+		  'models'      ,baseModel{midx}.modelspace     ,...% the model space created above
 			'CVnfolds'		, 5);        
-baseModel{5}.lambda = baseModel{5}.modelselection.bestModel{1};
-baseModel{5}.model = baseModel{5}.model(baseModel{5}.lambda);
+baseModel{midx}.lambda = baseModel{midx}.modelselection.bestModel{1};
+baseModel{midx}.model = baseModel{midx}.model(baseModel{midx}.lambda);
 
-fprintf('Constructing Base models: %s, %s \n', modelName{6}, dataName{6});
+midx = 6;
+fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % now the laplace approximation to the continuous data
-baseModel{6}.model = @(lambda)Logreg_MvnDist('infMethod','laplace','priorStrength',lambda);
-baseModel{6}.modelspace = ModelSelection.makeModelSpace(lambda);
-baseModel{6}.X = logspam;
-baseModel{6}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
-   mode(predict(fit(baseModel{6}.model(lambda),'X',Xtrain,'y',ytrain),Xtest));
-baseModel{6}.modelselection = ModelSelection(              ...
-		  'predictFunction',baseModel{6}.predictFunction ,...      % the test function we just created
+baseModel{midx}.model = @(lambda)Logreg_MvnDist('infMethod','laplace','priorStrength',lambda);
+baseModel{midx}.modelspace = ModelSelection.makeModelSpace(lambda);
+baseModel{midx}.X = logspam;
+baseModel{midx}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
+   mode(predict(fit(baseModel{midx}.model(lambda),'X',Xtrain,'y',ytrain),Xtest));
+baseModel{midx}.modelselection = ModelSelection(              ...
+		  'predictFunction',baseModel{midx}.predictFunction ,...      % the test function we just created
 			'scoreFunction',cvCustom ,...
-		  'Xdata'       ,baseModel{6}.X          ,...      % all of the X data we have available
+		  'Xdata'       ,baseModel{midx}.X          ,...      % all of the X data we have available
 		  'Ydata'       ,classLabel             ,...      % all of the y data we have available
 		  'verbose'     ,true            ,...      % turn off progress report
-		  'models'      ,baseModel{6}.modelspace     ,...% the model space created above
+		  'models'      ,baseModel{midx}.modelspace     ,...% the model space created above
 			'CVnfolds'		, 5);        
-baseModel{6}.lambda = baseModel{6}.modelselection.bestModel{1};
-baseModel{6}.model = baseModel{6}.model(baseModel{6}.lambda);
-model = cell(nModels,K);
+baseModel{midx}.lambda = baseModel{midx}.modelselection.bestModel{1};
+baseModel{midx}.model = baseModel{midx}.model(baseModel{midx}.lambda);
+
+midx = 7;
+% Naive Bayes without the last three uninformative feature
+% Define discrete class conditionals, with support on [0,1], taking on one of two classes; Define equal probability priors
+baseModel{midx}.classConditionals = copy(DiscreteDist('support',[0,1]),1,2);
+baseModel{midx}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
+baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);
+baseModel{midx}.X = binspam(:,1:54);
+
 for mod=1:nModels
 	fprintf('Fitting: %s, %s \n', modelName{mod}, dataName{mod});
 	% Fit the naive bayes classifier

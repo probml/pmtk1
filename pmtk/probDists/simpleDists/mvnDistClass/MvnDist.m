@@ -372,9 +372,9 @@ classdef MvnDist < ParamDist
 				          X = bsxfun(@minus,X,suffStat.xbar');
 				          suffStat.XX = diag(diag( (X'*X) ))/n;
 								case 'spherical'
-				          suffStat.XX2 = diag(diag( (X'*X)))/(n*d);
+				          suffStat.XX2 = diag(sum(diag((X'*X))) )/(n*d);
 				          X = bsxfun(@minus,X,suffStat.xbar');
-				          suffStat.XX = diag(sum(diag( (X'*X) )))/(n*d);
+				          suffStat.XX = diag( sum(diag((X'*X))) )/(n*d);
 							end
           end
       end
@@ -396,7 +396,7 @@ classdef MvnDist < ParamDist
     function prior = mkNigPrior(data)
       [n,d] = size(data);
       kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
-      nu0 = 3; b0 = nanvar(data) + 0.01*ones(size(nanvar(data))); % Smallest valid prior on Sigma
+      nu0 = 2; b0 = nanvar(data) + 0.01*ones(size(nanvar(data))); % Smallest valid prior on Sigma
       prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
     end
     
