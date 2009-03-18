@@ -112,71 +112,6 @@ classdef MixtureDist < ParamJointDist
                 %%
             end % end of emUpdate() subfunction
         end % end of fit method
-
-				function [mcmc] = gibbsFit(model,data,varargin)
-					[Nsamples, Nburnin, thin, Nchains, verbose,alpha] = process_options(varargin,'Nsamples', 1000,'Nburnin', 500,'thin', 1,'Nchains', 3,'verbose',false,'alpha',ones(1,numel(model.distributions)));
-					% Initialize the model
-					model = initializeGibbs(model,data);
-					n = size(data,1); d = size(data,2);
-					mcmc.latent = zeros(Nsamples,n);
-					mcmc.loglik = zeros(Nsamples,1);
-					mcmc.mix = zeros(itr,K);
-					K = numel(model.distributions);
-					for k=1:K
-						mcmc.Sigma{k} = zeros(d,d,Nsamples);
-						mcmc.mu{k} = zeros(Nsamples,d);
-					end
-
-					for itr=1:Nsamples
-						% Contains pred.mu(k,i) = p(Z_k | data(i,:), params)
-						pred = predict(model,data);
-						% Now sample an instance of the latent variables
-						mcmc.latent(itr,:) = sample(pred.mu);
-						% and given this assignment, compute the log probability.
-						% Note that we cannot use logprob here
-						mcmc.loglik(itr) = logprobGibbs(model,data,mcmc.latent(itr,:)');
-
-						% Sample the parameters of the model given the assignment
-						for k=1:K
-							switch class(prior)
-								case 'char'
-									switch lower(prior)
-										case 'none'
-											error('Not yet implemented');
-										case 'niw'
-											post = Mvn_MvnInvWishartDist(model.distributions{k}.prior);
-											joint = fit(post,'data', data(latent == k,:) );
-											post = joint.muSigmaDist;
-											% From post, get the values that we need for the marginal of Sigma for this distribution, and sample
-											postSigma = InvWishartDist(post.dof + 1, post.Sigma);
-											model.distributions{k}.Sigma = sample(postSigma,1);
-											mcmc.Sigma{k}(:,:,itr) = model.distribution{k}.Sigma;
-		
-											% Now, do the same thing for mu
-											postMu = MvnDist(post.mu, model.distributions{k}.Sigma / post.k);
-											model.distributions{k}.mu = sample(postMu,1);
-											mcmc.Mu{k}(:,:,itr) = model.distributions{k}.Mu;
-									end % of switch lower(prior)
-								case 'MvnInvWishartDist'
-									% Calling all of these is overkill, especially when we sample mu and sigma sequentially and not simultaneously
-									joint = Mvn_MvnInvWishartDist(model.distributions{k}.prior);
-									joint = fit(post,'data', data(latent == k,:) );
-									post = joint.muSigmaDist;
-									% From post, get the values that we need for the marginal of Sigma for this distribution, and sample
-									postSigma = InvWishartDist(post.dof + 1, post.Sigma);
-									model.distributions{k}.Sigma = sample(postSigma,1);
-									mcmc.Sigma{k}(:,:,itr) = model.distributions{k}.Sigma;
-									% Now, do the same thing for mu
-									postMu = MvnDist(post.mu, model.distributions{k}.Sigma / post.k);
-									model.distributions{k}.mu = sample(postMu,1);
-									mcmc.Mu{k}(:,:,itr) = model.distributions{k}.Mu;
-							end % of switch class(prior)
-						end % of k=1:K
-						counts = histc(mcmc.latent(itr,:),1:max(mcmc.latent(itr,:)));
-						mcmc.mix(itr,:) = sample(DirichletDist(alpha + counts),1);
-					end % of itr=1:Nsamples
-				end
-
         
         function pred = predict(model,data)
         % pred.mu(k,i) = p(Z_k | data(i,:),params)   
@@ -190,15 +125,6 @@ classdef MixtureDist < ParamJointDist
         % logp(i) = log p(data(i,:) | params) 
               logp = logsumexp(calcResponsibilities(model,data),2);
         end
-
-				function logp = logprobGibbs(model,data,latent)
-				% logp(i) = log p(data(i,:) | params, latent(i) = k)
-							K = numel(model.distributions);
-							logp =  0;
-							for k=1:K
-								logp = logp + sum( logprob(model.distributions{k}, data(latent == k,:)) );
-							end
-				end
         
          function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates)
         %function Tfac = convertToTabularFactor(model, domain,visVars,visVals)
@@ -330,16 +256,6 @@ classdef MixtureDist < ParamJointDist
              model.distributions{k} = mkRndParams(model.distributions{k},X); 
           end
         end
-
-				function model = initializeGibbs(model,X)
-					% we initialize by partitioning the observations into the K mixture components at random
-					K = numel(model.distributions);
-					% use Kfold to partition the indices
-					group = Kfold(size(X,1),K);
-					for k=1:K
-						model.distributions{k} = mkRndParams( model.distributions{k},X(group{k},:) );
-					end
-				end
         
         function displayProgress(model,data,loglik,rr)
             % override in subclass to customize displayed info
