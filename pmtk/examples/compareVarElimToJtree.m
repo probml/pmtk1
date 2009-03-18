@@ -8,7 +8,7 @@ dgmJT.infMethod = JtreeInfEng('verbose',true);
 queries = num2cell(1:37);
 tic; [mVE, logZVE] = marginal(dgmVE, queries); toc
 tic; [mJT, logZJT] = marginal(dgmJT, queries); toc
-%assert(approxeq(logZVE, logZJT)) % fails
+assert(approxeq(logZVE, logZJT))
 for i=1:37
   assert(approxeq(pmf(mVE{i}), pmf(mJT{i})))
 end
