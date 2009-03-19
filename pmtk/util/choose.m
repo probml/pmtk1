@@ -3,3 +3,5 @@ function c = choose(n,k)
 % c = choose(n,k)
 
 c = factorial(n)/(factorial(k) * factorial(n-k));      
+
+% note, same as built in nchoosek(n,k)

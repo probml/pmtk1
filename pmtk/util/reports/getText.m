@@ -1,6 +1,6 @@
 function text = getText(textFile)
 % Extract the text from a file. The output is a cell array - each cell is a line
-% from the file. 
+% from the file. See also writeText()
     text = {};
     if(textFile(end) ~= 'm' && ~ismember('.',textFile))
        textFile = [textFile,'.m']; 

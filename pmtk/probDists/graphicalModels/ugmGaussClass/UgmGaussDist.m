@@ -67,7 +67,7 @@ classdef UgmGaussDist < UgmDist
         [X, SS] = process_options(...
           varargin, 'data', [], 'suffStat', []);
         obj.mu = mean(X);
-        [precMat, covMat] = covselIPF(cov(X), obj.G.adjMat);
+        [precMat, covMat] = covselIpf(cov(X), obj.G.adjMat);
         obj.Sigma = covMat;
       end
 

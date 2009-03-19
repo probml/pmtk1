@@ -1,6 +1,6 @@
 %% Test linear Gaussian CPD with discrete parents
 %#testPMTK
-
+%#broken
 % C1 C2 D1 D2
 %  \ | / /  \
 %    Y      O
