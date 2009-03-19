@@ -21,7 +21,7 @@ function makeDocumentation(version,destination)
     end
     %%
     fprintf('Publishing Examples...\n');
-    publishExamples(destination);
+    publishExamples(destination,version);
     fprintf('Generating author report...\n');
     makeAuthorReport(fullfile(destination,'authors'));
     fprintf('Generating class diagram...\n');
