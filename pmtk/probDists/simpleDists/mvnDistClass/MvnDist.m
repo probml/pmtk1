@@ -8,7 +8,7 @@ classdef MvnDist < ParamDist
     fitArgs;
     domain;
     infEng;
-		covtype;
+	covtype;
     %discreteNodes;
     %ctsNodes;
   end
@@ -279,9 +279,9 @@ classdef MvnDist < ParamDist
              case 'niw'
                prior = MvnDist.mkNiwPrior(X);
                [obj.mu, obj.Sigma] = MvnDist.mapEstimateNiw(prior, SS);
-						 case 'nig'
-							 prior = MvnDist.mkNigPrior(X);
-							 [obj.mu, obj.Sigma] = MvnDist.mapEstimateNig(prior, SS);
+			 case 'nig'
+			   prior = MvnDist.mkNigPrior(X);
+			   [obj.mu, obj.Sigma] = MvnDist.mapEstimateNig(prior, SS);
              otherwise
                error(['unknown prior ' prior])
            end
@@ -359,23 +359,23 @@ classdef MvnDist < ParamDist
               end
           else
               n = size(X,1);
-							d = length(obj.domain);
+              d = length(obj.domain);
               suffStat.n = n;
-				      suffStat.xbar = sum(X,1)'/n; % column vector
-							switch lower(obj.covtype)
-								case 'full'
-				          suffStat.XX2 = (X'*X)/n;
-				          X = bsxfun(@minus,X,suffStat.xbar');
-				          suffStat.XX = (X'*X)/n;
-								case 'diagonal'
-				          suffStat.XX2 = (X'*X)/n;
-				          X = bsxfun(@minus,X,suffStat.xbar');
-				          suffStat.XX = diag(diag( (X'*X) ))/n;
-								case 'spherical'
-				          suffStat.XX2 = diag(sum(diag((X'*X))) )/(n*d);
-				          X = bsxfun(@minus,X,suffStat.xbar');
-				          suffStat.XX = diag( sum(diag((X'*X))) )/(n*d);
-							end
+              suffStat.xbar = sum(X,1)'/n; % column vector
+              switch lower(obj.covtype)
+                  case 'full'
+                      suffStat.XX2 = (X'*X)/n;
+                      X = bsxfun(@minus,X,suffStat.xbar');
+                      suffStat.XX = (X'*X)/n;
+                  case 'diagonal'
+                      suffStat.XX2 = diag(diag((X'*X)))/n;
+                      X = bsxfun(@minus,X,suffStat.xbar');
+                      suffStat.XX = diag(diag( (X'*X) ))/n;
+                  case 'spherical'
+                      suffStat.XX2 = diag(sum(diag((X'*X))) )/(n*d);
+                      X = bsxfun(@minus,X,suffStat.xbar');
+                      suffStat.XX = diag( sum(diag((X'*X))) )/(n*d);
+              end
           end
       end
 
