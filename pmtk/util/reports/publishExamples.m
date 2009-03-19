@@ -22,7 +22,7 @@ function publishExamples(destination)
     originalDirectory = pwd;                                    % save current directory
     if(nargin == 0), destination = defaultDocDir;  end          % this is where the docs will live
     cd(PMTKroot());                                             % change to the base PMTK directory
-    destRoot = makeDestinationDirectory();                      % make the documentation directory
+    
 
     %%
     % This struct array stores all of the information collected about the
@@ -44,7 +44,7 @@ function publishExamples(destination)
                         viewInfo(ex).evalCode]        =...
                              getDemoInfo(allexamples{ex});
         viewInfo(ex).htmlLink = ['./examples/',viewInfo(ex).functionName,'.html'];
-        viewInfo(ex).outputDir = fullfile(destination,destRoot,'examples');  
+        viewInfo(ex).outputDir = fullfile(destination,'examples');  
     end
     
     if(not(makeRootOnly))
@@ -56,7 +56,7 @@ function publishExamples(destination)
         end
     end
     
-    cdDocBase();        
+    cd(destination);      
     createViews(viewInfo);                          % create root html files with main table, etc
     fclose all;
     cd(originalDirectory);                          % restore current directory
@@ -99,31 +99,6 @@ function publishExamples(destination)
         evalin('base','clear all');
     end
 
-    function destRoot =  makeDestinationDirectory()
-    % Create the root directory for the documentation.
-        try
-            cd(destination);   % See if it already exists, if not, create it  
-        catch ME               %#ok
-            err = system(['mkdir ',destination]);
-            if(err)            % if it can't create it, error
-                error('Unable to create destination directory at %s',destination);
-            end
-            cd(destination);   % go to the new directory
-        end
-        d = date;              % current date
-        dirinfo = dir;         % see if this subdirectory already exists
-        appendTime = ~isempty(cell2mat(strfind({dirinfo.name},d))); % if it does, append the time
-        destRoot = d;
-        if(appendTime)
-            destRoot = [destRoot,'-',num2str(rem(now,1)*24)];
-        end
-        err = system(['mkdir ',destRoot]);   % create the subdirectory
-        if(err)
-            error('Unable to create destination directory at %s\%s',destination,destRoot);
-        end
-        cd(destRoot);
-    end
-
     function createViews(viewInfo)
     % Create all of the views, (i.e. root html files)
         createView1(viewInfo);
@@ -155,7 +130,7 @@ function publishExamples(destination)
 
     function fid = setupHTMLfile(fname)
     % Setup a root HTML file    
-        cdDocBase();
+        cd(destination)
         d = date;
         fid = fopen(fname,'w+');
         fprintf(fid,'<html>\n');
@@ -201,8 +176,8 @@ function publishExamples(destination)
     
     function htmlString = pubAndLink(mfile)
     % Publish the specified file and return an html link to it.    
-       outputDir = fullfile(destination,destRoot,'supportingFns');
-       cdDocBase();
+       outputDir = fullfile(destination,'supportingFns');
+       cd(destination)
        link = ['./supportingFns/',mfile,'.html'];
        if(~exist(link,'file'))
             if(~makeRootOnly)
@@ -213,9 +188,6 @@ function publishExamples(destination)
        htmlString = sprintf('<a href="%s">%s\n',link,mfile);
     end
 
-    function cdDocBase()
-    % Change directory to this documentation's root directory    
-        cd(fullfile(destination,destRoot));
-    end
+   
 
 end

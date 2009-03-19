@@ -20,7 +20,10 @@ function  h=viewClassTree(directory)
 if nargin == 0
     directory = '.';
 end
-excludeList = {'dependsOn','viewClassTree','getClasses'};
+excludeList = {'dependsOn','viewClassTree','getClasses',...
+              'Graphlayout','Abstractlayout','Circlelayout',...
+              'Circularlayout','GraphlayoutNode','Radiallayout','Gvizlayout'...
+              'Randlayout','Springlayout','Treelayout','handle','hgsetget','dynamicprops'};
 
 info = removeUnwanted(dirinfo(directory));
 errors = {};
@@ -66,7 +69,7 @@ matrix(:,markForDeletion) = [];
 
 shortClassNames = shortenClassNames(allClasses);
 
-h = Graphlayout('adjMatrix',matrix,'nodeLabels',shortClassNames,'splitLabels',true);
+h = Graphlayout('adjMatrix',matrix,'nodeLabels',shortClassNames,'splitLabels',true,'currentLayout',Radiallayout());
 
 if(~isempty(errors))
     fprintf('\nThe following m-files were\nthought to be classes\nbecause they contain the\nclassdef keyword, but did\nnot respond to queries.\nThey were not included in the graph.\n\n');

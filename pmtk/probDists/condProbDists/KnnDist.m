@@ -112,7 +112,7 @@ classdef KnnDist < CondProbDist
             if start > ntest
                 batch = []; return;
             end
-            prop = 0.15; % proportion of largest possible array size to use
+            prop = 0.10; % proportion of largest possible array size to use
             if(ispc)
                 batchSize = ceil( (prop*subd(memory,'MaxPossibleArrayBytes')/8) /size(obj.examples,1));
                 batch = start:min(start+batchSize-1,ntest);

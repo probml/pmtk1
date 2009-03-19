@@ -237,6 +237,33 @@ classdef Graphlayout < handle
                 warning('GRAPHLAYOUT:layout','Sorry, this layout is not available');
             end
         end
+        
+         function squareAxes(obj,varargin)
+        % Toggle the axes from square to normal and vice versa.
+            obj.clearGroupSelection();
+            if(obj.square)
+               axis(obj.ax,'normal');
+               obj.square = false;
+            else
+               axis(obj.ax,'square');
+               obj.square = true;
+            end
+            
+        end
+        
+        function tightenAxes(obj,varargin)
+         % Tighten the axes as much as possible.
+             obj.clearGroupSelection();
+             xpos = vertcat(obj.nodeArray.xpos);
+             ypos = vertcat(obj.nodeArray.ypos);
+             r = obj.nodeArray(1).width/2;
+             axis(obj.ax,[min(xpos)-r,max(xpos)+r,min(ypos)-r,max(ypos)+r]);
+             axis normal;
+        end
+        
+        
+        
+        
     end % end of public methods
         
  
@@ -849,28 +876,7 @@ classdef Graphlayout < handle
             display(node);
         end
         
-        function squareAxes(obj,varargin)
-        % Toggle the axes from square to normal and vice versa.
-            obj.clearGroupSelection();
-            if(obj.square)
-               axis(obj.ax,'normal');
-               obj.square = false;
-            else
-               axis(obj.ax,'square');
-               obj.square = true;
-            end
-            
-        end
-        
-        function tightenAxes(obj,varargin)
-         % Tighten the axes as much as possible.
-             obj.clearGroupSelection();
-             xpos = vertcat(obj.nodeArray.xpos);
-             ypos = vertcat(obj.nodeArray.ypos);
-             r = obj.nodeArray(1).width/2;
-             axis(obj.ax,[min(xpos)-r,max(xpos)+r,min(ypos)-r,max(ypos)+r]);
-             axis normal;
-        end
+       
     end
        
     methods

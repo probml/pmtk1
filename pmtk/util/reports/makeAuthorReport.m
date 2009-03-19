@@ -8,7 +8,7 @@ function report = makeAuthorReport(location)
     
     
     if(nargin < 1)
-        location = 'C:\PMTKdocs\authors\';
+        location = 'C:\kmurphy\pmtkLocal\doc\authors\';
     end
     fname = 'authors.html';
     
@@ -22,7 +22,7 @@ function report = makeAuthorReport(location)
     function report = generateReport()
     % Generate the actual report as a struct
         report = createStruct(searchNames);
-        [info,mfiles] = mfilelist(PMTKroot());          %#ok
+        [info,mfiles] = mfilelist(PMTKroot());         
         counter = 1;
         for i=1:numel(mfiles)
             file = mfiles{i};
@@ -81,7 +81,7 @@ function report = makeAuthorReport(location)
             file   = report(i).file;
             try
                 system(sprintf('copy %s %s',which(file),location));
-            catch
+            catch ME %#ok
                fprintf('\nCould not copy %s',file); 
             end
             if(isequal(author,' ') || isempty(author))
@@ -114,8 +114,8 @@ function report = makeAuthorReport(location)
     end
     
     function makeDestinationDir()
-        try cd(location)   % See if it already exists
-        catch                  % if not, create it
+        try cd(location)   % See if it already exists if not, create it
+        catch ME %#ok                 
             err = system(['mkdir ',location]);
             if(err)            % if could not create it, error
                 error('Unable to create destination directory at %s',destination);
