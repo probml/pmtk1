@@ -26,7 +26,7 @@ d = size(spam,2);
 
 % K is the number of times we partition the training data
 K = 5;
-nModels = 6;
+nModels = 8;
 
 % lambda for l2-regularization
 nLambda = 10;
@@ -38,8 +38,8 @@ lambda = logspace(-10,-1,nLambda);
 % A function handle to our custom score function.  This is needed to ensure that we use the same folds regardless of whether we use the ModelSelection class or not
 cvCustom = @(obj,model)scoreFunction(obj,model);
 
-modelName = {'Naive Bayes', 'Logistic Regression', 'Diagonal Gaussian', 'Logistic Regression', 'Laplace Approximation', 'Laplace Approximation'};
-dataName = {'Binary', 'Binary', 'log-transformed', 'log-transformed', 'continuous', 'log-transformed'};
+modelName = {'Naive Bayes', 'Logistic Regression', 'Diagonal Gaussian', 'Logistic Regression', 'Laplace Approximation', 'Laplace Approximation', 'Naives Bayes', 'Logistic Regression'};
+dataName = {'Binary', 'Binary', 'log-transformed', 'log-transformed', 'continuous', 'log-transformed', 'Binary (last three omitted)', 'Binary (last three omitted)'};
 
 midx = 1;
 fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
@@ -56,7 +56,7 @@ fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 baseModel{midx}.model = @(lambda)LogregDist('prior','l2','priorStrength',lambda);
 baseModel{midx}.modelspace = ModelSelection.makeModelSpace(lambda);
 baseModel{midx}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
-	mode(predict(fit(baseModel{2}.model(lambda),'X',Xtrain,'y',ytrain),Xtest));
+	mode(predict(fit(baseModel{midx}.model(lambda),'X',Xtrain,'y',ytrain),Xtest));
 baseModel{midx}.X = binspam;
 baseModel{midx}.modelselection = ModelSelection(              ...
 		  'predictFunction',baseModel{midx}.predictFunction ,...      % the test function we just created
@@ -73,8 +73,8 @@ midx = 3;
 fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % Diagonal Gaussian on log transformed
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes
-%baseModel{midx}.classConditionals = copy(MvnDist(1/2*ones(1,d),diag(0.3*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
-baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'covtype','diagonal'),1,2);
+baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
+%baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'covtype','diagonal'),1,2);
 % Define equal probability priors
 baseModel{midx}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
 baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);
@@ -138,12 +138,34 @@ baseModel{midx}.lambda = baseModel{midx}.modelselection.bestModel{1};
 baseModel{midx}.model = baseModel{midx}.model(baseModel{midx}.lambda);
 
 midx = 7;
+fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % Naive Bayes without the last three uninformative feature
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes; Define equal probability priors
-baseModel{midx}.classConditionals = copy(DiscreteDist('support',[0,1]),1,2);
+baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
+%baseModel{midx}.classConditionals = copy(DiscreteDist('support',[0,1]),1,2);
 baseModel{midx}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
 baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);
 baseModel{midx}.X = binspam(:,1:54);
+
+midx = 8;
+fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
+% Logistic regression on binary data
+baseModel{midx}.model = @(lambda)LogregDist('prior','l2','priorStrength',lambda);
+baseModel{midx}.modelspace = ModelSelection.makeModelSpace(lambda);
+baseModel{midx}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
+	mode(predict(fit(baseModel{midx}.model(lambda),'X',Xtrain,'y',ytrain),Xtest));
+baseModel{midx}.X = binspam(:,1:54);
+baseModel{midx}.modelselection = ModelSelection(              ...
+		  'predictFunction',baseModel{midx}.predictFunction ,...      % the test function we just created
+			'scoreFunction',cvCustom ,...
+		  'Xdata'       ,baseModel{midx}.X         ,...      % all of the X data we have available
+		  'Ydata'       ,classLabel             ,...      % all of the y data we have available
+		  'verbose'     ,true            ,...      % turn off progress report
+		  'models'      ,baseModel{midx}.modelspace					,...% the model space created above
+			'CVnfolds'		, 5 );
+baseModel{midx}.lambda = baseModel{midx}.modelselection.bestModel{1};
+baseModel{midx}.model = baseModel{midx}.model(baseModel{midx}.lambda);
+
 
 for mod=1:nModels
 	fprintf('Fitting: %s, %s \n', modelName{mod}, dataName{mod});
@@ -180,15 +202,25 @@ for mod=1:nModels
 end
 
 % Create plots of ROC Curves
+plotParam = {'b-','g-','r-','c-','m-','y-','bx:','gx:'};
+plotMarker = {'b', 'g', 'r', 'c', 'm', 'y', 'k', 'k'};
+plotMarkerSize = {1, 1, 1, 1, 1, 1, 5, 5};
+figure(); hold on;
 for mod=1:nModels
 foldidx = argmax(auc(mod,:));
-figure(); hold on;
-plot(model{mod,foldidx}.FPrate, model{mod,foldidx}.TPrate,'linewidth',3);
-line([0,1],[1,0],'color','k','linewidth',3);
-xlabel('false positive rate'); ylabel('true positive rate'); title(sprintf('ROC Curve: %s (%s Data)',modelName{mod},dataName{mod}));
-if(doprint)
-    pdfcrop; print_pdf(sprintf('roc-%s-%s',modelName{mod},dataName{mod}));
+plot(model{mod,foldidx}.FPrate, model{mod,foldidx}.TPrate,plotParam{mod},'MarkerFaceColor',plotMarker{mod},'linewidth',3);
+xlabel('false positive rate'); ylabel('true positive rate'); %title(sprintf('ROC Curve: %s (%s Data)',modelName{mod},dataName{mod}));
+title('ROC Curves for different spam classifiers');
 end
+line([0,1],[1,0],'color','k','linewidth',3);
+legendnames = cell(1,nModels);
+for i=1:nModels
+	legendnames{i} = strcat(modelName{i}, ', ', dataName{i});
+end
+legend(legendnames,'location','best');
+axis([0, 0.40, 0.60, 1]);
+if(doprint)
+    pdfcrop; print_pdf('rocCurves');
 end
 
 for mod=5:6
