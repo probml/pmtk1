@@ -1,7 +1,9 @@
 function makeDocumentation(destination)
 % This function automatically generates html documentation for the PMTK
 % system by running publishing every script in the examples directory.
-
+    
+    error('use publishExamples instead');
+    
     demodirectory = './examples';                               % location relative to the root of PMTK where the demos live
     viewName1     = 'PMTKdocsByFuncName.html';                  % name of root HTML file for the docs
     defaultDocDir = 'C:\kmurphy\pmtkLocal\doc';                              % default directory to store the documentation

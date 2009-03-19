@@ -1,4 +1,4 @@
-function text = processExamples(includeTags,excludeTags,pauseTime)
+function text = processExamples(includeTags,excludeTags,pauseTime,doformat)
 % Examine all of the PMTK demos and return a cell array of formatted names
 % corresponding to examples consistent with the specified include and
 % exclude tags. The semantics of includeTags and excludeTags are as
@@ -21,6 +21,11 @@ function text = processExamples(includeTags,excludeTags,pauseTime)
 % pauseTime specifies the time to wait in seconds between the execution of 
 % consecutive examples (default = 0).
 %
+% if doformat is true, (default), the text is formatted for writing to a
+% file, (e.g. runDemos.m). If false, only the names of the mfiles
+% that have a tag in includeTags and have no tags in excludeTags are
+% included, with no formatting. 
+%
 % OUTPUT:
 %
 % text is a formatted cell array, ready to be written to a file using
@@ -32,21 +37,30 @@ function text = processExamples(includeTags,excludeTags,pauseTime)
 % text = processExamples({},{'#inprogress','#broken'})                     % used to make runDemos
     
     if nargin < 3, pauseTime = 0; end
+    if nargin < 4, doformat = true; end
     cd(fullfile(PMTKroot(),'examples'));                                   % change directory to /pmtk/examples/
     [info,mfiles] = mfilelist();                                           % grab the names of all the mfiles there - including subdirectories if any
     tags = cellfuncell(@tagfinder,mfiles)';                                % get all of the tags in each of these mfiles
     if nargin == 0 || isempty(includeTags)
        include = true(numel(mfiles),1);                                    % if no includeTags, include every file
     else
-       includeTags = cellfuncell(@(s)regexprep(s,'% | ',''),includeTags);  % remove % and space characters from requested includeTags
        include = cellfun(@(c)~isempty(intersect(c,includeTags)),tags);     % determine which mfiles to include based on their tags
     end
+    if not(doformat)
+        % when asked not to format, the semantics of excludeTags are
+        % different - we actually exclude demos with any of these tags from
+        % the list. 
+        exclude = cellfun(@(c)~isempty(intersect(c,excludeTags)),tags);
+        text = mfiles(include & not(exclude)); 
+        return; 
+    end   
     mfiles = mfiles(include);                                              % keep only included mfiles
+                           
     text = cellfuncell(@(c)sprintf('%s;%spclear(%d);',c(1:end-2),...       % format each example name by removing .m adding ';', spaces, and 'pclear('pauseTime');'
         blanks(max(5,42 - length(c))),pauseTime),mfiles)';                 
     
     if nargin > 1 && ~isempty(excludeTags)                                 % if there are exclude tags
-        excludeTags = cellfuncell(@(s)regexprep(s,'% |',''),excludeTags);  % remove % and space characters from requested excludeTags
+        
         
         comments = cellfuncell(@(c)csvstr(cellfuncell(@(s)regexprep...     % construct comments for mfiles with excludeTags from the tags themselves
             (s,'#',''),intersect(c,excludeTags)),' & '),tags(include));    

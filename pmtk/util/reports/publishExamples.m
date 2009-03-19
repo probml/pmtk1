@@ -1,60 +1,57 @@
 function publishExamples(destination)
 % This function automatically generates documentation for the PMTK system.
-% By default the root doc directory is set to C:\PMTKdocs but you can specify
-% another as a parameter to this function. Within this root directory, it
-% creates a directory structure and html files corresponding to the examples in
-% the example directory.
+% By default the root doc directory is set to 'C:\kmurphy\pmtkLocal\doc'
+% but you can specify another as a parameter to this function. Within this
+% root directory, it creates a directory structure and html files
+% corresponding to the examples in the example directory.
 
-    demodirectory = './examples';                               % location relative to the root of PMTK where the demos live
-    viewName1     = 'publishedExamples.html';                   % name of root HTML file for the docs
-    defaultDocDir = 'C:\kmurphy\pmtkLocal\doc';                 % default directory to store the documentation
-    doNotEvalTag  = '%#doNotEval';                              % If this tag is present in the function's documentation, it is not evaluated when published
-    excludeFnNameList = {};                                     % Functions listed here are not displayed in the "Functions Used" column
+
+%%  Adjustable parameters
+    excludeTags         = {'#broken','#inprogress','#doNotPublish'};  % do not include demos with these tags
+    viewName1           = 'publishedExamples.html';                   % name of root HTML file for the docs
+    defaultDocDir       = 'C:\kmurphy\pmtkLocal\doc';                 % default directory to store the documentation
+    doNotEvalTag        = '%#doNotEval';                              % if this tag is present in the function's documentation, it is not evaluated when published
+    excludeFnNameList   = {};                                         % functions listed here, or in trivialFunctionList.txt, are not displayed in the "Functions Used" column
+    makeRootOnly        = false;                                      % if true, only the root html file is generated, nothing else is published. This can be useful when only small changes have been made. 
+    globalEval          = true;                                       % if false, none of the examples are evaluated - only converted to html. 
+%% 
     if(exist('trivialFunctionList.txt','file'))
         excludeFnNameList = [excludeFnNameList,getText('trivialFunctionList.txt')];
     end
     
-    brokenTag     = '%#broken';
-    inprogressTag = '%#inprogress';
-
-    makeRootOnly = false;                                       % If true, only the root html file is generated, nothing else is published. 
-    
     originalDirectory = pwd;                                    % save current directory
     if(nargin == 0), destination = defaultDocDir;  end          % this is where the docs will live
     cd(PMTKroot());                                             % change to the base PMTK directory
-    demoDirInfo = dirinfo(demodirectory);                       % collect information about the demos
     destRoot = makeDestinationDirectory();                      % make the documentation directory
 
-    viewInfo = struct('primaryClass',{},'functionName',{},'title'        ,{} ,'description',{},...
-                      'htmlLink'    ,{},'classesUsed' ,{},'functionsUsed',{} ,'evalCode'   ,{},...
-                      'outputDir'   ,{}); % store table info here
-    demoCounter = 1;                     
-    for i=1:numel(demoDirInfo)                                  % for every directory
-        entry = demoDirInfo(i);                                 
-        if(~isempty(entry.m))                                   % if it contains m-files loop over them
-            [exdirName,viewInfo(demoCounter).primaryClassName] = getPrimaryClass(entry.path);
-            for j=1:numel(entry.m)                              % for every mfile
-                if(~tagsearch(entry.m{j},brokenTag) && ~tagsearch(entry.m{j},inprogressTag))
-                    [viewInfo(demoCounter).functionName    ,...
-                        viewInfo(demoCounter).title            ,...
-                        viewInfo(demoCounter).description      ,...
-                        viewInfo(demoCounter).functionsUsed    ,...
-                        viewInfo(demoCounter).classesUsed      ,...
-                        viewInfo(demoCounter).evalCode] = getDemoInfo(entry.m{j});
-                    
-                    viewInfo(demoCounter).htmlLink = ['./',exdirName,'/',viewInfo(demoCounter).functionName,'.html'];
-                    viewInfo(demoCounter).outputDir = fullfile(destination,destRoot,exdirName);  % publish to here
-                    demoCounter = demoCounter + 1;
-                end
-            end
-       
-        end
+    %%
+    % This struct array stores all of the information collected about the
+    % demos. Currently the subfunction createView1() uses this info to
+    % generate the main html file. To create a different view on the same 
+    % data, simply write another subfunction, say createView2(), and add
+    % the line createView2(viewInfo) to the createViews() subfunction. 
+    viewInfo = struct('functionName',{},'title'       ,{} ,'description'  ,{},...
+                      'htmlLink'    ,{},'classesUsed' ,{} ,'functionsUsed',{},...
+                      'evalCode'    ,{},'outputDir'   ,{}); 
+    %%                  
+    allexamples = processExamples({},excludeTags,0,false);
+    for ex=1:numel(allexamples)
+        [viewInfo(ex).functionName                    ,...
+                        viewInfo(ex).title            ,...
+                        viewInfo(ex).description      ,...
+                        viewInfo(ex).functionsUsed    ,...
+                        viewInfo(ex).classesUsed      ,...
+                        viewInfo(ex).evalCode]        =...
+                             getDemoInfo(allexamples{ex});
+        viewInfo(ex).htmlLink = ['./examples/',viewInfo(ex).functionName,'.html'];
+        viewInfo(ex).outputDir = fullfile(destination,destRoot,'examples');  
     end
-    if(~makeRootOnly)
-        pause(1);
-        for i=1:numel(viewInfo)
+    
+    if(not(makeRootOnly))
+        pause(1);               % bugfix: wait for Matlab to release file locks
+        for v=1:numel(viewInfo)
             evalin('base','clear all'); 
-            publishFile(viewInfo(i).functionName,viewInfo(i).outputDir,viewInfo(i).evalCode); 
+            publishFile(viewInfo(v).functionName,viewInfo(v).outputDir,viewInfo(v).evalCode); 
             close all;
         end
     end
@@ -66,25 +63,12 @@ function publishExamples(destination)
     close all                
     evalin('base','clear all');                     % clear the base workspace
     %% Subfunctions
-
-    function [exdirName, className] = getPrimaryClass(path)
-    % From a file path, extract the example directory name and the associated
-    % class name.
-        [base,exdirName] = fileparts(path);             %#ok
-        className = exdirName;
-        if(~isempty(strfind(className,'Examples')))
-            className = className(1:end-8);
-        end
-    end
-
+    
     function [fname,title,description,funcsUsed,classesUsed,evalCode] = getDemoInfo(mfile)
-    % Get information about the specified demo.
+    % Collect information about the specified demo.
         fname = mfile(1:end-2);
-        fid = fopen(which(mfile));
-        fulltext = textscan(fid,'%s','delimiter','\n','whitespace','');
-        fulltext = fulltext{:};
-        title = fulltext{1};
-        [start,rest] = strtok(title,' ');
+        fulltext = getText(mfile);
+        [start,rest] = strtok(fulltext{1},' ');
         title = '';
         description = {};
         if(strcmp(start,'%%'))
@@ -100,16 +84,13 @@ function publishExamples(destination)
                 end
             end
         end
-        evalCode = isempty(cell2mat(strfind(fulltext,doNotEvalTag)));
-        fclose(fid);
-       
+        evalCode = globalEval && not(tagsearch(mfile,doNotEvalTag));
         [funcsUsed,classesUsed] = dependsOn(which(mfile),PMTKroot());
         funcsUsed = setdiff(funcsUsed,excludeFnNameList);
     end
 
     function publishFile(mfile,outputDir,evalCode)
     % Publish an m-file to the specified output directory.
-        
         options.evalCode = evalCode;
         options.outputDir = outputDir;
         options.format = 'html';
@@ -121,10 +102,10 @@ function publishExamples(destination)
     function destRoot =  makeDestinationDirectory()
     % Create the root directory for the documentation.
         try
-            cd(destination);   % See if it already exists
-        catch                  % if not, create it
+            cd(destination);   % See if it already exists, if not, create it  
+        catch ME               %#ok
             err = system(['mkdir ',destination]);
-            if(err)            % if could not create it, error
+            if(err)            % if it can't create it, error
                 error('Unable to create destination directory at %s',destination);
             end
             cd(destination);   % go to the new directory
@@ -148,11 +129,10 @@ function publishExamples(destination)
         createView1(viewInfo);
     end
     
-    
     function createView1(viewInfo)
     % Create a view showing an alphabetical list of all of the demos complete 
     % with their titles and the classes and functions they use. 
-        [sorted,perm] = sort(cellfun(@(str)lower(str),{viewInfo.functionName},'UniformOutput',false)); %#ok
+        [sorted,perm] = sort(cellfuncell(@(str)lower(str),{viewInfo.functionName})); 
         sortedInfo = viewInfo(perm);
         fid = setupHTMLfile(viewName1);
         setupTable(fid,{'Function Name','Title','Classes Used','Functions Used'},[20,40,20,20]);
@@ -163,14 +143,12 @@ function publishExamples(destination)
             hprintf = @(txt)fprintf(fid,'\t<td> %s               </td>\n',txt);
             lprintf = @(link,name)fprintf(fid,'\t<td> <a href="%s"> %s </td>\n',link,name);
             fprintf(fid,'<tr bgcolor="white" align="left">\n');  
-                %fprintf(fid,'\t<td> <a href="%s"> %s </td>\n',sortedInfo(i).htmlLink,sortedInfo(i).functionName);
                 lprintf(sortedInfo(i).htmlLink,sortedInfo(i).functionName);
                 hprintf(title);
                 hprintf(prepareUsedList(sortedInfo(i).classesUsed));
                 hprintf(prepareUsedList(sortedInfo(i).functionsUsed));
             fprintf(fid,'</tr>\n');  
         end
- 
         fprintf(fid,'</table>');
         closeHTMLfile(fid);
     end
@@ -184,7 +162,7 @@ function publishExamples(destination)
         fprintf(fid,'<head>\n');
         fprintf(fid,'<font align="left" style="color:#990000"><h2>PMTK Documentation</h2></font>\n');
         fprintf(fid,'<br>Revision Date: %s<br>\n',d);
-         fprintf(fid,'<br>Auto-generated by makeDocumentation.m<br>\n');
+        fprintf(fid,'<br>Auto-generated by publishExamples.m<br>\n');
         fprintf(fid,'</head>\n');
         fprintf(fid,'<body>\n\n');
         fprintf(fid,'<br>\n');
@@ -221,18 +199,17 @@ function publishExamples(destination)
         end
     end
     
-    
     function htmlString = pubAndLink(mfile)
     % Publish the specified file and return an html link to it.    
-       outputDir = fullfile(destination,destRoot,'additional');
+       outputDir = fullfile(destination,destRoot,'supportingFns');
        cdDocBase();
-       link = ['./additional/',mfile,'.html'];
+       link = ['./supportingFns/',mfile,'.html'];
        if(~exist(link,'file'))
             if(~makeRootOnly)
                 publishFile(mfile,outputDir,false);
             end
        end
-       link = ['./additional/',mfile,'.html'];
+       link = ['./supportingFns/',mfile,'.html'];
        htmlString = sprintf('<a href="%s">%s\n',link,mfile);
     end
 
@@ -240,9 +217,5 @@ function publishExamples(destination)
     % Change directory to this documentation's root directory    
         cd(fullfile(destination,destRoot));
     end
-    
-   
-    
-    
 
 end
