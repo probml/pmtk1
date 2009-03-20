@@ -17,6 +17,11 @@ classdef UgmTabularDist < UgmDist
             if(nargin == 0);return;end
             [G, obj.factors, obj.infMethod, obj.nstates] = process_options(varargin, ...
                 'G', [], 'factors', [], 'infEng', JtreeInfEng(), 'nstates', []);
+            if isempty(obj.nstates)
+               error('You must specify ''nstates'', the number of states for each node.'); 
+               % note, we cannot in general infer the number of states, or
+               % even the number of nodes from the factors of a UGM alone.
+            end
             if isempty(G)
                 % infer graph topology from factors
                 d = length(obj.nstates);
@@ -36,23 +41,15 @@ classdef UgmTabularDist < UgmDist
        
         
         function [Tfacs,nstates] = convertToTabularFactors(obj,visVars,visVals)
-            
-            if (nargin == 1 || isempty(visVars)) && ~isempty(obj.nstates)
-                % we want to comptue nstates from factors in case it is not
-                % specified
-                Tfacs = obj.factors;
-                nstates = obj.nstates;
-            else % the number of factors does not necessarily equal the number of nodes. 
-                nstates = obj.nstates;
-                d = length(obj.factors);
-                Tfacs = obj.factors;
+            Tfacs = obj.factors;
+            nstates = obj.nstates;
+            if nargin > 1 && ~isempty(visVars)
+                d = numel(obj.factors);
                 for j=1:d
                     include = ismember(visVars,Tfacs{j}.domain);
                     if(~isempty(include) && any(include))
-                        Tfacs{j} = slice(Tfacs{j},visVars(include),visVals(include));
-                        
+                        Tfacs{j} = slice(Tfacs{j},visVars(include),visVals(include));         
                     end
-                    nstates(j) = Tfacs{j}.sizes(end);
                 end
             end
         end
@@ -103,7 +100,7 @@ classdef UgmTabularDist < UgmDist
         
         function xinit = mcmcInitSample(model, visVars, visVals) %#ok that we ignore visVals
             if nargin < 2
-                visVars = []; visVals = [];
+                visVars = []; visVals = []; %#ok that we ignore visVals
             end
             % Ideally we would draw an initial sample conditional on the
             % observed data.
@@ -113,7 +110,7 @@ classdef UgmTabularDist < UgmDist
             % (this might be inconsistent with hard constraints!!)
             domain = 1:ndimensions(model);
             hidVars = setdiffPMTK(domain, visVars);
-            V = lookupIndices(visVars, domain);
+            %V = lookupIndices(visVars, domain);  
             H = lookupIndices(hidVars, domain);
             sz = model.nstates(H);
             K = prod(sz);

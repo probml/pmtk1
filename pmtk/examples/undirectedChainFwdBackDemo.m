@@ -17,7 +17,7 @@ factors{2} = TabularFactor(T ,[A,B]);
 factors{3} = TabularFactor(T ,[B,C]);
 factors{4} = TabularFactor(T ,[C,D]);
 factors{5} = TabularFactor(T ,[D,E]);
-ugm =  UgmTabularDist('G', G, 'factors', factors,'infEng',VarElimInfEng());
+ugm =  UgmTabularDist('G', G, 'factors', factors,'infEng',VarElimInfEng(),'nstates',[2,2,2,2,2]);
 
 pEvarelim = pmf(marginal(ugm,E));
 evidence = ones(size(T,1),5);                                 % e.g. no evidence

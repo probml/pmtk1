@@ -26,5 +26,5 @@ function ugm = mkMisconceptionUGM()
     factors{2} = TabularFactor(reshape([100, 1, 1, 100],2,2)', [B, C]);
     factors{3} = TabularFactor(reshape([1, 100, 100, 1],2,2)', [C,D]);
     factors{4} = TabularFactor(reshape([100,1,1,100],2,2)', [D,A]);
-    ugm =  UgmTabularDist('G', G, 'factors', factors);
+    ugm =  UgmTabularDist('G', G, 'factors', factors,'nstates',[2,2,2,2]);
 end
