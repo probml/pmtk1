@@ -126,44 +126,23 @@ classdef MixtureDist < ParamJointDist
               logp = logsumexp(calcResponsibilities(model,data),2);
         end
         
-         function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates)
-        %function Tfac = convertToTabularFactor(model, domain,visVars,visVals)
-          % domain = indices of each parent, followed by index of child
-          % all of the children must be observed
-          assert(isempty(ctsParents))
-          assert(length(dParents)==1)
-          if visible(child)
-            T = exp(calcResponsibilities(model,data(child)));
-            Tfac = TabularFactor(T,dParents);
-          else
-            % barren leaf removal
-            Tfac = TabularFactor(ones(1,nstates(dParents)), dParents);
-          end
-         end
+        function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates)     
+            if ~isempty(ctsParents)
+                error('You cannot have a MixtureDist CPD with a continuous parent.');
+            end
+            if length(dParents) ~= 1
+                error('A MixtureDist CPD must have exactly one discrete parent.');
+            end
+            if visible(child)
+                T = exp(calcResponsibilities(model,data(child)));
+                Tfac = TabularFactor(T,dParents);
+            else
+                % barren leaf removal
+                Tfac = TabularFactor(ones(1,nstates(dParents)), dParents);
+            end
+        end
         
-         %{
-         function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates);
-        %function Tfac = convertToTabularFactor(model, domain,visVars,visVals)
-          % domain = indices of each parent, followed by index of child
-          % all of the children must be observed
-          assert(isempty(ctsParents))
-          assert(length(dParents)==1)
-          assert(visible(child))
-          visVals = data(child);
-          if(isempty(visVars))
-            Tfac = TabularFactor(1,domain); return; % return an empty TabularFactor
-          end
-          pdom = domain(1); cdom = domain(2:end);
-          if ~isequal(cdom,visVars)
-            % If we have a mixture of factored bernoullis
-            % the factor would be all discrete, but we don't handle this
-            % case.
-            error('Not all of the children of this CPD were observed.');
-          end
-          T = exp(calcResponsibilities(model,visVals));
-          Tfac = TabularFactor(T,pdom); % only a factor of the parent now
-         end
-        %}
+      
         
         
         function model = mkRndParams(model, d,K)

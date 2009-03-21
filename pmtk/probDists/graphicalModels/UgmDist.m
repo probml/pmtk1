@@ -6,6 +6,9 @@ classdef UgmDist < GmDist
   %%  Main methods
   methods
     
+      function directed = isdirected(model)
+         directed = false;
+      end
      
   end
 

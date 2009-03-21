@@ -108,6 +108,13 @@ classdef DgmDist < GmDist
         end
     end
     
+    function CPD = extractLocalDistribution(model,i)   
+       CPD = model.CPDs{find(i==model.domain)}; 
+    end
+    
+     function directed = isdirected(model)
+         directed = true;
+     end
   
     
     %{
@@ -186,15 +193,7 @@ classdef DgmDist < GmDist
             error(['unknown type ' CPDtype])
         end
       end
-    end
-
-%    function nodeDist = extractLocalDistribution(obj,var)
-%    % Used to extract the distribution over a discrete parent of a 
-%    % continuous node to get the mixing weights for the induced MixtureDist.
-%        nodeDist = obj.CPDs{var};
-%     end
-  
-    
+    end    
     
   end
 
