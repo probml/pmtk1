@@ -6,17 +6,18 @@ classdef JtreeInfEng
         factors;                % the original tabular factors - unaltered
         domain;                 % the entire domain of the client model
         nstates;                % nstates{i} = the number of states in variable domain(i)
-        cliques;                % a cell array of TabularFactors, representing the cliques
+        cliques;                % a cell array of TabularFactors, representing the cliques - the domains of the cliques are w.r.t. eng.domain, not necessarily 1:d
         sepsets;                % sepsets{i,j} = cliques{i}.domain intersect cliques{j}.domain (symmetric)
         messages;               % a 2D cell array s.t. messages{i,j} = the message passed from clique i to clique j. Each message is a TabularFactor.
-        cliqueLookup;           % cliqueLookup(i,j) = true iff variable i is in the scope of clique j
+        cliqueLookup;           % cliqueLookup(i,j) = true iff variable domain(i) is in the scope of clique j
         factorLookup;           % factorLookup(f,c) = true iff eng.factors{f} was used in the construction of eng.cliques{c}
         cliqueTree;             % The clique tree as an adjacency matrix
-        cliqueScope;            % a cell array s.t. cliqueScope{i} = the scope,(domain) of the ith clique.
+        cliqueScope;            % a cell array s.t. cliqueScope{i} = the scope,(domain) of the ith clique w.r.t. eng.domain, not necessarily 1:d
         iscalibrated = false;   % true iff the clique tree is calibrated so that each clique represents the unnormalized joint over the variables in its scope. 
         orderDown;              % the order in which the cliques were visited in the downwards pass of calibration. 
         verbose;
-        barrenNodes;            % a list of nodes that cannot be queried.
+        model;                  % the client model
+        
    end
    
    
@@ -29,17 +30,13 @@ classdef JtreeInfEng
        
        function [eng, logZ, other] = condition(eng,model,visVars,visVals)
            verbose = eng.verbose;
-           N = nnodes(model.G);
-           nonVisCts = setdiff(model.ctsNodes,visVars);
-           eng.barrenNodes = [];
-           for c=nonVisCts
-               desc = descendants(model.G.adjMat,c);
-               eng.barrenNodes = [eng.barrenNodes,c,desc];
-               if(any(ismember(desc,visVars))) 
-                  error('Unobserved continuous nodes must have no observed children.');
-               end
+           map = @(x)canonizeLabels(x,model.domain); % maps from model.domain to 1:d, the inverse map is model.domain(x)
+           % barren nodes have already been removed by GmDist.marginal so
+           % we just need to check that all continuous nodes are leaves and
+           % error if not. 
+           if any(arrayfun(@(n)~isleaf(model.G.adjMat,n),map(model.ctsNodes)))
+               error('Unobserved, continuous, query nodes, must have no observed children.');
            end
-           
            if eng.iscalibrated && (nargin < 3 || isempty(visVars))
                return; % nothing to do
            end
@@ -50,6 +47,7 @@ classdef JtreeInfEng
            if(nargin < 4), visVars = []; visVals = {}; end
            [eng.factors,eng.nstates] = convertToTabularFactors(model,visVars,visVals);
            eng.domain = model.domain;
+           eng.model = model;
            if isempty(eng.cliques)
                if verbose, fprintf('setting up clique tree\n'); end
                eng = setupCliqueTree(eng,model.G);
@@ -66,9 +64,9 @@ classdef JtreeInfEng
        
        function [postQuery,eng,Z] = marginal(eng,queryVars)
            assert(eng.iscalibrated);
-           if any(ismember(queryVars,eng.barrenNodes))
-              error('JtreeInfEng does not currently support querying unobserved continuous nodes or their descendants.'); 
-           end
+           if any(ismember(queryVars,eng.model.ctsNodes))
+               [postQuery,eng,Z] = handleContinuousQuery(eng,queryVars); return;
+            end
            cliqueNDX = findClique(eng,queryVars);
            if isempty(cliqueNDX)
                postQuery = outOfCliqueQuery(eng,queryVars);
@@ -97,7 +95,7 @@ classdef JtreeInfEng
         function eng = setupCliqueTree(eng,G)
         % create a clique tree from the initial graph G, add factors to the
         % cliques, and create the separating sets. 
-        
+            map = @(x)canonizeLabels(x,eng.domain);
             nfactors = numel(eng.factors);
             ncliques = [];
             buildCliqueTree();
@@ -108,17 +106,17 @@ classdef JtreeInfEng
                 if G.directed, G = moralize(G);  end
                 initialGraph = G.adjMat;            % graph of the client model
                 for f=1:nfactors
-                    dom = eng.factors{f}.domain;
+                    dom = map(eng.factors{f}.domain);
                     initialGraph(dom,dom) = 1;      % connect up factors whose scope overlap to ensure they will live in the same cliques. 
                 end
                 initialGraph = setdiag(initialGraph,0);
                 treeObj = Jtree(initialGraph);      % The jtree class triangulates and forms a cluster tree satisfying RIP
                 eng.cliqueTree  = treeObj.adjMat;   % the adjacency matrix of the clique tree
-                eng.cliqueScope = treeObj.cliques;  % the scope of each clique
+                eng.cliqueScope = cellfuncell(@(c)eng.domain(c),treeObj.cliques);  % the scope of each clique w.r.t. eng.domain, not necessarily 1:d
                 ncliques = numel(eng.cliqueScope);
                 eng.cliqueLookup = false(numel(eng.domain),ncliques);
                 for c=1:ncliques
-                    eng.cliqueLookup(eng.cliqueScope{c},c) = true; % cliqueLookup(v,c) = true iff variable v is in the scope of clique c
+                    eng.cliqueLookup(map(eng.cliqueScope{c}),c) = true; % cliqueLookup(v,c) = true iff variable domain(v) is in the scope of clique c
                 end
             end
             
@@ -126,16 +124,15 @@ classdef JtreeInfEng
             % add each factor to the smallest accommodating clique   
                 eng.factorLookup = false(nfactors,ncliques);
                 for f=1:nfactors
-                    candidateCliques = all(eng.cliqueLookup(eng.factors{f}.domain,:),1);
+                    candidateCliques = all(eng.cliqueLookup(map(eng.factors{f}.domain),:),1);
                     c = minidx(cellfun(@(x)numel(x),eng.cliqueScope(candidateCliques))); 
                     eng.factorLookup(f,sub(find(candidateCliques),c)) = true;
                 end
                 eng.cliques = cell(ncliques,1);
                 for c=1:ncliques
                     scope = eng.cliqueScope{c};
-                    T = TabularFactor(ones(eng.nstates(scope)),scope);
+                    T = TabularFactor(onesPMTK(eng.nstates(map(scope))),scope);
                     eng.cliques{c} = TabularFactor.multiplyFactors({T,eng.factors{eng.factorLookup(:,c)}});
-                    %eng.cliques{c} = TabularFactor.multiplyFactors(eng.factors(eng.factorLookup(:,c)));
                 end
             end
             
@@ -164,10 +161,15 @@ classdef JtreeInfEng
             error('Out of clique queries not yet implemented - use VarElimInfEng instead');
         end
         
+        function [postQuery,eng,Z] = handleContinuousQuery(eng,queryVars)
+           error('Querying unobserved continuous leaf nodes is not yet supported with JTreeInfEng - use VarElimInfEng instead'); 
+        end
+        
         function ndx = findClique(eng,queryVars)
         % find a clique to answer the answer the query, if any.
-            dom = 1:size(eng.cliqueLookup,1);
-            candidates = dom(all(eng.cliqueLookup(queryVars,:),1));
+            map = @(x)canonizeLabels(x,eng.domain);
+            D = 1:size(eng.cliqueLookup,1);
+            candidates = D(all(eng.cliqueLookup(map(queryVars),:),1));
             if isempty(candidates)
                 ndx = []; 
             elseif numel(candidates) == 1

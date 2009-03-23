@@ -24,7 +24,7 @@ classdef LinGaussCPD < CondProbDist
         q = 1;
       end
       
-      function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates) %#ok
+      function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates,fullDomain) %#ok
         error('cannot convert LinGaussCPD to tabular')
       end
       

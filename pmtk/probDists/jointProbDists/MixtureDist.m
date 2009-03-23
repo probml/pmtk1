@@ -126,19 +126,20 @@ classdef MixtureDist < ParamJointDist
               logp = logsumexp(calcResponsibilities(model,data),2);
         end
         
-        function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates)     
+        function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates,fullDomain)     
             if ~isempty(ctsParents)
                 error('You cannot have a MixtureDist CPD with a continuous parent.');
             end
             if length(dParents) ~= 1
                 error('A MixtureDist CPD must have exactly one discrete parent.');
             end
-            if visible(child)
-                T = exp(calcResponsibilities(model,data(child)));
+            map = @(x)canonizeLabels(x,fullDomain);
+            if visible(map(child))
+                T = exp(calcResponsibilities(model,data(map(child))));
                 Tfac = TabularFactor(T,dParents);
             else
                 % barren leaf removal
-                Tfac = TabularFactor(ones(1,nstates(dParents)), dParents);
+                Tfac = TabularFactor(ones(1,nstates(map(dParents))), dParents);
             end
         end
         

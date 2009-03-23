@@ -15,7 +15,7 @@ classdef EnumInfEng < InfEng
     end
 
     function [eng, logZ, other] = condition(eng, model, visVars, visValues)
-      if ~all(model.discreteNodes)
+      if ~isempty(model.ctsNodes)
         error('EnumInfEng requires all nodes to be discrete')
       end
        Tfac = convertToJointTabularFactor(model);

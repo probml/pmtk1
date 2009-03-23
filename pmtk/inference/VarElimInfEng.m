@@ -18,11 +18,12 @@ classdef VarElimInfEng < InfEng
         
         function [eng, logZ, other] = condition(eng, model, visVars, visVals)
             if(nargin < 4), visVars = []; visVals = {};end
-            N = nnodes(model.G);
-            visible = false(1,N); visible(visVars) = true;
-            hidCts = model.ctsNodes(~visible(model.ctsNodes));
-            if any(arrayfun(@(i) ~isleaf(model.G, i), hidCts))
-                error('VarElimInfEng requires all hidden cts nodes to be leaves')
+            map = @(x)canonizeLabels(x,model.domain); % maps domain to 1:d, inverse map is model.domain(x)
+            % barren nodes have already been removed by GmDist.marginal so
+            % we just need to check that all continuous nodes are leaves and
+            % error if not.           
+            if any(arrayfun(@(n) ~isleaf(model.G.adjMat, n), map(model.ctsNodes)))
+                error('Unobserved, continuous, query nodes, must have no observed children.');
             end
             [eng.Tfac,nstates] = convertToTabularFactors(model,visVars,visVals);
             if isempty(eng.ordering)
@@ -31,7 +32,7 @@ classdef VarElimInfEng < InfEng
                 else
                     moralGraph = model.G;
                 end
-                eng.ordering = best_first_elim_order(moralGraph.adjMat,nstates);
+                eng.ordering = model.domain(best_first_elim_order(moralGraph.adjMat,nstates)); %w.r.t. model.domain, not necessarily 1:d
             end
             eng.domain = model.domain;
             eng.visVars = visVars;
@@ -50,7 +51,7 @@ classdef VarElimInfEng < InfEng
                [postQuery,eng,Z] = handleContinuousQuery(eng,queryVars); return;
             end
             if eng.verbose, fprintf('preparing VarElim\n'); end
-            elim = setdiffPMTK(setdiffPMTK(eng.domain(eng.ordering),queryVars),eng.visVars);
+            elim = setdiff(setdiff(eng.ordering,queryVars),eng.visVars);
             if eng.verbose, fprintf('running VarElim\n'); end
             postQuery = VarElimInfEng.variableElimination(eng.Tfac,elim); % real work happens here
             [postQuery,Z] = normalizeFactor(postQuery);
@@ -72,13 +73,10 @@ classdef VarElimInfEng < InfEng
             if(numel(queryVars) ~= 1)
                error('you can only query a single continuous node at a time'); 
             end
-            if ~isempty(children(eng.model.G.adjMat,find(queryVars == eng.domain)))
-               error('unobserved, continuous, query nodes must be leaves'); 
-            end
             if ~isdirected(eng.model)
-               error('querying unobsesrved, continous nodes currently only supported in directed models'); 
+               error('querying unobsesrved, continuous nodes currently only supported in directed models'); 
             end
-            parent = eng.domain(parents(eng.model.G.adjMat,find(queryVars == eng.domain)));
+            parent = eng.domain(parents(eng.model.G.adjMat,canonizeLabels(queryVars,eng.domain)));
             if numel(parent) > 1
                error('a continuous node can have only one discrete parent');
             end

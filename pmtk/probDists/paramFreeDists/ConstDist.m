@@ -59,7 +59,8 @@ classdef ConstDist < ParamFreeDist
             grid on;
       end
       
-      function Tfac = convertToTabularFactor(obj,globalDomain,varargin)
+     
+      function Tfac = convertToTabularFactor(obj,child, ctsParents, dParents, visible, data, nstates,globalDomain) %#ok
           sz = sizePMTK(obj.point);
           ssz = sz(end);
           tmp = zeros(1,ssz);

@@ -6,10 +6,10 @@ classdef InputCPD < CondProbDist
   
   methods
     
-   function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates) %#ok
+   function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates,fullDomain) %#ok
      assert(isempty(ctsParents), 'no parents allowed for an inputCPD')
      assert(isempty(dParents), 'no parents allowed for an inputCPD')
-     assert(visible(child), 'node must be visible for an inputCPD')
+     assert(visible(canonizeLabels(child,fullDomain)), 'node must be visible for an inputCPD')
      Tfac = TabularFactor(1,child);  % return an empty TabularFactor
    end
    

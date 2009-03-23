@@ -111,8 +111,8 @@ classdef TabularFactor
               ns(Ti.domain) = Ti.sizes;
           end
           sz = prod(ns(dom));
-          if sz>10000
-              sprintf('creating tabular factor with %d entries', sz)
+          if sz>100000
+              fprintf('creating tabular factor with %d entries\n', sz);
           end
           T = TabularFactor(onesPMTK(ns(dom)), dom);
           for i=1:N

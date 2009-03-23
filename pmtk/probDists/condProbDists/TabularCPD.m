@@ -33,16 +33,17 @@ classdef TabularCPD < CondProbDist
         p = true;
       end
       
-      function q = nstates(CPD)  %#ok
+      function q = nstates(CPD)  
         q = CPD.sizes(end);
       end
       
-      function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates) %#ok
+      function Tfac = convertToTabularFactor(CPD, child, ctsParents, dParents, visible, data, nstates,fullDomain) 
         assert(isempty(ctsParents))
-        fam = [dParents(:)' child];
+        map = @(x)canonizeLabels(x,fullDomain);
+        fam = [rowvec(dParents) child];
         Tfac = TabularFactor(CPD.T, fam);
-        visFam = fam(visible(fam));
-        Tfac = slice(Tfac, visFam, data(visFam));
+        visFam = fam(visible(map(fam)));
+        Tfac = slice(Tfac, visFam, data(map(visFam)));
       end
       
       %{
