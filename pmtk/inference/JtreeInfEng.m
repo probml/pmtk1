@@ -162,7 +162,25 @@ classdef JtreeInfEng
         end
         
         function [postQuery,eng,Z] = handleContinuousQuery(eng,queryVars)
-           error('Querying unobserved continuous leaf nodes is not yet supported with JTreeInfEng - use VarElimInfEng instead'); 
+            % Handle queries on unobserved, continuous leaf nodes with discrete
+            % parents in directed models. The return type is a MixtureDist, (or
+            % subclass thereof), whose mixing weights are given by the
+            % posterior marginal of the discrete parent.
+            if(numel(queryVars) ~= 1)
+                error('you can only query a single continuous node at a time');
+            end
+            if ~isdirected(eng.model)
+                error('querying unobsesrved, continuous nodes currently only supported in directed models');
+            end
+            parent = eng.domain(parents(eng.model.G.adjMat,canonizeLabels(queryVars,eng.domain)));
+            if numel(parent) > 1
+                error('a continuous node can have only one discrete parent');
+            end
+            postQuery = extractLocalDistribution(eng.model,queryVars);
+            SS.counts = pmf(marginal(eng,parent));
+            assert(isa(postQuery,'MixtureDist'));
+            postQuery.mixingWeights = fit(postQuery.mixingWeights,'suffStat',SS);
+            Z = 1;
         end
         
         function ndx = findClique(eng,queryVars)
