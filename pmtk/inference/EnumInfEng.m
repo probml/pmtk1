@@ -30,6 +30,10 @@ classdef EnumInfEng < InfEng
       if isempty(eng.Tfac), error('must first call condition'); end
       postQuery = marginalize(eng.Tfac, queryVars);
     end
+    
+    function X = sample(eng,n)
+        error('Sampling is not implemented for EnumInfEng, use JtreeInfEng instead');
+    end
          
   end % methods
 

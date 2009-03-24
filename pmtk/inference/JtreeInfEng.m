@@ -17,6 +17,8 @@ classdef JtreeInfEng
         orderDown;              % the order in which the cliques were visited in the downwards pass of calibration. 
         verbose;
         model;                  % the client model
+        visVars; 
+        visVals;
         
    end
    
@@ -30,6 +32,8 @@ classdef JtreeInfEng
        
        function [eng, logZ, other] = condition(eng,model,visVars,visVals)
            verbose = eng.verbose;
+           eng.visVars = visVars;
+           eng.visVals = visVals;
            map = @(x)canonizeLabels(x,model.domain); % maps from model.domain to 1:d, the inverse map is model.domain(x)
            % barren nodes have already been removed by GmDist.marginal so
            % we just need to check that all continuous nodes are leaves and
@@ -75,16 +79,43 @@ classdef JtreeInfEng
            end
        end
        
-       %{
-       function samples = sample(eng,n)
-           samples = sample(normalizeFactor(TabularFactor.multiplyFactors(eng.factors)),n);
-       end
        
-       function logZ = lognormconst(eng)
-            [Tfac,Z] = normalizeFactor(TabularFactor.multiplyFactors(eng.factors)); %#ok
-            logZ = log(Z);
+       function samples = sample(eng,n)
+       % Forwards filtering, backwards sampling. Sample n complete
+       % configurations from full joint distribution, (or full conditional
+       % if evidence was provided to condition()).
+      
+           assert(eng.iscalibrated);                    % initial evidence has already been incorporated
+           samples = zeros(n,numel(eng.domain));        
+           root = eng.orderDown(1);
+           map = @(x)canonizeLabels(x,eng.domain);      % map from eng.domain to 1:d
+           rootClique = eng.cliques{root};              % All messages to root have already been added.
+           Xr = sample(normalizeFactor(rootClique),n);  % Xr(i,:) is the ith root sample, i=1:n
+           rootScope = rootClique.domain;
+           samples(:,map(rootScope)) = Xr;              % We can add these in bulk  
+           for i=1:n
+               cliques = enterEvidence(eng.cliques,rootScope, Xr(i,:)); % deal with the root
+               for j=2:numel(eng.orderDown)
+                  clq = cliques{eng.orderDown(j)};
+                  s = sample(clq);
+                  samples(i,map(clq.domain)) = s;
+                  cliques = enterEvidence(cliques,clq.domain,s);
+               end 
+           end  
+           if ~isempty(eng.visVars)
+               samples(:,map(eng.visVars)) = repmat(eng.visVals,1,n);
+           end
+           
+           function cliques = enterEvidence(cliques,visVars,visVals)
+               % slice up the cliques according to the sampled evidence.
+               for c=1:numel(cliques)
+                   commonVisVars = intersectPMTK(cliques{c}.domain,visVars);%ismember(cliques{c}.domain,visVars);
+                   if any(commonVisVars),
+                       cliques{c} = normalizeFactor(slice(cliques{c},commonVisVars,visVals(canonizeLabels(commonVisVars,visVars))));
+                   end
+               end
+           end
        end
-       %}
        
    end
     
@@ -197,6 +228,13 @@ classdef JtreeInfEng
             end
         end
         
+        
+       
+        
+        
+        
+        
+        
         function [eng] = calibrate(eng)
         % perform an upwards and downwards pass so that each clique represents 
         % the unnormalized distribution over the variables in its scope.
@@ -244,16 +282,31 @@ classdef JtreeInfEng
                 end
                 readyToSend(current) = false;
             end
-            
+             
             % update the cliques with all of the messages sent to them
             for c=1:ncliques
                eng.cliques{c} = TabularFactor.multiplyFactors(rm({eng.cliques{c},eng.messages{:,c}})); 
             end
            
-             %[junk,Z] = normalizeFactor(marginalize(eng.cliques{root},[]));
-            %logZ = log(Z);
-            
             eng.iscalibrated = true;
         end % end of calibrate method
     end % end of protected methods block
+    
+    
+    methods(Static = true)
+       
+        function testSampling()
+           setSeed(0);
+           %dgm = mkSprinklerDgm();
+           dgm = mkAlarmNetworkDgm;
+           n = 1000;
+           S1 = sample(dgm,n);
+           S2 = sample(dgm,n,[],[]);
+           figure; bar(normalize(sum(S1==1))); title('Forwards Sampling');
+           figure; bar(normalize(sum(S2==1))); title('Forwards Filtering, Backwards Sampling');
+           placeFigures;
+        end
+        
+        
+    end
 end % end of class

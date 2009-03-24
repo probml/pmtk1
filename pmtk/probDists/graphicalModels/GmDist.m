@@ -27,7 +27,7 @@ classdef GmDist
       
   
     function [postQuery, logZ, other] = marginal(model, queryVars, visVars, visVals)
-        if nargin < 3, visVars = []; visVals = []; end
+        if nargin < 4, visVars = []; visVals = []; end
          if(~iscell(queryVars))
              model = removeBarrenNodes(model,queryVars,visVars);
          end
@@ -36,9 +36,15 @@ classdef GmDist
             [postQuery] = marginal(eng, queryVars);
         else
             for q=1:length(queryVars)
-                postQuery{q} = marginal(eng, queryVars{q}); %#ok
+                postQuery{q} = marginal(eng, queryVars{q}); 
             end
         end
+    end
+    
+    function X = sample(model,nsamples,visVars,visVals)
+        if nargin < 4, visVars = []; visVals = []; end
+        eng = condition(model.infMethod, model, visVars, visVals);
+        X = sample(eng,nsamples);
     end
        
     

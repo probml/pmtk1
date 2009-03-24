@@ -107,13 +107,19 @@ classdef DgmDist < GmDist
             %obj = initInfEng(obj);
         end
         
-        function X = sample(obj, n)
+        function X = sample(obj, n, visVars,visVals)
             % X(i,:) = i'th forwards (ancestral) sample
-            d = ndimensions(obj);
-            X = zeros(n,d);
-            for j=1:d
-                pa = parents(obj.G, j);
-                X(:,j) = sample(obj.CPDs{j}, X(:,pa), n);
+            if(nargin < 3)
+                if nargin == 1; n = 1; end
+                d = ndimensions(obj);
+                X = zeros(n,d);
+                for j=1:d
+                    pa = parents(obj.G, j);
+                    X(:,j) = sample(obj.CPDs{j}, X(:,pa), n);
+                end
+            else
+                % use forwards filtering backwards sampling
+                X = sample@GmDist(obj,n,visVars,visVals);
             end
         end
         

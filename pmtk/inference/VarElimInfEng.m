@@ -59,6 +59,10 @@ classdef VarElimInfEng < InfEng
                 
         end
         
+        function X = sample(eng,n)
+           error('Sampling is not implemented for VarElimInfEng, use JtreeInfEng instead');
+        end
+        
         
     end % methods
     
