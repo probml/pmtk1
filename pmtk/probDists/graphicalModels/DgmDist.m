@@ -50,7 +50,7 @@ classdef DgmDist < GmDist
         end
         
         function [Tfacs, nstates] = convertToTabularFactors(obj,visVars,visVals)
-            if(nargin < 2), visVars = [];  visVals = {}; end
+            if(nargin < 2), visVars = [];  visVals = []; end
             map = @(x)canonizeLabels(x,obj.domain);  % maps from obj.domain to 1:d, inverse map is obj.domain(x)
             
             d = nnodes(obj.G);
