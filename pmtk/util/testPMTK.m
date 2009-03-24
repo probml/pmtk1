@@ -36,6 +36,7 @@ inheritedDiseaseDemo;                    pclear(0);
 invGammaSampleDemo;                      pclear(0);
 invWIplot1D;                             pclear(0);
 invWIplot2D;                             pclear(0);
+jtreeSampleTest;                         pclear(0);
 knn3ClassHeatMaps;                       pclear(0);
 laplacePlotDemo;                         pclear(0);
 %lingaussHybridDemo;                     pclear(0); % broken
