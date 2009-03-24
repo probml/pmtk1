@@ -20,9 +20,9 @@ classdef VarElimInfEng < InfEng
             if(nargin < 4), visVars = []; visVals = {};end
             map = @(x)canonizeLabels(x,model.domain); % maps domain to 1:d, inverse map is model.domain(x)
             % barren nodes have already been removed by GmDist.marginal so
-            % we just need to check that all continuous nodes are leaves and
+            % we just need to check that all unobserved continuous nodes are leaves and
             % error if not.           
-            if any(arrayfun(@(n) ~isleaf(model.G.adjMat, n), map(model.ctsNodes)))
+            if any(arrayfun(@(n) ~isleaf(model.G.adjMat, n), map(setdiff(model.ctsNodes,visVars))))
                 error('Unobserved, continuous, query nodes, must have no observed children.');
             end
             [eng.Tfac,nstates] = convertToTabularFactors(model,visVars,visVals);

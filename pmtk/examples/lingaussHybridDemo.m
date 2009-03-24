@@ -1,6 +1,5 @@
 %% Test linear Gaussian CPD with discrete parents
 %#testPMTK
-%#broken
 % C1 C2 D1 D2
 %  \ | / /  \
 %    Y      O
@@ -35,8 +34,8 @@ cparents = [1 2];
 dparents = [3 4];
 child = 5;
 CPDs{Y} =  LinGaussHybridCPD(w0, wc, wd,  sigma^2);
-%dgm = DgmDist(G, 'CPDs', CPDs, 'infMethod', VarElimInfEng()); % works
-dgm = DgmDist(G, 'CPDs', CPDs, 'infMethod', JtreeInfEng()); % works
+dgm = DgmDist(G, 'CPDs', CPDs, 'infMethod', VarElimInfEng()); % works
+%dgm = DgmDist(G, 'CPDs', CPDs, 'infMethod', JtreeInfEng()); % works
 %dgm = DgmDist(G, 'CPDs', CPDs, 'infMethod', EnumInfEng()); % cannot be used due to cts nodes
 
 % data
