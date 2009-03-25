@@ -1,5 +1,4 @@
 %% Simple Test of MvnMixDist
-cls;
 setSeed(13);
 m = mkRndParams(MvnMixDist(),2,4);
 X = sample(m,1000);

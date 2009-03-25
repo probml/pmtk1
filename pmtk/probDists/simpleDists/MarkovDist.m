@@ -1,5 +1,6 @@
 classdef MarkovDist < ParamDist
-    
+% A discrete state, discrete time, Markov chain
+
     properties
         startDist;                  % distribution over starting states: 
                                     % a DiscreteDist 
@@ -25,15 +26,23 @@ classdef MarkovDist < ParamDist
                support = model.transitionDist.support; 
             end
             model.support = support; 
+            model.transitionDist.support = support;
+            model.startDist.support = support;
         end
-        
-        
-        function model = fit(model,X)
-            % X may be an n-by-d matrix or an n-by-1 cell array
+          
+        function model = fit(model,varargin)
+        % X is an n-by-d matrix storing n sequences of length d, 
+        % or an n-by-1 cell array if lengths of the sequences differ. The
+        % values,(states) of X must be in model.support. 
             
+            if ischar(varargin{1}), X = process_options(varargin,'data',[]);
+            else                    X = varargin{1};                     end
+        
             if isempty(model.support)
                if iscell(X), model.support = unique(cell2mat(X'));
                else          model.support = unique(X(:)); end
+               model.startDist.support = model.support;
+               model.transitionDist.support = model.support;
             end
             map = @(x)canonizeLabels(x,model.support);
             if iscell(X), model.startDist = fit(model.StartDist,'data',cellfun(@(c)c(1),X));
@@ -59,7 +68,17 @@ classdef MarkovDist < ParamDist
             model.transitionDist = fit(model.transitionDist,'suffStat',SS);
         end
         
+        function model = mkRndParams(model,nstates,support)
+            if nargin < 3, support = 1:nstates; end
+            model.support = support;
+            model.startDist = mkRndParams(model.startDist,nstates);
+            model.startDist.support = support;
+            model.transitionDist = mkRndParams(model.transitionDist,nstates,nstates);
+            model.transitionDist.support = support;
+        end
+        
         function logp = logprob(model,X)
+        % logp(i) = log(p(X(i,:) | params)) or log(p(X{i} | params)    
             map = @(x)canonizeLabels(x,model.support);
             if iscell(X), X = cellfun(@(c)map(c),X);
             else          X = map(X); end
@@ -77,8 +96,6 @@ classdef MarkovDist < ParamDist
                end
                logp(i) = logPi(Xi(1)) + sumv(Njk.*logT,[1,2]);
             end
-            
-            
         end
             
         function X = sample(model,len,n)
@@ -86,7 +103,7 @@ classdef MarkovDist < ParamDist
              X = model.support(mc_sample(pmf(model.startDist)',pmf(model.transitionDist)',len,n));
         end
         
-        function pi = stationaryDistribution(model)
+        function pi = stationaryDistribution(model)    
            K = numel(model.support);
            T = pmf(model.transitionDist)';
            pi = DiscreteDist((ones(1,K) / (eye(K)-T+ones(K)))');
@@ -94,29 +111,5 @@ classdef MarkovDist < ParamDist
     
         
     end
-    
-    
-    
-    
-    methods(Static = true)
-        
-        function testClass()
-            setSeed(0);
-            sourceDist = MarkovDist(DiscreteDist(normalize(rand(3,1))),DiscreteDist(normalize(rand(3),1)),[5,6,7]);
-            X = sample(sourceDist,100,100);
-            testDist = fit(MarkovDist,X);
-            
-            pmf(sourceDist.startDist)
-            pmf(testDist.startDist)
-            pmf(sourceDist.transitionDist)
-            pmf(testDist.transitionDist)
-            
-            
-        end
-        
-    end
-    
-    
-    
     
 end

@@ -23,7 +23,6 @@ function makeTestPMTK()
               'end'
               ''
               'cls'
-              'clc'
               'fprintf(''PMTK Tests Passed\n'')'
               };
               

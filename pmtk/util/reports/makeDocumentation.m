@@ -30,7 +30,7 @@ function makeDocumentation(version,destination)
     fprintf('Zipping up contents...\n');
     zip(['doc',version],['.\doc',version,'\']);
     cd(currentDir);
-    cls; clc;
+    cls; 
     fprintf('Done generating PMTK documentation\n');
    
     

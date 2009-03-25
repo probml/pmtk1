@@ -47,6 +47,7 @@ linreg_MvnInvGammaDistTest;              pclear(0);
 logregFitCrabs;                          pclear(0);
 logregSAT;                               pclear(0);
 logreg_MvnDistTest;                      pclear(0);
+markovChainClassificationDemo;           pclear(0);
 mcmcMvn2dConditioning;                   pclear(0);
 misconceptionUGMdemo;                    pclear(0);
 mkAlarmNetworkDgm;                       pclear(0);
@@ -82,5 +83,4 @@ rethrow(ME)
 end
 
 cls
-clc
 fprintf('PMTK Tests Passed\n')
