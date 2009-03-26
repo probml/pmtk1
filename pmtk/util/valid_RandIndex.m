@@ -1,4 +1,7 @@
 function [AR,RI,MI,HI]=RandIndex(c1,c2)
+%#author David Corney
+%#url http://www.mathworks.com/matlabcentral/fileexchange/13916
+%
 %RANDINDEX - calculates Rand Indices to compare two partitions
 % ARI=RANDINDEX(c1,c2), where c1,c2 are vectors listing the 
 % class membership, returns the "Hubert & Arabie adjusted Rand index".
