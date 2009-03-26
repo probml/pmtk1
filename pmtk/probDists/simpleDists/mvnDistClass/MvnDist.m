@@ -461,6 +461,52 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
       prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
     end
 
+    function prior = mkPrior(model,data,varargin)
+      [prior, covtype] = process_options(varargin, 'prior', model.prior, 'covtype', model.covtype);
+      [n,d] = size(data);
+      switch class(prior)
+        case 'char'
+          switch lower(prior)
+            case 'niw'
+              kappa0 = 0.001; m0 = nanmean(data)';
+              % Add a small offsert to T0 in case diag(nanvar(data)) contains dimensions with zero empirical variance
+              nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
+              prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
+            case 'nig'
+              switch lower(covtype)
+                case 'diagonal'
+                  kappa0 = 0.001; m0 = nanmean(data)';
+                  % Here, n0 = 2 is the equivalent of d + 1 since we place an inverse gamma prior on each diagonal element
+                  nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
+                  prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+                case 'spherical'
+                  kappa0 = 0.001; m0 = nanmean(data);
+                  nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
+                  prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+                otherwise
+                  error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
+              end
+          end
+        case 'MvnInvWishartDist'
+          kappa0 = 0.001; m0 = nanmean(data)';
+          nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
+          prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
+        case 'MvnInvGammaDist'
+          switch lower(covtype)
+            case 'diagonal'
+              kappa0 = 0.001; m0 = nanmean(data)';
+              nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
+              prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+            case 'spherical'
+              kappa0 = 0.001; m0 = nanmean(data)';
+              nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
+              prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+            otherwise
+              error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
+          end
+      end
+    end
+
     function [mu, Sigma] = mapEstimateNiw(prior,  SS)
       m = Mvn_MvnInvWishartDist(prior);
       m = fit(m, 'suffStat',SS);
