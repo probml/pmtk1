@@ -440,27 +440,6 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
       end
     end
 
-
-  end % methods
-
-
-
-  methods(Static = true)
-
-    function prior = mkNiwPrior(data)
-      [n,d] = size(data);
-      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
-      nu0 = d+1; T0 = diag(nanvar(data)); % Smallest valid prior on Sigma
-      prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
-    end
-
-    function prior = mkNigPrior(data)
-      [n,d] = size(data);
-      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
-      nu0 = 3; b0 = nanvar(data) + 0.01*ones(size(nanvar(data))); % Smallest valid prior on Sigma
-      prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-    end
-
     function prior = mkPrior(model,data,varargin)
       [prior, covtype] = process_options(varargin, 'prior', model.prior, 'covtype', model.covtype);
       [n,d] = size(data);
@@ -505,6 +484,27 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
               error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
           end
       end
+    end
+
+
+  end % methods
+
+
+
+  methods(Static = true)
+
+    function prior = mkNiwPrior(data)
+      [n,d] = size(data);
+      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
+      nu0 = d+1; T0 = diag(nanvar(data)); % Smallest valid prior on Sigma
+      prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
+    end
+
+    function prior = mkNigPrior(data)
+      [n,d] = size(data);
+      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
+      nu0 = 3; b0 = nanvar(data) + 0.01*ones(size(nanvar(data))); % Smallest valid prior on Sigma
+      prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
     end
 
     function [mu, Sigma] = mapEstimateNiw(prior,  SS)
