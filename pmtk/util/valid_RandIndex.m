@@ -1,4 +1,4 @@
-function [AR,RI,MI,HI]=RandIndex(c1,c2)
+function [AR,RI,MI,HI]=valid_RandIndex(c1,c2)
 %#author David Corney
 %#url http://www.mathworks.com/matlabcentral/fileexchange/13916
 %
@@ -13,9 +13,8 @@ function [AR,RI,MI,HI]=RandIndex(c1,c2)
 
 %(C) David Corney (2000)   		D.Corney@cs.ucl.ac.uk
 
-if nargin < 2 | min(size(c1)) > 1 | min(size(c2)) > 1
+if nargin < 2 || min(size(c1)) > 1 || min(size(c2)) > 1
    error('RandIndex: Requires two vector arguments')
-   return
 end
 
 C=Contingency(c1,c2);	%form contingency matrix
@@ -46,9 +45,8 @@ HI=(A-D)/t1;	%Hubert 1977	%p(agree)-p(disagree)
 
 function Cont=Contingency(Mem1,Mem2)
 
-if nargin < 2 | min(size(Mem1)) > 1 | min(size(Mem2)) > 1
+if nargin < 2 || min(size(Mem1)) > 1 || min(size(Mem2)) > 1
    error('Contingency: Requires two vector arguments')
-   return
 end
 
 Cont=zeros(max(Mem1),max(Mem2));

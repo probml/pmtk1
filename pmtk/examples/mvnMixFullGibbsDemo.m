@@ -1,5 +1,4 @@
 %% (Full) Gibbs sampling from a mixture of multivariate normals
-%#testPMTK
 %#author Cody Severinski
 
 setSeed(0);
