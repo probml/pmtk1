@@ -28,6 +28,11 @@ classdef MvnDist < ParamDist
       %m.ctsNodes = 1:length(mu);
     end
 
+    function model = MvnDist(model, param)
+      model.mu = param.mu;
+      model.Sigma = param.Sigma;
+    end
+
     function mu = mean(model)
       mu = model.mu;
     end
