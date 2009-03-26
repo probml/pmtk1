@@ -37,6 +37,13 @@ classdef DiscreteDist  < ParamDist
       obj.prior = prior;
     end
 
+    function obj = setParams(obj, mix)
+      obj.T = mix;
+      if(nstates(obj) ~= size(mix,1))
+        obj.support = 1:size(mix,1);
+      end
+    end
+
     function d = ndistrib(obj)
       d = size(obj.T, 2);
     end
@@ -124,6 +131,7 @@ classdef DiscreteDist  < ParamDist
     %
     [X,SS,prior,priorStrength] = process_options(varargin,'data',[],'suffStat',[],...
       'prior', model.prior, 'priorStrength', 0);
+    % problem here - if the user calls fit with 'suffStat', then model.support is set to unique([]) <<-- not right
     if(isempty(model.support))
       model.support = unique(X(:));
     end
