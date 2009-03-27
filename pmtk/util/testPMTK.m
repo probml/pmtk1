@@ -39,6 +39,8 @@ invWIplot2D;                             pclear(0);
 jtreeSampleTest;                         pclear(0);
 knn3ClassHeatMaps;                       pclear(0);
 laplacePlotDemo;                         pclear(0);
+ldsLearningDemo;                         pclear(0);
+ldsTrackingDemo;                         pclear(0);
 lingaussHybridDemo;                      pclear(0);
 linregAllMethods;                        pclear(0);
 linregGaussVsNIG;                        pclear(0);
