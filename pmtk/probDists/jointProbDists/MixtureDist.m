@@ -181,18 +181,19 @@ classdef MixtureDist < ParamJointDist
       end
     end
 
-    function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates)
+    function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates,fullDomain)
       %function Tfac = convertToTabularFactor(model, domain,visVars,visVals)
       % domain = indices of each parent, followed by index of child
       % all of the children must be observed
       assert(isempty(ctsParents))
       assert(length(dParents)==1)
-      if visible(child)
-        T = exp(calcResponsibilities(model,data(child)));
+      map = @(x)canonizeLabels(x,fullDomain);
+      if visible(map(child))
+        T = exp(calcResponsibilities(model,data(map(child))));
         Tfac = TabularFactor(T,dParents);
       else
         % barren leaf removal
-        Tfac = TabularFactor(ones(1,nstates(dParents)), dParents);
+        Tfac = TabularFactor(ones(1,nstates(map(dParents))), dParents);
       end
     end
 

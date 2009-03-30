@@ -140,7 +140,7 @@ classdef DgmDist < GmDist
             CPDs = dgm.CPDs; CPDs(remove) = [];
             G = dgm.G.adjMat; 
             G(remove,:) = []; G(:,remove) = [];
-            dgmSmall = DgmDist(G,'CPDs',CPDs);
+            dgmSmall = feval(class(dgm),G,'CPDs',CPDs);
             dgmSmall.domain = setdiff(dgm.domain,nodes);
             dgmSmall.discreteNodes = dgmSmall.domain(dgmSmall.discreteNodes);
             dgmSmall.ctsNodes = dgmSmall.domain(dgmSmall.ctsNodes);

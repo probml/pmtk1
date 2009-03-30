@@ -367,7 +367,9 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
       postmu = postSigma*(A'*Syinv*(y-py.mu) + Smuinv*pmu.mu);
       postmu = MvnDist(postmu, postSigma);
       %evidence = mvnpdf(y(:)', (A*pmu.mu + py.mu)', py.Sigma + A*pmu.Sigma*A');
-      logevidence = logprob(MvnDist(A*pmu.mu + py.mu, py.Sigma + A*pmu.Sigma*A'), y(:)');
+      if nargout > 1
+        logevidence = logprob(MvnDist(A*pmu.mu + py.mu, py.Sigma + A*pmu.Sigma*A'), y(:)');
+      end
     end
 
 

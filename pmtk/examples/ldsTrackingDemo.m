@@ -17,7 +17,7 @@ groundTruth = LinearDynamicalSystemDist(...
     'startDist' ,startDist  );
 
 %% Sample from 'Ground Truth'
-setSeed(9);
+setSeed(8);
 nTimeSteps = 15;
 [Z,Y] = sample(groundTruth,nTimeSteps);
 %% Decode
@@ -32,6 +32,6 @@ set(gca,'XTick',[],'YTick',[]);
 plot(Z(1,:), Z(2,:), 'ks-','LineWidth',2);
 plot(Y(1,:), Y(2,:), 'g*','LineWidth',2.5);
 plot(Zhat(1,:), Zhat(2,:), 'rx:','LineWidth',2.5,'MarkerSize',10);
-for t=1:nTimeSteps, plotgauss2d(Zhat(1:2,t), ZhatCov(1:2, 1:2, t)); end
+for t=1:nTimeSteps, gaussPlot2d(Zhat(1:2,t), ZhatCov(1:2, 1:2, t),'b'); end
 hold off
 legend('true', 'observed', 'smoothed', 3)

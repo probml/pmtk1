@@ -60,6 +60,28 @@ classdef LinearDynamicalSystemDist < ParamDist
              end
         end
         
+        %
+                     % LinGuassCPD currently only works for 1d Gaussians
+%         function dgm = convertToDgm(model,t)
+%         % Convert this model to a DgmGaussDist by unrolling it for t
+%         % timesteps.
+%     
+%             CPD{1} = LinGaussCPD(1,mean(model.startDist),cov(model.startDist));
+%             CPD(2:t) = copy(LinGaussCPD(model.sysMatrix,zeros(model.stateSize,1),cov(model.sysNoise)),1,t-1);
+%             CPD(t+1:2*t) = copy(LinGaussCPD(model.obsMatrix,zeros(model.stateSize,1),cov(model.obsNoise)),1,t);
+% 
+%             G = zeros(2*t);
+%             for i=1:t-1
+%                G(i,i+1) = 1;
+%                G(i,i+t) = 1;
+%             end
+%             G(t,2*t) = 1;
+%             dgm = DgmGaussDist(G,'CPDs',CPD,'domain',1:2*t);
+%         
+% 
+%         end
+        
+        
         function [model,LL] = fit(model,data,varargin)
         % Fit the model via EM
         %
@@ -172,7 +194,8 @@ classdef LinearDynamicalSystemDist < ParamDist
         % Simulate a run of a (switching) stochastic linear dynamical
         % system. Z are the hidden states and Y are the observations. You
         % can optionally specify a controlSignal used in conjuction with
-        % model.inputMatrix
+        % model.inputMatrix. To simulate from a switching model,
+        % model.modelSwitch must be specified. 
         %
         % Z(t+1) = sysMatrix*Z(t) + inputMatrix*controlSignal(t) + w(t),  w ~ sysNoise,  z(0) ~ startDist
         %                       OR
@@ -189,6 +212,12 @@ classdef LinearDynamicalSystemDist < ParamDist
                 controlSignal                               );
             
         end
+        
+        
+       
+        
+        
+        
     end
         
     methods(Access = 'protected')
