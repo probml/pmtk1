@@ -2,14 +2,19 @@
 
 datasets = {'sachsDiscretized', 'newsgroupsUnique'};
 models = {DiscreteDist(), ...
-          DiscreteMixDist('nmixtures', 2, 'nrestarts', 1, 'verbose', true), ...
+          DiscreteMixDist('nmixtures', 1, 'nrestarts', 1, 'verbose', false),...
+          DiscreteMixDist('nmixtures', 2, 'nrestarts', 1, 'verbose', false), ...
           DgmTreeTabular()};
-modelNames = {'factored', 'mix2', 'tree'};
+modelNames = {'factored', 'mix1', 'mix2', 'tree'};
   
+% factored and mix1 are the same model, since there is just 1 mixture component.
+% We include this to check correctness. Note that mix1 is fit with EM
+% which is slower. 
+
 for d=1:length(datasets)
   load(datasets{d}); % X is an n x d matrix of discrete data
 
-  Nfolds = 5;
+  Nfolds = 2;
   N = size(X,1);
   setSeed(1);
   randomizeOrder = true;
