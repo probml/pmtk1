@@ -292,7 +292,7 @@ classdef ModelDist
                 if(obj.verbose)
                     t = toc;
                     str = sprintf('Model: %d of %d\nElapsed Time: %d minute(s), %d seconds',i,nmodels,floor(t/60),floor(rem(t,60))); 
-                    waitbar((i-1)/nmodels,obj.progressBar,str); 
+                    %waitbar((i-1)/nmodels,obj.progressBar,str); 
                 end
                 m = obj.models{i};
                 results(i).model = i;
@@ -307,7 +307,7 @@ classdef ModelDist
             if obj.verbose
               t = toc;  
               str = sprintf('Finishing...\nElapsed Time: %d minute(s), %d seconds',floor(t/60),floor(rem(t,60)));
-              waitbar(1,obj.progressBar,str);
+              %waitbar(1,obj.progressBar,str);
               pause(0.5);
             end
         end
