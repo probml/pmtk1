@@ -3,10 +3,12 @@
 setSeed(1);
 lookfor   = 2:4;    % Confine task to digits 2:4 (must be a subset of 0:9)
 nexamples = 2000;   % max 60000
-[X,j,y,j] = setupMnist(true,nexamples,0);                                   %#ok
+binary = true;
+ntest = 0;
+[X,j,y,j] = setupMnist(binary,nexamples,ntest);    %#ok
 clear j;
 ndx       = ismember(y,lookfor);
-X         = double(X(ndx,:));
+X         = double(X(ndx,:)); % 603 x 784, each entry is 0 or 1
 clear y; % unsupervised!
 %% Fit
 m = fit(DiscreteMixDist('nmixtures',numel(lookfor)),'data',X,'nrestarts',1);

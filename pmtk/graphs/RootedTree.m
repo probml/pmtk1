@@ -9,7 +9,7 @@ classdef RootedTree <  DirectedGraph
   
  methods
    function obj = RootedTree(adjMat, root)
-     % Adjmat should be the adjmat of a tree
+     % Adjmat should be the adjmat of an undirected tree
      % All arrows point away from the root (root defaults to 1)
      if nargin == 0, return; end
      if nargin < 2, root = 1; end
@@ -17,7 +17,8 @@ classdef RootedTree <  DirectedGraph
      n = length(adjMat);
      T = sparse(n,n); % not the same as T = sparse(n) !
      directed = 0;
-     [d, obj.preorder, obj.postorder, hascycle, f, obj.parent] = dfs(obj, root, directed);
+     verbose = true;
+     [d, obj.preorder, obj.postorder, hascycle, f, obj.parent] = dfs(obj.adjMat, root, directed, verbose);
      if hascycle
        warning('PMTK:tree', 'not a tree!')
      end

@@ -1,5 +1,9 @@
 function [A, cost] = minimum_spanning_tree(C1, C2)
-%
+
+error('deprecated; use MinimumSpanningTree instead')
+% there seems to be a bug - it does not always return a tree even if every
+% edge weight is non-zero; some nodes can be isolated
+
 % Find the minimum spanning tree using Prim's algorithm.
 % C1(i,j) is the primary cost of connecting i to j.
 % C2(i,j) is the (optional) secondary cost of connecting i to j, used to break ties.

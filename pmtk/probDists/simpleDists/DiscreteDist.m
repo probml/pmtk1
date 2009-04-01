@@ -37,7 +37,9 @@ classdef DiscreteDist  < ParamDist
       obj.prior = prior;
     end
 
+    
     function obj = setParams(obj, mix)
+      error('deprecated') % KPM 27Mar09
       obj.T = mix;
       if(nstates(obj) ~= size(mix,1))
         obj.support = 1:size(mix,1);
@@ -77,6 +79,7 @@ classdef DiscreteDist  < ParamDist
         for j=1:d
             L(:,j) = log(eps + obj.T(X(:,j),j)); % requires XX to be in 1..K
         end
+        L = sum(L,2); % KPM 31 Mar 09
     end
     
     function p = predict(obj)
@@ -96,6 +99,7 @@ classdef DiscreteDist  < ParamDist
     function SS = mkSuffStat(obj, X,weights)
         K = nstates(obj); d = size(X,2);
         counts = zeros(K, d);
+        X = double(full(X));
         if(nargin < 3)
             for j=1:d
                 counts(:,j) = colvec(histc(X(:,j), obj.support));
@@ -133,7 +137,7 @@ classdef DiscreteDist  < ParamDist
       'prior', model.prior, 'priorStrength', 0);
     % problem here - if the user calls fit with 'suffStat', then model.support is set to unique([]) <<-- not right
     if(isempty(model.support))
-      model.support = unique(X(:));
+      model.support = unique(double(full(X(:))));
     end
     if isempty(SS), SS = mkSuffStat(model, X); end
     K = nstates(model); d = ndistrib(model);

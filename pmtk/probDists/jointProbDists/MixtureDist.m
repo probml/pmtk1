@@ -8,7 +8,7 @@ classdef MixtureDist < ParamJointDist
   properties
     distributions;      % a cell array storing the distributions
     mixingWeights;      % DiscreteDist or Discrete_DirichletDist
-    verbose = true;
+    verbose = false;
     transformer;        % data preprocessor
     nrestarts = 5;      % number of random restarts
   end

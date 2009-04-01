@@ -11,9 +11,10 @@ function [canonized,support] = canonizeLabels(labels,support)
 % ans =
 %      3     2     3     3     1     2     3     1
 %%
-%  canonizeLabels([3,5,8,9,0,0,3,-1,2,4,36])
-% ans =
-%      4     6     7     8     2     2     4     1     3     5     9
+%canonizeLabels([3,5,8,9; 0,0,-3,2])
+%ans =
+%     4     5     6     7
+%     2     2     1     3
 %
 %%
 % Suppose we know the support is say 10:20 but our labels are [11:15,17,19] and

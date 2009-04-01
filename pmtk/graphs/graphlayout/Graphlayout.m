@@ -4,6 +4,9 @@ classdef Graphlayout < handle
 % the layout algorithm. The best layout algorithms require that graphViz be
 % installed, available free at <http://www.graphviz.org/Download..php>.
 %
+% Example:
+% s = Graphlayout('adjMatrix',adj,'nodeLabels',labels,'nodeColors',colors);
+%
 % Currently requires 2008a, (although we may be able to make it work under
 % 2007b). 
 % 
