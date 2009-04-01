@@ -2,7 +2,6 @@
 
 try
 
-
 bernoulliDistTest;                       pclear(0);
 bernoulli_betaSequentialUpdate;          pclear(0);
 binom_betaPostPredDemo;                  pclear(0);

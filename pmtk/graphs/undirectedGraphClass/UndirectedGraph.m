@@ -131,9 +131,12 @@ classdef UndirectedGraph < Graph
      function [obj2, cost] = minSpanTree(obj)
      % minimum weight spanning tree, where obj.adjMat(i,j) is the weight from i->j
      % Set obj.adjMat = -1*obj.adjMat first to find max spanning tree.
-     % Uses Prim's algorithm, which is O(d^2)
-     [A, cost] = minimum_spanning_tree(obj.adjMat);
+     % Uses Kruskal's algorithm, which is O(d^2)
+     W = obj.adjMat;
+     W((W==0))=inf; % absent edges cannot be used
+     [A, cost] = minimumSpanningTree(W);
      obj2 = Tree(A);
+     %[A2, cost2] = minimum_spanning_tree(obj.adjMat);
      end
 
   end

@@ -1,6 +1,6 @@
 function [A, cost] = minimum_spanning_tree(C1, C2)
 
-error('deprecated; use MinimumSpanningTree instead')
+%error('deprecated; use MinimumSpanningTree instead')
 % there seems to be a bug - it does not always return a tree even if every
 % edge weight is non-zero; some nodes can be isolated
 

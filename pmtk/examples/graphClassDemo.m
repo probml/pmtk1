@@ -65,5 +65,5 @@ A = zeros(9,9);
 A(1,2)=4; A(2,3) = 8; A(3,4) = 7; A(4,5) = 9; A(4,6) = 14; A(5,6)=10;
 A(1,8)=8; A(8,9)=7; A(9,3)=2; A(9,7)=6; A(8,7)=1; A(3,6)=4; A(7,6)=2;
 A = mkGraphSymmetric(A);
-[T,cost] = minSpanTree(UndirectedGraph(A))
+[T,cost] = minSpanTree(UndirectedGraph(A));
 assert(cost==37)
