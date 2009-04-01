@@ -5,4 +5,4 @@ Run loadPMTK.m to initialize the PMTK path.
 
 To test that all of the PMTK functionality is working on your system, run the 
 testPMTK.m script. 
- 
+   
