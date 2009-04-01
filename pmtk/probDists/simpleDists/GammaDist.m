@@ -50,17 +50,19 @@ classdef GammaDist < ParamDist
       logZ = gammaln(obj.a) - obj.a .* log(obj.b);
     end
 
-    function p = logprob(obj, X)
-      % p(i,j) = log p(x(i) | params(j))
+    function [L,Lij] = logprob(obj, X)
+      % L(i) = sum_j logprob(X(i,j) | params(j))
+      % Lij(i,j) = logprob(X(i,j) | params(j))
       d = ndimensions(obj);
-      x = X(:);
-      n = length(x);
-      p = zeros(n,d);
+      n = size(X,1);
+      Lij = zeros(n,d);
       logZ = lognormconst(obj);
       for j=1:d
         a = obj.a(j); b = obj.b(j);
-        p(:,j) = (a-1) * log(x) - x.*b - logZ(j);
+        x = X(:,j);
+        Lij(:,j) = (a-1) * log(x) - x.*b - logZ(j);
       end
+       L = sum(Lij,2);
     end
 
     function obj = fit(obj, varargin)

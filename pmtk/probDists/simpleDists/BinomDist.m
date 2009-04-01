@@ -40,25 +40,23 @@ classdef BinomDist < ParamDist
        end
      end
     
-     function p = logprob(obj, X)
-     % p(i,j) = log(p(X(i)|params(j))) or log(p(X(i,j)|params(j)))
-     % for X(i,j) in 0:N(j)
-     % eg., logprob(binomdist(10,[0.5 0.1]), 1:10)
-     %  p = log(binopdf(X, obj.N, obj.mu(1)));
-         
-         d = ndistrib(obj);
-         
-         n = size(X,1);
-         if size(X,2) == 1, X = repmat(X, 1, d); end
-         p = zeros(n, d);
-         for j=1:d
-             % LOG1P  Compute log(1+z) accurately.
-             Nj = obj.N(1);
-             Xj = X(:,j);
-             p(:,j) = nchoosekln(Nj, Xj) + Xj.*log(obj.mu(j)) + (Nj - Xj).*log1p(-obj.mu(j));
-         end
+     function [L,Lij] = logprob(obj, X)
+       % L(i) = sum_j logprob(X(i,j) | params(j))
+       % Lij(i,j) = logprob(X(i,j) | params(j))
+       % for X(i,j) in 0:N(j)
+       d = ndistrib(obj);
+       n = size(X,1);
+       if size(X,2) == 1, X = repmat(X, 1, d); end
+       Lij = zeros(n, d);
+       for j=1:d
+         % LOG1P  Compute log(1+z) accurately.
+         Nj = obj.N(1);
+         Xj = X(:,j);
+         Lij(:,j) = nchoosekln(Nj, Xj) + Xj.*log(obj.mu(j)) + (Nj - Xj).*log1p(-obj.mu(j));
+       end
+       L = sum(Lij,2);
      end
-     
+
      function m = mean(obj)
        m = obj.N .* obj.mu;
      end

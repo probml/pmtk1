@@ -20,18 +20,20 @@ classdef UnifDist < ParamDist
     end
     
     
-    function L = logprob(obj, X)
-      % L(i,j) = log p(X(i) | params(j))
+    function [L,Lij] = logprob(obj, X)
+      % L(i) = sum_j logprob(X(i,j) | params(j))
+      % Lij(i,j) = logprob(X(i,j) | params(j))
       [N d] = size(X);
       d = ndimensions(obj);
       if d==1, X = X(:); end
-      L = zeros(N,d);
+      Lij = zeros(N,d);
       for j=1:d
         valid = find( (X(:,j) >= obj.lo(j)) & (X(:,j) <= obj.hi(j)) );
         %prob(valid,j) = 1/(obj.hi(j)-obj.lo(j));
-        L(valid,j) = -log(obj.hi(j)-obj.lo(j));
-        L(~valid,j) = NaN;
+        Lij(valid,j) = -log(obj.hi(j)-obj.lo(j));
+        Lij(~valid,j) = NaN;
       end
+      L = sum(Lij,2);
     end
     
     function m = mean(obj)

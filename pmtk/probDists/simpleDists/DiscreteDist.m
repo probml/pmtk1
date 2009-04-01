@@ -68,18 +68,18 @@ classdef DiscreteDist  < ParamDist
         v = obj.T.*(1-obj.T);
     end
   
-    function L = logprob(obj,X)
-        %L(i,j) = logprob(X(i) | T(j)) or logprob(X(i,j) | T(j)) for X(i,j)
-        %in support
+    function [L,Lij] = logprob(obj,X)
+      % L(i) = sum_j logprob(X(i,j) | params(j))
+      % Lij(i,j) = logprob(X(i,j) | params(j))
         n = size(X,1);
         d = ndistrib(obj);
         if size(X,2) == 1, X = repmat(X, 1, d); end
-        L = zeros(n,d);
+        Lij = zeros(n,d);
         X = canonizeLabels(X,obj.support);
         for j=1:d
-            L(:,j) = log(eps + obj.T(X(:,j),j)); % requires XX to be in 1..K
+            Lij(:,j) = log(eps + obj.T(X(:,j),j)); 
         end
-        L = sum(L,2); % KPM 31 Mar 09
+        L = sum(Lij,2);
     end
     
     function p = predict(obj)

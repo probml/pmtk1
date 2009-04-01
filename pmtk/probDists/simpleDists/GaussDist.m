@@ -72,17 +72,26 @@ classdef GaussDist < ParamDist
        logZ = log(sqrt(2*pi*obj.sigma2));
      end
      
-     function p = logprob(obj, X)
-       % p(i,j) = log p(X(i) | params(j)) or log p(X(i,j) | params(j));
+     function [L,Lij] = logprob(obj, X)
+       % L(i) = sum_j logprob(X(i,j) | params(j))
+       % Lij(i,j) = logprob(X(i,j) | params(j))
        n = size(X,1);
        d = ndistrib(obj);
        if size(X,2) == 1, X = repmat(X, 1, d); end
-       p = zeros(n,d);
        logZ = lognormconst(obj);
-       for j=1:d % can be vectorized
+       LZ = repmat(logZ(:)', n, 1);
+       M = repmat(obj.mu(:)', n, 1);
+       S2 = repmat(obj.sigma2(:)', n, 1);
+       Lij = -0.5*(M-X).^2 ./ S2 - LZ;
+       L = sum(Lij,2);
+       %{
+       LijSlow = zeros(n,d);
+       for j=1:d %  
          xj = X(:,j);
-         p = (-0.5/obj.sigma2(j) .* (obj.mu(j) - xj).^2) - logZ(j);
+         LijSlow(:,j) = (-0.5/obj.sigma2(j) .* (obj.mu(j) - xj).^2) - logZ(j);
        end
+       assert(approxeq(Lij, LijSlow))
+       %}
      end
 
      function obj = fit(obj, varargin)

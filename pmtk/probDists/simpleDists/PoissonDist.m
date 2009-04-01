@@ -46,18 +46,18 @@ classdef PoissonDist < ParamDist
        end
      end
     
-     function p = logprob(obj, X, paramNdx)
-       % p(i,j) = log p(x(i) | params(j))
+     function [L,Lij] = logprob(obj, X)
+        % L(i) = sum_j logprob(X(i,j) | params(j))
+        % Lij(i,j) = logprob(X(i,j) | params(j))
        checkParamsAreConst(obj)
        d = ndimensions(obj);
-       if nargin < 3, paramNdx = 1:d; end
-       x = X(:);
-       n = length(x);
-       p = zeros(n,length(paramNdx));
-       for jj=1:length(paramNdx)
-         j = paramNdx(jj);
-         p(:,jj) = x .* log(obj.lambda(j)) - factorialln(x) - obj.lambda(j);
+       n = size(X,2);
+       Lij = zeros(n,d);
+       for j=1:d
+         x = X(:,j);
+         Lij(:,j) = x .* log(obj.lambda(j)) - factorialln(x) - obj.lambda(j);
        end
+       L = sum(Lij,2);
      end
 
 

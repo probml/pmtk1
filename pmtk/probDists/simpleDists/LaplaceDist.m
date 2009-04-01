@@ -49,15 +49,18 @@ classdef LaplaceDist < ParamDist
        logZ = log(2*obj.b);
      end
      
-     function p = logprob(obj, X)
-       % p(i,j) = log p(X(i) | params(j))
+     function [L,Lij] = logprob(obj, X)
+       % L(i) = sum_j logprob(X(i,j) | params(j))
+      % Lij(i,j) = logprob(X(i,j) | params(j))
        d = ndimensions(obj);
-       n = length(X);
-       p = zeros(n,d);
+       n = size(X,1);
+       Lij = zeros(n,d);
        logZ = lognormconst(obj);
        for j=1:d
-         p(:,j) = -(abs(X-obj.mu(j))/obj.b(j)) - logZ(j);
+         x = X(:,j);
+         Lij(:,j) = -(abs(x-obj.mu(j))/obj.b(j)) - logZ(j);
        end
+       L = sum(Lij,2);
      end
      
      function xrange = plotRange(obj, sf)
