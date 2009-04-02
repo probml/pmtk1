@@ -22,9 +22,9 @@ classdef Graph
    
    function h=draw(obj)
        if obj.directed
-         h = Graphlayout('adjMatrix',obj.adjMat,'currentLayout',Treelayout());
+         h = Graphlayout('adjMatrix',obj.adjMat); %'currentLayout',Treelayout());
        else
-         h = Graphlayout('adjMatrix',obj.adjMat,'undirected',true,'currentLayout',Treelayout());
+         h = Graphlayout('adjMatrix',obj.adjMat,'undirected',true); %'currentLayout',Treelayout());
        end
      
    end  

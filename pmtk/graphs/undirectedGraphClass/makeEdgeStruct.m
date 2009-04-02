@@ -33,6 +33,7 @@ for e = 1:nEdges
 end
 
 edge = 1;
+E = [];
 for n = 1:nNodes
     V(n) = edge;
     nodeEdges = sort(nei(n,1:nNei(n)));

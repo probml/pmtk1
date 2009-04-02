@@ -4,6 +4,7 @@ classdef UgmGaussDist < UgmDist
     properties
         mu;
         Sigma;
+        precMat;
     end
     
     %%  Main methods
@@ -14,7 +15,9 @@ classdef UgmGaussDist < UgmDist
         if nargin < 1, G = []; end
         if nargin < 2, mu = []; end
         if nargin < 3, Sigma = []; end
-        obj.G = G; obj.mu = mu; obj.Sigma = Sigma;
+        if isa(G, 'double'), G = UndirectedGraph(G); end
+        obj.G = G;
+        obj.mu = mu; obj.Sigma = Sigma;
         obj.domain = 1:length(mu);
         obj.infMethod = GaussInfEng();
       end
@@ -42,8 +45,8 @@ classdef UgmGaussDist < UgmDist
         obj.mu = randn(d,1);
         A = obj.G.adjMat;
         prec = randpd(d) .* A;
-        prec = mkDiagDominant(prec);
-        obj.Sigma = inv(prec);
+        obj.precMat = mkDiagDominant(prec);
+        obj.Sigma = inv(obj.precMat);
       end
 
       function L = logprob(obj, X)
@@ -64,25 +67,35 @@ classdef UgmGaussDist < UgmDist
         % m = fit(model, 'name1', val1, 'name2', val2, ...)
         % Arguments are
         % data - data(i,:) = case i
+        % 'SS' - sufficient statistics, SS.C, SS.mu
         [X, SS] = process_options(...
           varargin, 'data', [], 'suffStat', []);
-        obj.mu = mean(X);
-        [precMat, covMat] = covselIpf(cov(X), obj.G.adjMat);
-        obj.Sigma = covMat;
+        if nnodes(obj.G)==0, obj = fitStructure(obj, 'data', X); end
+        if isempty(SS)
+          SS.mu = mean(X);
+          SS.N = size(X,1);
+          SS.S = cov(X);
+        end
+        obj.mu = SS.mu;
+        [obj.precMat, iter] = ggmFitHtf(SS.S, obj.G.adjMat); %#ok
+        obj.Sigma = inv(obj.precMat);
       end
 
       function obj = fitStructure(obj, varargin)
-        [method, lambda, X] = process_options(...
-          varargin, 'method', 'L1BCD', 'lambda', 1e-3, 'data', []);
-        C = cov(X);
+        [method, lambda, X, W] = process_options(...
+          varargin, 'method', 'glasso', 'lambda', 1e-3, 'data', [], ...
+          'warmstartCov', []);
+        S = cov(X);
+        obj.mu = mean(X);
         switch method
-          case 'L1BCD', [precMat, covMat] =ggmLassoCoordDescQP(C, lambda);
-            obj.mu = mean(X);
-            obj.Sigma = covMat;
-            obj.G = UndirectedGraph(precmatToAdjmat(precMat));
+          case 'glasso',
+            [obj.precMat, obj.Sigma] = ggmLassoHtf(S, lambda, W);
+          case 'glassoR',
+            [obj.precMat, obj.Sigma] = ggmLassoR(S, lambda);
           otherwise
             error(['unknown method ' method])
         end
+        obj.G = UndirectedGraph(precmatToAdjmat(obj.precMat));
       end
 
       function X = sample(obj, n)
