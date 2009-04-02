@@ -1,48 +1,37 @@
-%% Learn GGM structure using graphical lasso
+%% Learn GGM structure using graphical lasso on flow cytometry data
 % HTF 2e p637
 
-load('sachsCtsHTF.mat'); % X: 7466 x 11, labels
-%X = standardize(X);
-%X = normalize(X);
-%lambdas = [36 27];
-lambdas = [logspace(5,1,5) 0]
-C = [];
-debug = false;
+load('sachsCtsHTF.mat'); % 7466 x 11
+lambdas = [36 27 7 0];
+%lambdas = [logspace(5,0,5) 0];
+S = cov(X)/1000; % same as http://www-stat.stanford.edu/~tibs/ElemStatLearn/datasets/sachs.info
+debug = true;
 folder = 'C:\kmurphy\PML\pdfFigures';
 doPrint = true;
 
 for i=1:length(lambdas)
   lambda = lambdas(i);
- 
-  tic
-  M = fitStructure(UgmGaussDist, 'data', X, 'lambda', lambda, ...
-    'warmStartCov', C, 'method', 'glasso');
-  timM(i) = toc;
-  %C = M.Sigma; % warm starting gives discrepnacies with R
-  P = M.precMat;
-  A = M.G.adjMat;
-  %drawGraph(M);
-  %A = precmatToAdjmat(P, 1e-9);
-  Graphlayout('adjMatrix', A, 'undirected', true, 'currentLayout', CircleLayout());
-  nzeros(i) = sum(A(:));
-  ttl=sprintf('lambda=%3.2f, nnz=%d', lambda, nzeros(i))
+  [P] = ggmLassoHtf(S, lambda);
+  A = precmatToAdjmat(P, 1e-9);
+  %M = fitStructure(UgmGaussDist, 'data', X, 'lambda', lambda);
+  %A = M.G.adjMat;
+  nnzeros(i) = sum(A(:));
+  ttl=sprintf('lambda=%3.2f, nnz=%d', lambda, nnzeros(i))
+  Graphlayout('adjMatrix', A, 'undirected', true, ...
+    'nodeLabels', labels, 'currentLayout', CircleLayout());
   title(ttl)
-  %title(sprintf('log(lambda)=%5.3f', log(lambda))); 
-  %figure; imagesc(P); title(sprintf('lambda=%3.2f', lambda)); colorbar
+  %figure; imagesc(P); colorbar; title(ttl);
   precMat{i} = P;
   if doPrint
-    fname = fullfile(folder, sprintf('glassoSachs%d.pdf',nzeros(i))); 
+    fname = fullfile(folder, sprintf('glassoSachs%d.pdf',lambda)); 
     pdfcrop; print(gcf, '-dpdf', fname);
   end
   
   if debug
-  tic
-  MR = fitStructure(UgmGaussDist, 'data', X, 'lambda', lambda, ...
-    'method', 'glassoR');
-  timR(i) = toc;
-  PR = MR.precMat;
-  AR = MR.G.adjMat;  
-  %assert(approxeq(A, AR)) % may be false due to rounding of precmat to 0,1
-  assert(max(P(:)- PR(:)) < 0.01);
+    tol = 1e-2;
+    [PR] = ggmLassoR(S, lambda);
+    assert(max(P(:)- PR(:)) < tol);
+    [PM] = ggmLassoCoordDescQP(S, lambda);
+    assert(max(P(:)- PM(:)) < tol);
   end
 end

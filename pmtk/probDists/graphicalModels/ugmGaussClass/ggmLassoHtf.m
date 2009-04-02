@@ -68,7 +68,7 @@ while (m <= MaxOuter) && (dW > mytol)
           for j = 1:p-1
             notj = [1:j-1 j+1:p-1];
             res = s12(j) - V(notj,j)'*B(notj);
-            B(j) = sign(res)*max([abs(res)-lambda 0])/V(j,j);
+            B(j) = sign(res)*max([abs(res)-lambda 0])/V(j,j); % soft threshold
           end
           dB = mean(abs(B-B0))/(mean(abs(B0)) + 1e-16);
           n = n + 1;
