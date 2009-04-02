@@ -1,12 +1,13 @@
 classdef Graphlayout < handle    
-% Visualize a directed graph in a Matlab figure window by specifying an
+% Visualize a graph in a Matlab figure window by specifying an
 % adjacency matrix and optionally node labels, descriptions, colors and the
 % the layout algorithm. The best layout algorithms require that graphViz be
 % installed, available free at <http://www.graphviz.org/Download..php>.
 %
-% Example:
-% s = Graphlayout('adjMatrix',adj,'nodeLabels',labels,'nodeColors',colors);
-%
+% Examples:
+% freeze(Graphlayout(adjMat))
+% Graphlayout('adjMatrix',adj,'nodeLabels',labels,'nodeColors',colors);
+% 
 % Currently requires 2008a, (although we may be able to make it work under
 % 2007b). 
 % 
@@ -158,6 +159,7 @@ classdef Graphlayout < handle
             set(gca,'XTick',[],'YTick',[]);
             box off;
             delete tmp.png;
+            close(obj.fig);
         end
         
         function redraw(obj)

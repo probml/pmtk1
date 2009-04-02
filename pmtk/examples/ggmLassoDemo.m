@@ -15,10 +15,11 @@ for i=1:length(lambdas)
   A = precmatToAdjmat(P, 1e-9);
   %M = fitStructure(UgmGaussDist, 'data', X, 'lambda', lambda);
   %A = M.G.adjMat;
-  nnzeros(i) = sum(A(:));
-  ttl=sprintf('lambda=%3.2f, nnz=%d', lambda, nnzeros(i))
-  Graphlayout('adjMatrix', A, 'undirected', true, ...
+  nedges(i) = sum(A(:))/2;
+  ttl=sprintf('lambda=%3.2f, nedges=%d', lambda, nedges(i))
+  g=Graphlayout('adjMatrix', A, 'undirected', true, ...
     'nodeLabels', labels, 'currentLayout', CircleLayout());
+  f=freeze(g); % convert to regular figure
   title(ttl)
   %figure; imagesc(P); colorbar; title(ttl);
   precMat{i} = P;
