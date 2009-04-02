@@ -156,8 +156,7 @@ classdef Graphlayout < handle
             print tmp.png -dpng -r300
             fig = figure;
             image(imread('tmp.png'));
-            set(gca,'XTick',[],'YTick',[]);
-            box off;
+            axis off;
             delete tmp.png;
             close(obj.fig);
         end
