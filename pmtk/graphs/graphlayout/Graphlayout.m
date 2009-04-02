@@ -149,6 +149,17 @@ classdef Graphlayout < handle
            obj.paperCrop();
         end
         
+        function fig = freeze(obj)
+        % Freeze the current image into a regular Matlab figure    
+            figure(obj.fig);
+            print tmp.png -dpng -r300
+            fig = figure;
+            image(imread('tmp.png'));
+            set(gca,'XTick',[],'YTick',[]);
+            box off;
+            delete tmp.png;
+        end
+        
         function redraw(obj)
         % Redraw the graph. (You could also call draw() again but then the
         % window is recreated as well and it doesn't look as nice).
@@ -341,14 +352,14 @@ classdef Graphlayout < handle
         
         function createAxes(obj)
         % Create the axes upon which the graph will be displayed.     
-            obj.ax = axes('Parent',obj.fig,'box','on','UserData','main');
+            obj.ax = axes('Parent',obj.fig,'box','off','UserData','main');
             outerpos = get(obj.ax,'OuterPosition');
             
             axis manual
             if(obj.square)
                 axis square
             end
-            set(obj.ax,'Position',outerpos,'XTick',[],'YTick',[],'LineWidth',3);
+            set(obj.ax,'Position',outerpos,'XTick',[],'YTick',[],'LineWidth',0.5);
             set(obj.ax,'ButtonDownFcn',@obj.axPressed);
         end
         
