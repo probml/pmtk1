@@ -16,6 +16,20 @@ classdef MvnInvGammaDist < ParamDist
             m.mu = mu; m.Sigma = Sigma; m.a = a; m.b = b;
         end
 
+        function m = setParam(m, param)
+          m.mu = param.mu;
+          m.Sigma = param.Sigma;
+          m.a = param.a;
+          m.b = param.b;
+        end
+
+        function m = updateParam(m, param)
+          m.mu = param.mu;
+          m.Sigma = param.Sigma;
+          m.a = param.a;
+          m.b = param.b;
+        end
+
     		function m = mode(obj)
 					d = length(obj.mu);
    		   	% Returns a structure
