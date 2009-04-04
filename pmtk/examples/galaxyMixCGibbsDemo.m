@@ -1,5 +1,4 @@
 %% Collapsed Gibbs sampling from a Galaxy data fitted to a mixture of six normal distributions
-%#testPMTK
 %#author Cody Severinski
 
 doPlot = true;
