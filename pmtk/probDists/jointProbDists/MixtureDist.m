@@ -133,12 +133,12 @@ classdef MixtureDist < ParamJointDist
       keep = 1;
       % Get samples
       for itr=1:Nsamples
-        % Contains pred.mu(k,i) = p(Z_k | data(i,:), params).  We sample an instance from this
+        if(mod(itr,500) == 0)
+          fprintf('Collected %d samples \n', itr)
+        end
         pred = predict(model,data);
-        %mcmc.latent(:,itr) = colvec(sample(pred,1));
         latent = colvec(sample(pred,1));
         % Sample the parameters of the model given the assignment
-        %[model, mcmc.param{itr}] = sampleParamGibbs(model,data,mcmc.latent(:,itr));
         param = cell(K,1);
         for k=1:K
           [model.distributions{k}, sampledparam] = sampleParamGibbs(model.distributions{k}, data(latent == k,:), prior{k});
@@ -147,7 +147,6 @@ classdef MixtureDist < ParamJointDist
         postMix = fit(Discrete_DirichletDist(model.mixingWeights.prior), 'data', latent);
         mix = sample(postMix.muDist, 1);
 
-        %mcmc.loglik(itr) = logprobGibbs(model,data,mcmc.latent(:,itr));
         loglik = logprobGibbs(model,data,latent);
         if(itr > Nburnin && mod(itr, thin)==0)
           mcmc.latent(:,keep) = latent;
@@ -301,57 +300,129 @@ end
       SS.weights = gamma2;
     end
 
-    function [permOut] = processLabelSwitch(model,mcmc,X)
-      warning('MixtureDist:processLabelSwitch:notComplete', 'Warning, function not fully debugged yet.  May contain errors')
-      fprintf('Waring.  Post-processing of latent variable to compensate for label-switching can take a great deal of time (iterative method involving a search over K! permutations for mixture models with K components).  Please be patient. \n')
+    function [mcmc,permOut] = processLabelSwitch(model,mcmc,X,varargin)
+      [verbose] = process_options(varargin, 'verbose', false);
+      %warning('MixtureDist:processLabelSwitch:notComplete', 'Warning, function not fully debugged yet.  May contain errors')
+      %fprintf('Waring.  Post-processing of latent variable to compensate for label-switching can take a great deal of time (iterative method involving a search over K! permutations for mixture models with K components).  Please be patient. \n')
       N = numel(mcmc.loglik);
       n = size(mcmc.latent,1);
       K = size(mcmc.mix,1);
+      %SS = cell(K,1);
+      %for k=1:K
+      %  SS{k} = mkSuffStat(model.distributions{k}, X);
+      %end
       % perm contains the N permutations that we consider.
       % The permutations are as indices, is perm(1,1) indicates how we permute label 1 for iteration 1
       perm = bsxfun(@times,1:K,ones(N,K));
-      Q = zeros(n,K);
+      identity = bsxfun(@times,1:K,ones(N,K));
       oldPerm = bsxfun(@times,-inf,ones(N,K));
-      while( any(oldPerm ~= perm) )
-        fprintf('Computing / Selecting Q matrix.\n')
+      fixedPoint = false;
+      klscore = 0;
+      %while( any(oldPerm ~= perm) )
+      value = 1;
+      while( ~fixedPoint )
+        fprintf('Disagree on %d / %d.  ',sum(sum(oldPerm ~= perm)), numel(oldPerm))
+        fprintf('Computing Q... ')
+        %keyboard
+        Q = zeros(n,K);
         oldPerm = perm;
+        %oldPerm = identity;
         % Recreate the models
+        % Doing both qmodel and pmodel in the same loop is more efficient in terms of runtime
+        % but we need to store pij for each iteration.  This can cause memory to run out if 
+        % either nobs or iter is large.
         for itr = 1:N
-          tmpmodel = model;
-          SS.counts = mcmc.latent(:,itr);
-          tmpmodel.mixingWeights = setParams(model.mixingWeights, mcmc.mix(:,itr) );
-          for k=1:K
-            tmpmodel.distributions{k} = setParams(model.distributions{k}, mcmc.param{perm(itr,k),itr});
-          end
-          Q = Q + exp(normalizeLogspace(calcResponsibilities(tmpmodel,X)));
-        end
-        Q = Q ./ N;
+          if(mod(itr,500) == 0),fprintf('%d, ', itr); end;
 
-        allperm = perms(1:K);
-        klloss = zeros(factorial(K),1);
-        prob = zeros(n,K);
-        permmodel = model;
-        fprintf('Selecting permutation on label to minimize KL-loss \n')
-        for itr=1:N
-          fprintf('%d, ', itr)
-          for j = 1:factorial(K)
-            permmodel.mixingWeights = setParams(permmodel.mixingWeights, mcmc.mix(:,itr));
-            %SS.counts = mcmc.latent;
-            %permmodel.mixingWeights = fit(permmodel.mixingWeights, 'suffStat', SS);
-            for k=1:K
-              permmodel.distributions{k} = setParams(model.distributions{k}, mcmc.param{allperm(j,k),itr} );
+          %qmodel = model;
+          %qmodel.mixingWeights = setParams(qmodel.mixingWeights, mcmc.mix(oldPerm(itr,:),itr));
+          %for k=1:K
+          %  qmodel.distributions{k} = setParams(qmodel.distributions{k}, mcmc.param{oldPerm(itr,k),itr});
+          %end
+          %Q = Q + exp(normalizeLogspace(calcResponsibilities(qmodel,X)));
+
+          logqRik = zeros(n,K);
+          for k=1:K
+            logqRik(:,k) = log(mcmc.mix(oldPerm(itr,k),itr)+eps)+ logprobParam(model.distributions{k}, X, mcmc.param{oldPerm(itr,k),itr});
+          end
+          Q = Q + exp(normalizeLogspace(logqRik));
+        end
+        Q = Q / N;
+        %keyboard
+        fprintf('computed.  Optimizing over perms.  ')
+        
+        loss = zeros(N,1);
+        for itr = 1:N
+          %pmodel = model;
+          %pmodel.mixingWeights = setParams(pmodel.mixingWeights, mcmc.mix(oldPerm(itr,:),itr));
+          %for k=1:K
+          %  pmodel.distributions{k} = setParams(pmodel.distributions{k}, mcmc.param{oldPerm(itr,k),itr});
+          %end
+          %logpij = normalizeLogspace(calcResponsibilities(pmodel,X));
+
+          logpij = zeros(n,K);
+          for k=1:K
+            logpij(:,k) = log(mcmc.mix(oldPerm(itr,k),itr)+eps)+ logprobParam(model.distributions{k}, X, mcmc.param{oldPerm(itr,k),itr});
+          end
+          %keyboard          
+          logpij = normalizeLogspace(logpij);
+        %end
+
+          pij = exp(logpij);
+          %keyboard
+          %pij = normalize(pij,1);
+          %Q = normalize(Q,1);
+          %keyboard
+          kl = zeros(K,K);
+          %fprintf('Computed pij.  ')
+          for j=1:K
+            for l=1:K
+              diverge = pij(:,l).* log(pij(:,l) ./ Q(:,j));
+              diverge(isnan(diverge)) = 0;
+              % We have pij + eps since we want 0*log(0/q) = 0 for q > 0
+              kl(j,l) = sum(diverge);
             end
           end
-          pij = normalizeLogspace(calcResponsibilities(permmodel,X));
-          klloss(itr) = sum(sum( pij.*log(pij ./ Q) ));
-          perm(itr,:) = allperm(argmin(klloss(itr)),:);
+        %keyboard
+          %itr
+          %keyboard
+          %if(any(kl(:) < 0))
+          %  warning('MixtureDist:processLabelSwitch:KL','Warning.  Some KL-Divergence values are < 0.  See matrix below');
+          %  kl
+          %  bad = max(kl(kl<0));
+          %  if(bad < eps)
+          %    kl(kl<0) = 0;
+          %    fprintf('KL < 0 considered computation error.  Setting to zero.\n')
+          %  end
+            % What you should do here is check if kl(kl<0) are very small, like 1e-100 or less.
+            % Many tests indicated this could happen -- roundoff error it looks like
+            %keyboard
+          %end
+        %assign = assignmentoptimal(kl);
+        [perm(itr,:), loss(itr)] = assignmentoptimal(kl);
+
         end
+        klscore(value) = sum(loss);
+        %keyboard
+        if( value > 2 && (all(all(perm == oldPerm)) || approxeq(klscore(value), klscore(value-1), 1e-2, 1) || approxeq(klscore(value), klscore(value-2), 1e-2, 1) ) )
+        %if( all(all(perm == oldPerm)) )
+          fixedPoint = true;
+        end
+      value = value + 1;
+      fprintf('KL Loss = %d.',sum(loss))
+      %[oldPerm, perm]
+      fprintf('\n')    
       end
       permOut = perm;
-      fprintf('\n')
-    end
+      for itr=1:N
+        %keyboard
+        mcmc.param(:,itr) = mcmc.param(permOut(itr,:),itr);
+        mcmc.mix(:,itr) = mcmc.mix(permOut(itr,:),itr);
+        mcmc.latent(:,itr) = permOut(itr,mcmc.latent(:,itr))';
+      end
 
-  end
+    end
+  end
 
 
   methods(Access = 'protected')
