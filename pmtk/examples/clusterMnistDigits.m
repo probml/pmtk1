@@ -4,7 +4,7 @@
 setSeed(1);
 classes   = 2:4;    % Confine task to digits 2:4 (must be a subset of 0:9)
 %nexamples = 2000;   % max 60000
-nexamples = 200;
+nexamples = 2000;
 binary = true;
 ntest = 0;
 [X,j,y,j] = setupMnist(binary,nexamples,ntest);    %#ok
@@ -15,7 +15,7 @@ clear y; % unsupervised!
 
 % Fit
 %m = fit(DiscreteMixDist('nmixtures',numel(lookfor)),'data',X,'nrestarts',1);
-fitEng = EmEng('nrestarts', 2, 'verbose', true);
+fitEng = EmEng('nrestarts', 1, 'verbose', true);
 model = MixDiscrete('nmixtures', numel(classes), 'support', [0 1], 'fitEng', fitEng);
 model = fit(model, X);
 

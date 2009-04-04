@@ -52,8 +52,9 @@ classdef MixtureModel
     function L = logprior(model)
       L = logprior(model.mixingDistrib);
       for k=1:nmixtures(model)
-        L = L + logprior(model.distributions{k});
+        L = L + sum(logprior(model.distributions{k}));
       end
+      
     end
     
 
@@ -156,21 +157,28 @@ classdef MixtureModel
     function [ess, L] = Estep(model, data)
       [Rik, LL]  = inferLatent(model, data);
       L = sum(LL);
-      assert(approxeq(L, sum(logprob(model,data))));
-      %L = L + logprior(model); % must add log prior for MAP estimation
-      ess.Rik = pmf(Rik)'; % convert from distribution to table of n*K numbers
-      ess.data = data; % shouldn't have to pass this around!!
+      %assert(approxeq(L, sum(logprob(model,data))));
+      L = L + logprior(model); % must add log prior for MAP estimation
+      Rik = pmf(Rik)'; % convert from distribution to table of n*K numbers
+      %ess.data = data; % shouldn't have to pass this around!!
+      K = length(model.distributions);
+      compSS = cell(1,K);
+      for k=1:K
+          compSS{k} = model.distributions{k}.mkSuffStat(data,Rik(:,k));
+      end
+      ess.compSS = compSS;
+      ess.counts = colvec(normalize(sum(Rik,1)));
     end
   
     function model = Mstep(model, ess)
       K = length(model.distributions);
-      Rik = ess.Rik;
-      data = ess.data; % yuck!
+      %Rik = ess.Rik;
+      %data = ess.data; % yuck!
       for k=1:K
-        essK = model.distributions{k}.mkSuffStat(data,Rik(:,k));
-        model.distributions{k} = fit(model.distributions{k},'suffStat',essK);
+        %essK = model.distributions{k}.mkSuffStat(data,Rik(:,k));
+        model.distributions{k} = fit(model.distributions{k},'suffStat',ess.compSS{k});
       end
-      mixSS.counts = colvec(normalize(sum(Rik,1)));
+      mixSS.counts = ess.counts;
       model.mixingDistrib = fit(model.mixingDistrib,'suffStat',mixSS);
     end
     

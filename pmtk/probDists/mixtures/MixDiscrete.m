@@ -9,6 +9,7 @@ classdef MixDiscrete < MixtureModel
     function model = MixDiscrete(varargin)
       % model = MixDiscrete(nmixtures, nstates, support, transfomer)
       % Create a model with default priors for MAP estimation
+      if nargin == 0; return; end
       [nmixtures,  nstates, support, model.fitEng, model.transformer]...
         = processArgs(varargin,...
         'nmixtures'    ,[] ,...
@@ -18,7 +19,7 @@ classdef MixDiscrete < MixtureModel
         'transformer'  ,[]);
       K = nmixtures;
       %T = normalize(rand(K,1));
-      alpha = 1; % MAP estimate is counts + alpha - 1
+      alpha = 2; % MAP estimate is counts + alpha - 1
       mixingDistrib = DiscreteDist('nstates', K, 'prior','dirichlet', 'priorStrength', alpha);
       % we need to know what values the features can take on
       % so we can define a distribution of the right size
@@ -32,7 +33,10 @@ classdef MixDiscrete < MixtureModel
       distributions = copy(dist,K,1);
       model.mixingDistrib = mixingDistrib;
       model.distributions = distributions;
+      model.nmix = numel(model.distributions);
     end
+    
+   
 
 
   end %  methods

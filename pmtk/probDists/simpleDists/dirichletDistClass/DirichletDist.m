@@ -51,7 +51,7 @@ classdef DirichletDist < ParamDist
       % that sums to one
       [n d] = size(X);
       A = repmat(obj.alpha(:)'-1, n, 1);
-      p = sum(log(X) .* A,2) - lognormconst(obj);
+      p = sum(log(X+eps) .* A,2) - lognormconst(obj);
     end
 
     function logZ = lognormconst(obj)
