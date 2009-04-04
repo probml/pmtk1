@@ -9,6 +9,7 @@ classdef MvnDist < ParamDist
     domain;
     infEng;
     covtype;
+    ndims;
     %discreteNodes;
     %ctsNodes;
   end
@@ -17,23 +18,21 @@ classdef MvnDist < ParamDist
   methods
 
 
-    function m = MvnDist(mu, Sigma,  varargin)
-      if nargin == 0
-        mu = []; Sigma = [];
-      end
-      [m.domain, m.prior, m.fitMethod, m.fitArgs, m.covtype, m.infEng] = process_options(varargin, ...
-        'domain', 1:numel(mu), 'prior', 'none', 'fitMethod', 'mle', ...
+    function m = MvnDist(varargin)
+      % MvnDist(mu, Sigma, ndims, domain, prior, fitMethod, fitArgs, covtype,
+      % infEng)
+      [m.mu, m.Sigma, m.ndims, m.domain, m.prior, m.fitMethod, m.fitArgs,...
+        m.covtype, m.infEng] = processArgs(varargin, ...
+        'mu', [], 'Sigma', [], 'ndims', 0, ...
+        'domain', [], 'prior', 'none', 'fitMethod', 'mle', ...
         'fitArgs', {}, 'covtype', 'full', 'infEng', GaussInfEng());
-      m.mu = mu; m.Sigma = Sigma;
-      %m.ctsNodes = 1:length(mu);
+      if m.ndims==0
+        m.ndims = length(m.mu);
+      end
+      if m.ndims==0, error('must specify ndims and/or mu'); end
+      m.domain = 1:m.ndims;
     end
 
-    %{
-    function model = setParams(model, param)
-      model.mu = param.mu;
-      model.Sigma = param.Sigma;
-    end
-%}
     
     function mu = mean(model)
       mu = model.mu;
@@ -50,26 +49,6 @@ classdef MvnDist < ParamDist
     function C = var(model)
       C = diag(model.Sigma);
     end
-
-
-    %{
-function [postQuery] = marginal(model, queryVars)
-      % p(Q)
-      mu = model.mu; Sigma = model.Sigma; domain = model.domain;
-      Q = lookupIndices(queryVars, domain);
-      postQuery = MvnDist(mu(Q), Sigma(Q,Q), 'domain', queryVars); %#ok
-    end
-
-function postQuery = conditional(model, visVars, visValues)
-      % p(H|V=v)
-      mu = model.mu; Sigma = model.Sigma; domain = model.domain;
-      V = lookupIndices(visVars, domain);
-      hidVars = setdiffPMTK(domain, visVars);
-      [muHgivenV, SigmaHgivenV] = gaussianConditioning(...
-        mu, Sigma, V, visValues);
-      postQuery = MvnDist(muHgivenV, SigmaHgivenV, 'domain', hidVars);
-    end
-    %}
 
     function [mu,Sigma,domain] = convertToMvn(m)
       % This is required by  the GaussInfEng object
@@ -158,31 +137,7 @@ function postQuery = conditional(model, visVars, visValues)
       end
     end
 
-    %{
-function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
-      mu = model.mu; Sigma = model.Sigma; domain = model.domain;
-      if nargin < 3
-        visVars = [];
-        muHgivenV = mu;
-        SigmaHgivenV = Sigma;
-      else
-        V = lookupIndices(visVars, domain);
-        [muHgivenV, SigmaHgivenV] = gaussianConditioning(mu, Sigma, V, visValues);
-      end
-      hidVars = setdiffPMTK(domain, visVars);
-      if ~iscell(queryVars)
-        queryVars = {queryVars};
-        singleQuery = true;
-      else
-        singleQuery = false;
-      end
-      for i=1:length(queryVars)
-        Q = lookupIndices(queryVars{i}, hidVars);
-        postQuery{i} = MvnDist(muHgivenV(Q), SigmaHgivenV(Q,Q), 'domain', queryVars{i});
-      end
-      if singleQuery, postQuery = postQuery{1}; end
-    end
-    %}
+    
 
     function logZ = lognormconst(model)
       mu = model.mu; Sigma = model.Sigma;
@@ -239,8 +194,17 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
       L =-0.5*sum((X*inv(Sigma)).*X,2);
     end
 
+    function L = logprior(model)
+      if strcmp(model.prior, 'none')
+        L = 0;
+      else 
+        L = logprob(model.prior, model.mu, model.Sigma);
+      end
+    end
+
 
     function fc = makeFullConditionals(obj, visVars, visVals)
+      % needed by GibbsInfEng
       d = length(obj.mu);
       if nargin < 2
         % Sample from the unconditional distribution
@@ -255,6 +219,7 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
     end
 
     function p = fullCond(obj, xh, i, H, x)
+      % called by makeFullConditionals
       assert(length(xh)==length(H))
       x(H) = xh; % insert sampled hidden values into hidden slot
       x(i) = []; % remove value for i'th node, which will be sampled
@@ -266,6 +231,7 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
     end
 
     function xinit = mcmcInitSample(model, visVars, visVals)
+       % needed by GibbsInfEng, MhInfEng
       if nargin < 2
         xinit = mvnrnd(model.mu, model.Sigma);
         return;
@@ -296,7 +262,8 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
     end
 
     function d = ndimensions(m)
-      d= length(m.mu); % m.ndims;
+      %d= length(m.mu);
+      d = m.ndims;
     end
 
 
@@ -325,7 +292,7 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
       [X,SS,prior,covtype, fitArgs,fitMethod] = process_options(varargin,...
         'data'              ,[]         ,...
         'suffStat'          ,[]         ,...
-        'prior'             ,obj.prior         ,...
+        'prior'             ,obj.prior,...
         'covtype'           ,obj.covtype, ...
         'fitArgs'           , obj.fitArgs, ...
         'fitMethod'         , obj.fitMethod);
@@ -333,34 +300,25 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
       if any(isnan(X))
         obj = fitMvnEcm(obj, X, prior, fitArgs{:}); return;
       end
-      obj = MvnDist(); obj.covtype = covtype;
+      %obj = MvnDist();
+      obj.covtype = covtype;
       if isempty(SS), SS = mkSuffStat(obj,X); end
+      if isa(prior, 'char'), prior = mkPrior(obj, X); end
+      obj.prior = prior; % replace string with object so logprior(model) works
       switch class(prior)
-        case 'char'
-          switch lower(prior)
-            case 'none'
-              obj.mu = SS.xbar;
-              obj.Sigma = SS.XX;
-            case 'covshrink',
-              obj.mu =  mean(X);
-              obj.Sigma =  covshrink(X); % should rewrite in terms of SS
-            case 'niw'
-              prior = MvnDist.mkNiwPrior(X);
-              [obj.mu, obj.Sigma] = MvnDist.mapEstimateNiw(prior, SS);
-            case 'nig'
-              prior = MvnDist.mkNigPrior(X);
-              [obj.mu, obj.Sigma] = MvnDist.mapEstimateNig(prior, SS);
-            otherwise
-              error(['unknown prior ' prior])
-          end
-        case 'MvnInvWishartDist'
-          [obj.mu, obj.Sigma] = MvnDist.mapEstimateNiw(prior,  SS);
+        case 'NoPrior',
+           obj.mu = SS.xbar;
+           obj.Sigma = SS.XX;
         otherwise
-          error('unknown prior ')
+          tmp = MvnConjugate('prior', prior);
+          tmp = fit(tmp, 'suffStat', SS);
+          post = tmp.muSigmaDist; % paramDist(m); % NIW
+          m = mode(post);
+          obj.mu = m.mu;
+          obj.Sigma = m.Sigma;
       end
-    end
-
-
+    end % fit
+    
     function [postmu, logevidence] = softCondition(pmu, py, A, y)
       % Bayes rule for MVNs
       Syinv = inv(py.Sigma);
@@ -450,92 +408,37 @@ function postQuery = marginal(model, queryVars, visVars, visValues, varargin)
     end
 
     function prior = mkPrior(model,data,varargin)
-      [prior, covtype] = process_options(varargin, 'prior', model.prior, 'covtype', model.covtype);
+      % 'prior' can be one of 'niw' or 'nig'
+      [prior, covtype] = process_options(varargin, ...
+        'prior', model.prior, 'covtype', model.covtype);
       [n,d] = size(data);
-      switch class(prior)
-        case 'char'
-          switch lower(prior)
-            case 'niw'
-              kappa0 = 0.001; m0 = nanmean(data)';
-              % Add a small offsert to T0 in case diag(nanvar(data)) contains dimensions with zero empirical variance
-              nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
-              prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
-            case 'nig'
-              switch lower(covtype)
-                case 'diagonal'
-                  kappa0 = 0.001; m0 = nanmean(data)';
-                  % Here, n0 = 2 is the equivalent of d + 1 since we place an inverse gamma prior on each diagonal element
-                  nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
-                  prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-                case 'spherical'
-                  kappa0 = 0.001; m0 = nanmean(data);
-                  nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
-                  prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-                otherwise
-                  error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
-              end
-          end
-        case 'MvnInvWishartDist'
+      switch lower(prior)
+        case 'niw'
           kappa0 = 0.001; m0 = nanmean(data)';
+          % Add a small offsert to T0 in case diag(nanvar(data)) contains dimensions with zero empirical variance
           nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
           prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
-        case 'MvnInvGammaDist'
+        case 'nig'
           switch lower(covtype)
             case 'diagonal'
               kappa0 = 0.001; m0 = nanmean(data)';
+              % Here, n0 = 2 is the equivalent of d + 1 since we place an inverse gamma prior on each diagonal element
               nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
               prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
             case 'spherical'
-              kappa0 = 0.001; m0 = nanmean(data)';
+              kappa0 = 0.001; m0 = nanmean(data);
               nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
               prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
             otherwise
               error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
-          end
-      end
-    end
+          end % covtype
+      end % switch prior
+    end % mkPrior
+  
 
-
+   
   end % methods
 
-
-
-  methods(Static = true)
-
-    function prior = mkNiwPrior(data)
-      [n,d] = size(data);
-      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
-      nu0 = d+1; T0 = diag(nanvar(data)); % Smallest valid prior on Sigma
-      prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
-    end
-
-    function prior = mkNigPrior(data)
-      [n,d] = size(data);
-      kappa0 = 0.001; m0 = nanmean(data)'; % weak prior on mu
-      nu0 = 3; b0 = nanvar(data) + 0.01*ones(size(nanvar(data))); % Smallest valid prior on Sigma
-      prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-    end
-
-    function [mu, Sigma] = mapEstimateNiw(prior,  SS)
-      m = Mvn_MvnInvWishartDist(prior);
-      m = fit(m, 'suffStat',SS);
-      post = m.muSigmaDist; % paramDist(m); % NIW
-      m = mode(post);
-      mu = m.mu;
-      Sigma = m.Sigma;
-    end
-
-    function [mu, Sigma] = mapEstimateNig(prior,  SS)
-      m = Mvn_MvnInvGammaDist(prior);
-      m = fit(m, 'suffStat',SS);
-      post = m.muSigmaDist; % paramDist(m); % NIW
-      m = mode(post);
-      mu = m.mu;
-      Sigma = m.Sigma;
-    end
-
-
-  end
 
 
 end

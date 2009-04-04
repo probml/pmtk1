@@ -2,7 +2,7 @@ classdef Discrete_DirichletDist < CompoundDist
  % p(X,theta|alpha) = Discrete(X|theta) Dir(theta|alpha) 
   
  properties
-   muDist;
+   muDist; % DirichletDist
    support;
  end
  
@@ -29,7 +29,12 @@ classdef Discrete_DirichletDist < CompoundDist
       % This may not be correct...
       m =  DiscreteDist('T', normalize(obj.muDist.alpha,2)');
     end
-
+     
+    function p = pmf(model)
+      % predictive density - just plug in posterior mean params
+      p =  DiscreteDist('T', mean(model.muDist));
+    end
+    
 
      function obj = fit(obj, varargin)
        % m = fit(model, 'name1', val1, 'name2', val2, ...)

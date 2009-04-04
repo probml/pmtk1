@@ -4,31 +4,34 @@ classdef DiscreteDist  < ParamDist
 
   properties
     T; %num states * num distributions
-    prior;
+    prior; % DirichletDist or 'none'
+    priorStrength;
     support;
   end
   
   
   methods
     function obj = DiscreteDist(varargin) 
-      % obj = DiscreteDist([vector of probabilities])
-      % or
-      % obj = DiscreteDist(option arguments):
+      % obj = DiscreteDist(T, nstates, support, prior, priorStrength)
       % 'T' - T is K*d, for K states and d distributions.
-      %   Each *column* of T represents a different discrete distribution. 
+      %    Each *column* of T represents a different discrete distribution. 
       % 'support' - Support is a set of K numbers, defining the domain.
+      % nstates - defines support to be {1,2,...,nstates}
       % Each distribution has the same support.
-      % 'prior' - 'none' or DirichletDist. Same prior is used for each distribution.
-      if nargin > 0 && ~ischar(varargin{1})
-        T = varargin{1}; support = []; prior = 'none';
-      else
-        [T, support, prior] = process_options(varargin, ...
-          'T', [], 'support', [], 'prior', 'none');
+      % 'prior' - 'none' or 'dirichlet' or DirichletDist.
+      % Same prior is used for each distribution.
+      [T, nstates, support, prior, obj.priorStrength] = processArgs(varargin, ...
+        'T', [], 'nstates', [], 'support', [], 'prior', 'none', 'priorStrength', 0);
+      if isempty(support) 
+        if ~isempty(nstates)
+          support = 1:nstates;
+        elseif ~isempty(T)
+          [nstates] = size(T,1);
+          support = 1:nstates;
+        end
       end
-      if isempty(support) && ~isempty(T)
-        [nstates] = size(T,1);
-        support = 1:nstates;
-      end
+      % must be able to call the constructor with no args...
+      %if isempty(support), error('must specify support or nstates or T'); end
       if(~approxeq(normalize(T,1),T))
          error('Each column must sum to one'); 
       end
@@ -37,14 +40,6 @@ classdef DiscreteDist  < ParamDist
       obj.prior = prior;
     end
 
-    
-    function obj = setParams(obj, mix)
-      error('deprecated') % KPM 27Mar09
-      obj.T = mix;
-      if(nstates(obj) ~= size(mix,1))
-        obj.support = 1:size(mix,1);
-      end
-    end
 
     function d = ndistrib(obj)
       d = size(obj.T, 2);
@@ -68,6 +63,8 @@ classdef DiscreteDist  < ParamDist
         v = obj.T.*(1-obj.T);
     end
   
+  
+    
     function [L,Lij] = logprob(obj,X)
       % L(i) = sum_j logprob(X(i,j) | params(j))
       % Lij(i,j) = logprob(X(i,j) | params(j))
@@ -82,89 +79,87 @@ classdef DiscreteDist  < ParamDist
         L = sum(Lij,2);
     end
     
+    function L = logprior(model)
+      if strcmp(model.prior, 'none')
+        L = 0;
+      else
+        L = logprob(model.prior, model.T');
+      end
+    end
+    
     function p = predict(obj)
       % p(j) = p(X=j)
       p = obj.T;
     end
     
-    
-    function obj = mkRndParams(obj,d,ndistrib)
-       if(nargin < 3)
-           ndistrib = 1;
-       end
-       obj.T = normalize(rand(d,ndistrib),1);
-       obj.support = 1:d;
+    function obj = mkRndParams(obj,ndistrib)
+      K = nstates(obj);
+      if nargin < 2, ndistrib = max(1,size(obj.T,2)); end
+      obj.T = normalize(rand(K,ndistrib),1);
     end
     
     function SS = mkSuffStat(obj, X,weights)
-        K = nstates(obj); d = size(X,2);
-        counts = zeros(K, d);
-        X = double(full(X));
-        if(nargin < 3)
-            for j=1:d
-                counts(:,j) = colvec(histc(X(:,j), obj.support));
-            end
-        else  %weigthed SS
-            if size(weights,2) == 1
-                weights = repmat(weights,1,d);
-            end
-            for j=1:d
-                for s=1:K
-                    counts(s,j) = sum(weights(X(:,j) == obj.support(s),j));
-                end
-            end
+      K = nstates(obj);
+      d = size(X,2);
+      counts = zeros(K, d);
+      X = double(full(X));
+      %X = canonizeLabels(X, obj.support);
+      %S = length(obj.support);
+      if(nargin < 3)
+        for j=1:d
+          counts(:,j) = colvec(histc(X(:,j), obj.support));
         end
-        SS.counts = counts;
+      else  %weighted SS
+        if size(weights,2) == 1
+          weights = repmat(weights,1,d);
+        end
+        for j=1:d
+          for s=1:K % can't we vectorize this more?
+            counts(s,j) = sum(weights(X(:,j) == obj.support(s),j));
+          end
+        end
+      end
+      SS.counts = counts;
     end
     
     function model = fit(model,varargin)
-    % Fit the discrete distribution by counting.
-    %
-    % FORMAT:
-    %              model = fit(model,'name1',val1,'name2',val2,...)
-    %
-    % INPUT:    
-    %   'data'     X(i,j)  is the i'th value of variable j, in obj.support
-    %
-    %   'suffStat' - A struct with the fields 'counts'. Each column j is
-    %   histogram over states for distribution j.
-    % 
-    %   'prior'    - {'none', 'dirichlet' } or DirichletDist
-    %   'priorStrength' - magnitude of Dirichlet parameter
-    %        (same value applied to each state/ distribution)
-    %
-    [X,SS,prior,priorStrength] = process_options(varargin,'data',[],'suffStat',[],...
-      'prior', model.prior, 'priorStrength', 0);
-    % problem here - if the user calls fit with 'suffStat', then model.support is set to unique([]) <<-- not right
-    if(isempty(model.support))
-      model.support = unique(double(full(X(:))));
-    end
-    if isempty(SS), SS = mkSuffStat(model, X); end
-    K = nstates(model); d = ndistrib(model);
-    if (d==0)
-       d = size(SS.counts,2); 
-    end
-    switch class(prior)
-      case 'DirichletDist'
-        pseudoCounts = repmat(prior.alpha(:),1,d);
-        model.T = normalize(SS.counts + pseudoCounts, 1);
-      case 'char'
-        switch lower(prior)
-          case 'none'
-            model.T = normalize(SS.counts,1);
-           
-          case 'dirichlet'
-            pseudoCounts = repmat(priorStrength,K,d);
-            model.T = normalize(SS.counts + pseudoCounts,1);
-          otherwise
-            error(['unknown prior %s ' prior])
-        end
-      otherwise
-        error('unknown prior ')
-    end
-
-    end
+      % model = fit(model, data, suffStat)
+      % data(i,j) is value of case i, variable j (an integer in model.support)
+      % suffStat.counts is a K*d matrix
+      [X, SS] = processArgs(varargin, ...
+        'data', [], ...
+        'suffStat', []);
+      if isempty(SS), SS = mkSuffStat(model, X); end
+      %K = nstates(model);
+      d = size(SS.counts,2);
+      if isa(model.prior, 'char'), model = initPrior(model, X); end
+      switch class(model.prior)
+        case 'DirichletDist'
+          pseudoCounts = repmat(model.prior.alpha(:),1,d);
+          model.T = normalize(SS.counts + pseudoCounts -1, 1);
+        otherwise
+          error('unknown prior ')
+      end % switch prior
+    end % fit
    
+    
+     function model = initPrior(model, X) %#ok ignores X
+       %[K d] = size(SS.counts);
+       if ~ischar(model.prior), return; end
+       K = nstates(model);
+       switch lower(model.prior)
+         case 'none',
+           alpha = ones(K,1);
+         case 'dirichlet'
+           alpha = model.priorStrength*ones(K,1);
+         case 'jeffreys'
+           alpha = (1/K)*ones(K,1);
+         otherwise
+           error(['unknown prior ' model.prior])
+       end
+      model.prior = DirichletDist(alpha);
+     end
+    
     function x = sample(obj, n)
       % x(i,j) in support for i=1:n, j=1:ndistrib
       if nargin < 2, n = 1; end
@@ -198,11 +193,15 @@ classdef DiscreteDist  < ParamDist
       y = y(:);
     end
     
+    %{
     function m = marginal(obj,queryvars)
        m = DiscreteDist('T',normalize(obj.T(queryvars,:),1),'support',obj.support,'prior',obj.prior); 
     end
+    %}
     
-  end
+   
+    
+  end % methods
 
  
   

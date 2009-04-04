@@ -36,20 +36,18 @@ classdef GenerativeClassifierDist < ParamDist
         end
         
         function pred = predict(obj,X)
-            % pred(i) = p(y|X(i,:), params)
-            % pred is a DiscreteDist
+            % pred(i) = p(y|X(i,:), params), a DiscreteDist
             if(~isempty(obj.transformer))
                 X = test(obj.transformer,X);
             end
-            logpy = log(predict(obj.classPrior));
+            %logpy = log(predict(obj.classPrior));
+            logpy = log(pmf(obj.classPrior));
             n= size(X,1);
             C = length(obj.classConditionals);
             L = zeros(n,C);
             for c=1:C
                 L(:,c) = sum(logprob(obj.classConditionals{c},X),2) + logpy(c);
-            end
-            %L = L - repmat(logsumexp(L,2),1,C);
-            %post = exp(L);
+            end;
             post = exp(normalizeLogspace(L));
             pred = DiscreteDist('T', post', 'support', obj.classPrior.support);
         end

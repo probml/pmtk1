@@ -61,7 +61,7 @@ classdef Linreg_MvnInvGammaDist < CondProbDist
         end
 
         function py = predict(model,X)
-            % py(i) = p(y|X(i,:), params), a GaussDist
+            % py(i) = p(y|X(i,:), params), a StudentDist
             %X = process_options(varargin, 'X', []);
             if ~isempty(model.transformer)
                 X = test(model.transformer, X);

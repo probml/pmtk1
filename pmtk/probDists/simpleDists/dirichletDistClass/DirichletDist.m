@@ -49,7 +49,9 @@ classdef DirichletDist < ParamDist
     function p = logprob(obj, X)
       % p(i) = log p(X(i,:) | params) where each row is a vector of size d
       % that sums to one
-      p = log(X) * (obj.alpha-1) - lognormconst(obj);
+      [n d] = size(X);
+      A = repmat(obj.alpha(:)'-1, n, 1);
+      p = sum(log(X) .* A,2) - lognormconst(obj);
     end
 
     function logZ = lognormconst(obj)
@@ -61,20 +63,6 @@ classdef DirichletDist < ParamDist
       error('not supported')
     end
     
-    function xrange = plotRange(obj, sf)
-        if nargin < 2, sf = 3; end
-        %if ndimensions(obj) ~= 2, error('can only plot in 2d'); end
-        mu = mean(obj); C = cov(obj);
-        s1 = sqrt(C(1,1));
-        x1min = mu(1)-sf*s1;   x1max = mu(1)+sf*s1;
-        if ndimensions(obj)==2
-            s2 = sqrt(C(2,2));
-            x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
-            xrange = [x1min x1max x2min x2max];
-        else
-            xrange = [x1min x1max];
-        end
-    end
 
   end
 

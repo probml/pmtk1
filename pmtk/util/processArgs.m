@@ -62,7 +62,7 @@ function varargout = processArgs(args,varargin)
         error('Programmer Error - you have passed in an odd number of arguments to processArgs, which requires name/default pairs.');
     end
     
-    ispositional = ~(allSameTypes(args(1:2:end-1)) && ischar(args{1}));
+    ispositional = ~isempty(args) && ~(allSameTypes(args(1:2:end-1)) && ischar(args{1}));
     nargsMax = numel(varargin)/2;
     if ispositional
         nargs = numel(args);
@@ -73,7 +73,7 @@ function varargout = processArgs(args,varargin)
         userNames = lower(args(1:2:end-1));
     end
         
-    if(nargout ~= nargsMax)
+   if(nargout ~= nargsMax)
         error('Programmer Error - wrong number of output arguments for processArgs.');
     end
     
