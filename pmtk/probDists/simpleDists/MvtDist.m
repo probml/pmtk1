@@ -17,6 +17,18 @@ classdef MvtDist < ParamDist
       m.dof = dof;
       m.Sigma = Sigma;
     end
+
+    function model = setParams(model, param)
+      model.dof = param.dof;
+      model.mu = param.mu;
+      model.Sigma = param.Sigma;
+    end
+
+    function model = setParamsAlt(model, dof, mu, Sigma)
+      model.dof = dof;
+      model.mu = mu;
+      model.Sigma = Sigma;
+    end
     
     function d = ndimensions(obj)
        d = numel(obj.mu); 
