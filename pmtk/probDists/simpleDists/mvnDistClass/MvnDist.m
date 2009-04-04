@@ -33,6 +33,17 @@ classdef MvnDist < ParamDist
       m.domain = 1:m.ndims;
     end
 
+    function model = setParams(model, param)
+    % setParams needed by gibbs samplers
+      model.mu = param.mu;
+      model.Sigma = param.Sigma;
+    end
+
+    function model = setParamsAlt(model, mu, Sigma)
+    % setParams needed by gibbs samplers
+      model.mu = mu;
+      model.Sigma = Sigma;
+    end
     
     function mu = mean(model)
       mu = model.mu;
@@ -149,6 +160,21 @@ classdef MvnDist < ParamDist
     function L = logprob(model,X)
       % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
       mu = model.mu; Sigma = model.Sigma;
+      d = length(mu);
+      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
+      XC = bsxfun(@minus,X,rowvec(mu));
+      L = -0.5*sum((XC*inv(Sigma)).*XC,2);
+      L = L - logZ;
+      if false % debugging
+        SS = MvnDist.mkSuffStat(X);
+        LL = logprobSS(model, SS);
+        assert(approxeq(LL, sum(L)));
+      end
+    end
+
+    function L = logprobParam(model,X, param)
+      % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
+      mu = param.mu; Sigma = param.Sigma;
       d = length(mu);
       logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
       XC = bsxfun(@minus,X,rowvec(mu));
@@ -408,32 +434,50 @@ classdef MvnDist < ParamDist
     end
 
     function prior = mkPrior(model,data,varargin)
-      % 'prior' can be one of 'niw' or 'nig'
-      [prior, covtype] = process_options(varargin, ...
-        'prior', model.prior, 'covtype', model.covtype);
+      [prior, covtype] = process_options(varargin, 'prior', model.prior, 'covtype', model.covtype);
       [n,d] = size(data);
-      switch lower(prior)
-        case 'niw'
+      switch class(prior)
+        case 'char'
+          switch lower(prior)
+            case 'niw'
+              kappa0 = 0.001; m0 = nanmean(data)';
+              % Add a small offsert to T0 in case diag(nanvar(data)) contains dimensions with zero empirical variance
+              nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
+              prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
+            case 'nig'
+              switch lower(covtype)
+                case 'diagonal'
+                  kappa0 = 0.001; m0 = nanmean(data)';
+                  % Here, n0 = 2 is the equivalent of d + 1 since we place an inverse gamma prior on each diagonal element
+                  nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
+                  prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+                case 'spherical'
+                  kappa0 = 0.001; m0 = nanmean(data);
+                  nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
+                  prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+                otherwise
+                  error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
+              end
+          end
+        case 'MvnInvWishartDist'
           kappa0 = 0.001; m0 = nanmean(data)';
-          % Add a small offsert to T0 in case diag(nanvar(data)) contains dimensions with zero empirical variance
           nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
           prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
-        case 'nig'
+        case 'MvnInvGammaDist'
           switch lower(covtype)
             case 'diagonal'
               kappa0 = 0.001; m0 = nanmean(data)';
-              % Here, n0 = 2 is the equivalent of d + 1 since we place an inverse gamma prior on each diagonal element
               nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
               prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
             case 'spherical'
-              kappa0 = 0.001; m0 = nanmean(data);
+              kappa0 = 0.001; m0 = nanmean(data)';
               nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
               prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
             otherwise
               error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
-          end % covtype
-      end % switch prior
-    end % mkPrior
+          end
+      end
+    end
   
 
    
