@@ -156,9 +156,11 @@ classdef MixtureModel
     
     function [ess, L] = Estep(model, data)
       [Rik, LL]  = inferLatent(model, data);
+      N = size(data,1);
       L = sum(LL);
       %assert(approxeq(L, sum(logprob(model,data))));
       L = L + logprior(model); % must add log prior for MAP estimation
+      L = L/N;
       Rik = pmf(Rik)'; % convert from distribution to table of n*K numbers
       %ess.data = data; % shouldn't have to pass this around!!
       K = length(model.distributions);

@@ -20,6 +20,7 @@ classdef DiscreteDist  < ParamDist
       % Each distribution has the same support.
       % 'prior' - 'none' or 'dirichlet' or DirichletDist.
       % Same prior is used for each distribution.
+      if nargin == 0; return ; end
       [T, nstates, support, prior, obj.priorStrength] = processArgs(varargin, ...
         'T', [], 'nstates', [], 'support', [], 'prior', 'none', 'priorStrength', 0);
       if isempty(support) 
@@ -31,7 +32,7 @@ classdef DiscreteDist  < ParamDist
         end
       end
       % must be able to call the constructor with no args...
-      %if isempty(support), error('must specify support or nstates or T'); end
+      if isempty(support), error('must specify support or nstates or T'); end
       if(~approxeq(normalize(T,1),T))
          error('Each column must sum to one'); 
       end
