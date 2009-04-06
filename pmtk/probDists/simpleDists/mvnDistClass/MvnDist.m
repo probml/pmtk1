@@ -417,20 +417,9 @@ classdef MvnDist < ParamDist
         d = length(obj.domain);
         suffStat.n = n;
         suffStat.xbar = sum(X,1)'/n; % column vector
-        switch lower(obj.covtype)
-          case 'full'
-            suffStat.XX2 = (X'*X)/n;
-            X = bsxfun(@minus,X,suffStat.xbar');
-            suffStat.XX = (X'*X)/n;
-          case 'diagonal'
-            suffStat.XX2 = (X'*X)/n;
-            X = bsxfun(@minus,X,suffStat.xbar');
-            suffStat.XX = diag(diag( (X'*X) ))/n;
-          case 'spherical'
-            suffStat.XX2 = diag(diag( (X'*X)))/(n*d);
-            X = bsxfun(@minus,X,suffStat.xbar');
-            suffStat.XX = diag(sum(diag( (X'*X) )))/(n*d);
-        end
+        suffStat.XX2 = (X'*X)/n;
+        X = bsxfun(@minus,X,suffStat.xbar');
+        suffStat.XX = (X'*X)/n;
       end
     end
 
