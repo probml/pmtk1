@@ -115,7 +115,8 @@ end
        'DICstatus',0, ...
        'openBUGS', 0);
 
-if length(initStructs) ~= nChains
+     % allow user to not specify initial values
+if 0 % length(initStructs) ~= nChains
   error(['init structure does not match number of chains ', ...
     sprintf('(%d)', nChains)]);
 end
@@ -166,6 +167,7 @@ if openBUGS
 else
   fprintf(fid, 'compile(%u) \n', nChains);
 end    
+
 
 initfileN = size(initStructs,2);
 for i=1:initfileN
@@ -604,10 +606,16 @@ while 1
         if ct >= 4
             A = sscanf(tline,'%*s %f %f %f %f');
             S = sscanf(tline, '%s %*f %*f %*f %*f');
-	    DICstats = setfield(DICstats,S,'Dbar',A(1));
-            DICstats = setfield(DICstats,S,'Dhat',A(2));
-            DICstats = setfield(DICstats,S,'pD',A(3));
-            DICstats = setfield(DICstats,S,'DIC',A(4));
+            % Cheng-Ta, Yang suggested this change
+            %DICstats = setfield(DICstats,S,'Dbar',A(1));
+            %%DICstats = setfield(DICstats,S,'Dhat',A(2));
+            %DICstats = setfield(DICstats,S,'pD',A(3));
+            %DICstats = setfield(DICstats,S,'DIC',A(4));
+            DICstats.S.Dbar = A(1);
+            DICstats.S.Dhat = A(2);
+            DICstats.S.pD = A(3);
+            DICstats.S.DIC = A(4);
+            DICstats.S.Dhat = A(2);
         end
     end
 end
