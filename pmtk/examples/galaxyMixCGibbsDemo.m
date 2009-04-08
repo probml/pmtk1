@@ -12,9 +12,9 @@ load('galaxies.csv'); [n,d] = size(galaxies);
 % scale the data in units of 10000
 galaxies = galaxies / 1000;
 galaxies = galaxies(randperm(n));
-% specify the prior distribution to use.  If we simply use 'niw', then the prior will change within the sampler.  This is bad...
-chosenPrior = MvnInvWishartDist('mu', mean(galaxies), 'Sigma', diag(var((galaxies))), 'dof', d + 1, 'k', 0.001);
-model = MvnMixDist('distributions',copy( MvnDist(zeros(d,1),diag(ones(d,1)), 'prior', chosenPrior), K,1) ) ;
+% specify the prior distribution to use.
+chosenPrior = MvnInvWishartDist('mu', mean(galaxies), 'Sigma', diag(var((galaxies))) / K^(2/d), 'dof', d + 1, 'k', 0.001);
+model = MvnMixDist('distributions',copy( MvnDist('mu', zeros(d,1), 'Sigma' diag(ones(d,1)), 'prior', chosenPrior), K,1) ) ;
 
 % Set the prior distribution on the mixing weights to be Dirichlet(1,..., 1)
 model.mixingWeights.prior = DirichletDist(ones(K,1));
