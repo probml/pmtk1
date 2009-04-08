@@ -25,7 +25,7 @@ classdef MixtureDist < ParamJointDist
         'transformer'  ,[]);
 
       if ~isempty(nmixtures) && numel(distributions) == 1
-        distributions = copy(distribdfutions,nmixtures,1);
+        distributions = copy(distributions,nmixtures,1);
       end
       if isempty(nmixtures)
         nmixtures = numel(distributions);
