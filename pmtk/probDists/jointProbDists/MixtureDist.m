@@ -17,13 +17,14 @@ classdef MixtureDist < ParamJointDist
 
     function model = MixtureDist(varargin)
       % Construct a new mixture of distributions
+      if nargin == 0, return; end;
       [nmixtures,distributions,mixingWeights,model.transformer]...
         = process_options(varargin,...
         'nmixtures'    ,[] ,...
         'distributions',[] ,...
         'mixingWeights',[] ,...
         'transformer'  ,[]);
-
+      
       if ~isempty(nmixtures) && numel(distributions) == 1
         distributions = copy(distributions,nmixtures,1);
       end
@@ -114,13 +115,16 @@ classdef MixtureDist < ParamJointDist
     end % end of fit method
 
     function [mcmc] = latentGibbsSample(model,data,varargin)
-      [Nsamples, Nburnin, thin, Nchains, verbose] = process_options(varargin, ...
+      [Nsamples, Nburnin, thin, verbose] = process_options(varargin, ...
         'Nsamples'	, 1000, ...
         'Nburnin'		, 500, ...
         'thin'		, 1, ...
         'verbose'		, false );
       % Initialize the model
       [model, prior] = initializeGibbs(model,data);
+      if(verbose)
+        fprintf('Gibbs Sampling initiated.  Starting to collect samples\n')
+      end
       K = numel(model.distributions);
       [n,d] = size(data);
 
@@ -133,7 +137,7 @@ classdef MixtureDist < ParamJointDist
       keep = 1;
       % Get samples
       for itr=1:Nsamples
-        if(mod(itr,500) == 0)
+        if(mod(itr,500) == 0 && verbose)
           fprintf('Collected %d samples \n', itr)
         end
         pred = predict(model,data);
@@ -422,7 +426,8 @@ end
       end
 
     end
-  end
+
+  end
 
 
   methods(Access = 'protected')
