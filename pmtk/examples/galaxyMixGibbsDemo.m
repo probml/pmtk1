@@ -22,7 +22,7 @@ model.mixingWeights.prior = DirichletDist(ones(K,1));
 Nsamples = 20000; Nburnin = 1000;
 % Initiate the sampler
 %profile on;
-mcmc = latentGibbsSample(model,galaxies,'Nsamples', Nsamples, 'Nburnin', Nburnin, 'thin', 1);
+mcmc = latentGibbsSample(model,galaxies,'Nsamples', Nsamples, 'Nburnin', Nburnin, 'thin', 1, 'verbose', true);
 %profile viewer; profile off;
 % Perform postprocessing on the labels
 [mcmcout,permout] = processLabelSwitch(model,mcmc,galaxies);
