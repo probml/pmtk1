@@ -129,6 +129,8 @@ classdef MixtureDist < ParamJointDist
       [n,d] = size(data);
 
       % Create a structure that will store the required information
+      % Latent variables for each iteration are stored as column vectors, 
+      % as are mixing weights and a struct containing the parameters for each mixing distribution
       obs = ceil((Nsamples - Nburnin) / thin);
       mcmc.latent = zeros(n,obs);
       mcmc.loglik = zeros(1,obs);
@@ -140,18 +142,24 @@ classdef MixtureDist < ParamJointDist
         if(mod(itr,500) == 0 && verbose)
           fprintf('Collected %d samples \n', itr)
         end
+
+        % sample the latent variables conditional on the parameters
         pred = predict(model,data);
         latent = colvec(sample(pred,1));
-        % Sample the parameters of the model given the assignment
+        % Sample the parameters of the model conditional on the parameters
         param = cell(K,1);
         for k=1:K
+          % NOTE: sampleParamGibbs is a function that *must* be implemented in each distributions class file
+          % this function must take in data and the prior for the parameters
+          % and then output the model with the sampled parameters, along with a struct containing the sampled parameters
           [model.distributions{k}, sampledparam] = sampleParamGibbs(model.distributions{k}, data(latent == k,:), prior{k});
           param{k} = sampledparam;
         end
+        % Conditional on the sampled assignments, fit and sample from the Dirichlet-Multinomial that defines the mixing weights
         postMix = fit(Discrete_DirichletDist(model.mixingWeights.prior), 'data', latent);
         mix = sample(postMix.muDist, 1);
 
-        loglik = logprobGibbs(model,data,latent);
+        % Store the results if we are past burnin and if thinning permits
         if(itr > Nburnin && mod(itr, thin)==0)
           mcmc.latent(:,keep) = latent;
           mcmc.param(:,keep) = param;
@@ -305,46 +313,41 @@ end
     end
 
     function [mcmc,permOut] = processLabelSwitch(model,mcmc,X,varargin)
-      [verbose] = process_options(varargin, 'verbose', false);
-      %warning('MixtureDist:processLabelSwitch:notComplete', 'Warning, function not fully debugged yet.  May contain errors')
-      %fprintf('Waring.  Post-processing of latent variable to compensate for label-switching can take a great deal of time (iterative method involving a search over K! permutations for mixture models with K components).  Please be patient. \n')
+      % Implements the KL - algorithm for label switching from 
+      %@article{ stephens2000dls,
+      %	title = "{Dealing with label switching in mixture models}",
+      %	author = "M. Stephens",
+      %	journal = "Journal of the Royal Statistical Society. Series B, Statistical Methodology",
+      %	pages = "795--809",
+      %	year = "2000",
+      %	publisher = "Blackwell Publishers"
+      %}
+      [verbose, stopCriteria] = process_options(varargin, 'verbose', false, 'stopCriteria', 1);
       N = numel(mcmc.loglik);
       n = size(mcmc.latent,1);
       K = size(mcmc.mix,1);
-      %SS = cell(K,1);
-      %for k=1:K
-      %  SS{k} = mkSuffStat(model.distributions{k}, X);
-      %end
-      % perm contains the N permutations that we consider.
+
+      % perm will contain the permutation that minimizes step two of the algorithm
+      % oldPerm is the permutation that 
       % The permutations are as indices, is perm(1,1) indicates how we permute label 1 for iteration 1
       perm = bsxfun(@times,1:K,ones(N,K));
-      identity = bsxfun(@times,1:K,ones(N,K));
       oldPerm = bsxfun(@times,-inf,ones(N,K));
       fixedPoint = false;
+      % For tracking purposes; value is how many times we have done the algorithm (itr and k already taken)
       klscore = 0;
-      %while( any(oldPerm ~= perm) )
       value = 1;
       while( ~fixedPoint )
-        fprintf('Disagree on %d / %d.  ',sum(sum(oldPerm ~= perm)), numel(oldPerm))
-        fprintf('Computing Q... ')
-        %keyboard
+        if(verbose)
+          fprintf('Computing Q for iteration  ')
+        end
         Q = zeros(n,K);
         oldPerm = perm;
-        %oldPerm = identity;
-        % Recreate the models
-        % Doing both qmodel and pmodel in the same loop is more efficient in terms of runtime
+        % Note that doing both qmodel and pmodel in the same loop is more efficient in terms of runtime
         % but we need to store pij for each iteration.  This can cause memory to run out if 
         % either nobs or iter is large.
+        % Hence, we first compute Q and then pij.
         for itr = 1:N
           if(mod(itr,500) == 0),fprintf('%d, ', itr); end;
-
-          %qmodel = model;
-          %qmodel.mixingWeights = setParams(qmodel.mixingWeights, mcmc.mix(oldPerm(itr,:),itr));
-          %for k=1:K
-          %  qmodel.distributions{k} = setParams(qmodel.distributions{k}, mcmc.param{oldPerm(itr,k),itr});
-          %end
-          %Q = Q + exp(normalizeLogspace(calcResponsibilities(qmodel,X)));
-
           logqRik = zeros(n,K);
           for k=1:K
             logqRik(:,k) = log(mcmc.mix(oldPerm(itr,k),itr)+eps)+ logprobParam(model.distributions{k}, X, mcmc.param{oldPerm(itr,k),itr});
@@ -352,74 +355,47 @@ end
           Q = Q + exp(normalizeLogspace(logqRik));
         end
         Q = Q / N;
-        %keyboard
-        fprintf('computed.  Optimizing over perms.  ')
-        
+        if(verbose)
+          fprintf('computed.  \n Optimizing over permutations.  ')
+        end
+        % Loss for each individual iteration
         loss = zeros(N,1);
         for itr = 1:N
-          %pmodel = model;
-          %pmodel.mixingWeights = setParams(pmodel.mixingWeights, mcmc.mix(oldPerm(itr,:),itr));
-          %for k=1:K
-          %  pmodel.distributions{k} = setParams(pmodel.distributions{k}, mcmc.param{oldPerm(itr,k),itr});
-          %end
-          %logpij = normalizeLogspace(calcResponsibilities(pmodel,X));
-
           logpij = zeros(n,K);
           for k=1:K
             logpij(:,k) = log(mcmc.mix(oldPerm(itr,k),itr)+eps)+ logprobParam(model.distributions{k}, X, mcmc.param{oldPerm(itr,k),itr});
           end
-          %keyboard          
           logpij = normalizeLogspace(logpij);
-        %end
-
           pij = exp(logpij);
-          %keyboard
-          %pij = normalize(pij,1);
-          %Q = normalize(Q,1);
-          %keyboard
           kl = zeros(K,K);
-          %fprintf('Computed pij.  ')
           for j=1:K
             for l=1:K
               diverge = pij(:,l).* log(pij(:,l) ./ Q(:,j));
+              % We want 0*log(0/q) = 0 for q > 0 (definition of 0*log(0) for KL
               diverge(isnan(diverge)) = 0;
-              % We have pij + eps since we want 0*log(0/q) = 0 for q > 0
               kl(j,l) = sum(diverge);
             end
           end
-        %keyboard
-          %itr
-          %keyboard
-          %if(any(kl(:) < 0))
-          %  warning('MixtureDist:processLabelSwitch:KL','Warning.  Some KL-Divergence values are < 0.  See matrix below');
-          %  kl
-          %  bad = max(kl(kl<0));
-          %  if(bad < eps)
-          %    kl(kl<0) = 0;
-          %    fprintf('KL < 0 considered computation error.  Setting to zero.\n')
-          %  end
-            % What you should do here is check if kl(kl<0) are very small, like 1e-100 or less.
-            % Many tests indicated this could happen -- roundoff error it looks like
-            %keyboard
-          %end
-        %assign = assignmentoptimal(kl);
+        % find the optimal permutation for this iteration, and then store in loss vector
         [perm(itr,:), loss(itr)] = assignmentoptimal(kl);
-
         end
+        % KL loss is the sum of all the losses over all the iterations
         klscore(value) = sum(loss);
-        %keyboard
+
+        % Stopping criteria - what would be ideal is to have a vector of stopping criteria
+        % and have the user select the stopping criteria
+        % I'm thinking that we could pass this in as varargin, and then evaluate the chosen
+        % criteria after each run
         if( value > 2 && (all(all(perm == oldPerm)) || approxeq(klscore(value), klscore(value-1), 1e-2, 1) || approxeq(klscore(value), klscore(value-2), 1e-2, 1) ) )
-        %if( all(all(perm == oldPerm)) )
           fixedPoint = true;
         end
       value = value + 1;
-      fprintf('KL Loss = %d.',sum(loss))
-      %[oldPerm, perm]
-      fprintf('\n')    
+      if(verbose)
+        fprintf('KL Loss = %d \n.',sum(loss))
+      end   
       end
       permOut = perm;
       for itr=1:N
-        %keyboard
         mcmc.param(:,itr) = mcmc.param(permOut(itr,:),itr);
         mcmc.mix(:,itr) = mcmc.mix(permOut(itr,:),itr);
         mcmc.latent(:,itr) = permOut(itr,mcmc.latent(:,itr))';
