@@ -1,4 +1,4 @@
-function [P,W,m,nmax] = ggmLassoHtf(S, lambda, W)
+function [P,W,m,nmax] = ggmLassoHtf(S, lambda, varargin)
 % Estimate structure of GGM precision matrix using the "GLASSO" method
 % See Hastie, Tibshirani & Friedman ("Elements" book, 2nd Ed, 2008, p637)
 %
@@ -22,16 +22,17 @@ function [P,W,m,nmax] = ggmLassoHtf(S, lambda, W)
 p = length(S); 
 Noff = p*(p-1)/2;  % # of offdiag elements
 
-if nargin < 3 || isempty(W)
-    % initialize W = inverse P  ( = covariance)
-    W = S + lambda*eye(p);
-end
+[W, MaxOuter, MaxInner, verbose, mytol] = processArgs(varargin, ...
+  'W', S + lambda*eye(p), 'MaxOuter', 20, 'MaxInner', 20, ...
+  'verbose', true, 'mytol', 1e-4); 
+
 
 % max # iterations for innter/outer loops    
-MaxOuter = 1e4; MaxInner = 1e4; % same as their R code
+%MaxOuter = 1e4; MaxInner = 1e4; % same as their R code
+%mytol = 1e-4;  % same as their R code
+
 % average abs offdiag of cov
 Smag = sum(sum(abs(triu(S))))/Noff; 
-mytol = 1e-4;  % same as their R code
 dW = Inf;
 
 % pre-allocate 

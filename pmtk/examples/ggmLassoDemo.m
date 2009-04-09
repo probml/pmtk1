@@ -2,7 +2,7 @@
 % HTF 2e p637
 
 load('sachsCtsHTF.mat'); % 7466 x 11
-lambdas = 36; [36 27 7 0];
+lambdas = 36; %[36 27 7 0];
 %lambdas = [logspace(5,0,5) 0];
 S = cov(X)/1000; % same as http://www-stat.stanford.edu/~tibs/ElemStatLearn/datasets/sachs.info
 debug = false;
@@ -25,9 +25,10 @@ for i=1:length(lambdas)
   precMat{i} = P;
   if doPrint
     fname = fullfile(folder, sprintf('glassoSachs%d.pdf',lambda))
+    fname = fullfile(folder, sprintf('glassoSachs%d.png',lambda))
     %pdfcrop;
-    %print(gcf, '-dpdf', fname);
-    print_pdf(fname,gcf);
+    print(gcf, '-dpng', fname);
+    %print_pdf(fname,gcf);
   end
   
   if debug
