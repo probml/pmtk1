@@ -59,10 +59,10 @@ classdef StudentDist < ParamDist
       %L = zeros(N,d);
       logZ = lognormconst(obj);
       v = obj.dof; mu = obj.mu; s2 = obj.sigma2;
-      M = repmat(mu, N, 1);
-      S2 = repmat(s2, N, 1);
-      V = repmat(v, N, 1);
-      LZ = repmat(logZ, N, 1);
+      M = repmat(rowvec(mu), N, 1);
+      S2 = repmat(s2, N, d);
+      V = repmat(v, N, d);
+      LZ = repmat(logZ, N, d);
       Lij = (-(V+1)/2) .* log(1 + (1./V).*( (X-M).^2 ./ S2 ) ) - LZ;
       %for j=1:d
       %  v = obj.dof(j); mu = obj.mu(j); s2 = obj.sigma2(j); 
