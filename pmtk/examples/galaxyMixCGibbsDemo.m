@@ -119,7 +119,7 @@ if(doPlot)
     xlabel(sprintf('Density estimate for mean of cluster %d', k));
   end
 end
-if(doPlot)
+if(doPrint)
   pdfcrop; print_pdf('galaxy_densityEst_post');
 end
 
