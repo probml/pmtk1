@@ -329,16 +329,16 @@ classdef MvnDist < ParamDist
       end
       %obj = MvnDist();
       obj.covtype = covtype;
-      if isempty(SS), SS = mkSuffStat(obj,X); end
-      if isa(prior, 'char'), prior = mkPrior(obj, X); end
+      if isempty(SS), SS = MvnDist().mkSuffStat(X); end
+      if isa(prior, 'char'), prior = mkPrior(obj,'data', X, 'prior', obj.prior, 'covtype', obj.covtype); end
       obj.prior = prior; % replace string with object so logprior(model) works
       switch class(prior)
         case 'NoPrior',
            obj.mu = SS.xbar;
            obj.Sigma = SS.XX;
         otherwise
-          tmp = MvnConjugate('prior', prior);
-          tmp = fit(tmp, 'suffStat', SS);
+          tmp = MvnConjugate(obj,'prior', prior);
+          tmp = fit(tmp, 'suffStat', SS, 'covtype', covtype); % We need to pass in covtype in the case that the prior is an MvnInvGammaDist (spherical or diagonal?)
           post = tmp.muSigmaDist; % paramDist(m); % NIW
           m = mode(post);
           obj.mu = m.mu;
@@ -393,12 +393,73 @@ classdef MvnDist < ParamDist
       end
     end
 
-    function suffStat = mkSuffStat(obj,X,weights)
+    function priorDist = mkPrior(obj,varargin)
+      [data, prior, covtype] = process_options(varargin, 'data', [], 'prior', 'niw', 'covtype', 'full');
+      [n,d] = size(data);
+      if(n==0), return; end;
+      switch class(prior)
+        case 'char'
+          switch lower(prior)
+            case 'niw'
+              kappa0 = 0.001; m0 = nanmean(data)';
+              % Add a small offsert to T0 in case diag(nanvar(data)) contains dimensions with zero empirical variance
+              nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
+              priorDist = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
+            case 'nig'
+              switch lower(covtype)
+                case 'diagonal'
+                  kappa0 = 0.001; m0 = nanmean(data)';
+                  % Here, n0 = 2 is the equivalent of d + 1 since we place an inverse gamma prior on each diagonal element
+                  nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
+                  priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+                case 'spherical'
+                  kappa0 = 0.001; m0 = nanmean(data);
+                  nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
+                  priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+                otherwise
+                  error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
+              end
+          end
+        case 'MvnInvWishartDist'
+          kappa0 = 0.001; m0 = nanmean(data)';
+          nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
+          priorDist = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
+        case 'MvnInvGammaDist'
+          switch lower(covtype)
+            case 'diagonal'
+              kappa0 = 0.001; m0 = nanmean(data)';
+              nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
+              priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+            case 'spherical'
+              kappa0 = 0.001; m0 = nanmean(data)';
+              nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
+              priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
+            otherwise
+              error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
+          end
+      end
+    end
+
+
+    function priorlik = MvnConjugate(obj,varargin)
+      [prior] = process_options(varargin, 'prior', MvnInvWishartDist());
+      switch class(prior)
+        case 'MvnInvWishartDist'
+          priorlik = Mvn_MvnInvWishartDist(prior);
+        case 'MvnInvGammaDist'
+          priorlik = Mvn_MvnInvGammaDist(prior);
+      end
+    end   
+  end % methods
+
+  methods(Static = true)
+
+    function suffStat = mkSuffStat(X,weights)
       % SS.n
       % SS.xbar = 1/n sum_i X(i,:)'
       % SS.XX(j,k) = 1/n sum_i XC(i,j) XC(i,k) - centered around xbar
       % SS.XX2(j,k) = 1/n sum_i X(i,j) X(i,k)  - not mean centered
-      if(nargin > 2) % weighted sufficient statistics, e.g. for EM
+      if(nargin > 1) % weighted sufficient statistics, e.g. for EM
         suffStat.n = sum(weights,1);
         suffStat.xbar = sum(bsxfun(@times,X,weights))'/suffStat.n;  % bishop eq 13.20
         suffStat.XX2 = bsxfun(@times,X,weights)'*X/suffStat.n;
@@ -413,8 +474,7 @@ classdef MvnDist < ParamDist
           assert(approxeq(XXtest,suffStat.XX));
         end
       else
-        n = size(X,1);
-        d = length(obj.domain);
+        n = size(X,1);;
         suffStat.n = n;
         suffStat.xbar = sum(X,1)'/n; % column vector
         suffStat.XX2 = (X'*X)/n;
@@ -423,55 +483,8 @@ classdef MvnDist < ParamDist
       end
     end
 
-    function prior = mkPrior(model,data,varargin)
-      [prior, covtype] = process_options(varargin, 'prior', model.prior, 'covtype', model.covtype);
-      [n,d] = size(data);
-      switch class(prior)
-        case 'char'
-          switch lower(prior)
-            case 'niw'
-              kappa0 = 0.001; m0 = nanmean(data)';
-              % Add a small offsert to T0 in case diag(nanvar(data)) contains dimensions with zero empirical variance
-              nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
-              prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
-            case 'nig'
-              switch lower(covtype)
-                case 'diagonal'
-                  kappa0 = 0.001; m0 = nanmean(data)';
-                  % Here, n0 = 2 is the equivalent of d + 1 since we place an inverse gamma prior on each diagonal element
-                  nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
-                  prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-                case 'spherical'
-                  kappa0 = 0.001; m0 = nanmean(data);
-                  nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
-                  prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-                otherwise
-                  error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
-              end
-          end
-        case 'MvnInvWishartDist'
-          kappa0 = 0.001; m0 = nanmean(data)';
-          nu0 = d + 1; T0 = diag(nanvar(data)) + 0.01*ones(d);
-          prior = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
-        case 'MvnInvGammaDist'
-          switch lower(covtype)
-            case 'diagonal'
-              kappa0 = 0.001; m0 = nanmean(data)';
-              nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
-              prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-            case 'spherical'
-              kappa0 = 0.001; m0 = nanmean(data)';
-              nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
-              prior = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-            otherwise
-              error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
-          end
-      end
-    end
-  
 
-   
-  end % methods
+  end
 
 
 
