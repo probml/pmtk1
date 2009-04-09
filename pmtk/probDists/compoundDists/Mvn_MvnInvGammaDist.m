@@ -30,11 +30,11 @@ classdef Mvn_MvnInvGammaDist < CompoundDist
      function obj = fit(obj, varargin)
        [X, SS,covtype] = process_options(...
          varargin, 'data', [], 'suffStat', [], 'covtype', 'spherical');
-			 if isempty(SS), SS = MvnDist.mkSuffStat(X); end
+			 if isempty(SS), SS = MvnDist().mkSuffStat(X); end
        xbar = SS.xbar;
        if SS.n==0, return; end
 			 n = SS.n;
-       [n d] = size(X);
+       d = numel(SS.xbar);
        m0 = obj.muSigmaDist.mu;
        k0 = obj.muSigmaDist.Sigma;
        a0 = obj.muSigmaDist.a;
@@ -54,8 +54,8 @@ classdef Mvn_MvnInvGammaDist < CompoundDist
      end
   
      function m = marginal(obj)
-       a = obj.muSigmaDist.a; b = obj.muSigmaDist.b; m = obj.muSigmaDist.mu; k = obj.muSigmaDist.k;
-       m = StudentDist(2*a, m, b.*(1+k)./a); 
+       a = obj.muSigmaDist.a; b = obj.muSigmaDist.b; m = obj.muSigmaDist.mu; k = obj.muSigmaDist.Sigma;
+       m = StudentDist(2*a, m, b.*(1+k)./(a*k)); 
      end
      
   end
