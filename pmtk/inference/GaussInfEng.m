@@ -31,7 +31,7 @@ end
     function [postQuery,eng] = marginal(eng, queryVars)
        mu = eng.mu; Sigma = eng.Sigma; domain = eng.domain;
        Q = lookupIndices(queryVars, domain);
-       postQuery = MvnDist(mu(Q), Sigma(Q,Q), 'domain', queryVars); %#ok
+       postQuery = MvnDist('mu', mu(Q), 'Sigma', Sigma(Q,Q), 'domain', queryVars); %#ok
     end
   
     function samples = sample(eng, n)
