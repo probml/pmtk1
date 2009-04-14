@@ -43,10 +43,16 @@ classdef Mvn_MvnInvWishartDist < CompoundDist
       %
       % 'data'     -        data(i,:) is case i
       % 'suffStat'
-      [X,SS] = process_options(varargin,...
+      % covtype             Passed in by the MvnDist.fit method
+      [X,SS,covtype] = process_options(varargin,...
         'data'              ,[]         ,...
-        'suffStat'          ,[]);
+        'suffStat'          ,[]         ,...
+        'covtype'           , 'full');
       if isempty(SS), SS = MvnDist().mkSuffStat(X); end
+      if (~strcmpi(lower(covtype), 'full') )
+        warning('Mvn_MvnInvWishartDist:fit:invalidcovtype', sprintf('Invalid covariance of %s provided.  Settings to full covariance', covtype));
+        covtype = full;
+      end 
       %k0 = obj.k; m0 = obj.mu; S0 = obj.Sigma; v0 = obj.dof;
       k0 = obj.muSigmaDist.k; m0 = obj.muSigmaDist.mu;
       S0 = obj.muSigmaDist.Sigma; v0 = obj.muSigmaDist.dof;
