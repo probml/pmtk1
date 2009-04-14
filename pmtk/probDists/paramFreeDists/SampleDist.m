@@ -206,6 +206,17 @@ classdef SampleDist < ParamFreeDist
     function X = getsamples(obj)
       X = obj.samples;
     end
+
+    function [] = plotsamples(obj)
+      K = ndistrib(obj);
+      X = getsamples(obj);
+      figure();
+      for k=1:K
+        subplot(K,1,k);
+        plot(X(:,:,k)');
+        xlabel('Sample Index'); ylabel('Value');
+      end
+    end
   end
   
   methods(Static = true)
