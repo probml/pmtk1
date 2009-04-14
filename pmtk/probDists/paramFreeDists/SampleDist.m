@@ -193,9 +193,18 @@ classdef SampleDist < ParamFreeDist
       %mu = mean(obj); d = length(mu);
       d = size(obj.samples,2);
     end
+
+    function n = nsamples(obj)
+      % num samples
+      n = size(obj.samples,1);
+    end
     
     function d = ndistrib(obj)
       d = size(obj.samples,3);
+    end
+
+    function X = getsamples(obj)
+      X = obj.samples;
     end
   end
   
