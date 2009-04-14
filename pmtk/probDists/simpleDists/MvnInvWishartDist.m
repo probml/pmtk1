@@ -38,6 +38,18 @@ classdef MvnInvWishartDist < ParamDist
       k = obj.k;
       lnZ = (v*d/2)*log(2) + mvtGammaln(d,v/2) -(v/2)*logdet(S) + (d/2)*log(2*pi/k);
     end
+
+    function [m,S] = sample(obj,n)
+      if (nargin < 2), n = 1; end;
+      mu = obj.mu; k = obj.k;
+      d = length(mu);
+      m = zeros(n,d); S = zeros(d,d,n);
+      SigmaDist = InvWishartDist(obj.dof, obj.Sigma);
+      S = sample(SigmaDist,n);
+      for s=1:n
+        m(s,:) = sample(MvnDist(mu, S(:,:,s) / k),1);
+      end
+    end
      
     function L = logprob(obj, mu, Sigma)
         if(nargin == 2) % as in logprob(obj,X) used by plot
