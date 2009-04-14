@@ -47,7 +47,7 @@ classdef Mvn_MvnInvGammaDist < CompoundDist
 					 bn = b0 + 1/2*sum(diag( n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-colvec(m0))*(SS.xbar-colvec(m0))' ));
 				 case 'diagonal'
 				 	 an = a0 + n/2;
-					 bn = diag( b0*eye(d) + 1/2*(n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-colvec(m0))*(SS.xbar-colvec(m0))'));
+					 bn = diag( diag(b0) + 1/2*(n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-colvec(m0))*(SS.xbar-colvec(m0))'));
 			 end
 
        obj.muSigmaDist = MvnInvGammaDist('mu', mn, 'Sigma', kn, 'a', an, 'b', bn);
