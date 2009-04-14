@@ -77,6 +77,7 @@ classdef MvnMixDist < MixtureDist
       K = numel(model.distributions);
       [n,d] = size(X);
       [model, prior, priorlik] = initializeGibbs(model,X);
+      mixPrior = model.mixingWeights.prior;
       post = cell(K,1);
       if(verbose)
         fprintf('Gibbs Sampling initiated.  Starting to collect samples\n')
@@ -98,28 +99,28 @@ classdef MvnMixDist < MixtureDist
         % sample the latent variables conditional on the parameters
         pred = predict(model,X);
         latent = colvec(sample(pred,1));
-        % Sample the parameters of the model conditional on the parameters
-        param = cell(K,1);
         for k=1:K
-          joint = fit(priorlik{k},'data', X );
+          joint = fit(priorlik{k}, 'data', X(latent == k,:) );
           post{k} = joint.muSigmaDist;
           switch class(prior{k})
             case 'MvnInvWishartDist'
               % From post, get the values that we need for the marginal of Sigma for this distribution, and sample
               postSigma = InvWishartDist(post{k}.dof + 1, post{k}.Sigma);
-              model.distributions{k}.Sigma = sample(postSigma,1);
+              sampledSigma = sample(postSigma,1);
               % Now, do the same thing for mu
-              postMu = MvnDist(post{k}.mu, model.distributions{k}.Sigma / post{k}.k);
+              postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.k);
             case 'MvnInvGammaDist'
-              postSigma = InvGammaDist(post.a + 1, post.b);
-              model.distributions{k}.Sigma = sample(postSigma,1);
+              postSigma = InvGammaDist(post{k}.a + 1, post{k}.b);
+              sampledSigma = sample(postSigma,1);
               % Now, do the same thing for mu
-              postMu = MvnDist(post.mu, obj.Sigma / post.Sigma);
+              postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.Sigma);
           end % of switch class(prior)
+          model.distributions{k}.Sigma = sampledSigma;
           model.distributions{k}.mu = sample(postMu,1);
         end % of k=1:K
+%        keyboard
         % Conditional on the sampled assignments, fit and sample from the Dirichlet-Multinomial that defines the mixing weights
-        postMix = fit(Discrete_DirichletDist(model.mixingWeights.prior), 'data', latent);
+        postMix = fit(Discrete_DirichletDist(mixPrior), 'data', latent);
         model.mixingWeights.T = sample(postMix.muDist, 1);
 
         % Store the results if we are past burnin and if thinning permits
@@ -254,8 +255,7 @@ classdef MvnMixDist < MixtureDist
       end
     end
 
-
-    function [muDist, SigmaDist, latentDist, mixDist, permOut] = processLabelSwitch(model, latentDist, muDist, SigmaDist, mixDist, X, varargin)
+    function [muoutDist, SigmaoutDist, latentoutDist, mixoutDist, permOut] = processLabelSwitch(model, latentDist, muDist, SigmaDist, mixDist, X, varargin)
       % Implements the KL - algorithm for label switching from 
       %@article{ stephens2000dls,
       %	title = "{Dealing with label switching in mixture models}",
@@ -276,14 +276,13 @@ classdef MvnMixDist < MixtureDist
       mu = getsamples(muDist);
       Sigmatmp = getsamples(SigmaDist);
 
-      % Need to post-process the SigmaDist
+      % Need to post-process Sigma
       Sigma = zeros(d,d,N);
       for s=1:N
         for k=1:K
           Sigma(:,:,s,k) = reshape(Sigmatmp(s,:,k)',d,d)'*reshape(Sigmatmp(s,:,k)',d,d);
         end
       end
-
       % perm will contain the permutation that minimizes step two of the algorithm
       % oldPerm is the permutation that 
       % The permutations are as indices, is perm(1,1) indicates how we permute label 1 for iteration 1
@@ -307,11 +306,7 @@ classdef MvnMixDist < MixtureDist
           if(mod(itr,500) == 0),fprintf('%d, ', itr); end;
           logqRik = zeros(n,K);
           for k=1:K
-            try
             logqRik(:,k) = log(mix(itr,oldPerm(itr,k))+eps)+ logprobMuSigma( model.distributions{k}, X, mu(itr,:,oldPerm(itr,k)), Sigma(:,:,itr,oldPerm(itr,k)) );
-            catch ME
-              keyboard
-            end
           end
           Q = Q + exp(normalizeLogspace(logqRik));
         end
@@ -324,11 +319,7 @@ classdef MvnMixDist < MixtureDist
         for itr = 1:N
           logpij = zeros(n,K);
           for k=1:K
-            try
             logpij(:,k) = log(mix(itr,oldPerm(itr,k))+eps)+ logprobMuSigma( model.distributions{k}, X, mu(itr,:,oldPerm(itr,k)), Sigma(:,:,itr,oldPerm(itr,k)) );
-            catch ME
-              keyboard
-            end
           end
           logpij = normalizeLogspace(logpij);
           pij = exp(logpij);
@@ -336,7 +327,7 @@ classdef MvnMixDist < MixtureDist
           for j=1:K
             for l=1:K
               diverge = pij(:,l).* log(pij(:,l) ./ Q(:,j));
-              % We want 0*log(0/q) = 0 for q > 0 (definition of 0*log(0) for KL
+              % We want 0*log(0/q) = 0 for q > 0 (definition of 0*log(0) for KL)
               diverge(isnan(diverge)) = 0;
               kl(j,l) = sum(diverge);
             end
@@ -370,13 +361,10 @@ classdef MvnMixDist < MixtureDist
           Sigmasamples(itr,:,k) = rowvec(cholcov(Sigma(:,:,itr,k)));
         end
       end
-      latentDist = SampleDistDiscrete(latent, 1:K);
-      mixDist = SampleDistDiscrete(mix, 1:K);
-      muDist = SampleDist(mu, 1:d);
-      % from the documentation, I'm not exactly sure how to storethe covariance matrix samples.
-      % Suggest storing the cholesky factor as a vector.  Can recover original matrix using
-      % reshape(w',d,d)'*reshape(w',d,d), where w is the sample cholesky factor
-      SigmaDist = SampleDist(Sigmasamples);  
+      latentoutDist = SampleDistDiscrete(latent, 1:K);
+      mixoutDist = SampleDistDiscrete(mix, 1:K);
+      muoutDist = SampleDist(mu, 1:d);
+      SigmaoutDist = SampleDist(Sigmasamples);  
       fprintf('\n')
     end
 
@@ -442,25 +430,25 @@ classdef MvnMixDist < MixtureDist
   methods(Access = 'protected')
 
     function [model, prior, priorlik] = initializeGibbs(model,X)
-      % we initialize by partitioning the observations into the K mixture components at random
+      % we initialize by partitioning the observations into the K mixture components using kmeans
       % we return (initialized) priors for each model
       K = numel(model.distributions);
       [n,d] = size(X);
-      group = Kfold(n ,K);
+      %initassign = kmeans(X,K);
       prior = cell(K,1);
       priorlik = cell(K,1);
       for k=1:K
-        model.distributions{k} = mkRndParams( model.distributions{k},d );
         switch class(model.distributions{k}.prior)
           case 'char'
             prior{k} = mkPrior(model.distributions{k},'data', X);
           otherwise
             prior{k} = model.distributions{k}.prior;
         end
+            [model.distributions{k}.mu, model.distributions{k}.Sigma] = sample(prior{k});
             priorlik{k} = MvnConjugate(model.distributions{k}, 'prior', prior{k});
       end
+%keyboard
     end
-
 
     function displayProgress(model,data,loglik,rr)
       figure(1000);
