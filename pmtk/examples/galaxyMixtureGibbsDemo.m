@@ -1,5 +1,5 @@
-function [] = galaxyMixGibbsDemo(varargin)
-  [collapsed] = process_options(varargin,'collapsed', false);
+function [] = galaxyMixtureGibbsDemo(varargin)
+  [collapsed, Nsamples, Nburnin] = process_options(varargin,'collapsed', false, 'Nsamples', 20000, 'Nburnin', 1000);
   %% Gibbs sampling from a Galaxy data fitted to a mixture of six normal distributions.  Pass in 'collapsed', true/false to choose collapsed Gibbs Sampling
   %#author Cody Severinski
 
@@ -22,16 +22,20 @@ function [] = galaxyMixGibbsDemo(varargin)
   % Set the prior distribution on the mixing weights to be Dirichlet(1,..., 1)
   model.mixingWeights.prior = DirichletDist(ones(K,1));
 
-  Nsamples = 20000; Nburnin = 1000;
   % Initiate the sampler
   if(collapsed)
-    mcmc = collapsedGibbs(model,galaxies,'Nsamples', Nsamples, 'Nburnin', Nburnin, 'thin', 1);
+    dists = collapsedGibbs(model,galaxies,'Nsamples', Nsamples, 'Nburnin', Nburnin, 'thin', 1);
   else
-    mcmc = latentGibbsSample(model,galaxies,'Nsamples', Nsamples, 'Nburnin', Nburnin, 'thin', 1, 'verbose', true);
+    dists = latentGibbsSample(model,galaxies,'Nsamples', Nsamples, 'Nburnin', Nburnin, 'thin', 1, 'verbose', true);
   end
 
+  latentDist = dists.latentDist;
+  muDist = dists.muDist;
+  SigmaDist = dists.SigmaDist;
+  mixDist = dists.mixDist;
+
   % Perform postprocessing on the labels
-  [mcmcout,permout] = processLabelSwitch(model,mcmc,galaxies);
+  [mcmcout,permout] = processLabelSwitch(model,latentDist, muDist, SigmaDist, mixDist, galaxies);
 
 
   %% Now make some pretty pictures
