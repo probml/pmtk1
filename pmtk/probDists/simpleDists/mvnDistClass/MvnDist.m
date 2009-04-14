@@ -84,6 +84,7 @@ classdef MvnDist < ParamDist
 
               postSigma = InvGammaDist(post.a + 1, post.b);
               obj.Sigma = sample(postSigma,1);
+              samples.Sigma = obj.Sigma;
 
               postMu = MvnDist(post.mu, obj.Sigma / post.Sigma);
               obj.mu = sample(postMu,1);
@@ -122,6 +123,7 @@ classdef MvnDist < ParamDist
 
           postSigma = InvGammaDist(post.a + 1, post.b);
           obj.Sigma = sample(postSigma,1);
+          samples.Sigma = obj.Sigma;
 
           postMu = MvnDist(post.mu, obj.Sigma / post.Sigma);
           obj.mu = sample(postMu,1);
@@ -186,6 +188,15 @@ classdef MvnDist < ParamDist
         LL = logprobSS(model, SS);
         assert(approxeq(LL, sum(L)));
       end
+    end
+
+    function L = logprobMuSigma(model,X, mu, Sigma)
+      % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
+      d = length(mu);
+      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
+      XC = bsxfun(@minus,X,rowvec(mu));
+      L = -0.5*sum((XC*inv(Sigma)).*XC,2);
+      L = L - logZ;
     end
 
     function L = logprobSS(model, SS)
@@ -285,7 +296,13 @@ classdef MvnDist < ParamDist
         obj.mu = randn(d,1);
         obj.Sigma = randpd(d);
         obj.domain = 1:d;
+        obj.ndims = d;
       end
+      obj.ndims = d;
+      obj.prior = 'niw';
+      obj.fitMethod = 'mle';
+      obj.covtype = 'full';
+      obj.infEng = GaussInfEng();
     end
 
     function d = ndimensions(m)
@@ -373,7 +390,38 @@ classdef MvnDist < ParamDist
           x2min = mu(2)-sf*s2; x2max = mu(2)+sf*s2;
           xrange = [x1min x1max x2min x2max];
         otherwise
-          error('can only plot 1 or 2d');
+          d = ndimensions(obj);
+          xrange = zeros(d,d,4);
+          stdev = sqrt(diag(C));
+          for i=1:d
+            for j=1:i
+              xrange(i,j,:) = [mu(i) - sf*stdev(i), mu(i) + sf*stdev(i), mu(j) - sf*stdev(j), mu(j) + sf*stdev(j)];
+              xrange(j,i,:) = [mu(j) - sf*stdev(j), mu(j) + sf*stdev(j), mu(i) - sf*stdev(i), mu(i) + sf*stdev(i)];
+            end
+          end
+      end
+    end
+
+    function [] = plotDist(obj)
+      % plot all marginal bivariate distributions
+      mu = mean(obj); Sigma = cov(obj);
+      d = ndimensions(obj);
+      figure(); hold on;
+      for i=1:d
+        for j=1:i
+          subplot2(d,d,j,i); hold on;
+          if (i == j)
+            sub = MvnDist(mu(i), Sigma(i,i));
+            xrange = plotRange(sub);
+            step = (xrange(end) - xrange(1)) /1000;
+            x = (xrange(1):step:xrange(end))';
+            prob = exp(logprob(MvnDist(mu(i), Sigma(i,i)), x));
+            plot(x,prob); xlabel(sprintf('Dimension %d',i)); ylabel('p(x)');
+          else
+            plotgauss2d( mu([i,j]), Sigma([i,j],[i,j]) );
+            xlabel(sprintf('Dimension %d',i)); ylabel(sprintf('Dimension %d',j));
+          end
+        end
       end
     end
 
@@ -394,7 +442,7 @@ classdef MvnDist < ParamDist
     end
 
     function priorDist = mkPrior(obj,varargin)
-      [data, prior, covtype] = process_options(varargin, 'data', [], 'prior', 'niw', 'covtype', 'full');
+      [data, prior, covtype] = process_options(varargin, 'data', [], 'prior', obj.prior, 'covtype', obj.covtype);
       [n,d] = size(data);
       if(n==0), return; end;
       switch class(prior)
@@ -413,7 +461,7 @@ classdef MvnDist < ParamDist
                   nu0 = 2; b0 = nanvar(data) + 0.01*ones(1,d);
                   priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
                 case 'spherical'
-                  kappa0 = 0.001; m0 = nanmean(data);
+                  kappa0 = 0.001; m0 = nanmean(data)';
                   nu0 = 2; b0 = mean(nanvar(data)) + 0.01;
                   priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
                 otherwise
@@ -480,6 +528,21 @@ classdef MvnDist < ParamDist
         suffStat.XX2 = (X'*X)/n;
         X = bsxfun(@minus,X,suffStat.xbar');
         suffStat.XX = (X'*X)/n;
+      end
+    end
+
+    function [] = plotData(X)
+      [n,d] = size(X);
+      figure;
+      for row=1:d
+        for col=row:d
+        subplot2(d,d,row,col);
+          if(row == col)
+          	hist(X(:,row)); title(sprintf('Histogram for dimension %d', row));
+          else
+          	scatter(X(:,row),X(:,col)); xlabel(sprintf('Dimension %d',row')); ylabel(sprintf('Dimension %d',row'));
+          end
+        end
       end
     end
 
