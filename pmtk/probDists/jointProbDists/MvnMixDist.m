@@ -66,7 +66,7 @@ classdef MvnMixDist < MixtureDist
       end
     end
 
-    function [dists] = latentGibbsSample(model,X,varargin)
+    function [muDist, SigmaDist, latentDist, mixDist] = latentGibbsSample(model,X,varargin)
       [Nsamples, Nburnin, thin, verbose] = process_options(varargin, ...
         'Nsamples'	, 1000, ...
         'Nburnin'		, 500, ...
@@ -86,7 +86,7 @@ classdef MvnMixDist < MixtureDist
       loglik = zeros(obs,1);
       latentsamples = zeros(obs,n);
       musamples = zeros(obs,d,K);
-      Sigmasamples = zeros(d,d,obs,K);
+      Sigmasamples = zeros(obs,d*d,K);
       mixsamples = zeros(obs,K);
 
       keep = 1;
@@ -129,10 +129,6 @@ classdef MvnMixDist < MixtureDist
           for k=1:K
             musamples(keep,:,k) = rowvec(model.distributions{k}.mu);
             Sigmasamples(keep,:,k) = rowvec(cholcov(model.distributions{k}.Sigma));
-            if(Sigmasamples(keep,:,k) == 0)
-              fprintf('invalid Sigma')
-              keyboard
-            end
           end
           loglik(keep) = logprobGibbs(model,X,latent);
           keep = keep + 1;
@@ -143,9 +139,8 @@ classdef MvnMixDist < MixtureDist
     muDist = SampleDist(musamples, 1:d);
     % from the documentation, I'm not exactly sure how to storethe covariance matrix samples.
     % Suggest storing the cholesky factor as a vector.  Can recover original matrix using
-    % reshape(w',4,4)'*reshape(w',4,4), where w is the sample cholesky factor
+    % reshape(w',d,d)'*reshape(w',d,d), where w is the sample cholesky factor
     SigmaDist = SampleDist(Sigmasamples);      
-    dists = struct('latentDist', latentDist, 'muDist', muDist, 'SigmaDist', SigmaDist, 'mixDist', mixDist);
     end
 
     function mcmc = collapsedGibbs(model,data,varargin)
@@ -260,7 +255,7 @@ classdef MvnMixDist < MixtureDist
     end
 
 
-    function [mcmc,permOut] = processLabelSwitch(model, latentDist, muDist, SigmaDist, mixDist, X, varargin)
+    function [muDist, SigmaDist, latentDist, mixDist, permOut] = processLabelSwitch(model, latentDist, muDist, SigmaDist, mixDist, X, varargin)
       % Implements the KL - algorithm for label switching from 
       %@article{ stephens2000dls,
       %	title = "{Dealing with label switching in mixture models}",
@@ -365,15 +360,24 @@ classdef MvnMixDist < MixtureDist
       end   
       end
       permOut = perm;
+      Sigmasamples = zeros(N,d*d,K);
       for itr=1:N
         latent(itr,:) = permOut(itr,latent(itr,:));
         mix(itr,:) = mix(itr,permOut(itr,:));
         for k=1:K
-          mu(itr,:,k) = mu(itr,:,permOut(itr,:));
+          mu(itr,:,k) = mu(itr,:,permOut(itr,k));
           Sigma(:,:,itr,k) = Sigma(:,:,itr,permOut(itr,k));
+          Sigmasamples(itr,:,k) = rowvec(cholcov(Sigma(:,:,itr,k)));
         end
       end
-
+      latentDist = SampleDistDiscrete(latent, 1:K);
+      mixDist = SampleDistDiscrete(mix, 1:K);
+      muDist = SampleDist(mu, 1:d);
+      % from the documentation, I'm not exactly sure how to storethe covariance matrix samples.
+      % Suggest storing the cholesky factor as a vector.  Can recover original matrix using
+      % reshape(w',d,d)'*reshape(w',d,d), where w is the sample cholesky factor
+      SigmaDist = SampleDist(Sigmasamples);  
+      fprintf('\n')
     end
 
     function [obj,samples] = sampleParamGibbs(obj,X,latent)
