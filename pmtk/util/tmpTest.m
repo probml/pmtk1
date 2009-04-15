@@ -1,6 +1,5 @@
-for i=1:10
-	a = rand(8000);
-end
+a = rand(8000);
+
 writeText({''},'/root/test');
 exit;
 
