@@ -81,8 +81,7 @@ classdef MvnMixDist < MixtureDist
       post = cell(K,1);
       if(verbose)
         fprintf('Gibbs Sampling initiated.  Starting to collect samples\n')
-      end
-
+      end
       obs = ceil((Nsamples - Nburnin) / thin);
       loglik = zeros(obs,1);
       latentsamples = zeros(obs,n);
@@ -113,10 +112,12 @@ classdef MvnMixDist < MixtureDist
               postSigma = InvGammaDist(post{k}.a + 1, post{k}.b);
               sampledSigma = sample(postSigma,1);
               % Now, do the same thing for mu
-              postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.Sigma);
+              % EXTREMELY inefficient based on profiling
+              %postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.Sigma);
           end % of switch class(prior)
           model.distributions{k}.Sigma = sampledSigma;
-          model.distributions{k}.mu = sample(postMu,1);
+          model.distributions{k}.mu = mvnrnd(rowvec(post{k}.mu), sampledSigma / post{k}.Sigma);
+          %model.distributions{k}.mu = sample(postMu,1);
         end % of k=1:K
 %        keyboard
         % Conditional on the sampled assignments, fit and sample from the Dirichlet-Multinomial that defines the mixing weights
@@ -144,24 +145,24 @@ classdef MvnMixDist < MixtureDist
     SigmaDist = SampleDist(Sigmasamples);      
     end
 
-    function mcmc = collapsedGibbs(model,data,varargin)
+    function [muDist, SigmaDist, latentDist, mixDist] = collapsedGibbs(model,data,varargin)
       % Collapsed Gibbs sampling for a mixture of MVNs
       [Nsamples, Nburnin, thin, verbose] = process_options(varargin, ...
         'Nsamples'  , 1000, ...
         'Nburnin'   , 500, ...
         'thin'    , 1, ...
-        'verbose'   , false );
+        'verbose'   , true );
       [nobs,d] = size(data);
       K = numel(model.distributions);
       outitr = ceil((Nsamples - Nburnin) / thin);
-      latent = zeros(nobs,outitr);
+      latent = zeros(outitr, nobs);
       keep = 1;
 
       if(verbose)
         fprintf('Initializing Gibbs sampler... \n')
       end
-      [latent(:,1), priorMuSigmaDist, SSxbar, SSn, SSXX, SSXX2] = initializeCollapsedGibbs(model,data);
-      curlatent = latent(:,1);
+      [latent(1,:), priorMuSigmaDist, priorlik, SSxbar, SSn, SSXX, SSXX2] = initializeCollapsedGibbs(model,data);
+      curlatent = colvec(latent(1,:));
       % marginalDist stores objects for each observation, representing the marginal probabiltiy of each observation
       % being part of each cluster
       marginalDist = cell(nobs,K);
@@ -170,6 +171,7 @@ classdef MvnMixDist < MixtureDist
 
       for c=1:K
         covtype{c} = model.distributions{c}.covtype;
+        % Just create the marginalDist objects needed later on
         % Just create the marginalDist objects needed later on
         switch class(priorMuSigmaDist{c})
           case 'MvnInvWishartDist'
@@ -198,6 +200,8 @@ classdef MvnMixDist < MixtureDist
               mn = (k0*colvec(m0) + xi')/kn;
               % Then, depending on the covariance type, update the marginal posterior distribution for this observation
               % to include this observation
+              % Then, depending on the covariance type, update the marginal posterior distribution for this observation
+              % to include this observation
               switch covtype{k}
                 case 'full'
                   vn = v0 + 1;
@@ -223,8 +227,9 @@ classdef MvnMixDist < MixtureDist
           [SSxbar, SSn, SSXX, SSXX2] = SSaddXi(model, covtype{curlatent(obs)}, SSxbar, SSn, SSXX, SSXX2, curlatent(obs), data(obs,:));
         end % obs=1:n
         % Store the results if past burnin and if thinning permits
+        % Store the results if past burnin and if thinning permits
         if(itr > Nburnin && mod(itr, thin)==0)
-          latent(:,keep) = curlatent;
+          latent(keep,:) = rowvec(curlatent);
           keep = keep + 1;
         end
       end
@@ -233,27 +238,32 @@ classdef MvnMixDist < MixtureDist
       end
 
       % With Gibbs sampling complete, create the mcmc struct needed for returning
-      mcmc.latent = latent;
+      latentDist = SampleDistDiscrete(latent, 1:K);
+
+      mixDist = model.mixingWeights;
+
+      musamples = zeros(outitr, d, K);
+      Sigmasamples = zeros(outitr, d*d, K);
+
       mcmc.loglik = zeros(1,outitr);
-      mcmc.mix = zeros(K,outitr);
-      mcmc.param = cell(K,outitr);
-      param = cell(K,1);
+      mix = zeros(outitr,K);
       tmpdistrib = model.distributions;
       tmpmodel = model;
       for itr=1:outitr
-        latent = mcmc.latent;
-        mix = histc(latent(:,itr), 1:K) / nobs;
+        mixFit = fit( mixDist, 'data', latent(itr,:)' );
+        mix(itr,:) = rowvec(mixFit.T);
         for k=1:K
-          [mu, Sigma, domain] = convertToMvn( fit(model.distributions{k}, 'data', data(latent(:,itr) == k,:) ) );
-          param{k} = struct('mu', mu, 'Sigma', Sigma);
-          tmpdistrib{k} = setParamsAlt(tmpdistrib{k}, mu, Sigma);
+          [mu, Sigma, domain] = convertToMvn( fit(model.distributions{k}, 'data', data(latent(itr,:)' == k,:) ) );
+          musamples(itr,:,k) = mu;
+          Sigmasamples(itr,:,k) = rowvec(cholcov(Sigma));
         end
-        mcmc.param(:,itr) = param;
-        tmpmodel = setParamsAlt(tmpmodel, mix, tmpdistrib);
-        mcmc.mix(:,itr) = mix;
-        mcmc.loglik(:,itr) = logprobGibbs(tmpmodel,data,latent(:,itr));
+        %mcmc.loglik(:,itr) = logprobGibbs(tmpmodel,data,latent(:,itr));
       end
+    muDist = SampleDist(musamples, 1:d);
+    SigmaDist = SampleDist(Sigmasamples);
+    mixDist = SampleDistDiscrete(mix, 1:K);
     end
+
 
     function [muoutDist, SigmaoutDist, latentoutDist, mixoutDist, permOut] = processLabelSwitch(model, latentDist, muDist, SigmaDist, mixDist, X, varargin)
       % Implements the KL - algorithm for label switching from 
@@ -283,6 +293,7 @@ classdef MvnMixDist < MixtureDist
           Sigma(:,:,s,k) = reshape(Sigmatmp(s,:,k)',d,d)'*reshape(Sigmatmp(s,:,k)',d,d);
         end
       end
+
       % perm will contain the permutation that minimizes step two of the algorithm
       % oldPerm is the permutation that 
       % The permutations are as indices, is perm(1,1) indicates how we permute label 1 for iteration 1
@@ -292,7 +303,9 @@ classdef MvnMixDist < MixtureDist
       % For tracking purposes; value is how many times we have done the algorithm (itr and k already taken)
       klscore = 0;
       value = 1;
+      fprintf('Attempting to resolve label switching ')
       while( ~fixedPoint )
+        fprintf('...  ')
         if(verbose)
           fprintf('Computing Q for iteration  ')
         end
@@ -303,9 +316,10 @@ classdef MvnMixDist < MixtureDist
         % either nobs or iter is large.
         % Hence, we first compute Q and then pij.
         for itr = 1:N
-          if(mod(itr,500) == 0),fprintf('%d, ', itr); end;
+          if(verbose && mod(itr,500) == 0),fprintf('%d, ', itr); end;
           logqRik = zeros(n,K);
           for k=1:K
+            % Probably just as best if we simply call mvnpdf here since we now know that we are working with MVN's
             logqRik(:,k) = log(mix(itr,oldPerm(itr,k))+eps)+ logprobMuSigma( model.distributions{k}, X, mu(itr,:,oldPerm(itr,k)), Sigma(:,:,itr,oldPerm(itr,k)) );
           end
           Q = Q + exp(normalizeLogspace(logqRik));
@@ -319,6 +333,7 @@ classdef MvnMixDist < MixtureDist
         for itr = 1:N
           logpij = zeros(n,K);
           for k=1:K
+            % Probably just as best if we simply call mvnpdf here since we now know that we are working with MVN's
             logpij(:,k) = log(mix(itr,oldPerm(itr,k))+eps)+ logprobMuSigma( model.distributions{k}, X, mu(itr,:,oldPerm(itr,k)), Sigma(:,:,itr,oldPerm(itr,k)) );
           end
           logpij = normalizeLogspace(logpij);
@@ -368,63 +383,6 @@ classdef MvnMixDist < MixtureDist
       fprintf('\n')
     end
 
-    function [obj,samples] = sampleParamGibbs(obj,X,latent)
-      K = numel(obj.distributions); [n,d] = size(X);
-      samples.mu = zeros(d,K);
-      samples.Sigma = zeros(d,d,K);
-      for k=1:K
-        Xclus = X(latent == k,:);
-        % we will sample first Sigma and then mu
-        switch class(obj.distributions{k}.prior)
-          case 'char'
-            switch lower(obj.distributions{k}.prior)
-              case 'none'
-                error('MvnMixDist:sampleMuSigmaGibbs:invalidPrior','Warning, unable to sample mu, Sigma using Gibbs sampling when no prior distribution is specified for the distributions for each cluster');
-              case 'nig'
-                error('Not yet implemented');
-              case 'niw'
-                post = Mvn_MvnInvWishartDist(obj.distributions{k}.prior);
-                joint = fit(post,'data', X(latent == k,:) );
-                post = joint.muSigmaDist;
-                % From post, get the values that we need for the marginal of Sigma for this distribution, and sample
-                postSigma = InvWishartDist(post.dof + 1, post.Sigma);
-                try
-                  obj.distributions{k}.Sigma = sample(postSigma,1);
-                catch ME
-                  joint
-                  X(latent == k,:)
-                  rethrow(ME)
-                end
-                samples.Sigma(:,:,k) = obj.distributions{k}.Sigma;
-
-                % Now, do the same thing for mu
-                postMu = MvnDist(post.mu, obj.distributions{k}.Sigma / post.k);
-                obj.distributions{k}.mu = sample(postMu,1);
-                samples.mu(:,k) = rowvec(obj.distributions{k}.mu);
-            end % of switch lower(prior)
-          case 'MvnInvWishartDist'
-            post = Mvn_MvnInvWishartDist(obj.distributions{k}.prior);
-            joint = fit(post,'data', X(latent == k,:) );
-            post = joint.muSigmaDist;
-            % From post, get the values that we need for the marginal of Sigma for this distribution, and sample
-            postSigma = InvWishartDist(post.dof + 1, post.Sigma);
-            try
-              obj.distributions{k}.Sigma = sample(postSigma,1);
-            catch ME
-              joint
-              X(latent == k,:)
-              rethrow(ME)
-            end
-            samples.Sigma(:,:,k) = obj.distributions{k}.Sigma;
-
-            % Now, do the same thing for mu
-            postMu = MvnDist(post.mu, obj.distributions{k}.Sigma / post.k);
-            obj.distributions{k}.mu = sample(postMu,1);
-            samples.mu(:,k) = rowvec(obj.distributions{k}.mu);
-        end % of switch class(prior)
-      end % of for statement
-    end
-
   end
 
   methods(Access = 'protected')
@@ -447,7 +405,6 @@ classdef MvnMixDist < MixtureDist
             [model.distributions{k}.mu, model.distributions{k}.Sigma] = sample(prior{k});
             priorlik{k} = MvnConjugate(model.distributions{k}, 'prior', prior{k});
       end
-%keyboard
     end
 
     function displayProgress(model,data,loglik,rr)
@@ -478,7 +435,7 @@ classdef MvnMixDist < MixtureDist
       end
     end
 
-    function [latent, prior, SSxbar, SSn, SSXX, SSXX2] = initializeCollapsedGibbs(model,X)
+    function [latent, prior, priorlik, SSxbar, SSn, SSXX, SSXX2] = initializeCollapsedGibbs(model,X)
       % latent is the column vector of intial assignments
       % prior{k} is the prior for distribution k
       % rest are sufficient statistics in the form of matrices (for more efficient computation)
@@ -494,12 +451,19 @@ classdef MvnMixDist < MixtureDist
 
       % since each MVN could have a different covariance structure, we need to do this.
       for k=1:K
-        prior{k} = mkPrior(model.distributions{k},X);
-        SS{k} = mkSuffStat(model.distributions{k}, X(latent == k,:));
-        SSn(k) = SS{k}.n;
-        SSxbar(:,k) = SS{k}.xbar;
-        SSXX(:,:,k) = SS{k}.XX;
-        SSXX2(:,:,k) = SS{k}.XX2;
+        switch class(model.distributions{k}.prior)
+          case 'char'
+            prior{k} = mkPrior(model.distributions{k},'data', X);
+          otherwise
+            prior{k} = model.distributions{k}.prior;
+        end
+            [model.distributions{k}.mu, model.distributions{k}.Sigma] = sample(prior{k});
+            SS{k} = MvnDist().mkSuffStat(X(latent == k,:));
+            SSn(k) = SS{k}.n;
+            SSxbar(:,k) = SS{k}.xbar;
+            SSXX(:,:,k) = SS{k}.XX;
+            SSXX2(:,:,k) = SS{k}.XX2;;
+            priorlik{k} = MvnConjugate(model.distributions{k}, 'prior', prior{k});
       end
     end % initializeCollapsedGibbs
 
@@ -519,7 +483,6 @@ classdef MvnMixDist < MixtureDist
       end
       SSn(knew) = SSn(knew) + 1;
     end
-
 
     function [kn,vn,Sn,mn] = updatePost(model, priorMuSigmaDist, SSxbar, SSn, SSXX, SSXX2, xi, kobs)
       % returns parameters reflecting the loss of xi from cluster kobs
@@ -546,48 +509,6 @@ classdef MvnMixDist < MixtureDist
               end
           end
     end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%{ Does anything call this function anymore??
-
-     function [prob] = samplelatentgibbs(model, post, SS, SSxi, xi, kobs, obs)
-      d = size(xi,2);
-      K = numel(model.distributions);
-      prob = zeros(K,1);
-      SS{kobs}.xbar = (SS{kobs}.n*SS{kobs}.xbar - xi')/(SS{kobs}.n - 1);
-      switch lower(model.distributions{kobs}.covtype)
-        case 'diagonal'
-          SS{kobs}.XX2 = diag(diag( (SS{kobs}.n * SS{kobs}.XX2 - xi'*xi) )) / (SS{kobs}.n - 1);
-          SS{kobs}.XX = diag(diag( (SS{kobs}.n * SS{kobs}.XX2 - xi'*xi - (SS{kobs}.n-1)*SS{kobs}.xbar*SS{kobs}.xbar') )) / (SS{kobs}.n - 1);
-          SS{kobs}.n = SS{kobs}.n - 1;
-        case 'spherical'
-          SS{kobs}.XX2 = diag(sum(diag( (SS{kobs}.n*d * SS{kobs}.XX2 - xi'*xi) )))/ ((SS{kobs}.n - 1)*d);
-          SS{kobs}.XX = diag(sum(diag( (SS{kobs}.n*d * SS{kobs}.XX2 - xi'*xi - (SS{kobs}.n-1)*SS{kobs}.xbar*SS{kobs}.xbar') )))/ ((SS{kobs}.n - 1)*d);
-          SS{kobs}.n = SS{kobs}.n - 1;
-        case 'full'
-          SS{kobs}.XX2 = (SS{kobs}.n * SS{kobs}.XX2 - xi'*xi) / (SS{kobs}.n - 1);
-          SS{kobs}.XX = (SS{kobs}.n * SS{kobs}.XX2 - xi'*xi - (SS{kobs}.n-1)*SS{kobs}.xbar*SS{kobs}.xbar') / (SS{kobs}.n - 1);
-          SS{kobs}.n = SS{kobs}.n - 1;
-      end
-      for k = 1:K
-        priorlik = fit( post{obs,k}, 'suffStat', SS{k} );
-        %switch class(prior{k})
-        switch class(priorlik.muSigmaDist)
-          case 'MvnInvWishartDist'
-            %priorlik = fit( Mvn_MvnInvWishartDist(prior{k}), 'suffStat', SS{k} );
-            postobs = fit( Mvn_MvnInvWishartDist(priorlik.muSigmaDist), 'suffStat', SSxi{obs} );
-          case 'MvnInvGammaDist'
-            %priorlik = fit( Mvn_MvnInvGammaDist(prior{k}), 'suffStat', SS{k} );
-            postobs = fit( Mvn_MvnInvGammaDist(priorlik.muSigmaDist), 'suffStat', SSxi{obs} );
-        end % switch class(prior{k})
-        prob(k) = log(SS{k}.n) + logprob( marginal(postobs), xi );
-      end % for clust = 1:K
-      prob = colvec(exp(normalizeLogspace(prob)));
-      %probobs = fit(probobs, 'suffStat', SS);
-    end
-
-%}
 
   end
 
