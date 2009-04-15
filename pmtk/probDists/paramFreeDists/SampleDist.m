@@ -198,6 +198,11 @@ classdef SampleDist < ParamFreeDist
       % num samples
       n = size(obj.samples,1);
     end
+
+    function n = nsamples(obj)
+      % num samples
+      n = size(obj.samples,1);
+    end
     
     function d = ndistrib(obj)
       d = size(obj.samples,3);
@@ -217,6 +222,31 @@ classdef SampleDist < ParamFreeDist
         xlabel('Sample Index'); ylabel('Value');
       end
     end
+
+    function X = getsamples(obj)
+      X = obj.samples;
+    end
+
+    function [] = plotDist(obj, varargin)
+      [nrows, ncols] = process_options(varargin, 'nrows', 0, 'ncols', 0);
+      K = ndistrib(obj);
+      if(nrows == 0 || ncols == 0)
+        ncols = floor(sqrt(K));
+        nrows = ceil(K / ncols);
+      elseif(nrows*ncols < K)
+        warning('SampleDist:plotDist', 'Insufficient number of subplots given.  Choosing default values');
+        ncols = floor(sqrt(K));
+        nrows = cel(K / ncols);
+      end
+      X = getsamples(obj);
+      figure();
+      for k=1:K
+        subplot(nrows, ncols, k);
+        plot(X(:,:,k)');
+        xlabel('Sample Index'); ylabel(sprintf('Value for distribution %d', k));
+      end
+    end
+
   end
   
   methods(Static = true)
@@ -236,6 +266,6 @@ classdef SampleDist < ParamFreeDist
          obj = SampleDist(X, 1:2, {1:2, 1:3});
          pp = pmf(obj)
    end
-  end
-  
+  end
 end
+
