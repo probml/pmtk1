@@ -1,10 +1,12 @@
-function [muDist, SigmaDist, mixDist, latentDist] = galaxyMixtureGibbsDemo(varargin)
-  [collapsed, Nsamples, Nburnin] = process_options(varargin,'collapsed', false, 'Nsamples', 20000, 'Nburnin', 1000);
-  %% Gibbs sampling from a Galaxy data fitted to a mixture of six normal distributions.  Pass in 'collapsed', true/false to choose collapsed Gibbs Sampling
+%% Gibbs sampling from a Galaxy data fitted to a mixture of six normal distributions.
   %#author Cody Severinski
 
   doPlot = true;
   doPrint = false;
+
+  collapsed = false;
+  Nsamples = 20000;
+  Nburnin = 1000;
 
   setSeed(0);
   % Set the number of clusters K
@@ -30,7 +32,9 @@ function [muDist, SigmaDist, mixDist, latentDist] = galaxyMixtureGibbsDemo(varar
   end
 
   % Perform postprocessing on the labels
-  %[muoutDist, SigmaoutDist, latentoutDist, mixoutDist, permOut] = processLabelSwitch(model,latentDist, muDist, SigmaDist, mixDist, galaxies);
+  [muoutDist, SigmaoutDist, latentoutDist, mixoutDist, permOut] = processLabelSwitch(model,latentDist, muDist, SigmaDist, mixDist, galaxies);
+
+  
 
 
   %% Now make some pretty pictures
@@ -46,7 +50,6 @@ function [muDist, SigmaDist, mixDist, latentDist] = galaxyMixtureGibbsDemo(varar
 
   plotDensities(den, 'galaxy_densityEst');
   plotDensities(denout, 'galaxy_densityEst_post');
-%}
   function [mu,sigma] = getMuSigma(mcmc, plottitle)
     Nitr = size(mcmc.param,2);
     mu = zeros(K,Nitr); sigma = zeros(K,Nitr);
@@ -95,5 +98,5 @@ function [muDist, SigmaDist, mixDist, latentDist] = galaxyMixtureGibbsDemo(varar
       pdfcrop; print_pdf(sprintf(plottitle));
     end
   end
-end
+%}
 
