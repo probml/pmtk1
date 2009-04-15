@@ -2,7 +2,7 @@ function writeText(text,fname,append)
 % Write text to a file. 
 %
 % WARNING: Any existing text inside fname will be lost unless in append
-% mode
+% mode.
 % 
 % INPUTS:
 %
