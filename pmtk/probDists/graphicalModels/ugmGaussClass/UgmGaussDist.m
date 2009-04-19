@@ -89,7 +89,11 @@ classdef UgmGaussDist < UgmDist
         obj.mu = mean(X);
         switch method
           case 'glasso',
-            [obj.precMat, obj.Sigma] = ggmLassoHtf(S, lambda, W);
+            if isempty(W)
+              [obj.precMat, obj.Sigma] = ggmLassoHtf(S, lambda);
+            else
+               [obj.precMat, obj.Sigma] = ggmLassoHtf(S, lambda, 'W', W);
+            end
           case 'glassoR',
             [obj.precMat, obj.Sigma] = ggmLassoR(S, lambda);
           otherwise

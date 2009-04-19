@@ -73,7 +73,8 @@ classdef MarkovDist < ParamDist
             model.support = support;
             model.startDist = mkRndParams(model.startDist,nstates);
             model.startDist.support = support;
-            model.transitionDist = mkRndParams(model.transitionDist,nstates,nstates);
+            %model.transitionDist = mkRndParams(model.transitionDist,nstates,nstates);
+            model.transitionDist = mkRndParams(model.transitionDist,nstates);
             model.transitionDist.support = support;
         end
         

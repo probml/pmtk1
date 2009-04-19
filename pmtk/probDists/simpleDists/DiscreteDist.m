@@ -32,7 +32,7 @@ classdef DiscreteDist  < ParamDist
         end
       end
       % must be able to call the constructor with no args...
-      if isempty(support), error('must specify support or nstates or T'); end
+      %if isempty(support), error('must specify support or nstates or T'); end
       if(~approxeq(normalize(T,1),T))
          error('Each column must sum to one'); 
       end
@@ -84,7 +84,7 @@ classdef DiscreteDist  < ParamDist
       if strcmp(model.prior, 'none')
         L = 0;
       else
-        L = logprob(model.prior, model.T');
+        L = logprob(model.prior, model.T(:)');
       end
     end
     
@@ -133,6 +133,7 @@ classdef DiscreteDist  < ParamDist
       if isempty(SS), SS = mkSuffStat(model, X); end
       %K = nstates(model);
       d = size(SS.counts,2);
+      if isempty(model.prior), model.prior = 'none'; end
       if isa(model.prior, 'char'), model = initPrior(model, X); end
       switch class(model.prior)
         case 'DirichletDist'
@@ -164,7 +165,8 @@ classdef DiscreteDist  < ParamDist
     function x = sample(obj, n)
       % x(i,j) in support for i=1:n, j=1:ndistrib
       if nargin < 2, n = 1; end
-      K = nstates(obj); d = ndistrib(obj);
+      %K = nstates(obj);
+      d = ndistrib(obj);
       x = zeros(n, d);
       for j=1:d
         p = obj.T(:,j); cdf = cumsum(p);

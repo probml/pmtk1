@@ -7,7 +7,6 @@ classdef DiscreteMixDist < MixtureDist
     methods
         
         function model = DiscreteMixDist(varargin)
-          error('deprecated')
             [nmixtures,mixingWeights,distributions,model.transformer,model.nrestarts,model.verbose] = process_options(varargin,...
                 'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[],'nrestarts',model.nrestarts,'verbose',true);
             if(isempty(mixingWeights) && ~isempty(nmixtures))

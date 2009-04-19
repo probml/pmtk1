@@ -60,15 +60,20 @@ classdef StudentDist < ParamDist
       logZ = lognormconst(obj);
       v = obj.dof; mu = obj.mu; s2 = obj.sigma2;
       M = repmat(rowvec(mu), N, 1);
-      S2 = repmat(s2, N, d);
-      V = repmat(v, N, d);
-      LZ = repmat(logZ, N, d);
+      S2 = repmat(s2, N, 1);
+      V = repmat(v, N, 1);
+      LZ = repmat(logZ, N, 1);
       Lij = (-(V+1)/2) .* log(1 + (1./V).*( (X-M).^2 ./ S2 ) ) - LZ;
-      %for j=1:d
-      %  v = obj.dof(j); mu = obj.mu(j); s2 = obj.sigma2(j); 
-      %  L(:,j) = (-(v+1)/2) * log(1 + (1/v)*( (x-mu).^2 / s2 ) ) - logZ(j);
-      %end
       L = sum(Lij,2);
+      if 0 % debugging
+      for j=1:d
+        v = obj.dof(j); mu = obj.mu(j); s2 = obj.sigma2(j); 
+        x = X(:,j);
+        L2(:,j) = (-(v+1)/2) * log(1 + (1/v)*( (x-mu).^2 / s2 ) ) - logZ(j);
+      end
+      assert(approxeq(Lij,L2))
+      end
+     
     end
    
    

@@ -16,7 +16,6 @@ classdef MixtureDist < ParamJointDist
   methods
 
     function model = MixtureDist(varargin)
-       error('deprecated')
       % Construct a new mixture of distributions
       if nargin == 0, return; end;
       [nmixtures,distributions,mixingWeights,model.transformer]...

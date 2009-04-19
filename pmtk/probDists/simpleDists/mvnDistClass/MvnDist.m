@@ -68,6 +68,7 @@ classdef MvnDist < ParamDist
       domain = 1:length(m.mu);
     end
 
+    %{
     function [obj, samples] = sampleParamGibbs(obj,X,prior)
       % We first sample Sigma conditional on mu and X, then mu conditional on Sigma and X;
       switch class(prior)
@@ -130,6 +131,7 @@ classdef MvnDist < ParamDist
           samples.mu = obj.mu;
       end % of switch class(prior)
     end
+    %}
 
     function [samples, other] = sample(model, n, visVars, visVals)
       % Samples(i,:) is i'th sample
@@ -347,7 +349,8 @@ classdef MvnDist < ParamDist
       %obj = MvnDist();
       obj.covtype = covtype;
       if isempty(SS), SS = MvnDist().mkSuffStat(X); end
-      if isa(prior, 'char'), prior = mkPrior(obj,'data', X, 'prior', obj.prior, 'covtype', obj.covtype); end
+      if isa(prior, 'char'),  prior = mkPrior(obj,'data', X, 'prior', obj.prior, 'covtype', obj.covtype); end      
+      if isempty(prior), prior = NoPrior; end
       obj.prior = prior; % replace string with object so logprior(model) works
       switch class(prior)
         case 'NoPrior',
@@ -441,6 +444,10 @@ classdef MvnDist < ParamDist
       end
     end
 
+     function model = initPrior(model,data)
+       model.prior = mkPrior(model, 'data', data);
+     end
+     
     function priorDist = mkPrior(obj,varargin)
       [data, prior, covtype] = process_options(varargin, 'data', [], 'prior', obj.prior, 'covtype', obj.covtype);
       [n,d] = size(data);
@@ -497,7 +504,8 @@ classdef MvnDist < ParamDist
         case 'MvnInvGammaDist'
           priorlik = Mvn_MvnInvGammaDist(prior);
       end
-    end   
+    end
+   
   end % methods
 
   methods(Static = true)

@@ -13,7 +13,7 @@ for bayes=0:1
     if bayes
         classCond = copy(Mvn_MvnInvWishartDist(prior),1,Nclasses);
     else
-        classCond = copy(MvnDist([],[],'prior', prior),1,Nclasses);
+        classCond = copy(MvnDist('ndims',d,'prior', prior),1,Nclasses);
     end
     if bayes
         alpha = 1*ones(1,Nclasses);

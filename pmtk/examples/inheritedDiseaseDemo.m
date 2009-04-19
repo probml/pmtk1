@@ -33,7 +33,8 @@ CPD{G3} = CPD{G2};
 % Observation model
 XgivenG_H = MvnDist(50,10); % healthy
 XgivenG_U = MvnDist(60,10); % unhealthy
-CPD{X1}   = MvnMixDist('distributions',{XgivenG_H,XgivenG_U});
+%CPD{X1}   = MvnMixDist('distributions',{XgivenG_H,XgivenG_U});
+CPD{X1}   = CondGaussCPD('distributions',{XgivenG_H,XgivenG_U});
 CPD{X2}   = CPD{X1};
 CPD{X3}   = CPD{X1};
 

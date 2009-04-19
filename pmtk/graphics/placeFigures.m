@@ -167,7 +167,7 @@ end
             case {'0  0  0  0' , '0  0  1  0'}
                 error('You cannot specify a total when you want to display existing figures.');
             case {'1  0  0  0' , '1  0  0  1' , '1  0  1  0' , '1  0  1  1'} 
-                error('There are no figures to place. Set ''newfigs'' to true to create blank figures.');     
+              error('There are no figures to place. Set ''newfigs'' to true to create blank figures.');
             case {'0  1  1  1', '1  1  1  1'}  
                 error('You have to specify how many figures you want, either via ''nrows'',''ncols'', or ''total''');
             

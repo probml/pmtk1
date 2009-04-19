@@ -14,6 +14,8 @@ classdef ProbDist
             nll = -mean(logprob(obj, X),1);
         end
         
+        %{
+        % yuck! what is this doing here??
         function [mu, stdErr] = cvScore(obj, X, varargin)
             %CV Score using nll loss of the model.
             [nfolds,clamp] = process_options(varargin, 'nfolds', 5,'clamp',false);
@@ -31,6 +33,7 @@ classdef ProbDist
             mu = mean(score);
             stdErr = std(score,0,2)/sqrt(n);
         end
+        %}
         
         function bool = isTied(obj)
         % Should return true if any of the parameters are tied.    

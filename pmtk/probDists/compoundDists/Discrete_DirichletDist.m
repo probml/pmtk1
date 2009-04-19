@@ -33,6 +33,7 @@ classdef Discrete_DirichletDist < CompoundDist
     function p = pmf(model)
       % predictive density - just plug in posterior mean params
       p =  DiscreteDist('T', mean(model.muDist));
+      p = p.T; % return it as a table!
     end
     
 

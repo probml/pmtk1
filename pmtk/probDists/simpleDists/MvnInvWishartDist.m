@@ -66,7 +66,7 @@ classdef MvnInvWishartDist < ParamDist
             k = obj.k;                    
             for i=1:N
                Sigma = X(i,2);
-               pgauss.Sigma = Sigma/k;
+               pgauss.Sigma = Sigma/k; % invalid - X may be negative
                L(i) = logprob(pgauss,mu(i)) + logprob(piw,Sigma);
             end
         else
