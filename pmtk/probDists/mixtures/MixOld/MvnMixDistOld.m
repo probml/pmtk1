@@ -1,4 +1,4 @@
-classdef MvnMixDistOld < MixtureDist
+classdef MvnMixDistOld < MixtureDistOld
   % Mixture of Multivariate Normal Distributions
 
 

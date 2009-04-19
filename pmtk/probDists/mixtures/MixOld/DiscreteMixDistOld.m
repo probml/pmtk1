@@ -1,4 +1,4 @@
-classdef DiscreteMixDistOld < MixtureDist
+classdef DiscreteMixDistOld < MixtureDistOld
 % A mixture of products of Discrete Distributions, (i.e. Naive Bayes structure,
 % but with hidden class labels). Each product of Discrete distributions is
 % represented as a single vectorized DiscreteDist object. This class can be used
@@ -19,7 +19,7 @@ classdef DiscreteMixDistOld < MixtureDist
             model.distributions = distributions;
         end
         
-        function d = ndimensions(model)
+        function d = ndimensions(model) 
            if(numel(model.distributions) > 0)
                d = ndistrib(model.distributions{1});
            else
