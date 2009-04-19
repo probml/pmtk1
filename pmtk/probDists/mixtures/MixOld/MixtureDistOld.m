@@ -1,4 +1,4 @@
-classdef MixtureDist < ParamJointDist
+classdef MixtureDistOld < ParamJointDist
   % A mixture model
   % Mixtures of any probability distributions can be created with this class.
   % Subclasses simply allow for more a more convienient interface by automatically
@@ -15,7 +15,7 @@ classdef MixtureDist < ParamJointDist
 
   methods
 
-    function model = MixtureDist(varargin)
+    function model = MixtureDistOld(varargin)
       % Construct a new mixture of distributions
       if nargin == 0, return; end;
       [nmixtures,distributions,mixingWeights,model.transformer]...

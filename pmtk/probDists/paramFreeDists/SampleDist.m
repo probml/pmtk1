@@ -199,10 +199,6 @@ classdef SampleDist < ParamFreeDist
       n = size(obj.samples,1);
     end
 
-    function n = nsamples(obj)
-      % num samples
-      n = size(obj.samples,1);
-    end
     
     function d = ndistrib(obj)
       d = size(obj.samples,3);
@@ -221,10 +217,6 @@ classdef SampleDist < ParamFreeDist
         plot(X(:,:,k)');
         xlabel('Sample Index'); ylabel('Value');
       end
-    end
-
-    function X = getsamples(obj)
-      X = obj.samples;
     end
 
     function [] = plotDist(obj, varargin)
@@ -266,6 +258,7 @@ classdef SampleDist < ParamFreeDist
          obj = SampleDist(X, 1:2, {1:2, 1:3});
          pp = pmf(obj)
    end
-  end
+  end
+
 end
 

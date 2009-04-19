@@ -1,10 +1,10 @@
-classdef MvnMixDist < MixtureDist
+classdef MvnMixDistOld < MixtureDist
   % Mixture of Multivariate Normal Distributions
 
 
   methods
 
-    function model = MvnMixDist(varargin)
+    function model = MvnMixDistOld(varargin)
       [nmixtures,mixingWeights,distributions,model.transformer,model.verbose,model.nrestarts] = process_options(varargin,...
         'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[],'verbose',true,'nrestarts',model.nrestarts);
       if(~isempty(distributions)),nmixtures = numel(distributions);end
