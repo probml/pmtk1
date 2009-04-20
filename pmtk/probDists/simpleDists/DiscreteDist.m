@@ -22,7 +22,7 @@ classdef DiscreteDist  < ParamDist
       % Same prior is used for each distribution.
       if nargin == 0; return ; end
       [T, nstates, support, prior, obj.priorStrength] = processArgs(varargin, ...
-        '-T', [], '-nstates', [], '-support', [], '-prior', '-none', '-priorStrength', 0);
+        '-T', [], '-nstates', [], '-support', [], '-prior', 'none', '-priorStrength', 0);
       if isempty(support) 
         if ~isempty(nstates)
           support = 1:nstates;

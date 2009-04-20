@@ -16,8 +16,8 @@ methods
     K = nmixtures;
     T = normalize(ones(K,1));
     alpha = 2; % MAP estimate is counts + alpha - 1
-    mixingDistrib = DiscreteDist('T', T, 'prior','dirichlet', 'priorStrength', alpha);
-    dist = MvnDist('ndims', ndims, 'prior','niw');
+    mixingDistrib = DiscreteDist('-T', T, '-prior','dirichlet', '-priorStrength', alpha);
+    dist = MvnDist('-ndims', ndims, '-prior','niw');
     distributions = copy(dist,K,1);
     model.mixingDistrib = mixingDistrib;
     model.distributions = distributions;

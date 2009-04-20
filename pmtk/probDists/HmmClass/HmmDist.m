@@ -66,10 +66,10 @@ classdef HmmDist < ParamJointDist
                 model.nstates = numel(model.emissionDist);
             end
             if(isempty(model.transitionDist))
-               model.transitionDist = DiscreteDist('T',normalize(rand(model.nstates),1),'support',1:model.nstates); 
+               model.transitionDist = DiscreteDist('-T',normalize(rand(model.nstates),1),'-support',1:model.nstates); 
             end
             if(isempty(model.startDist))
-               model.startDist = DiscreteDist('T',normalize(rand(model.nstates,1)),'support',1:model.nstates); 
+               model.startDist = DiscreteDist('-T',normalize(rand(model.nstates,1)),'-support',1:model.nstates); 
             end
             if(numel(model.emissionDist) == 1)
                 model.emissionDist = copy(model.emissionDist,model.nstates,1);
@@ -269,24 +269,24 @@ classdef HmmDist < ParamJointDist
             % Maximize with respect to the ess calculated in the previous Estep    
                 %% Starting Distribution
                 if(not(clampedStart))
-                    model.startDist = fit(model.startDist,'suffStat',essStart);
+                    model.startDist = fit(model.startDist,'-suffStat',essStart);
                 end
                 %% M Step Transition Matrix
                 if(not(clampedTrans))
-                     model.transitionDist = fit(model.transitionDist,'suffStat',essTrans);
+                     model.transitionDist = fit(model.transitionDist,'-suffStat',essTrans);
                 end
                 %% M Step Observation Model
                 if(not(clampedObs))
                     if(isTied(model.emissionDist{1})) % update the shared parameters first and then clamp them before updating the rest
                         % since the state conditional densitity will know if
                         % its tied or not, it can return appropriate suffStats.
-                        model.emissionDist{1} = fit(model.emissionDist{1},'suffStat',essObs{1});
+                        model.emissionDist{1} = fit(model.emissionDist{1},'-suffStat',essObs{1});
                         for i=2:model.nstates
-                            model.emissionDist{i} = unclampTied(fit(clampTied(model.emissionDist{i}),'suffStat',essObs{i}));
+                            model.emissionDist{i} = unclampTied(fit(clampTied(model.emissionDist{i}),'-suffStat',essObs{i}));
                         end
                     else
                         for i=1:model.nstates
-                            model.emissionDist{i} = fit(model.emissionDist{i},'suffStat',essObs{i});
+                            model.emissionDist{i} = fit(model.emissionDist{i},'-suffStat',essObs{i});
                         end
                     end
                 end
@@ -341,10 +341,10 @@ classdef HmmDist < ParamJointDist
                 if(1) % initialize each component with all of the data, ignoring the temporal structure.
                     data = HmmDist.stackObservations(X);
                     if(allSameTypes(model.emissionDist))
-                        model.emissionDist = copy(fit(model.emissionDist{1},'data',data),1,model.nstates);
+                        model.emissionDist = copy(fit(model.emissionDist{1},'-data',data),1,model.nstates);
                     else
                         for i=1:model.nstates
-                            model.emissionDist{i} =  fit(model.emissionDist{i},'data',data);
+                            model.emissionDist{i} =  fit(model.emissionDist{i},'-data',data);
                         end
                     end
                 else % initialize each distribution with a random batch of data, ignoring temporal structure. 

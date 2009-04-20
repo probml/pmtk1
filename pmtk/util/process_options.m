@@ -92,7 +92,7 @@ nunused = 0;
 for i=1:2:length(args)
   found = 0;
   for j=1:2:n
-    if strcmpi(args{i}, varargin{j})
+    if strcmpi(args{i}, varargin{j}) || strcmpi(args{i}(2:end),varargin{j})
       varargout{(j + 1)/2} = args{i + 1};
       found = 1;
       break;

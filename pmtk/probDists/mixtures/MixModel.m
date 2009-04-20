@@ -56,7 +56,7 @@ classdef MixModel < ProbDist
       logRik = calcResponsibilities(model, data);
       [Rik, LL] = normalizeLogspace(logRik);
       Rik = exp(Rik);
-      ph = DiscreteDist('T',Rik');
+      ph = DiscreteDist('-T',Rik');
     end
     
 

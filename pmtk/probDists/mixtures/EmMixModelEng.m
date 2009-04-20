@@ -31,10 +31,10 @@ methods
     function model = Mstep(eng, model, ess) %#ok skips eng
       K = length(model.distributions);
       for k=1:K
-        model.distributions{k} = fit(model.distributions{k},'suffStat',ess.compSS{k});
+        model.distributions{k} = fit(model.distributions{k},'-suffStat',ess.compSS{k});
       end
       mixSS.counts = ess.counts;
-      model.mixingDistrib = fit(model.mixingDistrib,'suffStat',mixSS);
+      model.mixingDistrib = fit(model.mixingDistrib,'-suffStat',mixSS);
     end
     
     function model = initializeEM(eng, model,data,r) %#ok that ignores data and r

@@ -3,11 +3,11 @@
 
 %% Discrete Observations
 setSeed(0);
-trueObsModel = {DiscreteDist('T',ones(6,1)./6       ,'support',1:6)
-    DiscreteDist('T',[ones(5,1)./10;0.5],'support',1:6)};
+trueObsModel = {DiscreteDist('-T',ones(6,1)./6       ,'-support',1:6)
+    DiscreteDist('-T',[ones(5,1)./10;0.5],'-support',1:6)};
 
-trueTransDist = DiscreteDist('T',[0.8,0.2;0.3,0.70]','support',1:2);
-trueStartDist = DiscreteDist('T',[0.5,0.5]','support',1:2);
+trueTransDist = DiscreteDist('-T',[0.8,0.2;0.3,0.70]','-support',1:2);
+trueStartDist = DiscreteDist('-T',[0.5,0.5]','-support',1:2);
 trueModel = HmmDist('startDist'     ,trueStartDist,...
     'transitionDist',trueTransDist,...
     'emissionDist'  ,trueObsModel);
@@ -17,7 +17,7 @@ nsamples = 20; length1 = 13; length2 = 30;
 [observed2,hidden2] = sample(trueModel,nsamples/2,length2);
 observed = [num2cell(squeeze(observed1),1)';num2cell(squeeze(observed2),1)'];
 
-model = HmmDist('emissionDist',DiscreteDist('support',1:6),'nstates',2);
+model = HmmDist('emissionDist',DiscreteDist('-support',1:6),'nstates',2);
 model = fit(model,'data',observed);
 
 model = condition(model,'Y',observed{1}');
@@ -27,8 +27,8 @@ maxmarg = maxidx(marginal(model,':'))
 
 %% MVN Observations
 trueObsModel = {MvnDist(zeros(1,10),randpd(10));MvnDist(ones(1,10),randpd(10))};
-trueTransDist = DiscreteDist('T',[0.8,0.2;0.1,0.90]','support',1:2);
-trueStartDist = DiscreteDist('T',[0.5;0.5],'support',1:2);
+trueTransDist = DiscreteDist('-T',[0.8,0.2;0.1,0.90]','-support',1:2);
+trueStartDist = DiscreteDist('-T',[0.5;0.5],'-support',1:2);
 trueModel = HmmDist('startDist'     ,trueStartDist,...
     'transitionDist',trueTransDist,...
     'emissionDist'  ,trueObsModel);
@@ -44,8 +44,8 @@ for i=1:nstates
     %emissionDist{i} = mkRndParams(MvnMixDist('nrestarts',5,'verbose',false),d,nmixcomps);
     emissionDist{i} = mkRndParams(MixMvn(nmixcomps,d));
 end
-pi = DiscreteDist('T',normalize(ones(nstates,1)));
-A = DiscreteDist('T',normalize(rand(nstates),1));
+pi = DiscreteDist('-T',normalize(ones(nstates,1)));
+A = DiscreteDist('-T',normalize(rand(nstates),1));
 trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
 [observed,hidden] = sample(trueModel,1,500);
 %model = HmmDist('emissionDist',MvnMixDist('nmixtures',nmixcomps,'verbose',false,'nrestarts',1),'nstates',nstates);
