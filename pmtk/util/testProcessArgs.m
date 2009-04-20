@@ -58,6 +58,14 @@ function testProcessArgs()
     
     caught = false;
     try
+        test1('-first','test',2,3)
+    catch
+        caught = true;
+    end
+    assert(caught);
+    
+    caught = false;
+    try
         test1('-first','-second')
     catch
         caught = true;
