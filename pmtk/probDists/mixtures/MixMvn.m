@@ -4,7 +4,7 @@ classdef MixMvn < MixModel
 methods
 
   function model = MixMvn(varargin)
-    % model = MixMvn(nmixtures, nstates, support, transfomer)
+    % model = MixMvn(nmixtures, ndims, fitEng, transformer)
     % Create a model with default priors for MAP estimation
     if nargin == 0; return; end
     [nmixtures, ndims, model.fitEng, model.transformer] = ...
@@ -14,9 +14,9 @@ methods
       'fitEng',       EmMixMvnEng(), ...
       'transformer'  ,[]);
     K = nmixtures;
-    %T = normalize(rand(K,1));
+    T = normalize(ones(K,1));
     alpha = 2; % MAP estimate is counts + alpha - 1
-    mixingDistrib = DiscreteDist('nstates', K, 'prior','dirichlet', 'priorStrength', alpha);
+    mixingDistrib = DiscreteDist('T', T, 'prior','dirichlet', 'priorStrength', alpha);
     dist = MvnDist('ndims', ndims, 'prior','niw');
     distributions = copy(dist,K,1);
     model.mixingDistrib = mixingDistrib;

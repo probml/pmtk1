@@ -13,11 +13,15 @@ classdef PcaTransformer < Transformer
     methods
         
         function obj = PcaTransformer(varargin)
+          % obj = PcaTransformer(k, method)
+          [obj.k, obj.method] = processArgs(varargin, 'k', [], 'method', 'default');
+          %{
             if(nargin == 1)
                 obj.k = varargin{1};
             else
                 [obj.k, obj.method] = process_options(varargin,'k',[],'method','default');
             end
+          %}
         end
         
         function [Xlow,obj] = train(obj,X)
@@ -33,8 +37,7 @@ classdef PcaTransformer < Transformer
             X = bsxfun(@minus,X,obj.mu);
             Xnew = X*obj.basisVectors;
         end
-        
-        
+     
     end
     
     

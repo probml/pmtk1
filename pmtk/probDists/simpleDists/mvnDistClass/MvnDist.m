@@ -235,7 +235,7 @@ classdef MvnDist < ParamDist
     end
 
     function L = logprior(model)
-      if strcmp(model.prior, 'none')
+      if strcmp(model.prior, 'none') || isa(model.prior, 'NoPrior')
         L = 0;
       else 
         L = logprob(model.prior, model.mu, model.Sigma);
@@ -453,8 +453,12 @@ classdef MvnDist < ParamDist
       [n,d] = size(data);
       if(n==0), return; end;
       switch class(prior)
+        case 'NoPrior'
+          priorDist = NoPrior;
         case 'char'
           switch lower(prior)
+            case 'none'
+              priorDist = NoPrior;
             case 'niw'
               kappa0 = 0.001; m0 = nanmean(data)';
               % Add a small offsert to T0 in case diag(nanvar(data)) contains dimensions with zero empirical variance

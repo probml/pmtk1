@@ -1,5 +1,5 @@
 function idx_opt = oneStdErrorRule(res_mean, res_std, dof)
-% We pick the model whose error is withint one standard error of the best
+% We pick the model whose error is withint one standard error of the lowest
 % We assume models are ordered from least complex to most complex
 % If not, pass in the dof field to figure out the right order
 
@@ -8,7 +8,7 @@ if nargin < 3, dof = 1:n; end
 
 [sortedDof, perm] = sort(dof); % smallest dof first
 if ~isequal(dof, sortedDof)
-  fprintf('sorting so simplest model comes first\n')
+  %fprintf('sorting so simplest model comes first\n')
   res_mean = res_mean(perm);
   res_std = res_std(perm);
 end

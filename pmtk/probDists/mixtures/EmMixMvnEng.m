@@ -29,9 +29,9 @@ methods
     if(nmixtures == 2)
       % shade points by responsibility
       %colors = subd(predict(model,data),'T')';
-      post = inferLatent(model,data)
+      post = inferLatent(model,data);
       %post = conditional(model, data);
-      colors = post.T; % colors(:,k) = prob belong to cluster k
+      colors = post.T'; % colors(:,k) = prob belong to cluster k
       scatter(data(:,1),data(:,2),18,[colors(:,1),zeros(size(colors,1),1),colors(:,2)],'filled');
     else
       plot(data(:,1),data(:,2),'.','MarkerSize',10);
