@@ -94,7 +94,7 @@ classdef LogregDist < CondProbDist
             if ~isempty(obj.transformer)
                 X = test(obj.transformer, X);
             end
-            pred = DiscreteDist('T', multiSigmoid(X,obj.w(:))','support',obj.classSupport);      
+            pred = DiscreteDist('-T', multiSigmoid(X,obj.w(:))','-support',obj.classSupport);      
         end
 
         function p = logprob(obj, X, y)

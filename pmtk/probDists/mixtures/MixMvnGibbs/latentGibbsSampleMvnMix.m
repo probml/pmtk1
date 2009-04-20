@@ -46,7 +46,7 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
       logRik(:,k) = log(sub(mean(mixingWeights),k)+eps)+sum(logprob(distributions{k},data),2);
     end
     predictive = exp(normalizeLogspace(logRik));
-    pred = DiscreteDist('T',predictive');
+    pred = DiscreteDist('-T',predictive');
 
     latent = colvec(sample(pred,1));
     for k=1:K

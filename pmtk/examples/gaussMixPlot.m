@@ -7,10 +7,10 @@ Sigma1 = [0.018  0.01 ;  0.01 0.011];
 Sigma2 = [0.011 -0.01 ; -0.01 0.018];
 Sigma3 = Sigma1;
 dists = {MvnDist(mu1,Sigma1),MvnDist(mu2,Sigma2),MvnDist(mu3,Sigma3)};
-mix = DiscreteDist('T',[0.5 0.3 0.2]');
+mix = DiscreteDist('-T',[0.5 0.3 0.2]');
 mixmat = pmf(mix);
 %m = MvnMixDist('nmixtures',3,'distributions',dists,'mixingWeights',mix);
-m = MixModel('distributions',dists,'mixingDistrib',mix);
+m = MixModel('-distributions',dists,'-mixingDistrib',mix);
 figure; hold on;
 colors = {'r', 'g', 'b'};
 for k=1:3

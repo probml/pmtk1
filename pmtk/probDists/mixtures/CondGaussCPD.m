@@ -15,7 +15,7 @@ classdef CondGaussCPD < MixMvn
         if nargin == 0; return; end
         [CPD.distributions] = processArgs(varargin, '-distributions', []);
         nmix = length(CPD.distributions);
-        CPD.mixingDistrib = DiscreteDist('T',normalize(ones(nmix,1)));
+        CPD.mixingDistrib = DiscreteDist('-T',normalize(ones(nmix,1)));
       end
       
       function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates,fullDomain)

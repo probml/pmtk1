@@ -76,7 +76,7 @@ classdef KnnDist < CondProbDist
             end
             if(obj.verbose && ishandle(wbar)),close(wbar);end
             SS.counts = probs';
-            pred = fit(DiscreteDist('support',obj.support,'prior',obj.classPrior),'suffStat',SS);
+            pred = fit(DiscreteDist('-support',obj.support,'-prior',obj.classPrior),'-suffStat',SS);
         end
         
     end

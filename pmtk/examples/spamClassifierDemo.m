@@ -45,8 +45,8 @@ midx = 1;
 fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % Naive Bayes
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes; Define equal probability priors
-baseModel{midx}.classConditionals = copy(DiscreteDist('support',[0,1]),1,2);
-baseModel{midx}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
+baseModel{midx}.classConditionals = copy(DiscreteDist('-support',[0,1]),1,2);
+baseModel{midx}.classPrior = DiscreteDist('-T',normalize(ones(2,1)),'-support',0:1);
 baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);
 baseModel{midx}.X = binspam;
 
@@ -76,7 +76,7 @@ fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
 %baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'covtype','diagonal'),1,2);
 % Define equal probability priors
-baseModel{midx}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
+baseModel{midx}.classPrior = DiscreteDist('-T',normalize(ones(2,1)),'-support',0:1);
 baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);
 baseModel{midx}.X = logspam;
 
@@ -143,7 +143,7 @@ fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes; Define equal probability priors
 baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
 %baseModel{midx}.classConditionals = copy(DiscreteDist('support',[0,1]),1,2);
-baseModel{midx}.classPrior = DiscreteDist('T',normalize(ones(2,1)),'support',0:1);
+baseModel{midx}.classPrior = DiscreteDist('-T',normalize(ones(2,1)),'-support',0:1);
 baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);
 baseModel{midx}.X = binspam(:,1:54);
 

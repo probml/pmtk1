@@ -58,8 +58,8 @@ emissionDist = cell(5,1);
 for i=1:nstates
     emissionDist{i} = mkRndParams(DiscreteMixDist('nmixtures',nmixcomps),d,nmixcomps);
 end
-pi = DiscreteDist('T',normalize(rand(nstates,1)));
-A = DiscreteDist('T',normalize(rand(nstates),1));
+pi = DiscreteDist('-T',normalize(rand(nstates,1)));
+A = DiscreteDist('-T',normalize(rand(nstates),1));
 trueModel = HmmDist('startDist',pi,'transitionDist',A,'emissionDist',emissionDist,'nstates',nstates);
 [observed,hidden] = sample(trueModel,1,500);
 model = HmmDist('emissionDist',DiscreteMixDist('nmixtures',nmixcomps,'verbose',false),'nstates',nstates);

@@ -30,7 +30,7 @@ for binary=0:1
             alpha = 1*ones(1,Nclasses);
             classPrior = Discrete_DirichletDist(DirichletDist(alpha), 1:Nclasses);
         else
-            classPrior = DiscreteDist('support',1:Nclasses);
+            classPrior = DiscreteDist('-support',1:Nclasses);
         end
         model = GenerativeClassifierDist('classPrior', classPrior, 'classConditionals', classCond);
         model = fit(model,'X',Xtrain,'y',ytrain);

@@ -29,7 +29,7 @@ classdef MixDiscrete < MixModel
         end
       end
       if isempty(support), error('must specify support or nstates'); end
-      dist = DiscreteDist('support', support, 'prior','dirichlet', 'priorStrength', alpha);
+      dist = DiscreteDist('-support', support, '-prior','dirichlet', '-priorStrength', alpha);
       distributions = copy(dist,K,1);
       model.mixingDistrib = mixingDistrib;
       model.distributions = distributions;

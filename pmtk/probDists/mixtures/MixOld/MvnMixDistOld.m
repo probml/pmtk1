@@ -10,7 +10,7 @@ classdef MvnMixDistOld < MixtureDistOld
       if(~isempty(distributions)),nmixtures = numel(distributions);end
 
       if(isempty(mixingWeights) && ~isempty(nmixtures))
-        mixingWeights = DiscreteDist('T',normalize(ones(nmixtures,1)));
+        mixingWeights = DiscreteDist('-T',normalize(ones(nmixtures,1)));
       end
       model.mixingWeights = mixingWeights;
       if(isempty(distributions)&&~isempty(model.mixingWeights))

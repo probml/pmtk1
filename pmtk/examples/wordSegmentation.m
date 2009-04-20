@@ -13,9 +13,9 @@ end
 function helper(useMix)
 load data45;
 nstates = 5; d = 13; nmixcomps = 3;
-startDist = DiscreteDist('T',[1,0,0,0,0]','support',1:5);
+startDist = DiscreteDist('-T',[1,0,0,0,0]','-support',1:5);
 transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
-transDist = DiscreteDist('T',transmat0','support',1:5);
+transDist = DiscreteDist('-T',transmat0','-support',1:5);
 emissionDist = cell(5,1);
 for i=1:nstates
   if useMix

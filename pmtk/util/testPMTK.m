@@ -2,6 +2,7 @@
 
 try
 
+
 bernoulliDistTest;                       pclear(0);
 bernoulli_betaSequentialUpdate;          pclear(0);
 binom_betaPostPredDemo;                  pclear(0);
@@ -27,10 +28,10 @@ generativeClassifierTest1;               pclear(0);
 generativeClassifierTest2;               pclear(0);
 ggmBICdemo;                              pclear(0);
 ggmDemo;                                 pclear(0);
+ggmFitDemo;                              pclear(0);
 ggmInferDemo;                            pclear(0);
 gibbsSprinklerUGM;                       pclear(0);
 graphClassDemo;                          pclear(0);
-%hmmDistTest;                             pclear(0); %broken
 inheritedDiseaseDemo;                    pclear(0);
 invGammaSampleDemo;                      pclear(0);
 invWIplot1D;                             pclear(0);

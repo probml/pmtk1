@@ -8,8 +8,8 @@ nstates = 5;
 %Initial Guesses for EM
 pi0 = [1,0,0,0,0];
 transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2)';
-startDist = DiscreteDist('T',pi0','support',1:5);
-transDist = DiscreteDist('T',transmat0,'support',1:5);
+startDist = DiscreteDist('-T',pi0','-support',1:5);
+transDist = DiscreteDist('-T',transmat0,'-support',1:5);
 %%
 classConditionals = copy(HmmDist('nstates',5,'emissionDist',MvnDist(),'transitionDist',transDist,'startDist',startDist),2,1);
 %%

@@ -26,12 +26,12 @@ classdef GenerativeClassifierDist < ParamDist
             %           'X'            - X(i,:) is i'th case
             %           'y'            - the training labels
             [X,y] = process_options(varargin,'X',[],'y',[]);
-            obj.classPrior = fit(obj.classPrior, 'data',  colvec(y));
+            obj.classPrior = fit(obj.classPrior, '-data',  colvec(y));
             if(~isempty(obj.transformer))
                 [X,obj.transformer] = train(obj.transformer,X);
             end
             for c=1:length(obj.classConditionals)
-                obj.classConditionals{c} = fit(obj.classConditionals{c},'data',X(y==obj.classPrior.support(c),:));
+                obj.classConditionals{c} = fit(obj.classConditionals{c},'-data',X(y==obj.classPrior.support(c),:));
             end
         end
         
@@ -49,7 +49,7 @@ classdef GenerativeClassifierDist < ParamDist
                 L(:,c) = sum(logprob(obj.classConditionals{c},X),2) + logpy(c);
             end;
             post = exp(normalizeLogspace(L));
-            pred = DiscreteDist('T', post', 'support', obj.classPrior.support);
+            pred = DiscreteDist('-T', post', '-support', obj.classPrior.support);
         end
         
         function d = ndimensions(obj)

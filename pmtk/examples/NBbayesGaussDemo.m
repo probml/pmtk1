@@ -57,7 +57,7 @@ method = {'plugin', 'bayes'};
 
 nigPrior = MvnInvGammaDist('mu', zeros(d,1), 'Sigma', 0, 'a', 0.1, 'b', 0.1);
 classConditionals = copy(MvnDist('mu', zeros(d,1), 'Sigma', diag(ones(1,d)),'prior', nigPrior, 'covtype', 'diagonal'),1,K);
-classPrior = DiscreteDist('T',normalize(ones(3,1)),'support',1:K);
+classPrior = DiscreteDist('-T',normalize(ones(3,1)),'-support',1:K);
 baseClassifier = GenerativeClassifierDist('classConditionals',classConditionals,'classPrior',classPrior);
 classifier = fit(baseClassifier, 'X', Xtrain, 'y', Ytrain);
 % plugin estimate

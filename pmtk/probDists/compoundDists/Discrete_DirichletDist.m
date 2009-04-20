@@ -27,12 +27,12 @@ classdef Discrete_DirichletDist < CompoundDist
     
     function m = marginal(obj)
       % This may not be correct...
-      m =  DiscreteDist('T', normalize(obj.muDist.alpha,2)');
+      m =  DiscreteDist('-T', normalize(obj.muDist.alpha,2)');
     end
      
     function p = pmf(model)
       % predictive density - just plug in posterior mean params
-      p =  DiscreteDist('T', mean(model.muDist));
+      p =  DiscreteDist('-T', mean(model.muDist));
       p = p.T; % return it as a table!
     end
     
