@@ -133,7 +133,7 @@ classdef Logreg_MvnDist < CondProbDist
                 if ~isa(obj.wDist,'MvnDist'), error('Only available for Gaussian posteriors'); end
                 p = sigmoidTimesGauss(X, obj.wDist.mu(:), obj.wDist.Sigma);
                 p = p(:);
-                pred = DiscreteDist('-T',[p,1-p]','support',obj.classSupport);
+                pred = DiscreteDist('-T',[p,1-p]','-support',obj.classSupport);
               otherwise
                 error('%s is an unsupported prediction method',method);
             end

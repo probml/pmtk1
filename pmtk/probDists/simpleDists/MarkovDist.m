@@ -45,8 +45,8 @@ classdef MarkovDist < ParamDist
                model.transitionDist.support = model.support;
             end
             map = @(x)canonizeLabels(x,model.support);
-            if iscell(X), model.startDist = fit(model.StartDist,'data',cellfun(@(c)c(1),X));
-            else          model.startDist = fit(model.startDist,'data',X(:,1)); end
+            if iscell(X), model.startDist = fit(model.StartDist,'-data',cellfun(@(c)c(1),X));
+            else          model.startDist = fit(model.startDist,'-data',X(:,1)); end
             T = zeros(numel(model.support));
             if iscell(X)
                 for i=1:numel(X)
@@ -65,7 +65,7 @@ classdef MarkovDist < ParamDist
                 end
             end
             SS.counts = T';
-            model.transitionDist = fit(model.transitionDist,'suffStat',SS);
+            model.transitionDist = fit(model.transitionDist,'-suffStat',SS);
         end
         
         function model = mkRndParams(model,nstates,support)
