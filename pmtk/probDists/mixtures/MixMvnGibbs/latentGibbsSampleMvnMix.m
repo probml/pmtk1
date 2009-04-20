@@ -1,83 +1,113 @@
-
-function [dists] = latentGibbsSampleMvnMix(model,X,varargin)
-[Nsamples, Nburnin, thin, verbose] = process_options(varargin, ...
-  'Nsamples'	, 1000, ...
-  'Nburnin'		, 500, ...
-  'thin'		, 1, ...
-  'verbose'		, false );
-
-% Initialize the model
-K = numel(model.distributions);
-[n,d] = size(X);
-[model, prior, priorlik] = initializeGibbs(model,X);
-post = cell(K,1);
-if(verbose)
-  fprintf('Gibbs Sampling initiated.  Starting to collect samples\n')
-end
-
-obs = ceil((Nsamples - Nburnin) / thin);
-loglik = zeros(obs,1);
-latentsamples = zeros(obs,n);
-musamples = zeros(obs,d,K);
-Sigmasamples = zeros(d,d,obs,K);
-mixsamples = zeros(obs,K);
-
-keep = 1;
-% Get samples
-for itr=1:Nsamples
-  if(mod(itr,500) == 0 && verbose)
-    fprintf('Collected %d samples \n', itr)
-  end
-  % sample the latent variables conditional on the parameters
-  pred = predict(model,X);
-  latent = colvec(sample(pred,1));
-  % Sample the parameters of the model conditional on the parameters
-  param = cell(K,1);
+function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, varargin)
+  [Nsamples, Nburnin, thin, verbose] = process_options(varargin, ...
+    'Nsamples'  , 1000, ...
+    'Nburnin'   , 500, ...
+    'thin'    , 1, ...
+    'verbose'   , false );
+  
+  % Initialize the model
+  K = numel(distributions);
+  [nobs,d] = size(data);
+  K = numel(distributions);
+  prior = cell(K,1);
+  priorlik = cell(K,1);
   for k=1:K
-    joint = fit(priorlik{k},'data', X );
-    post{k} = joint.muSigmaDist;
-    switch class(prior{k})
-      case 'MvnInvWishartDist'
-        % From post, get the values that we need for the marginal of Sigma for this distribution, and sample
-        postSigma = InvWishartDist(post{k}.dof + 1, post{k}.Sigma);
-        model.distributions{k}.Sigma = sample(postSigma,1);
-        % Now, do the same thing for mu
-        postMu = MvnDist(post{k}.mu, model.distributions{k}.Sigma / post{k}.k);
-      case 'MvnInvGammaDist'
-        postSigma = InvGammaDist(post.a + 1, post.b);
-        model.distributions{k}.Sigma = sample(postSigma,1);
-        % Now, do the same thing for mu
-        postMu = MvnDist(post.mu, obj.Sigma / post.Sigma);
-    end % of switch class(prior)
-    model.distributions{k}.mu = sample(postMu,1);
-  end % of k=1:K
-  % Conditional on the sampled assignments, fit and sample from the Dirichlet-Multinomial that defines the mixing weights
-  postMix = fit(Discrete_DirichletDist(model.mixingWeights.prior), 'data', latent);
-  model.mixingWeights.T = sample(postMix.muDist, 1);
-
-  % Store the results if we are past burnin and if thinning permits
-  if(itr > Nburnin && mod(itr, thin)==0)
-    latentsamples(keep,:) = rowvec(latent);
-    mixsamples(keep,:) = rowvec(model.mixingWeights.T);
-    for k=1:K
-      musamples(keep,:,k) = rowvec(model.distributions{k}.mu);
-      Sigmasamples(keep,:,k) = rowvec(cholcov(model.distributions{k}.Sigma));
-      if(Sigmasamples(keep,:,k) == 0)
-        fprintf('invalid Sigma')
-        keyboard
-      end
+    switch class(distributions{k}.prior)
+      case 'char'
+        prior{k} = mkPrior(distributions{k},'data', X);
+      otherwise
+        prior{k} = distributions{k}.prior;
     end
-    loglik(keep) = logprobGibbs(model,X,latent);
-    keep = keep + 1;
+      [distributions{k}.mu, distributions{k}.Sigma] = sample(prior{k});
+      priorlik{k} = MvnConjugate(distributions{k}, 'prior', prior{k});
   end
-end % of itr=1:Nsamples
-latentDist = SampleDistDiscrete(latentsamples, 1:K);
-mixDist = SampleDistDiscrete(mixsamples, 1:K);
-muDist = SampleDist(musamples, 1:d);
-% from the documentation, I'm not exactly sure how to storethe covariance matrix samples.
-% Suggest storing the cholesky factor as a vector.  Can recover original matrix using
-% reshape(w',4,4)'*reshape(w',4,4), where w is the sample cholesky factor
-SigmaDist = SampleDist(Sigmasamples);
-dists = struct('latentDist', latentDist, 'muDist', muDist, 'SigmaDist', SigmaDist, 'mixDist', mixDist);
+  
+  mixPrior = mixingWeights.prior;
+  post = cell(K,1);
+  if(verbose)
+    fprintf('Gibbs Sampling initiated.  Starting to collect samples\n')
+  end
+  
+  outitr = ceil((Nsamples - Nburnin) / thin);
+  latentsamples = zeros(outitr,nobs);
+  musamples = zeros(outitr,d,K);
+  Sigmasamples = zeros(outitr,d*d,K);
+  mixsamples = zeros(outitr,K);
+
+  keep = 1;
+  logRik = zeros(nobs,K);
+  % Get samples
+  for itr=1:Nsamples
+    if(mod(itr,500) == 0 && verbose)
+      fprintf('Collected %d samples \n', itr)
+    end
+    % sample the latent variables conditional on the parameters
+    for k=1:K
+      logRik(:,k) = log(sub(mean(mixingWeights),k)+eps)+sum(logprob(distributions{k},data),2);
+    end
+    predictive = exp(normalizeLogspace(logRik));
+    pred = DiscreteDist('T',predictive');
+
+    latent = colvec(sample(pred,1));
+    for k=1:K
+      joint = fit(priorlik{k}, 'data', data(latent == k,:) );
+      post{k} = joint.muSigmaDist;
+      switch class(prior{k})
+        case 'MvnInvWishartDist'
+          % From post, get the values that we need for the marginal of Sigma for this distribution, and sample
+          postSigma = InvWishartDist(post{k}.dof + 1, post{k}.Sigma);
+          %sampledSigma = sample(postSigma,1);
+          sampledSigma = iwishrnd(post{k}.Sigma, post{k}.dof + 1);
+          % Now, do the same thing for mu
+          %postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.k);
+        case 'MvnInvGammaDist'
+          switch lower(covtype{k})
+            case 'spherical'
+              v = (post{k}.a + d/2)*2;
+              s2 = 2*(post{k}.b)/v;
+              sampledSigma = invchi2rnd(v,s2,1,1)*eye(d);
+            case 'diagonal'
+              v = (post{k}.a + 1/2)*2;
+              s2 = 2*(post{k}.b)/v;
+              for j=1:d
+                sampledSigma(j) = invchi2rnd(v,s2(j),1,1);
+              end
+              sampledSigma = diag(sampledSigma);
+          end
+          %postSigma = InvGammaDist(post{k}.a + 1, post{k}.b);
+          %sampledSigma = sample(postSigma,1);
+          %sampledSigma = iwishrnd(post{k}.Sigma, post{k}.dof + 1);
+          % Now, do the same thing for mu
+          % EXTREMELY inefficient based on profiling
+          %postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.Sigma);
+      end % of switch class(prior)
+      distributions{k}.Sigma = sampledSigma;
+      distributions{k}.mu = mvnrnd(rowvec(post{k}.mu), sampledSigma / post{k}.Sigma);
+      %model.distributions{k}.mu = sample(postMu,1);
+    end % of k=1:K
+    % Conditional on the sampled assignments, fit and sample from the Dirichlet-Multinomial that defines the mixing weights
+    postMix = fit(Discrete_DirichletDist(mixPrior), 'data', latent);
+    mixingWeights.T = sample(postMix.muDist, 1);
+
+    % Store the results if we are past burnin and if thinning permits
+    if(itr > Nburnin && mod(itr, thin)==0)
+      latentsamples(keep,:) = rowvec(latent);
+      mixsamples(keep,:) = rowvec(mixingWeights.T);
+      for k=1:K
+        musamples(keep,:,k) = rowvec(distributions{k}.mu);
+        Sigmasamples(keep,:,k) = rowvec(cholcov(distributions{k}.Sigma));
+      end
+      keep = keep + 1;
+    end
+  end % of itr=1:Nsamples
+  latentDist = SampleDistDiscrete(latentsamples, 1:K);
+  mixDist = SampleDistDiscrete(mixsamples, 1:K);
+  muDist = SampleDist(musamples, 1:d);
+  % from the documentation, I'm not exactly sure how to storethe covariance matrix samples.
+  % Suggest storing the cholesky factor as a vector.  Can recover original matrix using
+  % reshape(w',d,d)'*reshape(w',d,d), where w is the sample cholesky factor
+  SigmaDist = SampleDist(Sigmasamples);      
+
+  dists = struct('muDist', muDist, 'SigmaDist', SigmaDist, 'mixDist', mixDist, 'latentDist', latentDist);
 end
 
