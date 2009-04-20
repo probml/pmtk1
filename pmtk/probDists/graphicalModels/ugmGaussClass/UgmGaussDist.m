@@ -33,7 +33,7 @@ classdef UgmGaussDist < UgmDist
       function postQuery = marginal(model, queryVars, visVars, visValues)
         % we currently ignore the graph strucutre
         %[mu,Sigma,domain] = convertToMvnDist(model);
-        mvn = MvnDist(model.mu, model.Sigma, 'domain', model.domain);
+        mvn = MvnDist(model.mu, model.Sigma, '-domain', model.domain);
         postQuery = marginal(mvn, queryVars, visVars, visValues);
       end
       %}

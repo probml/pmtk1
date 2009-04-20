@@ -2,7 +2,7 @@
 
 d = 4; seed = 0; pcMissing = 0.3;
 setSeed(seed);
-model = mkRndParams(MvnDist, d);
+model = mkRndParams(MvnDist(), d);
 n = 20;
 
 % If we are always missing the first K columns, we can never estimate their

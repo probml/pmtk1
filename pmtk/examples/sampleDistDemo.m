@@ -2,7 +2,7 @@
 %#testPMTK
 seed = 1;
 setSeed(seed);
-m = MvnDist;
+m = MvnDist();
 m = mkRndParams(m, 2);
 X = sample(m, 500);
 mS = SampleDist(X);

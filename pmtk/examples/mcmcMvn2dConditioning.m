@@ -18,11 +18,11 @@ margExact = marginal(mFull, {1, 2, [1 2]}, V, data);% p(h|V=v) is a 2d Gaussian
 
 
 N = 500;
-mcmc{1} = MvnDist('mu',mu, 'Sigma',Sigma, 'infEng', GibbsInfEng('verbose', true, 'Nsamples', N));
+mcmc{1} = MvnDist('-mu',mu, '-Sigma',Sigma, '-infEng', GibbsInfEng('verbose', true, 'Nsamples', N));
 h = length(H); % num hidden
-mcmc{2} = MvnDist('mu',mu, 'Sigma',Sigma, 'infEng', ...
+mcmc{2} = MvnDist('-mu',mu, '-Sigma',Sigma, '-infEng', ...
   MhInfEng('Nsamples', N, 'verbose', true, 'proposal', @(x) mvnrnd(x, 1*eye(h))));
-mcmc{3} = MvnDist('mu',mu, 'Sigma',Sigma, 'infEng', ...
+mcmc{3} = MvnDist('-mu',mu, '-Sigma',Sigma, '-infEng', ...
   MhInfEng('Nsamples', N, 'verbose', true, 'proposal', @(x) mvnrnd(x, 0.01*eye(h))));
      
 %targetFn = @(x) logprob(MvnDist(mu,Sigma), x, false);

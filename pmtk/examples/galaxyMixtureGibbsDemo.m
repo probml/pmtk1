@@ -21,7 +21,7 @@
   % specify the prior distribution to use.
   chosenPrior = MvnInvWishartDist('mu', mean(galaxies)', 'Sigma', diag(var((galaxies))) / K^(2/d), 'dof', d + 2, 'k', 0.01);
  % model = MvnDist('distributions',copy( MvnDist('mu', zeros(d,1),'Sigma', diag(ones(d,1)), 'prior', chosenPrior), K,1) ) ;
-model = MixMvnGibbs('distributions',copy( MvnDist('mu', zeros(d,1),'Sigma', diag(ones(d,1)), 'prior', chosenPrior), K,1) ) ;
+model = MixMvnGibbs('distributions',copy( MvnDist('-mu', zeros(d,1),'-Sigma', diag(ones(d,1)), '-prior', chosenPrior), K,1) ) ;
 
   % Set the prior distribution on the mixing weights to be Dirichlet(1,..., 1)
   model.mixingWeights.prior = DirichletDist(ones(K,1));

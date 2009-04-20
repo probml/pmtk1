@@ -73,8 +73,8 @@ midx = 3;
 fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % Diagonal Gaussian on log transformed
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes
-baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
-%baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'covtype','diagonal'),1,2);
+baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'-prior','nig','-covtype','diagonal'),1,2);
+%baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'-covtype','diagonal'),1,2);
 % Define equal probability priors
 baseModel{midx}.classPrior = DiscreteDist('-T',normalize(ones(2,1)),'-support',0:1);
 baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);
@@ -102,7 +102,7 @@ baseModel{midx}.model = baseModel{midx}.model(baseModel{midx}.lambda);
 midx = 5;
 fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % now the laplace approximation to the continuous data
-baseModel{midx}.model = @(lambda)Logreg_MvnDist('infMethod','laplace','priorStrength',lambda);
+baseModel{midx}.model = @(lambda)Logreg_MvnDist('-infMethod','laplace','-priorStrength',lambda);
 baseModel{midx}.modelspace = ModelSelection.makeModelSpace(lambda);
 baseModel{midx}.X = spam;
 baseModel{midx}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
@@ -121,7 +121,7 @@ baseModel{midx}.model = baseModel{midx}.model(baseModel{midx}.lambda);
 midx = 6;
 fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % now the laplace approximation to the continuous data
-baseModel{midx}.model = @(lambda)Logreg_MvnDist('infMethod','laplace','priorStrength',lambda);
+baseModel{midx}.model = @(lambda)Logreg_MvnDist('-infMethod','laplace','-priorStrength',lambda);
 baseModel{midx}.modelspace = ModelSelection.makeModelSpace(lambda);
 baseModel{midx}.X = logspam;
 baseModel{midx}.predictFunction = @(Xtrain,ytrain,Xtest,lambda)...
@@ -141,7 +141,7 @@ midx = 7;
 fprintf('Constructing Base models: %s, %s \n', modelName{midx}, dataName{midx});
 % Naive Bayes without the last three uninformative feature
 % Define discrete class conditionals, with support on [0,1], taking on one of two classes; Define equal probability priors
-baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'prior','nig','covtype','diagonal'),1,2);
+baseModel{midx}.classConditionals = copy(MvnDist(zeros(1,d),diag(1*ones(1,d)),'-prior','nig','-covtype','diagonal'),1,2);
 %baseModel{midx}.classConditionals = copy(DiscreteDist('support',[0,1]),1,2);
 baseModel{midx}.classPrior = DiscreteDist('-T',normalize(ones(2,1)),'-support',0:1);
 baseModel{midx}.model = GenerativeClassifierDist('classConditionals',baseModel{midx}.classConditionals,'classPrior',baseModel{midx}.classPrior);

@@ -2,7 +2,7 @@
 %#testPMTK
 d = 10; seed = 0; pcMissing = 0.3;
 setSeed(seed);
-model = mkRndParams(MvnDist, d);
+model = mkRndParams(MvnDist(), d);
 %model = condition(model);
 n = 5;
 Xfull = sample(model, n);

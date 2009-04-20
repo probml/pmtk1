@@ -17,7 +17,7 @@ ncases = length(covstr);
 prior = cell(ncases,1);
 for j=1:ncases
   prior{j} = mkPrior(MvnDist(), 'data', X, 'prior', priorstr{j}, 'covtype', covstr{j});
-  model{j} = MvnDist('mu', mean(X)', 'Sigma', cov(X), 'prior', prior{j}, 'covtype', covstr{j});
+  model{j} = MvnDist('-mu', mean(X)', '-Sigma', cov(X), '-prior', prior{j}, '-covtype', covstr{j});
   fitted{j} = fit(model{j}, 'data', X);
   plotDist(fitted{j});
   suptitle(sprintf('Model: %s',covstr{j}));

@@ -15,7 +15,7 @@ pimaNan(miss == 0) = NaN;
 % pimaNanImg(miss == 0) = 0;
 
 % Make a guess at what the model is
-model = mkRndParams(MvnDist,p);
+model = mkRndParams(MvnDist(),p);
 % But we know something of mu, Sigma from what we see
 model.mu = nanmean(pimaNan)'; model.Sigma = nancov(pimaNan);
 
