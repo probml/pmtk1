@@ -13,8 +13,8 @@ end
 function m = MvnDist(varargin)
     
     [m.mu,m.Sigma, m.domain, m.prior, m.fitMethod, m.fitArgs, m.infEng] = processArgs(varargin, ...
-        'mu',[],'Sigma',[],'domain', [], 'prior', 'none', 'fitMethod', 'mle', ...
-        'fitArgs', {}, 'infEng', GaussInfEng());
+        '-mu',[],'-Sigma',[],'-domain', [], '-prior', 'none', '-fitMethod', 'mle', ...
+        '-fitArgs', {}, '-infEng', GaussInfEng());
      if(isempty(m.domain))
          m.domain = 1:numel(mu);
      end
@@ -40,8 +40,8 @@ MvnDist([1,0,randpd(2),[],[],'map')  % default values used for 3rd, 4th, and uns
 function m = MvnDist(varargin)
     
     [m.mu,m.Sigma, m.domain, m.prior, m.fitMethod, m.fitArgs, m.infEng] = processArgs(varargin, ...
-        '*+mu',[],'*+Sigma',[],'+domain', [], 'prior', 'none', '+fitMethod', 'mle', ...
-        '+fitArgs', {}, 'infEng', GaussInfEng());
+        '*+-mu',[],'*+-Sigma',[],'+-domain', [], '-prior', 'none', '+-fitMethod', 'mle', ...
+        '+-fitArgs', {}, '-infEng', GaussInfEng());
      if(isempty(m.domain))
          m.domain = 1:numel(mu);
      end

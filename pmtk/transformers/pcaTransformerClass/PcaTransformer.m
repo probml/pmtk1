@@ -14,7 +14,8 @@ classdef PcaTransformer < Transformer
         
         function obj = PcaTransformer(varargin)
           % obj = PcaTransformer(k, method)
-          [obj.k, obj.method] = processArgs(varargin, 'k', [], 'method', 'default');
+          if nargin ==0; return; end
+          [obj.k, obj.method] = processArgs(varargin, '-k', [], '-method', 'default');
           %{
             if(nargin == 1)
                 obj.k = varargin{1};

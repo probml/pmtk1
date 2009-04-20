@@ -23,8 +23,8 @@ p = length(S);
 Noff = p*(p-1)/2;  % # of offdiag elements
 
 [W, MaxOuter, MaxInner, verbose, mytol] = processArgs(varargin, ...
-  'W', S + lambda*eye(p), 'MaxOuter', 20, 'MaxInner', 20, ...
-  'verbose', true, 'mytol', 1e-4); 
+  '-W', S + lambda*eye(p), '-MaxOuter', 20, '-MaxInner', 20, ...
+  '-verbose', true, '-mytol', 1e-4); 
 
 
 % max # iterations for innter/outer loops    

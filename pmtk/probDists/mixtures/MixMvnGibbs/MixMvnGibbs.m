@@ -4,6 +4,7 @@ classdef MixMvnGibbs < MixMvn
   
   methods
      function model = MixMvnGibbs(varargin)
+       if nargin == 0; return; end
       [nmixtures,mixingWeights,distributions,model.transformer,model.verbose] = process_options(varargin,...
         'nmixtures',[],'mixingWeights',[],'distributions',[],'transformer',[],'verbose',true);
       if(~isempty(distributions)),nmixtures = numel(distributions);end

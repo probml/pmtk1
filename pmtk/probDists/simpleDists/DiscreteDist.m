@@ -22,7 +22,7 @@ classdef DiscreteDist  < ParamDist
       % Same prior is used for each distribution.
       if nargin == 0; return ; end
       [T, nstates, support, prior, obj.priorStrength] = processArgs(varargin, ...
-        'T', [], 'nstates', [], 'support', [], 'prior', 'none', 'priorStrength', 0);
+        '-T', [], '-nstates', [], '-support', [], '-prior', '-none', '-priorStrength', 0);
       if isempty(support) 
         if ~isempty(nstates)
           support = 1:nstates;
@@ -128,8 +128,8 @@ classdef DiscreteDist  < ParamDist
       % data(i,j) is value of case i, variable j (an integer in model.support)
       % suffStat.counts is a K*d matrix
       [X, SS] = processArgs(varargin, ...
-        'data', [], ...
-        'suffStat', []);
+        '-data', [], ...
+        '-suffStat', []);
       if isempty(SS), SS = mkSuffStat(model, X); end
       %K = nstates(model);
       d = size(SS.counts,2);

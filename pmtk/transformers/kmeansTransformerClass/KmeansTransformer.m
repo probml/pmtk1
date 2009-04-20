@@ -11,8 +11,9 @@ classdef KmeansTransformer < Transformer
 
     function obj = KmeansTransformer(varargin)
       % KmeansTransformer(K, [maxIter], [doPlot])
+      if nargin ==0; return; end
       [obj.K, obj.maxIter, obj.doPlot] = ...
-        processArgs(varargin, 'K', [], 'maxIter', 100, 'doPlot', false);
+        processArgs(varargin, '-K', [], '-maxIter', 100, '-doPlot', false);
     end
 
     function [Xdiscrete, obj, errhist] = train(obj, X)

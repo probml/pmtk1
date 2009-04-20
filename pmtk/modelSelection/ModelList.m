@@ -17,13 +17,14 @@ classdef ModelList
           % models is a cell array
           % selMethod - 'bic' or 'aic' or 'loglik' or 'cv' [default cv]
           % nfolds - number of folds [default 5]
+          if nargin == 0; return; end
           [obj.models, obj.selectionMethod, obj.nfolds] = processArgs(varargin, ...
-            'models', {}, 'selMethod', 'cv', 'nfolds', 5);
+            '-models', {}, '-selMethod', '-cv', '-nfolds', 5);
         end
         
         function mlist = fit(mlist, varargin)
           % m = fit(m, X) or fit(m, X, y)
-          [X, y] = processArgs(varargin, 'X', [], 'y', []);
+          [X, y] = processArgs(varargin, '-X', [], '-y', []);
           Nx = size(X,1);
           switch mlist.selectionMethod
             case 'cv', [mlist.bestModel, mlist.scores] = ...
@@ -42,7 +43,7 @@ classdef ModelList
          
         function ll = logprob(mlist, varargin)
           % ll(i) = logprob(m, X) or logprob(m, X, y)
-          [X, y] = processArgs(varargin, 'X', [], 'y', []);
+          [X, y] = processArgs(varargin, '-X', [], '-y', []);
           if isempty(y)
            ll = logprob(mlist.bestModel, X);
           else
@@ -52,7 +53,7 @@ classdef ModelList
         
         function py = predict(mlist, varargin)
           % py = predict(m, X)
-          [X] = processArgs(varargin, 'X', []);
+          [X] = processArgs(varargin, '-X', []);
           py = predict(mlist.bestModel, X);
         end
         

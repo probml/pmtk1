@@ -12,7 +12,8 @@ classdef CondGaussCPD < MixMvn
       end
       %}
       function CPD = CondGaussCPD(varargin)
-        [CPD.distributions] = processArgs(varargin, 'distributions', []);
+        if nargin == 0; return; end
+        [CPD.distributions] = processArgs(varargin, '-distributions', []);
         nmix = length(CPD.distributions);
         CPD.mixingDistrib = DiscreteDist('T',normalize(ones(nmix,1)));
       end
