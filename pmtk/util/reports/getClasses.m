@@ -1,24 +1,12 @@
 function classes = getClasses(source)
-% Get a list of all of the classes below the specified directory.     
+% Get a list of all of the classes below the specified directory that are 
+% on the Matlab path.
     
 if nargin < 1
     source = '.';
 end
 excludeList = {'dependsOn','viewClassTree','getClasses'};
 classes = setdiff(findClasses(dirinfo(source)),excludeList)';
-
-function info = dirinfo(directory)
-%Get info about all of the files in the directory structure. 
-    info = what(directory);
-    flist = dir(directory);
-    dlist =  {flist([flist.isdir]).name};
-    for i=1:numel(dlist)
-        dirname = dlist{i};
-        if(~strcmp(dirname,'.') && ~strcmp(dirname,'..'))
-            info = [info, dirinfo([directory,'\',dirname])]; 
-        end
-    end
-end
 
 
 function baseClasses = findClasses(info)
@@ -27,6 +15,7 @@ function baseClasses = findClasses(info)
       mfiles = info(i).m;
       for j=1:numel(mfiles)
           file = mfiles{j};
+          if ~exist(file(1:end-2),'file'), continue; end
           fid = fopen(file);
           fulltext = textscan(fid,'%s','delimiter','\n','whitespace','');
           fclose(fid);
