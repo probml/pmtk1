@@ -28,15 +28,19 @@ methods
       ess.counts = colvec(normalize(sum(Rik,1)));
     end
   
-    function model = Mstep(eng, model, ess) %#ok skips eng
-'entering M step \n '
+    function [model, singular] = Mstep(eng, model, ess) %#ok skips eng
       K = length(model.distributions);
       for k=1:K
         model.distributions{k} = fit(model.distributions{k},'-suffStat',ess.compSS{k});
+[R, p] = cholcov(model.distributions{k}.Sigma);
+inv(model.distributions{k}.Sigma)
+det(model.distributions{k}.Sigma)
+if(det(model.distributions{k}.Sigma) <=0), keyboard; end;
+singular = (p || det(model.distributions{k}.Sigma) <=0);
+if(singular), return; end
       end
       mixSS.counts = ess.counts;
       model.mixingDistrib = fit(model.mixingDistrib,'-suffStat',mixSS);
-'exiting M step \n'
     end
     
     function model = initializeEM(eng, model,data,r) %#ok that ignores data and r

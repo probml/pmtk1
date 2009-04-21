@@ -53,12 +53,17 @@ classdef EmEng  < OptimEng
       while(not(converged))
         prevLL = currentLL;
         [ess, currentLL] = Estep(eng,model, data);
-        model = Mstep(eng, model, ess);
+        [newmodel, singular] = Mstep(eng, model, ess);
+        if(singular)
+          warning('EmEng:singular', 'Fit resulted in singular covariance matrix')
+          return;
+        end;
+        model = newmodel;
         iter = iter + 1;
         if (eng.verbose), displayProgress(eng, model,data,currentLL,iter,r);end
         converged = iter >= eng.maxIter || convergenceTest(currentLL, prevLL, eng.convTol);
         if currentLL < prevLL
-          warning('EmEng:fit', 'EM not monotonically increasing objective')
+          warning('EmEng:fit', sprintf('EM not monotonically increasing objective (delta = %g)', currentLL - prevLL))
         end
       end
     end % fitNoRestarts

@@ -3,7 +3,7 @@
 % However loglikelihood for GMM has U shape curve
 % Thus we cannot use cross-validation for K-means, but can for GMM
 %#broken
-clear all
+%clear all
 setSeed(0);
 d = 2; K = 3;
 Ntrain = 100; Ntest = 100;
