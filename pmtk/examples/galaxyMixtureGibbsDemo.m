@@ -24,17 +24,17 @@
 model = MixMvnGibbs('distributions',copy( MvnDist('-mu', zeros(d,1),'-Sigma', diag(ones(d,1)), '-prior', chosenPrior), K,1) ) ;
 
   % Set the prior distribution on the mixing weights to be Dirichlet(1,..., 1)
-  model.mixingWeights.prior = DirichletDist(ones(K,1));
+  model.mixingDistrib.prior = DirichletDist(ones(K,1));
 
   % Initiate the sampler
   if(collapsed)
-    [muDist, SigmaDist, latentDist, mixDist] = collapsedGibbs(model,galaxies,'Nsamples', Nsamples, 'Nburnin', Nburnin, 'thin', 1);
+      dists = collapsedGibbs(model, galaxies, 'Nsamples', 20000, 'Nburnin', 1000, 'verbose', true);
   else
-    [muDist, SigmaDist, latentDist, mixDist] = latentGibbsSample(model,galaxies,'Nsamples', Nsamples, 'Nburnin', Nburnin, 'thin', 1, 'verbose', true);
+    dists = latentGibbsSample(model, galaxies, 'Nsamples', 20000, 'Nburnin', 1000, 'verbose', true);
   end
 
   % Perform postprocessing on the labels
-  [muoutDist, SigmaoutDist, latentoutDist, mixoutDist, permOut] = processLabelSwitch(model,latentDist, muDist, SigmaDist, mixDist, galaxies);
+  [distsout, permOut] = processLabelSwitching(dists, galaxies);
 
   
 

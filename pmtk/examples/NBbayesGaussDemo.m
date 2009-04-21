@@ -1,4 +1,6 @@
-%#broken
+% illustrate the advantage of integratting out the params intsead of using a plug-in estimate
+%author Cody Severinski - based on ./bookCode/NBbayesGaussDemo
+
 symbols = {'r+', 'b*',  'gx', 'mx', 'r.', 'gs', 'c*'};
 errrate = zeros(1,2);
 K = 3; d = 2;
@@ -56,7 +58,7 @@ end
 
 method = {'plugin', 'bayes'};
 
-nigPrior = MvnInvGammaDist('mu', zeros(d,1), 'Sigma', 0, 'a', 0.1, 'b', 0.1);
+nigPrior = MvnInvGammaDist('mu', zeros(d,1), 'Sigma', 0.00, 'a', 0.00, 'b', 0.00*ones(1,d));
 classConditionals = copy(MvnDist('-mu', zeros(d,1), '-Sigma', diag(ones(1,d)),'-prior', nigPrior, '-covtype', 'diagonal'),1,K);
 classPrior = DiscreteDist('-T',normalize(ones(3,1)),'-support',1:K);
 baseClassifier = GenerativeClassifierDist('classConditionals',classConditionals,'classPrior',classPrior);
