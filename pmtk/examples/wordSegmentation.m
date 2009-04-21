@@ -1,5 +1,5 @@
 %% Train an HMM on the word "four" and then find the Viterbi parse of a test signal into phones
-
+%#broken
 function wordSegmentation()
 
 setSeed(0);

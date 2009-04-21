@@ -1,6 +1,6 @@
 %% (Full) Gibbs sampling from a mixture of multivariate normals
 %#author Cody Severinski
-
+%#broken
 setSeed(0);
 % Set the number of clusters K
 % the number of observations n to generate in d dimensions,
@@ -20,7 +20,7 @@ end
 
 % specify the prior distribution to use.
 chosenPrior = MvnInvWishartDist('mu', mean(X), 'Sigma', diag(var((X))), 'dof', d + 1, 'k', 0.001);
-model = MvnMixDist('distributions',copy( MvnDist(zeros(d,1),diag(ones(d,1)), 'prior', chosenPrior), K,1) ) ;
+model = MvnMixDist('distributions',copy( MvnDist(zeros(d,1),diag(ones(d,1)), '-prior', chosenPrior), K,1) ) ;
 
 % Set the prior distribution on the mixing weights to be Dirichlet(1,..., 1)
 model.mixingWeights.prior = DirichletDist(ones(K,1));

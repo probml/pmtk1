@@ -13,8 +13,8 @@ predictGibbs = predict(dists.latentDist);
 postGibbs = mode(predictGibbs);
 
 % EM
-m  = MixMvn('nmixtures',2,'ndims',d);
-m = fit(m,'data',X);
+m  = MixMvn('-nmixtures',2,'-ndims',d);
+m = fit(m,'-data',X);
 predictEM = inferLatent(m,X);
 postEM = mode(predictEM);
 

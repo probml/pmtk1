@@ -7,8 +7,8 @@ N = 500; d = 3; K = 2;
 X = zeros(N,d);
 mu = sample(MvnDist(zeros(d,1),5*eye(d)),1); Sigma = sample(InvWishartDist(d+1,50*eye(d)));
 X = sample(MvnDist(mu, Sigma), N);
-
-MvnDist().plotData(X);
+m = MvnDist();
+m.plotData(X);
 suptitle('Plot of Data');
 
 covstr = {'full', 'diagonal', 'spherical'};

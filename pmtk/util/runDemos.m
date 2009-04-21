@@ -104,7 +104,7 @@ mvnCondition2D;                          pclear(2);
 mvnCovDemo;                              pclear(2);
 mvnHeightWeight;                         pclear(2);
 mvnImputationDemo;                       pclear(2);
-mvnImputationEmDemo;                     pclear(2);
+%mvnImputationEmDemo;                    pclear(2); % broken
 mvnImputationPima;                       pclear(2);
 mvnInferMuSigma1D;                       pclear(2);
 mvnInferParamsMean1d;                    pclear(2);
@@ -112,7 +112,7 @@ mvnInferParamsMean2d;                    pclear(2);
 mvnInferParamsSigma2d;                   pclear(2);
 mvnInvWIplotDemo;                        pclear(2);
 mvnMixDistTest;                          pclear(2);
-mvnMixFullGibbsDemo;                     pclear(2);
+%mvnMixFullGibbsDemo;                    pclear(2); % broken
 mvnPlot2Ddemo;                           pclear(2);
 mvnSeqUpdateMu1d;                        pclear(2);
 mvnSeqUpdateSigma1d;                     pclear(2);
@@ -143,6 +143,6 @@ sprinklerUGMvarelim;                     pclear(2);
 studentVSGauss;                          pclear(2);
 undirectedChainFwdBackDemo;              pclear(2);
 wiPlotDemo;                              pclear(2);
-wordSegmentation;                        pclear(2);
+%wordSegmentation;                       pclear(2); % broken
 
 

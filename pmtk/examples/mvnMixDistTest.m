@@ -1,7 +1,7 @@
 %% Simple Test of MixMvn
 setSeed(13);
 d = 2; K = 4;
-m = MixMvn('nmixtures', K, 'ndims', d);
+m = MixMvn('-nmixtures', K, '-ndims', d);
 m = mkRndParams(m);
 m.fitEng.verbose = true;
 m.fitEng.nrestarts = 2;

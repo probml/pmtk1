@@ -36,7 +36,7 @@ classdef SampleDistDiscrete < SampleDist
         % on the sampled indicators
         K = max(latentdist.support);
         counts = histc(latentdist.samples, latentdist.support);
-        pred = DiscreteDist('T',bsxfun(@rdivide, counts, sum(counts)));
+        pred = DiscreteDist('-T',bsxfun(@rdivide, counts, sum(counts)));
       end
         
         
