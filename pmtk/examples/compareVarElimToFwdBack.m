@@ -1,5 +1,4 @@
 %% HMM vs DGM Comparing Forwards Backwards to Variable Elimination
-%#broken
 % In this example, we compare a simple HMM model with binary hidden nodes and
 % Gaussian emission densities to a DGM model equivalent up to the first T
 % time steps. We show that running variable elimination on the DGM, to answer

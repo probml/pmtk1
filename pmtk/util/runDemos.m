@@ -15,9 +15,9 @@ chainLengthUgmDgmDemo;                   pclear(2);
 chainTransformerTest;                    pclear(2);
 chordalGraphDemo;                        pclear(2);
 chowliuDemo;                             pclear(2);
-%clusterMnistDigits;                     pclear(2); % broken
+clusterMnistDigits;                      pclear(2);
 compareVarElimToEnum;                    pclear(2);
-%compareVarElimToFwdBack;                pclear(2); % broken
+compareVarElimToFwdBack;                 pclear(2);
 compareVarElimToJtree;                   pclear(2);
 constDistTest;                           pclear(2);
 cooperYooInterventionDemo;               pclear(2);

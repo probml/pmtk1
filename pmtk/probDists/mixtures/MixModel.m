@@ -185,6 +185,30 @@ classdef MixModel < ProbDist
       SS.ess = ess;
       SS.weights = gamma2;
     end
+    
+    function p = isDiscrete(CPD) %#ok
+    % used by DgmDist constructor    
+      p = false;
+    end
+    
+    function q = nstates(CPD)  
+    % used by DgmDist constructor    
+      q = length(pmf(CPD.mixingDistrib));
+    end
+    
+    function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates,fullDomain)
+    % all of the children must be observed
+        assert(isempty(ctsParents))
+        assert(length(dParents)==1)
+        map = @(x)canonizeLabels(x,fullDomain);
+        if visible(map(child))
+            T = exp(calcResponsibilities(model,data(map(child))));
+            Tfac = TabularFactor(T,dParents);
+        else
+            % barren leaf removal
+            Tfac = TabularFactor(ones(1,nstates(map(dParents))), dParents);
+        end
+    end
 
     
   end % methods

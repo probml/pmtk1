@@ -1,5 +1,4 @@
 %% Cluster MNIST Digits and Visualize the Cluster Centers
-%#broken
 % Setup data
 setSeed(1);
 classes   = 2:4;    % Confine task to digits 2:4 (must be a subset of 0:9)

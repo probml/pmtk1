@@ -95,7 +95,7 @@ classdef HmmDist < ParamJointDist
         % that is a truncated version of this HMM. 
             CPD{1} = TabularCPD(mean(model.startDist)');
             CPD(2:t) = copy(TabularCPD(mean(model.transitionDist)'),1,t-1);
-            CPD(t+1:2*t) = copy(MixtureDist('distributions',model.emissionDist),1,t);
+            CPD(t+1:2*t) = copy(MixModel('-distributions',model.emissionDist),1,t);
             
             G = zeros(2*t);
             for i=1:t-1
