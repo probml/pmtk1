@@ -13,7 +13,9 @@ classdef MvnInvGammaDist < ParamDist
             if nargin == 0, varargin = {}; end
             [mu, Sigma, a, b] = process_options(...
                 varargin, 'mu', [], 'Sigma', [], 'a', [], 'b', []);
-            m.mu = mu; m.Sigma = Sigma; m.a = a; m.b = colvec(b);
+            b = rowvec(b);
+            if(length(b) ~= length(a)), a = a*ones(1,length(b)); end;
+            m.mu = mu; m.Sigma = Sigma; m.a = a; m.b = b;
         end
 
         function m = setParam(m, param)
