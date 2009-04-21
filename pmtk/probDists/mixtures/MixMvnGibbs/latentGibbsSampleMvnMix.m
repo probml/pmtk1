@@ -12,9 +12,12 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
   prior = cell(K,1);
   priorlik = cell(K,1);
   for k=1:K
+    if(isempty(distributions{k}.prior))
+      distributions{k}.prior = mkPrior(distributions{k}, 'data', data, 'covtype', 'full', 'prior', 'niw');
+    end
     switch class(distributions{k}.prior)
       case 'char'
-        prior{k} = mkPrior(distributions{k},'data', X);
+        prior{k} = mkPrior(distributions{k},'data', data);
       otherwise
         prior{k} = distributions{k}.prior;
     end
@@ -55,11 +58,12 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
       switch class(prior{k})
         case 'MvnInvWishartDist'
           % From post, get the values that we need for the marginal of Sigma for this distribution, and sample
-          postSigma = InvWishartDist(post{k}.dof + 1, post{k}.Sigma);
+          %postSigma = InvWishartDist(post{k}.dof + 1, post{k}.Sigma);
           %sampledSigma = sample(postSigma,1);
           sampledSigma = iwishrnd(post{k}.Sigma, post{k}.dof + 1);
           % Now, do the same thing for mu
           %postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.k);
+          distributions{k}.mu = mvnrnd(rowvec(post{k}.mu), sampledSigma / post{k}.k);
         case 'MvnInvGammaDist'
           switch lower(covtype{k})
             case 'spherical'
@@ -74,6 +78,7 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
               end
               sampledSigma = diag(sampledSigma);
           end
+          distributions{k}.mu = mvnrnd(rowvec(post{k}.mu), sampledSigma / post{k}.Sigma);
           %postSigma = InvGammaDist(post{k}.a + 1, post{k}.b);
           %sampledSigma = sample(postSigma,1);
           %sampledSigma = iwishrnd(post{k}.Sigma, post{k}.dof + 1);
@@ -82,7 +87,6 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
           %postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.Sigma);
       end % of switch class(prior)
       distributions{k}.Sigma = sampledSigma;
-      distributions{k}.mu = mvnrnd(rowvec(post{k}.mu), sampledSigma / post{k}.Sigma);
       %model.distributions{k}.mu = sample(postMu,1);
     end % of k=1:K
     % Conditional on the sampled assignments, fit and sample from the Dirichlet-Multinomial that defines the mixing weights

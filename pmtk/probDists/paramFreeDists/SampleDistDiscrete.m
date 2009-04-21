@@ -27,6 +27,17 @@ classdef SampleDistDiscrete < SampleDist
             end
             m = obj.support(m);
         end
+
+      function pred = predict(latentdist)
+        % latent is a N x n matrix, where
+        %   N is the number of samples
+        %   n is the number of datapoints
+        % Returns a length(support) x n matrix of probabilities based
+        % on the sampled indicators
+        K = max(latentdist.support);
+        counts = histc(latentdist.samples, latentdist.support);
+        pred = DiscreteDist('T',bsxfun(@rdivide, counts, sum(counts)));
+      end
         
         
         

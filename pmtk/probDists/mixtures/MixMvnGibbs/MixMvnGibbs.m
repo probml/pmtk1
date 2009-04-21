@@ -10,11 +10,11 @@ classdef MixMvnGibbs < MixMvn
       if(~isempty(distributions)),nmixtures = numel(distributions);end
 
       if(isempty(mixingWeights) && ~isempty(nmixtures))
-        mixingWeights = DiscreteDist('-T',normalize(ones(nmixtures,1)));
+        mixingWeights = DiscreteDist('-T',normalize(ones(nmixtures,1)), '-prior', DirichletDist(ones(nmixtures,1)) );
       end
       model.mixingDistrib = mixingWeights;
       if(isempty(distributions)&&~isempty(model.mixingDistrib))
-        distributions = copy(MvnDist(),nstates(model.mixingWeights),1);
+        distributions = copy(MvnDist(),nstates(model.mixingDistrib),1);
       end
       model.distributions = distributions;
     end
@@ -34,6 +34,13 @@ classdef MixMvnGibbs < MixMvn
     
     function dists = collapsedGibbs(model,X,varargin)
       dists = collapsedGibbsSampleMvnMix(model.distributions, model.mixingDistrib, X, varargin{:});
+    end
+
+    function muPredDist = preditMu(model, muDist)
+      mus = muDist.samples;
+      K = ndistrib(muDist);
+      muPredDist = copy(MvnDist(), K, 1);
+      
     end
     
        
