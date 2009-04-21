@@ -16,7 +16,6 @@ methods
       [Rik, LL]  = inferLatent(model, data);
       N = size(data,1);
       L = sum(LL);
-      %assert(approxeq(L, sum(logprob(model,data))));
       L = L + logprior(model); % must add log prior for MAP estimation
       L = L/N;
       Rik = pmf(Rik)'; % convert from distribution to table of n*K numbers
@@ -37,13 +36,10 @@ methods
             
             model.distributions{k} = fit(model.distributions{k},'-suffStat',ess.compSS{k});
             [R, p] = chol(model.distributions{k}.Sigma);
-            %inv(model.distributions{k}.Sigma)
             deter = det(model.distributions{k}.Sigma);
             singular =  ~isfinite(deter) || ~isfinite(p) || deter <=eps || ~(p==0);
              
             
-%             if(det(model.distributions{k}.Sigma) <=0), keyboard; end;
-%             singular = (p || det(model.distributions{k}.Sigma) <=0);
             if(singular), return; end
         end
         mixSS.counts = ess.counts;
