@@ -1,5 +1,5 @@
 %% Cluster MNIST Digits and Visualize the Cluster Centers
-
+%#broken
 % Setup data
 setSeed(1);
 classes   = 2:4;    % Confine task to digits 2:4 (must be a subset of 0:9)
@@ -15,8 +15,8 @@ clear y; % unsupervised!
 
 % Fit
 %m = fit(DiscreteMixDist('nmixtures',numel(lookfor)),'data',X,'nrestarts',1);
-fitEng = EmMixModelEng('maxIter', 10, 'nrestarts', 1, 'verbose', true);
-model = MixDiscrete('nmixtures', numel(classes), 'support', [0 1], 'fitEng', fitEng);
+fitEng = EmMixModelEng('-maxIter', 10, '-nrestarts', 1, '-verbose', true);
+model = MixDiscrete('-nmixtures', numel(classes), '-support', [0 1], '-fitEng', fitEng);
 model = fit(model, X);
 
 % Visualize fitted model

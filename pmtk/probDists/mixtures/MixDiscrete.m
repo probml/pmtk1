@@ -20,7 +20,7 @@ classdef MixDiscrete < MixModel
       K = nmixtures;
       %T = normalize(rand(K,1));
       alpha = 2; % MAP estimate is counts + alpha - 1
-      mixingDistrib = DiscreteDist('nstates', K, 'prior','dirichlet', 'priorStrength', alpha);
+      mixingDistrib = DiscreteDist('-nstates', K, '-prior','dirichlet', '-priorStrength', alpha);
       % we need to know what values the features can take on
       % so we can define a distribution of the right size
       if isempty(support)

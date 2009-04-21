@@ -1,5 +1,6 @@
 %% Estimate mu/sigma by Cross Validation
 %% Sample
+%#broken
 setSeed(1);
 mu = 0; sigma = 2;
 mtrue = GaussDist(mu, sigma);

@@ -2,7 +2,7 @@
 % We see that reconstruction error on test set goes down with increasing K
 % However loglikelihood for GMM has U shape curve
 % Thus we cannot use cross-validation for K-means, but can for GMM
-
+%#broken
 clear all
 setSeed(0);
 d = 2; K = 3;

@@ -8,7 +8,7 @@ setSeed(4);
 
 K = 2;
 %T = kmeansTransformer(K, 'doPlot', true);
-T = kmeansTransformer('K', K, 'doPlot', true);
+T = KmeansTransformer('-K', K, '-doPlot', true);
 [encoded, T, errhist] = train(T, X);
 
 %figure; plot(errhist, '-o');

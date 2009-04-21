@@ -13,7 +13,7 @@ transDist = DiscreteDist('-T',transmat0,'-support',1:5);
 %%
 classConditionals = copy(HmmDist('nstates',5,'emissionDist',MvnDist(),'transitionDist',transDist,'startDist',startDist),2,1);
 %%
-model = GenerativeClassifierDist('classConditionals',classConditionals,'classPrior',DiscreteDist('T',[0.5;0.5],'support',4:5));
+model = GenerativeClassifierDist('classConditionals',classConditionals,'classPrior',DiscreteDist('-T',[0.5;0.5],'-support',4:5));
 %%
 trainingData = {train4;train5};
 trainingLabels = [4,5];

@@ -52,7 +52,7 @@ methods
       for k=1:K
         start = (k-1)*batchSize+1;
         initdata = data(perm(start:start+batchSize-1),:);
-        model.distributions{k} = fit(model.distributions{k},'data',initdata);
+        model.distributions{k} = fit(model.distributions{k},'-data',initdata);
       end
       model = initPrior(model, data);
       %eng.model = model;

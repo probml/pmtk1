@@ -1,9 +1,11 @@
 %% Find Ising structure from binary voting data
 % Reproduce figure 16 from Banerjee, El Ghaoui, d'Aspremont, JMLR 2008
-
-[X,party,senators,bills,nmissedVotes] = loadSenateData;
+%#inprogress
+[X,party,senators,bills,nmissedVotes] = senateDataLoad;
 senatorLastNames = cellfuncell(@(C)C{end},cellfuncell(@(c)tokenize(c),lower(senators)));
-figure; imagesc(X); colobar;
+figure; 
+imagesc(X); 
+%colobar();
 xlabel('senators'); ylabel('bills');
 title('US voting records 2005--2006, -1=no, 1=yes, 0=absent')
 
@@ -27,4 +29,4 @@ W = isingLassoGgmHtf(X, lambda);
 
 [labels,map] = canonizeLabels(party);
 colors = {'b', 'y', 'r'}; % blue=democrat, yellow=independent, red=republicant
-gg=graphLayout('adjMatrix', W, 'nodeNames', senatorLastNames, 'nodeColors', colors);
+gg=Graphlayout('adjMatrix', W, 'nodeLabels', senatorLastNames, 'nodeColors', colors);

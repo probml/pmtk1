@@ -1,5 +1,5 @@
 %% Compare various density estimators on various categorical data sets
-
+%#broken
 datasets = {'sachsDiscretized', 'newsgroupsUnique'};
 models = {DiscreteDist(), ...
           DiscreteMixDist('nmixtures', 1, 'nrestarts', 1, 'verbose', false),...

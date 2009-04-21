@@ -1,3 +1,4 @@
+%#broken
 symbols = {'r+', 'b*',  'gx', 'mx', 'r.', 'gs', 'c*'};
 errrate = zeros(1,2);
 K = 3; d = 2;
