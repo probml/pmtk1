@@ -35,23 +35,15 @@ converged = false;
 currentLL = -inf;
  
 % Extract hyper-params for MAP estimation
+prior = mkPrior(model, 'data', data, 'prior', model.prior, 'covtype', model.covtype);
 switch class(prior)
-  case 'char'
-    switch lower(prior)
-      case 'none'
-        % Setting hyperparams to zero gives the MLE
-        kappa0 = 0; m0 = zeros(d,1);
-        nu0 = 0; T0 = zeros(d,d);
-      case 'niw'
-				% This another way to create a MnvInvWishartDist as a prior
-				% MvnDist.mkNiwPrior(data) creates and returns a prior with vague parameters
-        prior = MvnDist.mkNiwPrior(data);
-        kappa0 = prior.k; m0 = prior.mu; nu0 = prior.dof; T0 = prior.Sigma;
-      otherwise
-        error(['unknown prior ' prior])
-    end
   case 'MvnInvWishartDist'
     kappa0 = prior.k; m0 = prior.mu; nu0 = prior.dof; T0 = prior.Sigma;
+  case 'MvnInvGammaDist'
+    kappa0 = prior.Sigma; m0 = prior.mu; nu0 = prior.a; T0 = prior.b;
+  case 'NoPrior'
+    % Setting hyperparams to zero gives the MLE
+    kappa0 = 0; m0 = zeros(d,1); nu0 = 0; T0 = zeros(d,d);
   otherwise
     error(['unknown prior ' classname(prior)])
 end
@@ -96,6 +88,13 @@ while(~converged)
 				end
 			case 'MvnInvWishartDist'
 					Sigma = (ESS + T0 + kappa0*(mu-m0)*(mu-m0)')/(n+nu0+d+2);
+      case 'MvnInvGammaDist'
+        switch lower(model.covtype)
+          case 'diagonal'
+            Sigma = diag(ESS + T0 + kappa0*(mu-mu0)*(mu-mu0)') / (n + nu0 + 1 + 2);
+          case 'spherical'
+            Sigma = diag(sum(diag(ESS + T0 + kappa0*(mu-mu0)*(mu-mu0)'))) / (n*d + nu0 + d + 2);
+        end
 			otherwise
 					error(['unknown prior ' prior])
 		end

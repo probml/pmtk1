@@ -303,6 +303,7 @@ classdef MvnDist < ParamDist
       obj.ndims = d;
       obj.prior = 'niw';
       obj.fitMethod = 'mle';
+      obj.fitArgs = {};
       obj.covtype = 'full';
       obj.infEng = GaussInfEng();
     end
