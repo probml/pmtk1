@@ -58,11 +58,8 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
       switch class(prior{k})
         case 'MvnInvWishartDist'
           % From post, get the values that we need for the marginal of Sigma for this distribution, and sample
-          %postSigma = InvWishartDist(post{k}.dof + 1, post{k}.Sigma);
-          %sampledSigma = sample(postSigma,1);
           sampledSigma = iwishrnd(post{k}.Sigma, post{k}.dof + 1);
           % Now, do the same thing for mu
-          %postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.k);
           distributions{k}.mu = mvnrnd(rowvec(post{k}.mu), sampledSigma / post{k}.k);
         case 'MvnInvGammaDist'
           switch lower(covtype{k})
@@ -79,15 +76,8 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
               sampledSigma = diag(sampledSigma);
           end
           distributions{k}.mu = mvnrnd(rowvec(post{k}.mu), sampledSigma / post{k}.Sigma);
-          %postSigma = InvGammaDist(post{k}.a + 1, post{k}.b);
-          %sampledSigma = sample(postSigma,1);
-          %sampledSigma = iwishrnd(post{k}.Sigma, post{k}.dof + 1);
-          % Now, do the same thing for mu
-          % EXTREMELY inefficient based on profiling
-          %postMu = MvnDist(post{k}.mu, sampledSigma / post{k}.Sigma);
       end % of switch class(prior)
       distributions{k}.Sigma = sampledSigma;
-      %model.distributions{k}.mu = sample(postMu,1);
     end % of k=1:K
     % Conditional on the sampled assignments, fit and sample from the Dirichlet-Multinomial that defines the mixing weights
     postMix = fit(Discrete_DirichletDist(mixPrior), 'data', latent);

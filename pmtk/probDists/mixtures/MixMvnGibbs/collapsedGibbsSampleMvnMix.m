@@ -84,7 +84,6 @@ function dists = collapsedGibbsSampleMvnMix(distributions, mixingWeights, data, 
         lognij = log(SSn(k) + alpha(k));
         if(isnan(lognij) || isnan(logmprob)),keyboard;end;
         % Now find the probability of this observation being in each cluster
-        % Can be made more efficient by hardcoding the logprob function for the MvtDist and StudentDist class
         prob(k) =  lognij + logmprob;
       end % for clust = 1:K
       % normalize, sample, and then update the sufficient statistics to reflect the new assignment
@@ -121,7 +120,6 @@ function dists = collapsedGibbsSampleMvnMix(distributions, mixingWeights, data, 
       musamples(itr,:,k) = mu;
       Sigmasamples(itr,:,k) = rowvec(cholcov(Sigma));
     end
-    %mcmc.loglik(:,itr) = logprobGibbs(tmpmodel,data,latent(:,itr));
   end
   muDist = SampleDist(musamples, 1:d);
   SigmaDist = SampleDist(Sigmasamples);
