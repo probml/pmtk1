@@ -1,5 +1,5 @@
 %% Run Every Demo
-
+ 
 NBbayesGaussDemo;                        pclear(2);
 alarmNetwork;                            pclear(2);
 bernoulliDistTest;                       pclear(2);
