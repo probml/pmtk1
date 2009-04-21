@@ -111,7 +111,7 @@ mvnInferParamsMean2d;                    pclear(2);
 mvnInferParamsSigma2d;                   pclear(2);
 mvnInvWIplotDemo;                        pclear(2);
 mvnMixDistTest;                          pclear(2);
-mvnMixFullGibbsDemo;                    pclear(2);
+mvnMixFullGibbsDemo;                     pclear(2);
 mvnPlot2Ddemo;                           pclear(2);
 mvnSeqUpdateMu1d;                        pclear(2);
 mvnSeqUpdateSigma1d;                     pclear(2);
