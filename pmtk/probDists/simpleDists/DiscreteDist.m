@@ -84,7 +84,7 @@ classdef DiscreteDist  < ParamDist
       if strcmp(model.prior, 'none')
         L = 0;
       else
-        L = logprob(model.prior, model.T(:)');
+        L = logprob(model.prior, model.T);
       end
     end
     

@@ -50,7 +50,7 @@ classdef DirichletDist < ParamDist
       % p(i) = log p(X(i,:) | params) where each row is a vector of size d
       % that sums to one
       [n d] = size(X);
-      A = repmat(obj.alpha(:)'-1, n, 1);
+      A = repmat(obj.alpha -1, 1, d);
       p = sum(log(X+eps) .* A,2) - lognormconst(obj);
     end
 

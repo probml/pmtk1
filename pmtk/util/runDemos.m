@@ -1,6 +1,6 @@
 %% Run Every Demo
 
-%NBbayesGaussDemo;                       pclear(2); % broken
+NBbayesGaussDemo;                        pclear(2);
 alarmNetwork;                            pclear(2);
 bernoulliDistTest;                       pclear(2);
 bernoulli_betaSequentialUpdate;          pclear(2);
