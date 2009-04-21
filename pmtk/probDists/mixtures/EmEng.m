@@ -69,10 +69,10 @@ classdef EmEng  < OptimEng
             end
         end    
         iter = iter + 1;
-        if (eng.verbose), displayProgress(eng, model,data,currentLL,iter,r);end
+        if (eng.verbose), displayProgress(eng, model,data,currentLL,iter,r);end;
         if(iter > 2), converged = iter >= eng.maxIter || convergenceTest(currentLL, prevLL, eng.convTol); end;
         if currentLL < prevLL
-          warning('EmEng:fit', sprintf('EM not monotonically increasing objective (delta = %g)', currentLL - prevLL))
+          warning('EmEng:fit', sprintf('\n EM not monotonically increasing objective (delta = %g)', currentLL - prevLL))
         end
       end
     end % fitNoRestarts

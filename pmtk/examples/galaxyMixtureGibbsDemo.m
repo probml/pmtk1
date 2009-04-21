@@ -1,13 +1,13 @@
 %% Gibbs sampling from a Galaxy data fitted to a mixture of six normal distributions.
-  %#author Cody Severinski
+%#author Cody Severinski
 %#broken
 
   doPlot = true;
   doPrint = false;
 
   collapsed = false;
-  Nsamples = 20000;
-  Nburnin = 1000;
+  Nsamples = 1000;
+  Nburnin = 500;
 
   setSeed(0);
   % Set the number of clusters K
@@ -15,22 +15,20 @@
   % and the true mu, Sigma for these
   K = 6;
   load('galaxies.csv'); [n,d] = size(galaxies);
-  % scale the data in units of 1000
-  galaxies = galaxies / 1000;
-  galaxies = galaxies(randperm(n));
+  % scale the data in units of 1000, then permute
+  galaxies = galaxies / 1000; galaxies = galaxies(randperm(n));
   % specify the prior distribution to use.
   chosenPrior = MvnInvWishartDist('mu', mean(galaxies)', 'Sigma', diag(var((galaxies))) / K^(2/d), 'dof', d + 2, 'k', 0.01);
- % model = MvnDist('distributions',copy( MvnDist('mu', zeros(d,1),'Sigma', diag(ones(d,1)), 'prior', chosenPrior), K,1) ) ;
-model = MixMvnGibbs('distributions',copy( MvnDist('-mu', zeros(d,1),'-Sigma', diag(ones(d,1)), '-prior', chosenPrior), K,1) ) ;
+  model = MixMvnGibbs('distributions',copy( MvnDist('-mu', zeros(d,1),'-Sigma', diag(ones(d,1)), '-prior', chosenPrior), K,1) ) ;
 
   % Set the prior distribution on the mixing weights to be Dirichlet(1,..., 1)
   model.mixingDistrib.prior = DirichletDist(ones(K,1));
 
   % Initiate the sampler
   if(collapsed)
-      dists = collapsedGibbs(model, galaxies, 'Nsamples', 20000, 'Nburnin', 1000, 'verbose', true);
+      dists = collapsedGibbs(model, galaxies, 'Nsamples', Nsamples, 'Nburnin', Nburnin, 'verbose', true);
   else
-    dists = latentGibbsSample(model, galaxies, 'Nsamples', 20000, 'Nburnin', 1000, 'verbose', true);
+    dists = latentGibbsSample(model, galaxies, 'Nsamples', Nsamples, 'Nburnin', Nburnin, 'verbose', true);
   end
 
   % Perform postprocessing on the labels

@@ -103,7 +103,7 @@ mvnCondition2D;                          pclear(2);
 mvnCovDemo;                              pclear(2);
 mvnHeightWeight;                         pclear(2);
 mvnImputationDemo;                       pclear(2);
-%mvnImputationEmDemo;                    pclear(2); % broken
+mvnImputationEmDemo;                     pclear(2);
 mvnImputationPima;                       pclear(2);
 mvnInferMuSigma1D;                       pclear(2);
 mvnInferParamsMean1d;                    pclear(2);
