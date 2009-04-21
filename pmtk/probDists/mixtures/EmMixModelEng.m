@@ -12,6 +12,7 @@ methods
     
     function [ess, L] = Estep(eng, model, data) %#ok skips eng
       %model = eng.model;
+      
       [Rik, LL]  = inferLatent(model, data);
       N = size(data,1);
       L = sum(LL);
@@ -29,18 +30,24 @@ methods
     end
   
     function [model, singular] = Mstep(eng, model, ess) %#ok skips eng
-      K = length(model.distributions);
-      for k=1:K
-        model.distributions{k} = fit(model.distributions{k},'-suffStat',ess.compSS{k});
-[R, p] = cholcov(model.distributions{k}.Sigma);
-inv(model.distributions{k}.Sigma)
-det(model.distributions{k}.Sigma)
-if(det(model.distributions{k}.Sigma) <=0), keyboard; end;
-singular = (p || det(model.distributions{k}.Sigma) <=0);
-if(singular), return; end
-      end
-      mixSS.counts = ess.counts;
-      model.mixingDistrib = fit(model.mixingDistrib,'-suffStat',mixSS);
+        K = length(model.distributions);
+        for k=1:K
+           
+            
+            
+            model.distributions{k} = fit(model.distributions{k},'-suffStat',ess.compSS{k});
+            [R, p] = chol(model.distributions{k}.Sigma);
+            %inv(model.distributions{k}.Sigma)
+            deter = det(model.distributions{k}.Sigma);
+            singular =  ~isfinite(deter) || ~isfinite(p) || deter <=eps || ~(p==0);
+             
+            
+%             if(det(model.distributions{k}.Sigma) <=0), keyboard; end;
+%             singular = (p || det(model.distributions{k}.Sigma) <=0);
+            if(singular), return; end
+        end
+        mixSS.counts = ess.counts;
+        model.mixingDistrib = fit(model.mixingDistrib,'-suffStat',mixSS);
     end
     
     function model = initializeEM(eng, model,data,r) %#ok that ignores data and r
@@ -59,9 +66,23 @@ if(singular), return; end
         start = (k-1)*batchSize+1;
         initdata = data(perm(start:start+batchSize-1),:);
         model.distributions{k} = fit(model.distributions{k},'-data',initdata);
+        
+         
+        
+        
+        
       end
       model = initPrior(model, data);
       %eng.model = model;
+       for k=1:K
+        [R, p] = chol(model.distributions{k}.Sigma);
+       deter = det(model.distributions{k}.Sigma);
+       singular =  ~isfinite(deter) || ~isfinite(p) || deter <=eps || ~(p==0);
+       if singular, error('init error');end
+       end
+      
+      
+      
     end
     
   end % methods

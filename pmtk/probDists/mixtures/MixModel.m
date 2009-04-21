@@ -49,6 +49,7 @@ classdef MixModel < ProbDist
       for k=1:nmixtures
         logRik(:,k) = log(mixWeights(k)+eps) + logprob(model.distributions{k},data);
       end
+      
      end
     
     function [ph, LL] = inferLatent(model,data)
@@ -157,7 +158,7 @@ assert(approxeq(Rik, normalize(Rik,2)))
 
     function [model, LL, niter] = fit(model, varargin)
       % fit(model, data)
-      [data] = processArgs(varargin, '-data', []);
+      [data,suffStat] = processArgs(varargin, '-data', [],'-suffStat',[]);
       [model, LL, niter] = fit(model.fitEng, model, data);
     end
     

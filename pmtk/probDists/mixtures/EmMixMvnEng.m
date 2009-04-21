@@ -12,12 +12,21 @@ methods
     for k=1:K
       model.distributions{k}.mu = mu(k,:)';
       members = find(assign==k);
-      model.distributions{k}.Sigma = cov(X(members,:));
+      Sigma = cov(X(members,:));
+      Sigma = Sigma + 0.1*eye(size(Sigma));
+      model.distributions{k}.Sigma = Sigma;
+      assert(det(Sigma) > eps);
+      
       model.mixingDistrib.T(k) = (length(members)+alpha)/(N + K*alpha);
     end
     model = initPrior(model, X);
   end
 
+%   for i=1:numel(model.distributions)
+%      fprintf('%d\n',det(model.distributions{i}.Sigma)); 
+%   end
+  
+  
   function displayProgress(eng,model,data,loglik,iter,r) %#ok
     t = sprintf('EM restart %d iter %d, negloglik %g\n',r,iter,-loglik);
     fprintf(t);
