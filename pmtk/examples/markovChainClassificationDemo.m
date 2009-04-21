@@ -28,7 +28,7 @@ for c=1:nclasses
    ytest (testNDX, 1) = c;
 end
 %% Create Class Prior
-classPrior = DiscreteDist(normalize(ones(nstates,1)));
+classPrior = DiscreteDist('-T',normalize(ones(nstates,1)));
 %% Create Generative Classifier
 classifier = GenerativeClassifierDist('classConditionals',classConditionals,'classPrior',classPrior);
 %% Fit Classifier

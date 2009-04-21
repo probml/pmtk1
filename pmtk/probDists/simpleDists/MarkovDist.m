@@ -71,10 +71,10 @@ classdef MarkovDist < ParamDist
         function model = mkRndParams(model,nstates,support)
             if nargin < 3, support = 1:nstates; end
             model.support = support;
-            model.startDist = mkRndParams(model.startDist,nstates);
+            model.startDist.T = normalize(rand(nstates,1),1);
             model.startDist.support = support;
-            %model.transitionDist = mkRndParams(model.transitionDist,nstates,nstates);
-            model.transitionDist = mkRndParams(model.transitionDist,nstates);
+           
+            model.transitionDist.T = normalize(rand(nstates,nstates),1);
             model.transitionDist.support = support;
         end
         
