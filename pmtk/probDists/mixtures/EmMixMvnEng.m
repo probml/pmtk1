@@ -27,9 +27,9 @@ methods
 %   end
   
   
-  function displayProgress(eng,model,data,loglik,iter,r) %#ok
+
+   function plotProgress(eng,model,data,loglik,iter,r) %#ok
     t = sprintf('EM restart %d iter %d, negloglik %g\n',r,iter,-loglik);
-    fprintf(t);
     if(size(data,2) ~= 2), return; end
     % Plot data and current model fit
     figure(1000+r);

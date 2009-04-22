@@ -12,6 +12,7 @@ classdef EmEng  < OptimEng
    
    properties
      verbose;
+     plot;
      nrestarts;
      convTol;
      maxIter;
@@ -20,8 +21,9 @@ classdef EmEng  < OptimEng
   methods
     function eng = EmEng(varargin)
       % EmEng(verbose, nrestarts, maxIter, convTol)
-      [eng.verbose, eng.nrestarts, eng.maxIter, eng.convTol] = processArgs(varargin,...
+      [eng.verbose,  eng.plot, eng.nrestarts, eng.maxIter, eng.convTol] = processArgs(varargin,...
         '-verbose', false, ...
+        '-plot', false, ...
         '-nrestarts' ,1, ...
         '-maxIter'   ,50    ,...
         '-convTol'    ,1e-3);
@@ -70,6 +72,7 @@ classdef EmEng  < OptimEng
         end    
         iter = iter + 1;
         if (eng.verbose), displayProgress(eng, model,data,currentLL,iter,r);end;
+        if (eng.plot), plotProgress(eng, model,data,currentLL,iter,r);end;
         if(iter > 2), converged = iter >= eng.maxIter || convergenceTest(currentLL, prevLL, eng.convTol); end;
         if currentLL < prevLL
           warning('EmEng:fit', sprintf('\n EM not monotonically increasing objective (delta = %g)', currentLL - prevLL))
