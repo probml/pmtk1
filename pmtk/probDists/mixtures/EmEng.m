@@ -53,23 +53,12 @@ classdef EmEng  < OptimEng
       converged = false; iter = 0;
       currentLL = -inf; % sum(logprob(model,data)) + logprior(model);
       while(not(converged))
-        oldmodel = model;
+        %oldmodel = model;
         prevLL = currentLL;
-        
-            [ess, currentLL] = Estep(eng,model, data);
-            [model, singular] = Mstep(eng, model, ess);
-        
-        if(singular)
-          warning('EmEng:singular', 'Fit resulted in singular covariance matrix');
-          model = oldmodel;
-          return;
-        end;
-        for i=1:numel(model.distributions)
-            deter = det(model.distributions{i}.Sigma);
-            if ~isfinite(deter) || deter <= 0
-               keyboard; 
-            end
-        end    
+    
+        [ess, currentLL] = Estep(eng,model, data);
+        model = Mstep(eng, model, ess);
+
         iter = iter + 1;
         if (eng.verbose), displayProgress(eng, model,data,currentLL,iter,r);end;
         if (eng.plot), plotProgress(eng, model,data,currentLL,iter,r);end;

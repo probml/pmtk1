@@ -22,9 +22,23 @@ methods
     model = initPrior(model, X);
   end
 
-%   for i=1:numel(model.distributions)
-%      fprintf('%d\n',det(model.distributions{i}.Sigma)); 
-%   end
+  function [model] = Mstep(eng, model, ess) %#ok skips eng
+      oldmodel = model;
+      K = length(model.distributions);
+      for k=1:K
+          model.distributions{k} = fit(model.distributions{k},'-suffStat',ess.compSS{k});
+          [R, p] = chol(model.distributions{k}.Sigma);
+          deter = det(model.distributions{k}.Sigma);
+          singular =  ~isfinite(deter) || ~isfinite(p) || deter <=eps || ~(p==0);
+          if(singular)
+          warning('EmEng:singular', 'Fit resulted in singular estimates');
+          model = oldmodel;
+          return
+          end
+      end
+      mixSS.counts = ess.counts;
+      model.mixingDistrib = fit(model.mixingDistrib,'-suffStat',mixSS);
+  end
   
   
 
