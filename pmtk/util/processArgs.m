@@ -87,7 +87,7 @@ function varargout = processArgs(args,varargin)
     if numel(unique(argnames)) ~= numel(argnames)                                  ,error('PROGRAMMER ERROR - you can not use the same argument name twice');end
 %% PROCESS ARGS - PASSED BY USER    
     if numel(args) == 0 
-        if any(required)                                                           ,error('The following required arguments were not specified:\n%s',char(argnames(required))); 
+        if any(required)                                                           ,error('The following required arguments were not specified:\n%s',cellString(argnames(required))); 
         else  return;
         end
     end
