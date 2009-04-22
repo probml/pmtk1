@@ -7,7 +7,7 @@ lambdas = 36; %[36 27 7 0];
 S = cov(X)/1000; % same as http://www-stat.stanford.edu/~tibs/ElemStatLearn/datasets/sachs.info
 debug = false;
 folder = 'C:\kmurphy\PML\pdfFigures';
-doPrint = true;
+doPrint = false;
 
 for i=1:length(lambdas)
   lambda = lambdas(i);

@@ -33,7 +33,16 @@ end
 [row,col] = find(bsxfun(@eq,agree,max(agree, [], 2)));
 predictGibbs.T = predictGibbs.T(row,:);
 
-absdiff = abs(predictEM.T(1,:) - predictGibbs.T(1,:));
+diff = colvec(predictEM.T(1,:) - predictGibbs.T(1,:));
 
-plot(absdiff, 'o', 'linewidth', 3);
-title( sprintf('Difference in p(x_i = 1).  Mean = %g.  Median = %g', mean(absdiff), median(absdiff)) );
+plot(abs(diff), 'o', 'linewidth', 3);
+title( sprintf('Absolute Difference in p(x_i = 1).  Mean = %g.  Median = %g', mean(absdiff), median(absdiff)) );
+
+diffstr = cell(n,1);
+for i=1:n
+  diffstr{i} = sprintf('%2.2f', diff(i));
+end
+thres = 0.20;
+figure(); hold on;
+plot(X(:,1), X(:,2), 'o', 'MarkerSize', 5);
+num = text(X(abs(diff) > thres,1), X(abs(diff) > thres,2), diffstr(abs(diff) > thres));

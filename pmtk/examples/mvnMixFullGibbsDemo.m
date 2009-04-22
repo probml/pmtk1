@@ -15,7 +15,7 @@ X = mvnrnd(mu(p,:),Sigma(:,:,p));
 % Determine the true log probability of the data
 logprobtrue = 0;
 for j=1:K
-  logprobtrue = logprobtrue + log(sum(p==k) / n) + sum(logprob(MvnDist(mu(j,:), Sigma(:,:,j)), X(p == j,:)));
+  logprobtrue = logprobtrue + log(sum(p==j) / n) + sum(logprob(MvnDist(mu(j,:), Sigma(:,:,j)), X(p == j,:)));
 end
 
 % specify the prior distribution to use.
