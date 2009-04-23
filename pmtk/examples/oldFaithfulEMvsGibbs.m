@@ -36,7 +36,7 @@ predictGibbs.T = predictGibbs.T(row,:);
 diff = colvec(predictEM.T(1,:) - predictGibbs.T(1,:));
 
 plot(abs(diff), 'o', 'linewidth', 3);
-title( sprintf('Absolute Difference in p(x_i = 1).  Mean = %g.  Median = %g', mean(absdiff), median(absdiff)) );
+title( sprintf('Absolute Difference in p(x_i = 1).  Mean = %g.  Median = %g', mean(abs(diff)), median(abs(diff))) );
 
 diffstr = cell(n,1);
 for i=1:n
