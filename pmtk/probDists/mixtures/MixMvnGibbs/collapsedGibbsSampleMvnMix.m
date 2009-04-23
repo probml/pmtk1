@@ -113,10 +113,10 @@ function dists = collapsedGibbsSampleMvnMix(distributions, mixingWeights, data, 
   mix = zeros(outitr,K);
   tmpdistrib = distributions;
   for itr=1:outitr
-    mixFit = fit( mixDist, 'data', latent(itr,:)' );
+    mixFit = fit( mixDist, '-data', latent(itr,:)' );
     mix(itr,:) = rowvec(mixFit.T);
     for k=1:K
-      [mu, Sigma, domain] = convertToMvn( fit(distributions{k}, 'data', data(latent(itr,:)' == k,:) ) );
+      [mu, Sigma, domain] = convertToMvn( fit(distributions{k}, '-data', data(latent(itr,:)' == k,:) ) );
       musamples(itr,:,k) = mu;
       Sigmasamples(itr,:,k) = rowvec(cholcov(Sigma));
     end
