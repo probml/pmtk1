@@ -109,7 +109,7 @@
           fixedPoint = true;
         end
         if(deltakl > 0)
-          warning('processLabelSwitching', 'Objective did not decrease.  Returning with last good permutation');
+          warning('Objective did not decrease.  Returning with last good permutation');
           permOut = oldPerm;
           fixedPoint = true;
           fail = true;
