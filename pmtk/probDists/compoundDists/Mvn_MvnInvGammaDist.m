@@ -12,18 +12,16 @@ classdef Mvn_MvnInvGammaDist < CompoundDist
         m.muSigmaDist = prior;
      end
 
-    function obj = mode(model,covtype)
-			if(nargin == 1)
-				covtype = 'spherical';
-			end
+    function obj = mode(model,varargin)
+      [covtype] = processArgs(varargin, '-covtype', 'spherical');
       obj.mu = model.muSigmaDist.mu;
       d = length(obj.mu);
 			% We need to consider the case of diagonal vs spherical covariance
 			switch lower(covtype)
 				case 'spherical'
-					obj.Sigma = model.muSigmaDist.b / (model.muSigmaDist.a + 1/2*(d + 2));
+					obj.Sigma = diag(model.muSigmaDist.b ./ (model.muSigmaDist.a + 1/2*(d + 2)));
 				case 'diagonal'
-					obj.Sigma = model.muSigmaDist.b / (model.muSigmaDist.a + 1/2*(1 + 2));
+					obj.Sigma = diag(model.muSigmaDist.b ./ (model.muSigmaDist.a + 1/2*(1 + 2)));
 			end
     end
      
@@ -44,10 +42,10 @@ classdef Mvn_MvnInvGammaDist < CompoundDist
 			 switch lower(covtype)
 				 case 'spherical'
 				 	 an = a0 + n*d/2;
-					 bn = b0 + 1/2*sum(diag( n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-colvec(m0))*(SS.xbar-colvec(m0))' ));
+					 bn = b0 + 1/2*sum(diag( n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-colvec(m0))*(SS.xbar-colvec(m0))' ))*ones(size(b0));
 				 case 'diagonal'
 				 	 an = a0 + n/2;
-					 bn = diag( diag(b0) + 1/2*(n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-colvec(m0))*(SS.xbar-colvec(m0))'));
+					 bn = rowvec(diag( diag(b0) + 1/2*(n*SS.XX + (k0*n)/(k0+n)*(SS.xbar-colvec(m0))*(SS.xbar-colvec(m0))')));
 			 end
 
        obj.muSigmaDist = MvnInvGammaDist('mu', mn, 'Sigma', kn, 'a', an, 'b', bn);
