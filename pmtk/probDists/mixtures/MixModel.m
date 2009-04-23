@@ -70,10 +70,11 @@ classdef MixModel < ProbDist
     end
 
     function L = logprior(model)
-      L = logprior(model.mixingDistrib);
+      L = 0;
       for k=1:nmixtures(model)
         L = L + sum(logprior(model.distributions{k}));
       end
+      L = L + logprior(model.mixingDistrib);
     end
     
 
