@@ -99,7 +99,7 @@ classdef MvnInvWishartDist < ParamDist
     end
     %}
       
-    function m = mode(obj)
+    function m = mode(obj, varargin)
 			d = size(obj.Sigma,1);
       % Returns a structure
       m.mu = obj.mu;
