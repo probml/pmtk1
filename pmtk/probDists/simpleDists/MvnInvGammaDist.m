@@ -14,6 +14,7 @@ classdef MvnInvGammaDist < ParamDist
             [mu, Sigma, a, b] = process_options(...
                 varargin, 'mu', [], 'Sigma', [], 'a', [], 'b', []);
             b = rowvec(b);
+            if(numel(b) == 1 && numel(mu) > 1), b = b*ones(1,numel(mu)); end;
             if(length(b) ~= length(a)), a = a*ones(1,length(b)); end;
             m.mu = mu; m.Sigma = Sigma; m.a = a; m.b = b;
         end
@@ -32,15 +33,17 @@ classdef MvnInvGammaDist < ParamDist
           m.b = param.b;
         end
 
-    		function m = mode(obj)
+    		function m = mode(obj, varargin)
+          [covtype] = processArgs(varargin, '-covtype', 'spherical');
 					d = length(obj.mu);
    		   	% Returns a structure
 		      m.mu = obj.mu;
       		% m.Sigma = obj.Sigma; % this may be the wrong formula...
-					if(length(obj.b) == 1) % the case of the spherical covariance
-	      		m.Sigma = (obj.b / (obj.a + 1/2*d + 1 )) * eye(d); % this should be the correct formula...
-					else % the case of the diagonal covariance
-						m.Sigma = diag(obj.b / (obj.a + 1/2 + 1));
+          switch lower(covtype)
+            case 'spherical'
+      		    m.Sigma = diag(obj.b ./ (obj.a + 1/2*d + 1 )); % this should be the correct formula...
+            case 'diagonal'
+						  m.Sigma = diag(obj.b ./ (obj.a + 1/2 + 1));
 					end
     		end
         
@@ -68,7 +71,26 @@ classdef MvnInvGammaDist < ParamDist
         
         
         function l = logprob(obj,varargin)
-            error('not yet implemented');
+          [mu, Sigma, cov] = processArgs(varargin, '-mu', [], '-Sigma', [], '-covtype', 'diagonal');
+          if(isempty(mu) || isempty(Sigma))
+            l = 0; return;
+          end;
+          mu = mu';
+          if(size(Sigma,1) ~= size(mu,2))
+            error('MvnInvGammaDist:logprob', 'Incorrect dimensions for mu, Sigma')
+          end;
+          if(size(Sigma,3) > 1 && size(mu,1) ~= size(Sigma,3))
+            error('MvnInvGammaDist:logprob', 'Number of rows of mu must match number of pages of Sigma when more than one Sigma is passed in');
+          end;
+          [n,d] = size(mu);
+          m0 = obj.mu; k = obj.Sigma; a = obj.a; b = obj.b;
+          l = zeros(n,1);
+          for i=1:n
+            gausslogprob = -1/2*logdet(2*pi*Sigma(:,:,i)) - k/2*(mu(i,:) - m0')*inv(Sigma(:,:,i))*(mu(i,:) - m0')';
+            invsigmalogprob = sum(b.*log(a) - gammaln(a) - (a+1).*rowvec(diag(Sigma(:,:,i))) - b./rowvec(diag(Sigma(:,:,i))));
+          end
+          l = gausslogprob + invsigmalogprob;
+          %error('not yet implemented');
         end
         
         function xrange = plotRange(obj, sf)
