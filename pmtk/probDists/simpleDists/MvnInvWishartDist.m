@@ -100,7 +100,8 @@ classdef MvnInvWishartDist < ParamDist
     %}
       
     function m = mode(obj, varargin)
-			d = size(obj.Sigma,1);
+      [covtype] = processArgs(varargin, '-covtype', 'full');
+      d = size(obj.Sigma,1);
       % Returns a structure
       m.mu = obj.mu;
       % m.Sigma = obj.Sigma; % this may be the wrong formula...
