@@ -33,10 +33,6 @@ methods
         K = length(model.distributions);
         for k=1:K
             model.distributions{k} = fit(model.distributions{k},'-suffStat',ess.compSS{k});
-            %[R, p] = chol(model.distributions{k}.Sigma);
-            %deter = det(model.distributions{k}.Sigma);
-            %singular =  ~isfinite(deter) || ~isfinite(p) || deter <=eps || ~(p==0);
-            %if(singular), return; end
         end
         mixSS.counts = ess.counts;
         model.mixingDistrib = fit(model.mixingDistrib,'-suffStat',mixSS);
