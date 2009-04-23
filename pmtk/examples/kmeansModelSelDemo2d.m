@@ -11,6 +11,7 @@ useNetlab = false;
 
 if 1
   M = MixMvn(K, d);
+  %M = MixMvn(K, d, '-prior', 'none');
   M.distributions{1}.mu = [1 1]';
   M.distributions{2}.mu = -[1 1]';
   M.distributions{3}.mu = [0 0]';
@@ -82,16 +83,16 @@ for i=1:length(Ks)
     mu = mix.centres;
   else
     M = MixMvn(K, d);
-    %M.mixingDistrib.prior = 'none';
+    M.mixingDistrib.prior = 'none';
     for k=1:K
-      %  M.distributions{k}.prior = 'none'; % NIW prior means nonmonotonic.
+        M.distributions{k}.prior = 'none'; % NIW prior means nonmonotonic.
     end
     M.fitEng.verbose = true;
     M.fitEng.plot = false;
-    M.fitEng.maxIter= 30;
+    M.fitEng.maxIter= 100;
     M.fitEng.nrestarts = 1;
     M = fit(M, Xtrain);
-    nll(i) = -sum(logprob(M, Xtest));
+    nll(i) = -(sum(logprob(M, Xtest)));
     mu = zeros(K,d);
     for k=1:K
       mu(k,:) = M.distributions{k}.mu';
