@@ -361,7 +361,7 @@ classdef MvnDist < ParamDist
           tmp = MvnConjugate(obj,'prior', prior);
           tmp = fit(tmp, 'suffStat', SS, 'covtype', covtype); % We need to pass in covtype in the case that the prior is an MvnInvGammaDist (spherical or diagonal?)
           post = tmp.muSigmaDist; % paramDist(m); % NIW
-          m = mode(post);
+          m = mode(post, covtype);
           obj.mu = m.mu;
           obj.Sigma = m.Sigma;
       end
