@@ -23,7 +23,7 @@ function dists = collapsedGibbsSampleMvnMix(distributions, mixingWeights, data, 
   for k=1:K
     switch class(distributions{k}.prior)
       case 'char'
-      priorMuSigmaDist{k} = mkPrior(distributions{k},'data', data);
+      priorMuSigmaDist{k} = mkPrior(distributions{k},'-data', data);
       otherwise
       priorMuSigmaDist{k} = distributions{k}.prior;
     end

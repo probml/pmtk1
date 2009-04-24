@@ -26,6 +26,10 @@ methods
     model.distributions = distributions;
     model.nmix = numel(model.distributions);
   end
+
+  function model = EMfit(model, X, varargin)
+    model = EMforGMM(model.distributions, model.mixingDistrib, X, varargin);
+  end
     
 end % methods
 

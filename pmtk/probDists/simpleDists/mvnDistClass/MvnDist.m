@@ -446,11 +446,11 @@ classdef MvnDist < ParamDist
     end
 
      function model = initPrior(model,data)
-       model.prior = mkPrior(model, 'data', data);
+       model.prior = mkPrior(model, '-data', data);
      end
      
     function priorDist = mkPrior(obj,varargin)
-      [data, prior, covtype] = process_options(varargin, 'data', [], 'prior', obj.prior, 'covtype', obj.covtype);
+      [data, prior, covtype] = processArgs(varargin, '-data', [], '-prior', obj.prior, '-covtype', obj.covtype);
       [n,d] = size(data);
       if(n==0), return; end;
       switch class(prior)

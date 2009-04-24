@@ -13,11 +13,11 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
   priorlik = cell(K,1);
   for k=1:K
     if(isempty(distributions{k}.prior))
-      distributions{k}.prior = mkPrior(distributions{k}, 'data', data, 'covtype', 'full', 'prior', 'niw');
+      distributions{k}.prior = mkPrior(distributions{k}, '-data', data, '-covtype', 'full', '-prior', 'niw');
     end
     switch class(distributions{k}.prior)
       case 'char'
-        prior{k} = mkPrior(distributions{k},'data', data);
+        prior{k} = mkPrior(distributions{k},'-data', data);
       otherwise
         prior{k} = distributions{k}.prior;
     end

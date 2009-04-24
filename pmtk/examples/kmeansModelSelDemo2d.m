@@ -7,7 +7,7 @@
 setSeed(0);
 d = 2; K = 3;
 Ntrain = 1000; Ntest = 1000;
-useNetlab = false;
+useNetlab = false; special = true;
 
 if 1
   M = MixMvn(K, d);
@@ -91,7 +91,11 @@ for i=1:length(Ks)
     M.fitEng.plot = false;
     M.fitEng.maxIter= 100;
     M.fitEng.nrestarts = 1;
-    M = fit(M, Xtrain);
+    if(~special)
+      M = fit(M, Xtrain);
+    else
+      M = EMfit(M, Xtrain, '-verbose', true, '-maxIter', 100, '-nrestarts', 1);
+    end
     nll(i) = -(sum(logprob(M, Xtest)));
     mu = zeros(K,d);
     for k=1:K

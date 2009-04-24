@@ -449,7 +449,7 @@ classdef MvnMixDistOld < MixtureDistOld
         model.distributions{k} = mkRndParams( model.distributions{k},d );
         switch class(model.distributions{k}.prior)
           case 'char'
-            prior{k} = mkPrior(model.distributions{k},'data', X);
+            prior{k} = mkPrior(model.distributions{k},'-data', X);
           otherwise
             prior{k} = model.distributions{k}.prior;
         end
@@ -502,7 +502,7 @@ classdef MvnMixDistOld < MixtureDistOld
 
       % since each MVN could have a different covariance structure, we need to do this.
       for k=1:K
-        prior{k} = mkPrior(model.distributions{k},X);
+        prior{k} = mkPrior(model.distributions{k}, '-data', X);
         SS{k} = mkSuffStat(model.distributions{k}, X(latent == k,:));
         SSn(k) = SS{k}.n;
         SSxbar(:,k) = SS{k}.xbar;
