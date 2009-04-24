@@ -28,6 +28,32 @@ classdef MixMvnGibbs < MixMvn
       pred = inferLatent(model,data);
     end
 
+    function model = mean(model, dists)
+      % Performs full Bayes Model averaging by averaging over each sampled mu, Sigma, and mixing weights
+      mu = dists.muDist.samples;
+      Sigmatmp = dists.SigmaDist.samples;
+      mix = dists.mixDist.samples;
+      %latent = dists.latentDist.samples;
+
+      [N, d, K] = size(mu);
+      % Need to post-process Sigma
+      Sigma = zeros(d,d,N,K); invS = zeros(d,d,N,K);
+      for s=1:N
+        for k=1:K
+          Sigma(:,:,s,k) = reshape(Sigmatmp(s,:,k)',d,d)'*reshape(Sigmatmp(s,:,k)',d,d);
+        end
+      end
+      % perform model averaging
+      muAvg = mean(dists.muDist);
+      SigmaAvg = mean(Sigma,3);
+      mixAvg = mean(dists.mixDist);
+      for k=1:K
+        model.distributions{k}.mu = colvec(muAvg(:,k));
+        model.distributions{k}.Sigma = SigmaAvg(:,:,:,k);
+      end
+      model.mixingDistrib.T = colvec(mixAvg);
+    end
+
     function [dists] = latentGibbsSample(model,X,varargin)
       dists = latentGibbsSampleMvnMix(model.distributions, model.mixingDistrib, X, varargin{:});
     end
