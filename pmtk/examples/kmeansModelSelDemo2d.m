@@ -83,10 +83,10 @@ for i=1:length(Ks)
     mu = mix.centres;
   else
     M = MixMvn(K, d);
-    M.mixingDistrib.prior = 'none';
-    for k=1:K
-        M.distributions{k}.prior = 'none'; % NIW prior means nonmonotonic.
-    end
+    %M.mixingDistrib.prior = 'none';
+    %for k=1:K
+    %    M.distributions{k}.prior = 'none'; % NIW prior means nonmonotonic.
+    %end
     M.fitEng.verbose = true;
     M.fitEng.plot = false;
     M.fitEng.maxIter= 100;
@@ -94,7 +94,7 @@ for i=1:length(Ks)
     if(~special)
       M = fit(M, Xtrain);
     else
-      M = EMfit(M, Xtrain, '-verbose', true, '-maxIter', 100, '-nrestarts', 1);
+      M = EMfit(M, Xtrain, '-verbose', false, '-maxItr', 100, '-nrestarts', 1);
     end
     nll(i) = -(sum(logprob(M, Xtest)));
     mu = zeros(K,d);

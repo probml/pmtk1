@@ -28,7 +28,9 @@ methods
   end
 
   function model = EMfit(model, X, varargin)
-    model = EMforGMM(model.distributions, model.mixingDistrib, X, varargin);
+    [distributions, mix] = EMforGMM(model.distributions, model.mixingDistrib, X, varargin{:});
+    model.distributions = distributions;
+    model.mixingDistrib.T = mix;
   end
     
 end % methods
