@@ -350,7 +350,7 @@ classdef MvnDist < ParamDist
       %obj = MvnDist();
       obj.covtype = covtype;
       if isempty(SS), SS = MvnDist().mkSuffStat(X); end
-      if isa(prior, 'char'),  prior = mkPrior(obj,'data', X, 'prior', obj.prior, 'covtype', obj.covtype); end      
+      if isa(prior, 'char'),  prior = mkPrior(obj,'-data', X, '-prior', obj.prior, '-covtype', obj.covtype); end      
       if isempty(prior), prior = NoPrior; end
       obj.prior = prior; % replace string with object so logprior(model) works
       switch class(prior)
