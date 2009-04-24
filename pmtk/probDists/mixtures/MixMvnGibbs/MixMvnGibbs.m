@@ -37,7 +37,7 @@ classdef MixMvnGibbs < MixMvn
 
       [N, d, K] = size(mu);
       % Need to post-process Sigma
-      Sigma = zeros(d,d,N,K); invS = zeros(d,d,N,K);
+      Sigma = zeros(d,d,N,K);
       for s=1:N
         for k=1:K
           Sigma(:,:,s,k) = reshape(Sigmatmp(s,:,k)',d,d)'*reshape(Sigmatmp(s,:,k)',d,d);
