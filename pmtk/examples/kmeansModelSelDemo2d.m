@@ -7,7 +7,8 @@
 setSeed(0);
 d = 2; K = 3;
 Ntrain = 1000; Ntest = 1000;
-useNetlab = false; special = true;
+useNetlab = false; 
+fastEM = false; % true;
 
 if 1
   M = MixMvn(K, d);
@@ -85,17 +86,28 @@ for i=1:length(Ks)
     M = MixMvn(K, d);
     %M.mixingDistrib.prior = 'none';
     %for k=1:K
-    %    M.distributions{k}.prior = 'none'; % NIW prior means nonmonotonic.
+    %    M.distributions{k}.prior = 'none'; 
     %end
+    if fastEM
+      M.fitEng = EmMixMvnFastEng;
+    else
+      M.fitEng = EmMixMvnEng;
+    end
     M.fitEng.verbose = true;
     M.fitEng.plot = false;
     M.fitEng.maxIter= 100;
     M.fitEng.nrestarts = 1;
+    
+      M = fit(M, Xtrain);
+      
+      %{
     if(~special)
       M = fit(M, Xtrain);
     else
       M = EMfit(M, Xtrain, '-verbose', false, '-maxItr', 100, '-nrestarts', 1);
     end
+      %}
+      
     nll(i) = -(sum(logprob(M, Xtest)));
     mu = zeros(K,d);
     for k=1:K

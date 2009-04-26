@@ -1,4 +1,4 @@
-function [distributions, bestMix] = EMforGMM(distributions, mixDistrib, X, varargin)
+function [distributions, bestMix, loglikTrace, itr] = EMforGMM(distributions, mixDistrib, X, varargin)
 
   [verbose, maxItr, tol, nrestarts] = processArgs(varargin, '-verbose', true, '-maxItr', 50, '-tol', 1e-03, '-nrestarts', 1);
 
@@ -77,6 +77,7 @@ function [distributions, bestMix] = EMforGMM(distributions, mixDistrib, X, varar
 
     converged = false; itr = 0; 
     currentLL = -inf;
+    loglikTrace = [];
     while(not(converged))
       prevLL = currentLL;
       % E step
@@ -129,6 +130,7 @@ function [distributions, bestMix] = EMforGMM(distributions, mixDistrib, X, varar
       if(currentLL < prevLL)
         warning(sprintf('\n EM not monotonically increasing objective (delta = %g)', currentLL -prevLL))
       end;
+      loglikTrace(itr) = currentLL;
     end % while(not(converged))
 
     % save the parameters if we did better in this iteration

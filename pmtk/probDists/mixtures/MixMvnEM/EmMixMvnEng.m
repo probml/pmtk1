@@ -12,8 +12,10 @@ methods
     for k=1:K
       model.distributions{k}.mu = mu(k,:)';
       members = find(assign==k);
-      Sigma = cov(X(members,:));
-      Sigma = Sigma + 0.1*eye(size(Sigma));
+      %Sigma = cov(X(members,:));
+      %Sigma = Sigma + 0.1*eye(size(Sigma));
+      C = cov(X(members,:));
+      Sigma = C + 0.01*diag(diag(C));
       model.distributions{k}.Sigma = Sigma;
       assert(det(Sigma) > eps);
       

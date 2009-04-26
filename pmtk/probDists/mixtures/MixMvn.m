@@ -13,7 +13,7 @@ methods
       '-ndims',      0,...
       '-covtype',    'full', ...
       '-prior',      'niw', ...
-      '-fitEng',       EmMixMvnEng(), ...
+      '-fitEng',       EmMixMvnFastEng(), ... %EmMixMvnEng()
       '-transformer'  ,[], ...
       '-verbose',      false);
     K = nmixtures;
@@ -27,11 +27,7 @@ methods
     model.nmix = numel(model.distributions);
   end
 
-  function model = EMfit(model, X, varargin)
-    [distributions, mix] = EMforGMM(model.distributions, model.mixingDistrib, X, varargin{:});
-    model.distributions = distributions;
-    model.mixingDistrib.T = mix;
-  end
+ 
     
 end % methods
 
