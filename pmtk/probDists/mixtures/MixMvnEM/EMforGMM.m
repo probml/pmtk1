@@ -48,9 +48,10 @@ function [distributions, bestMix, loglikTrace, itr] = EMforGMM(distributions, mi
 
     % Initialize
     [mu, assign] = kmeansSimple(X, K);
+    v = var(X(:));
     for k=1:K
       C = cov(X(assign == k,:));
-      Sigma(:,:,k) = C + 0.01*diag(diag(C));
+      Sigma(:,:,k) = C + (v/K)*eye(d); % diag(diag(C));
       %Sigma(:,:,k) = cov(X(assign == k,:)) + 0.1*eye(d);
       %Sigma(:,:,k) = cov(X) / K;
       switch class(prior{k})

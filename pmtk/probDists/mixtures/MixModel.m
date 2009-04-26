@@ -37,20 +37,7 @@ classdef MixModel < ProbDist
     end
 
 
-     function logRik = calcResponsibilities(model,data)
-      % returns *unnormalized* log responsibilities
-      % logRik(i,k) = log p(data(i,:), hi=k | params) 
-      if(~isempty(model.transformer))
-        data = test(model.transformer,data);
-      end
-      n = size(data,1); nmixtures = numel(model.distributions);
-      logRik = zeros(n,nmixtures);
-      mixWeights = pmf(model.mixingDistrib);
-      for k=1:nmixtures
-        logRik(:,k) = log(mixWeights(k)+eps) + logprob(model.distributions{k},data);
-      end
-      
-     end
+    
     
     function [ph, LL] = inferLatent(model,data)
       % ph(i,k) = p(H=k | data(i,:),params) a DiscreteDist
@@ -121,14 +108,15 @@ classdef MixModel < ProbDist
       %K = length(model.distributions);
       K = model.nmix;
     end
-    
-    %{
-    function d = ndistrib(model)
-      d = max(1,numel(model.distributions));
-    end
-    %}
-    
-   
+  
+     function np = nparams(model)
+      K = nmixtures(model);
+      np = K-1;
+      for i=1:K
+       np = np + nparams(model.distributions{i});
+      end
+     end
+
     
     function mu = mean(m)
       % mu(:) = sum_k p(k) mu(:,k)
@@ -188,32 +176,28 @@ classdef MixModel < ProbDist
       SS.weights = gamma2;
     end
     
-    function p = isDiscrete(CPD) %#ok
-    % used by DgmDist constructor    
-      p = false;
-    end
-    
-    function q = nstates(CPD)  
-    % used by DgmDist constructor    
-      q = length(pmf(CPD.mixingDistrib));
-    end
-    
-    function Tfac = convertToTabularFactor(model, child, ctsParents, dParents, visible, data, nstates,fullDomain)
-    % all of the children must be observed
-        assert(isempty(ctsParents))
-        assert(length(dParents)==1)
-        map = @(x)canonizeLabels(x,fullDomain);
-        if visible(map(child))
-            T = exp(calcResponsibilities(model,data(map(child))));
-            Tfac = TabularFactor(T,dParents);
-        else
-            % barren leaf removal
-            Tfac = TabularFactor(ones(1,nstates(map(dParents))), dParents);
-        end
-    end
-
+   
     
   end % methods
 
+  methods(Access = 'protected')
+  
+    function logRik = calcResponsibilities(model,data)
+      % returns *unnormalized* log responsibilities
+      % logRik(i,k) = log p(data(i,:), hi=k | params) 
+      if(~isempty(model.transformer))
+        data = test(model.transformer,data);
+      end
+      n = size(data,1); nmixtures = numel(model.distributions);
+      logRik = zeros(n,nmixtures);
+      mixWeights = pmf(model.mixingDistrib);
+      for k=1:nmixtures
+        logRik(:,k) = log(mixWeights(k)+eps) + logprob(model.distributions{k},data);
+      end
+   end
+
+  end
+  
+     
 end
 

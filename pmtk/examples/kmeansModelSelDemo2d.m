@@ -36,7 +36,7 @@ Ks = [2 3 4 5  10 20];
 %Ks = [2 10 30];
 [nr,nc] = nsubplots(length(Ks));
 
-%{
+
 figure;
 for i=1:length(Ks)
   K = Ks(i);
@@ -67,7 +67,7 @@ for i=1:length(Ks)
 end
 figure; plot(Ks, mse, 'o-')
 title('MSE on test set vs K')
-%}
+
 
 setSeed(1);
 figure;

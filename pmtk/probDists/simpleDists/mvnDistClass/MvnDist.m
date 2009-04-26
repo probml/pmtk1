@@ -34,6 +34,18 @@ classdef MvnDist < ParamDist
       m.domain = 1:m.ndims;
     end
 
+     function np = nparams(model)
+       d = model.ndims;
+       switch model.covtype
+         case 'full'
+           np  = d * (d-1) / 2 + d;
+         case 'diag'
+           np = d + d;
+         case 'spherical'
+           np = 1 + d;
+       end
+     end
+     
     function model = setParams(model, param)
     % setParams needed by gibbs samplers
       model.mu = param.mu;
@@ -68,71 +80,7 @@ classdef MvnDist < ParamDist
       domain = 1:length(m.mu);
     end
 
-    %{
-    function [obj, samples] = sampleParamGibbs(obj,X,prior)
-      % We first sample Sigma conditional on mu and X, then mu conditional on Sigma and X;
-      switch class(prior)
-        case 'char'
-          error('MvnDist:sampleParamGibbs:char', 'Warning: prior not initialized.');
-          switch lower(prior)
-            case 'none'
-              error('MvnDist:sampleParamGibbs:sampleMuSigmaGibbs:invalidPrior','Warning, unable to sample mu, Sigma using Gibbs sampling when no prior distribution is specified for the distributions for each cluster');
-            case 'nig'
-              prior = obj.mkNigPrior(X);
-              post = Mvn_MvnInvGammaDist(prior);
-              joint = fit(post,'data',X);
-              post = joint.muSigmaDist;
-
-              postSigma = InvGammaDist(post.a + 1, post.b);
-              obj.Sigma = sample(postSigma,1);
-              samples.Sigma = obj.Sigma;
-
-              postMu = MvnDist(post.mu, obj.Sigma / post.Sigma);
-              obj.mu = sample(postMu,1);
-              samples.mu = obj.mu;
-            case 'niw'
-              prior = obj.mkNiwPrior(X);
-              post = Mvn_MvnInvWishartDist(prior);
-              joint = fit(post,'data', X );
-              post = joint.muSigmaDist;
-              % From post, get the values that we need for the marginal of Sigma for this distribution, and sample
-              postSigma = InvWishartDist(post.dof + 1, post.Sigma);
-              obj.Sigma = sample(postSigma,1);
-              samples.Sigma = obj.Sigma;
-
-              % Now, do the same thing for mu
-              postMu = MvnDist(post.mu, obj.Sigma / post.k);
-              obj.mu = sample(postMu,1);
-              samples.mu = obj.mu;
-          end % of switch lower(prior)
-        case 'MvnInvWishartDist'
-          post = Mvn_MvnInvWishartDist(prior);
-          joint = fit(post,'data', X );
-          post = joint.muSigmaDist;
-          % From post, get the values that we need for the marginal of Sigma for this distribution, and sample
-          postSigma = InvWishartDist(post.dof + 1, post.Sigma);
-          obj.Sigma = sample(postSigma,1);
-          samples.Sigma = obj.Sigma;
-          % Now, do the same thing for mu
-          postMu = MvnDist(post.mu, obj.Sigma / post.k);
-          obj.mu = sample(postMu,1);
-          samples.mu = obj.mu;
-        case 'MvnInvGammaDist'
-          post = Mvn_MvnInvGammaDist(prior);
-          joint = fit(post,'data',X);
-          post = joint.muSigmaDist;
-
-          postSigma = InvGammaDist(post.a + 1, post.b);
-          obj.Sigma = sample(postSigma,1);
-          samples.Sigma = obj.Sigma;
-
-          postMu = MvnDist(post.mu, obj.Sigma / post.Sigma);
-          obj.mu = sample(postMu,1);
-          samples.mu = obj.mu;
-      end % of switch class(prior)
-    end
-    %}
-
+   
     function [samples, other] = sample(model, n, visVars, visVals)
       % Samples(i,:) is i'th sample
       if(nargin < 2), n = 1; end;
@@ -290,6 +238,7 @@ classdef MvnDist < ParamDist
       if nargin < 2, d = ndimensions(obj); end
       if(~isscalar(d) || d~=round(d))
         % d is data n*D
+        fprintf('mkRndParams called with data\n');
         perm = randperm(size(d,1));
         obj.mu = d(perm(1),:);
         obj.Sigma = 0.05*cov(d);
