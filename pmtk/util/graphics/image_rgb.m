@@ -1,8 +1,12 @@
 function image_rgb(M)
 % Show a matrix of integers as a color image.
 % This is like imagesc, except we know what the mapping is from integer to color.
-% If entries of M contain integers in {1,2,3}, we map
-% this to red/green/blue 
+% If entries of M contain integers in {1,2,3,4,5}, we map
+% this to red/green/blue/aquamarine/black.
+% So if we call image_rgb on 2 different matrices,
+% we always know black means 5.
+% If we use imagesc, the mapping from color to number depends on the image.
+% eg M=sampleDiscrete(normalize(ones(1,5)), 10,10); image_rgb(M);colorbar
 
 cmap = [1 0 0; % red
 	0 1 0; % green
