@@ -1,27 +1,33 @@
 classdef ModelList 
-    % List of different models. Fitting means picking best model.
-    % Subsequent calls to logprob/ predict use best model.
+    % List of different models. We fit them all.
+    % Subsequent calls to logprob/ predict/ impute use either best plugin model
+    % or use Bayesian model averaging.
     
     properties
       models;
-      selectionMethod;
-      nfolds;
-      bestModel;
-      %scores; % want to maximize this
-      LLmean; LLse; % for CV
-      loglik; penloglik; % for BIC etc
+       bestModel; % plugin
+      selMethod;
+      predMethod; 
+      nfolds; LLmean; LLse; % for CV
+      loglik; penloglik; posterior; % for BIC etc
+      occamWindowThreshold;
     end
     
     %%  Main methods
     methods
         function obj = ModelList(varargin)
-          % ModelList(models, selMethod, nfolds)
+          % ModelList(models, selMethod, nfolds, predMethod, occamWindowThreshold)
           % models is a cell array
           % selMethod - 'bic' or 'aic' or 'loglik' or 'cv' [default cv]
           % nfolds - number of folds [default 5]
+          % predMethod - 'plugin' or 'bma'
+          % occamWindowThreshold - for bma, use all models within this pc
+          % of best model; 0 means use all models, 0.9 means use top 10%
           if nargin == 0; return; end
-          [obj.models, obj.selectionMethod, obj.nfolds] = processArgs(varargin, ...
-            '-models', {}, '-selMethod', '-cv', '-nfolds', 5);
+          [obj.models, obj.selMethod, obj.nfolds, ...
+            obj.predMethod, obj.occamWindowThreshold] = processArgs(varargin, ...
+            '-models', {}, '-selMethod', '-cv', '-nfolds', 5, ...
+            '-predMethod', 'plugin', '-occamWindowThreshold', 0);
         end
         
         function mlist = fit(mlist, varargin)
@@ -32,35 +38,49 @@ classdef ModelList
           % or LLmean/ LLse (for CV)
           [X, y] = processArgs(varargin, '-X', [], '-y', []);
           Nx = size(X,1);
-          switch lower(mlist.selectionMethod)
+          switch lower(mlist.selMethod)
             case 'cv', [mlist.bestModel, mlist.LLmean, mlist.LLse] = ...
                 selectCV(mlist.models, X, y, mlist.nfolds);
-            case 'bic',  [mlist.models, mlist.bestModel, mlist.loglik, mlist.penloglik] = ...
-                selectPenLoglik(mlist.models, X, y, log(Nx)/2);
-            case 'aic',  [mlist.models, mlist.bestModel, mlist.loglik, mlist.penloglik] = ...
-                selectPenLoglik(mlist.models, X, y, Nx/2);
-            case 'loglik',  [mlist.models, mlist.bestModel, mlist.loglik, mlist.penloglik] = ...
-                selectPenLoglik(mlist.models, X, y, 0);
             otherwise
-              error(['unknown method ' mlist.selectionMethod]);
+              switch lower(mlist.selMethod)
+                case 'bic', pen = log(Nx)/2;
+                case 'aic',  pen =  Nx/2;
+                case 'loglik', pen = 0; % for log marginal likelihood
+              end
+              [mlist.models, mlist.bestModel, mlist.loglik, mlist.penloglik] = ...
+                selectPenLoglik(mlist.models, X, y, pen);
+              mlist.posterior = exp(normalizeLogspace(mlist.penloglik));
           end 
         end
                     
         function ll = logprob(mlist, varargin)
           % ll(i) = logprob(m, X) or logprob(m, X, y)
           [X, y] = processArgs(varargin, '-X', [], '-y', []);
+          nX = size(X,1);
           if isempty(y)
-           ll = logprob(mlist.bestModel, X);
+            fun = @(m) logprob(m, X);
           else
-            ll = logprob(mlist.bestModel, X, y);
+             fun = @(m) logprob(m, X, y);
           end
-        end
+          switch mlist.predMethod
+            case 'plugin'
+              ll = fun(mlist.bestModel);
+            case 'bma'
+              maxPost = max(mlist.posterior);
+              f = mlist.occamWindowThreshold;
+              ndx = find(mlist.posterior >= f*maxPost);
+              nM = length(ndx);
+              loglik  = zeros(nX, nM);
+              logprior = log(mlist.posterior(ndx));
+              logprior = repmat(logprior, nX, 1);
+              for m=1:nM
+                loglik(:,m) = fun(mlist.models{ndx(m)});
+              end
+              ll = logsumexp(loglik + logprior, 2);
+          end % switch
+        end % funciton
         
-        function py = predict(mlist, varargin)
-          % py = predict(m, X)
-          [X] = processArgs(varargin, '-X', []);
-          py = predict(mlist.bestModel, X);
-        end
+       
         
     end % methods 
     
