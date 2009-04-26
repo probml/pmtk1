@@ -28,7 +28,7 @@ classdef CondProbDist < ParamDist
           p  = (y(:)-yhat(:)).^2;
         end
 
-        
+        %{
         function [mu, stdErr] = cvScore(obj, X, Y, varargin)
             % X(i,:), Y(i,:)
             [nfolds, objective, randOrder] = process_options(...
@@ -61,6 +61,7 @@ classdef CondProbDist < ParamDist
             mu = mean(score);
             stdErr = std(score, 0, 2)/sqrt(n);
         end
+        %}
         
 
     

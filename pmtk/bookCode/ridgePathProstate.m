@@ -12,9 +12,11 @@ plot(df, w(2:end,:)', 'o-')
 legend(names(1:8))
 
 
+%{
 Xc = standardize(X);
 yc = center(y);
 [w2, df2] = ridgePathSimple(Xc, yc, lambdas);
 figure(2);clf
 plot(df2, w2, 'o-')
 legend(names(1:8))
+%}

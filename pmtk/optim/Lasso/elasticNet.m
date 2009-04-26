@@ -1,8 +1,9 @@
 function beta = elasticNet(X, y, lambda1, lambda2, lassoSolver, varargin)
 % elastic net is L1 + L2 regularized least squares regression
-% We assume w = lassoSolver(X, y, lambda1, varargin{:})
 % We assume X is standardized and y is centered
-% See elasticNetPath for general data
+% lassoSolver must have this interface:
+ %  w = lassoSolver(X, y, lambda1, varargin{:})
+% See also elasticNetPath 
 
 if nargin < 5
   lassoSolver = @LassoShooting;

@@ -48,7 +48,7 @@ classdef ModelList
                 case 'loglik', pen = 0; % for log marginal likelihood
               end
               [mlist.models, mlist.bestModel, mlist.loglik, mlist.penloglik] = ...
-                selectPenLoglik(mlist.models, X, y, pen);
+                selectPenLoglik(mlist, X, y, pen);
               mlist.posterior = exp(normalizeLogspace(mlist.penloglik));
           end 
         end
@@ -84,5 +84,40 @@ classdef ModelList
         
     end % methods 
     
- 
+    methods(Access = 'protected')
+     
+      
+      function [models] = fitManyModels(ML, X, y)
+        % May be overriden in subclass if efficient regpath methods exist
+        models = ML.models;
+        Nm = length(models);
+        for m=1:Nm
+          if isempty(y)
+            models{m} = fit(models{m},  X);
+          else
+            models{m} = fit(models{m}, X, y);
+          end
+        end
+      end
+      
+      function [models, bestModel, loglik, penLL] = selectPenLoglik(ML, X, y, penalty)
+        models = ML.models;
+        Nm = length(models);
+        penLL = zeros(1, Nm);
+        loglik = zeros(1, Nm);
+        models = fitManyModels(ML, X, y);
+        for m=1:Nm % for every model
+          if isempty(y)
+            loglik(m) = sum(logprob(models{m}, X),1);
+          else
+            loglik(m) = sum(logprob(models{m}, X, y),1);
+          end
+          penLL(m) = loglik(m) - penalty*nparams(models{m}); %#ok
+        end
+        bestNdx = argmax(penLL);
+        bestModel = models{bestNdx};
+      end
+      
+    end
+
 end

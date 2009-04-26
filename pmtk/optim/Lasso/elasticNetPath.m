@@ -13,7 +13,7 @@ if all(Xtrain(:,1)==1)
   fprintf('removing column of 1s from Xtrain\n');
   Xtrain = Xtrain(:,2:end);
 end
-if ~isempty(Xtest) & all(Xtest(:,1)==1)
+if ~isempty(Xtest) && all(Xtest(:,1)==1)
   fprintf('removing column of 1s from Xtest\n');
   Xtest = Xtest(:,2:end);
 end
