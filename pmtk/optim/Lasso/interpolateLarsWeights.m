@@ -14,7 +14,7 @@ function Wbig = interpolateLarsWeights(Wfull,lambdas,X,y)
 %get the weights corresponding to lambdas between these points.
 
 Wfull = Wfull(end:-1:1,:); %reverse order for interp1q, (now least regularized to most)
-criticalPoints = recoverLambda(X,y,Wfull)'; %in ascending order of magnitude.
+criticalPoints = recoverLambdaFromLarsWeights(X,y,Wfull)'; %in ascending order of magnitude.
 tooBig = lambdas > criticalPoints(end);%can't interpolate outside of the range of criticalPoints
 Winterp = interp1q(criticalPoints,Wfull,lambdas(~tooBig)');
 Wbig = [Winterp; zeros(sum(tooBig), size(Winterp,2))]; % since, if lambda > lambda_max, all weights 0.

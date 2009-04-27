@@ -1,7 +1,7 @@
 function [X,mu] = center(X, mu)
 % CENTER Make each column be zero mean
 
-if nargin < 2 | isempty(mu)
+if nargin < 2 || isempty(mu)
   mu = mean(X); % across columns (if matrix)
 end
 [n p] = size(X);

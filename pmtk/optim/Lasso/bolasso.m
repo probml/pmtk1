@@ -246,6 +246,7 @@ function [selectedVars,Wlsq,varargout] = bolasso(X,y,varargin)
 % * lars.m
 % * process_options.m
 % * Kfold.m (only when cross validation option selected)
+% *recoverLambdaFromLarsWeights
 %
 % Code by Matthew Dunham
 %
@@ -425,11 +426,11 @@ function [selectedVars,Wlsq,varargout] = bolasso(X,y,varargin)
             end
             return;
         end
-        lambda = recoverLambda(Xs,ys,lars(Xs,ys,larsOptions{:}));
+        lambda = recoverLambdaFromLarsWeights(Xs,ys,lars(Xs,ys,larsOptions{:}));
         k = numel(lambda);
         while numel(lambda) < ((maxNlambdas/4) - k); % /4 so that we can double twice via interpolation
             [Xsamp,ysamp] = sample(Xs,ys);
-            lambda = [lambda, recoverLambda(Xsamp,ysamp,lars(Xsamp,ysamp,larsOptions{:}))];
+            lambda = [lambda, recoverLambdaFromLarsWeights(Xsamp,ysamp,lars(Xsamp,ysamp,larsOptions{:}))];
         end
         lambda = unique(lambda);
         while numel(lambda) < (maxNlambdas/2)

@@ -3,7 +3,9 @@ classdef LinregL2ModelList < ModelList
 
     properties
         lambdas;
+        nlambdas;
         transformer;
+        addOffset = true;
     end
  
     %% Main methods
@@ -13,7 +15,7 @@ classdef LinregL2ModelList < ModelList
         % verbose) 
         % eg m = LinregL2ModelList('-X', X, '-nlambdas', 10)
         % See ModelList for explanation of arguments
-        [ML.lambdas, X, nlambdas, ML.transformer, ML.selMethod, ML.predMethod, ...
+        [ML.lambdas, X, ML.nlambdas, ML.transformer, ML.selMethod, ML.predMethod, ...
           ML.nfolds, ML.verbose] = ...
           processArgs(varargin,...
           '-lambdas', [], ...
@@ -24,36 +26,41 @@ classdef LinregL2ModelList < ModelList
           '-predMethod', 'plugin', ...
           '-nfolds', 5, ...
           '-verbose', false);
-        if isempty(ML.lambdas)
-          ML.lambdas = [0 logspace(0, log(LinregL2ModelList.maxLambda(X)), nlambdas-1)];
+         if  ~isempty(ML.nlambdas)
+          ML.lambdas = []; % will auto-generate once we see X,y
         end
+        
       end
        
-      function [W, sigma2, dof] = getParamsForAllModels(ML)
+       function [W, w0, sigma2, dof, lambda] = getParamsForAllModels(ML)
         % Extract parameters from models in list and convert to matrix
         % W(:,m) = weights for model m
+        % w0(m)
         % sigma2(m)
         % dof(m) = degrees of freedom
         Nm = length(ML.models);
         d = ndimensions(ML.models{1});
-        W = zeros(d,Nm); sigma2 = zeros(1,Nm); dof = zeros(1,Nm);
+        W = zeros(d,Nm); w0 = zeros(1,Nm); sigma2 = zeros(1,Nm);
+        dof = zeros(1,Nm);  lambda = zeros(1,Nm);
         for m=1:Nm
           W(:,m) = ML.models{m}.w(:);
+          w0(m) = ML.models{m}.w0;
           sigma2(m) = ML.models{m}.sigma2;
           dof(m) = ML.models{m}.df;
+          lambda(m) = ML.models{m}.lambda;
         end
-      end
+       end
+      
+    
       
       function [models] = fitManyModels(ML, X, y)
+        if isempty(ML.lambdas)
+          ML.lambdas = [0 logspace(0, log(LinregL2ModelList.maxLambdaLinregL2(X)), ML.nlambdas-1)];
+        end
         lambdas = ML.lambdas;
           if ~isempty(ML.transformer)
             [X, model.transformer] = train(ML.transformer, X);
           end
-          onesAdded = ~isempty(ML.transformer) && addOffset(ML.transformer);
-          if onesAdded
-            X = X(:,2:end); % remove leading column of 1s
-          end
-          
           % center input and output, so we can estimate w0 separately
           xbar = mean(X);
           XC = X - repmat(xbar,size(X,1),1);
@@ -68,22 +75,22 @@ classdef LinregL2ModelList < ModelList
           for i=1:Nm
             lambda = lambdas(i); %#ok
             if lambda==0
-              ww = pinv(XC)*yC;
+              w = pinv(XC)*yC;
             else
-              ww  = V*diag(1./(D2 + lambda))*D*U'*yC;
+              w  = V*diag(1./(D2 + lambda))*D*U'*yC;
             end
             df = sum(D2./(D2+lambda));
-            if onesAdded
-              w0 = ybar - xbar*ww;
-              w(1) = w0;
-              w(2:d+1) = ww;
-              ypred = [ones(n,1) X]*w(:);
+            if ML.addOffset
+              w0 = ybar - xbar*w;
+              ww = [w0; w(:)];
+              ypred = [ones(n,1) X]*ww(:);
             else
-              w = ww;
+              w0 = 0;
               ypred = X*w(:);
             end
             sigma2  = mean((y-ypred).^2);
             models{i} = LinregL2('-transformer', ML.transformer, '-w', w, ...
+              '-w0', w0, '-addOffset', ML.addOffset, ...
               '-sigma2', sigma2, '-df', df, '-lambda', lambda);
           end
       end % fitManyModels
@@ -92,7 +99,7 @@ classdef LinregL2ModelList < ModelList
 
     methods(Static = true)
       
-      function mm = maxLambda(X)
+      function lambda = maxLambdaLinregL2(X)
         % auto-generate a reasonable range of lambdas
         % Obviously 0 is the minimum
         % We set the max to be 100 * the largest squared singular value
@@ -101,7 +108,7 @@ classdef LinregL2ModelList < ModelList
         D22 = eig(XC'*XC); % evals of X'X = svals^2 of X
         D22 = sort(D22, 'descend');
         D22 = D22(1:min(n,d));
-        mm = 2*max(D22);
+        lambda= 2*max(D22);
         if 0 % debug - svd slower than computing evals
           %X = rand(10,20);
           [U,D,V] = svd(XC,'econ'); % D2(i) = singular value

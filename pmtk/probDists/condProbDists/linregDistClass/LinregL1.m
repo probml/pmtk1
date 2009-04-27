@@ -11,14 +11,18 @@ classdef LinregL1 < Linreg
     %% Main methods
     methods
       function obj = LinregL1(varargin)
-        % m = LinregL1(lambda, transformer, w, sigma2, method)
-        % method is one of {'lars', 'shooting'}
-        [ obj.lambda, obj.transformer, obj.w, obj.sigma2,obj.method] = processArgs(varargin,...
+        % m = LinregL1(lambda, transformer, w, w0, sigma2, method, df, addOffset)
+        % method is one of {'shooting', 'l1_ls'}
+        [ obj.lambda, obj.transformer, obj.w, obj.w0, obj.sigma2, obj.method, obj.df, obj.addOffset] = ...
+          processArgs(varargin,...
           '-lambda'      , 0, ...
-          '-transformer', []                      ,...
-          '-w'          , []                      ,...
-          '-sigma2'     , []                      , ....
-          '-method', 'lars');
+          '-transformer', [], ...                     
+          '-w'          , [], ...  
+           '-w0'          , [], ... 
+          '-sigma2'     , [], ...                     
+          '-method', 'shooting', ...
+          '-df', [], ...
+          '-addOffset', true);
       end
        
         function model = fit(model,varargin)
@@ -29,25 +33,32 @@ classdef LinregL1 < Linreg
           if ~isempty(model.transformer)
             [X, model.transformer] = train(model.transformer, X);
           end
-          onesAdded = ~isempty(model.transformer) && addOffset(model.transformer);
-         
+          % We can center at training time but not at test time
+          % since w0 will compensate (is this correct??)
+          % (If we need to center at test time, use a transformer)
+          [XC, xbar] = center(X);
+          %XC = mkUnitVariance(XC);
+          [yC, ybar] = center(y);
           switch lower(model.method)
             case 'shooting'
-              model.w = LassoShooting(X,y,model.lambda);
-            case 'lars'
-              if(onesAdded)
-                w = larsLambda(X(:,2:end),center(y),model.lambda)';
-                w0 = mean(y)-mean(X)*(X\center(y));
-                model.w = [w0;w];
-              else
-                model.w = larsLambda(X,y,model.lambda)';
-              end
+              w = LassoShooting(XC, yC, model.lambda, 'offsetAdded', false);
+            case 'l1_ls'
+              w = l1_ls(XC, yC, model.lambda, 1e-3, true);
             otherwise
-              error('%s is not a supported L1 algorithm',algorithm);
+              error('%s is not a supported L1 algorithm', model.method);
           end
-         
-          yhat = X*model.w;
+          if model.addOffset
+            w0 = ybar - xbar*w;
+          else
+            w0 = 0;
+          end
+          model.w = w; model.w0 = w0;
+          n = size(X,1);
+          X1 = [ones(n,1) X];
+          ww = [w0; w];
+          yhat = X1*ww;
           model.sigma2 = mean((yhat-y).^2);
+          model.df = sum(abs(w) ~= 0); % num non zeros
           model.ndimsX = size(X,2);
           model.ndimsY = size(y,2);
         end
@@ -55,9 +66,3 @@ classdef LinregL1 < Linreg
     end % methods
   
 end % class
-
-function w = LassoShooting2(X,y,lambda)
-disp('foo')
-w = LassoShooting(X,y,lambda);
-end
-

@@ -1,63 +1,72 @@
-%% Ridge regression path on prostate cancer data
-% Reproduce fig 3.7  on p61 of Elements 1st ed
+%% Lasso path on prostate cancer data
+% Reproduce fig 3.9  on p65 of Elements 1st ed
 
 clear all
 load('prostate.mat') % from prostateDataMake
-lambdas = [logspace(4, 0, 20) 0];
 ndx = find(istrain);
 y = y(ndx); X = X(ndx,:);
-T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()});
+T = StandardizeTransformer(false);
 
 
-% Check reasonableness of auto-lambda
-%mm = LinregL2ModelList.maxLambda(X);
-%ML = LinregL2ModelList(lambdas, '-transformer', T);
-ML = LinregL2ModelList('-nlambdas', 20, '-X', X, '-transformer', T);
+% Compute solutions at discontinuities using lars
+ML = LinregL1ModelList('-lambdas', 'all', '-transformer', T);
 ML = fit(ML, X, y);
-[W, sigma2, df] = getParamsForAllModels(ML);
-bestNdx = find(dof(ML.bestModel)==df);
-
+[W, w0, sigma2, df, lambdas] = getParamsForAllModels(ML);
 figure;
-plot(df, ML.penloglik, 'o-')
-title('BIC vs df(lambda)')
-hold on
-plot(df(bestNdx), ML.penloglik(bestNdx), 'ro', 'markersize', 12)
+plot(df, W, 'o-');
+legend(names(1:8), 'location', 'northwest')
+title('lasso path on prostate')
 
-figW=figure;
-plot(df, W(2:end,:), 'o-');
-legend(names(1:8))
+% Now compute solutions on dense path using lars + interpolation
+%lambdas = [logspace(4, 0, 20) 0];
+ML = LinregL1ModelList('-nlambdas', 50, '-transformer', T);
+ML = fit(ML, X, y);
+[W, w0, sigma2, df, lambdas, shrinkage] = getParamsForAllModels(ML, X, y);
+figW = figure;
+Nm = size(W,2);
+xvec = shrinkage;
+plot(xvec, W, 'o-');
+legend(names(1:8),'location','northwest')
 
-ww = W(2:end,:); ww = ww(:);
-h = line(df([bestNdx bestNdx]), [min(ww), max(ww)]);
+bestNdx = find(ML.bestModel.lambda==lambdas);
+h = line(xvec([bestNdx bestNdx]), [min(W(:)), max(W(:))]);
 set(h, 'color', 'r', 'linestyle', '--');
-title('ridge path on prostate, red vertical line = BIC')
-xlabel('dof')
+title('lasso path on prostate, red vertical line = BIC')
+xlabel('norm(w(:,m))/max(norm(w))')
 ylabel('regression coef.')
 drawnow
 
+figure;
+plot(xvec, ML.penloglik, 'o-')
+title('BIC vs df(lambda)')
+hold on
+plot(xvec(bestNdx), ML.penloglik(bestNdx), 'ro', 'markersize', 12)
+
+
+
 % Now do CV
-MLcv = LinregL2ModelList('-nlambdas', 20, '-X', X, '-transformer', T, ...
+MLcv = LinregL1ModelList('-nlambdas', 50, '-transformer', T, ...
   '-selMethod', 'cv', '-nfolds', 5, '-verbose', true);
 MLcv = fit(MLcv, X, y);
-[Wcv, sigma2cv, dfcv] = getParamsForAllModels(MLcv);
+[Wcv, w0cv, sigma2cv, dfcv, lambdascv, shrinkagecv] = getParamsForAllModels(MLcv, X, y);
+
+
 % Fitted models same as in BIC, only bestModel ndx differs...
 assert(approxeq(Wcv, W))
-assert(approxeq(sigma2, sigma2cv))
+assert(approxeq(w0cv, w0))
+assert(approxeq(sigma2cv, sigma2))
 assert(approxeq(dfcv, df))
 
+
 figure(figW);
-bestNdx = find(dof(MLcv.bestModel)==dfcv);
-h = line(dfcv([bestNdx bestNdx]), [min(ww), max(ww)]);
+bestNdx = find(MLcv.bestModel.lambda==lambdascv);
+h = line(xvec([bestNdx bestNdx]), [min(Wcv(:)), max(Wcv(:))]);
 set(h, 'color', 'k', 'linestyle', ':');
-title('ridge path on prostate, red = BIC, black = 5-CV')
+title('lasso path on prostate, red = BIC, black = 5-CV')
 
 
 figure;
-errorbar(df, MLcv.LLmean, MLcv.LLse);
+errorbar(xvec, MLcv.LLmean, MLcv.LLse);
 title('CV loglik vs df(lambda)')
 hold on
-plot(df(bestNdx), MLcv.LLmean(bestNdx), 'ko', 'markersize', 12)
-
-
-
-
+plot(xvec(bestNdx), MLcv.LLmean(bestNdx), 'ko', 'markersize', 12)

@@ -1,10 +1,10 @@
 
-GPSR 5.0  
+GPSR 6.0  
 
-December 5, 2007
+2009
 
 ---------------------------------------------------------------------------
-Copyright (2007): Mario Figueiredo, Robert Nowak, Stephen Wright
+Copyright (2009): Mario Figueiredo, Robert Nowak, Stephen Wright
 
 GPSR is distributed under the terms of the GNU General Public License 2.0.
 

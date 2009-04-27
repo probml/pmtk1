@@ -4,18 +4,23 @@ classdef Linreg < CondProbDist
 
     properties
         w;                % weight vector
+        w0; % offset term
         df; % degrees of freedom
         sigma2;           % noise variance                          
         transformer;      % A data transformer object, e.g. KernelTransformer
+        addOffset; 
     end
 
     %% Main methods
     methods
-        function obj = LinregDist(varargin)
-            [obj.transformer, obj.w, obj.sigma2] = processArgs(varargin,...
-                        'transformer', []                      ,...      
-                        'w'          , []                      ,... 
-                        'sigma2'     , []);
+        function obj = Linreg(varargin)
+          % Linreg(transformer, addOffset, w, w0, sigma2)
+            [obj.transformer, obj.addOffset, obj.w,  obj.w0, obj.sigma2] = processArgs(varargin,...
+                        '-transformer', [], ...
+                        '-addOffset', true, ...
+                        '-w'          , [], ...
+                         '-w0'          , [], ...
+                        '-sigma2'     , []);
         end
        
         function model = fit(model,varargin)
@@ -26,8 +31,19 @@ classdef Linreg < CondProbDist
           if ~isempty(model.transformer)
             [X, model.transformer] = train(model.transformer, X);
           end
-          model.w = X \ y; % least squares
-          yhat = X*model.w;
+          n = size(X,1);
+          if model.addOffset
+            X = [X ones(n,1)];
+          end
+          w = X \ y; % least squares
+          if model.addOffset
+            model.w0 = w(end);
+            model.w = w(1:end-1);
+          else
+            model.w = w;
+          end
+          model.df = length(w);
+          yhat = X*w;
           model.sigma2 = mean((yhat-y).^2);
           model.ndimsX = size(X,2);
           model.ndimsY = size(y,2);
@@ -36,12 +52,17 @@ classdef Linreg < CondProbDist
         function py = predict(model,X)
           %  X(i,:) is i'th input
           % py(i) = p(y|X(i,:), params), a GaussDist
-         
           if ~isempty(model.transformer)
             X = test(model.transformer, X);
           end
           n = size(X,1);
-          muHat = X*model.w(:);
+          if model.addOffset
+            X = [X ones(n,1)];
+            w = [model.w(:); model.w0];
+          else
+            w = model.w(:);
+          end
+          muHat = X*w;
           sigma2Hat = model.sigma2*ones(n,1); % constant variance!
           py = GaussDist(muHat, sigma2Hat);
         end
@@ -49,6 +70,7 @@ classdef Linreg < CondProbDist
         function model = mkRndParams(model, d)
          % Generate and set random d-dimensional parameters    
             model.w = randn(d,1);
+            model.w0 = randn(1,1);
             model.sigma2 = rand(1,1);
         end
 
@@ -66,7 +88,6 @@ classdef Linreg < CondProbDist
             s2 = model.sigma2;
             p = -1/(2*s2)*(y(:)-yhat(:)).^2 - 0.5*log(2*pi*s2);
         end
-        
         
 
     end

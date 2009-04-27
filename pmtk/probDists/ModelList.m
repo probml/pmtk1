@@ -144,13 +144,8 @@ classdef ModelList
          % but we may want compare all models.
          % The extra cost is negligible since we've already fit
          % all models many times...
-         for m=1:Nm
-           if isempty(y)
-             models{m} = fit(models{m}, X);
-           else
-             models{m} = fit(models{m}, X, y);
-           end
-         end
+         ML.models = models;
+         models = fitManyModels(ML, X, y);
          bestModel = models{bestNdx};
        end
 
