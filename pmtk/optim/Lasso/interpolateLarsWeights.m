@@ -6,7 +6,7 @@ function Wbig = interpolateLarsWeights(Wfull,lambdas,X,y)
 % X: input data, each row is a case
 % y: input data
 
-% Written by Matthew Dunham
+% Written by Matthew Dunham, based on code by Skoglund
 
 %We have the values of the weights at each 'critical point' where
 %weights changes sign from lars. Since the weights w.r.t. lambda

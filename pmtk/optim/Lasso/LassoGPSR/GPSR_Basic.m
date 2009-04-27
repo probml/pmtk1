@@ -305,6 +305,9 @@ if prod(size(tau)) == 1
    max_tau = max(abs(aux(:)));
    if tau >= max_tau
       x = zeros(size(aux));
+      if debias
+         x_debias = x;
+      end
       objective(1) = 0.5*(y(:)'*y(:));
       times(1) = 0;
       if compute_mse
@@ -574,7 +577,7 @@ end
 % overdetermined, otherwise we are certainly applying CG to a problem with a
 % singular Hessian
 
-if debias
+if (debias & (sum(x(:)~=0)~=0))
   
   if (num_nz_x > length(y(:)))
     if verbose

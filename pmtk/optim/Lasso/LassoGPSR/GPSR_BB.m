@@ -1,4 +1,4 @@
-function [x,x_debias,objective,times,debias_start,mses]= ...
+function [x,x_debias,objective,times,debias_start,mses,taus]= ...
     GPSR_BB(y,A,tau,varargin)
 %
 % GPSR_BB version 5.0, December 4, 2007
@@ -80,6 +80,9 @@ function [x,x_debias,objective,times,debias_start,mses]= ...
 %                        falls below 'ToleranceA'
 %                    4 = stop when the objective function 
 %                        becomes equal or less than toleranceA.
+%                    5 = stop when the norm of the difference between 
+%                        two consecutive estimates, divided by the norm
+%                        of one of them falls below toleranceA
 %                    Default = 3.
 %
 %  'ToleranceA' = stopping threshold; Default = 0.01
@@ -130,7 +133,8 @@ function [x,x_debias,objective,times,debias_start,mses]= ...
 %
 % 'ContinuationSteps' = Number of steps in the continuation procedure;
 %                       ignored if 'Continuation' equals zero.
-%                       Default = 5.
+%                       If -1, an adaptive continuation procedure is used.
+%                       Default = -1.
 % 
 % 'FirstTauFactor'  = Initial tau value, if using continuation, is
 %                     obtained by multiplying the given tau by 
@@ -198,7 +202,7 @@ compute_mse = 0;
 AT = 0;
 verbose = 1;
 continuation = 0;
-cont_steps = 5;
+cont_steps = -1;
 firstTauFactorGiven = 0;
 
 % Set the defaults for outputs that may not be computed
@@ -263,7 +267,7 @@ else
 end
 %%%%%%%%%%%%%%
 
-if (sum(stopCriterion == [0 1 2 3 4])==0)
+if (sum(stopCriterion == [0 1 2 3 4 5])==0)
   error(['Unknown stopping criterion']);
 end
 
@@ -325,6 +329,9 @@ if prod(size(tau)) == 1
    max_tau = max(abs(aux(:)));
    if tau >= max_tau
       x = zeros(size(aux));
+      if debias
+         x_debias = x;
+      end
       objective(1) = 0.5*(y(:)'*y(:));
       times(1) = 0;
       if compute_mse
@@ -355,20 +362,24 @@ final_stopCriterion = stopCriterion;
 final_tolA = tolA;
 
 % set continuation factors
-if continuation&(cont_steps > 1)
+if continuation&&(cont_steps > 1)
    % If tau is scalar, first check top see if the first factor is 
    % too large (i.e., large enough to make the first 
    % solution all zeros). If so, make it a little smaller than that.
    % Also set to that value as default
    if prod(size(tau)) == 1
       if (firstTauFactorGiven == 0)|(firstTauFactor*tau >= max_tau)
-         firstTauFactor = 0.8*max_tau / tau;
-         fprintf(1,'parameter FirstTauFactor too large; changing')
+         firstTauFactor = 0.5*max_tau / tau;
+         if verbose
+             fprintf(1,'\n setting parameter FirstTauFactor\n')
+         end
       end
    end
    cont_factors = 10.^[log10(firstTauFactor):...
                     log10(1/firstTauFactor)/(cont_steps-1):0];
-else
+end
+
+if ~continuation
   cont_factors = 1;
   cont_steps = 1;
 end
@@ -378,46 +389,73 @@ if compute_mse
        mses(iter) = sum((x(:)-true(:)).^2);
 end
 
-% loop for continuation
-for cont_loop = 1:cont_steps
-    
-    tau = final_tau * cont_factors(cont_loop);
+keep_continuation = 1;
+cont_loop = 1;
+iter = 1;
+taus = [];
 
+% loop for continuation
+while keep_continuation
+    
+
+    % Compute and store initial value of the objective function
+    resid =  y - A(x);
+    
+    
+    if cont_steps == -1
+        gradq = AT(resid);
+        tau = max(final_tau,0.2*max(abs(gradq)));
+        if tau == final_tau
+            stopCriterion = final_stopCriterion;
+            tolA = final_tolA;
+            keep_continuation = 0;
+        else
+            stopCriterion = 1;
+            tolA = 1e-5;
+        end
+    else
+        tau = final_tau * cont_factors(cont_loop);
+        if cont_loop == cont_steps
+            stopCriterion = final_stopCriterion;
+            tolA = final_tolA;
+            keep_continuation = 0;
+        else
+            stopCriterion = 1;
+            tolA = 1e-5;
+        end
+    end
+    
+    taus = [taus tau];
+    
     if verbose
         fprintf(1,'\nSetting tau = %0.5g\n',tau)
     end
     
-    if cont_loop == cont_steps
-       stopCriterion = final_stopCriterion;
-       tolA = final_tolA;
-    else 
-       stopCriterion = 3;
-       tolA = 1e-3;
-    end
-    
-    % Compute and store initial value of the objective function
-    resid =  y - A(x);
-    f = 0.5*(resid(:)'*resid(:)) + ...
+    % if in first continuation iteration, compute and store
+    % initial value of the objective function
+    if cont_loop == 1
+        alpha = 1.0;
+        f = 0.5*(resid(:)'*resid(:)) + ...
              sum(tau(:).*u(:)) + sum(tau(:).*v(:));
-
-    objective(iter) = f;
-    times(iter) = cputime - t0;
-    
+        objective(1) = f;
+        if compute_mse
+            mses(1) = (x(:)-true(:))'*(x(:)-true(:));
+        end
+        if verbose
+            fprintf(1,'Initial obj=%10.6e, alpha=%6.2e, nonzeros=%7d\n',...
+                f,alpha,num_nz_x);
+        end
+    end
 
     % Compute the initial gradient and the useful 
     % quantity resid_base
     resid_base = y - resid;
 
-    alpha = 1.0;
-    alphas(iter) = alpha;
-
     % control variable for the outer loop and iteration counter
-
     keep_going = 1;
 
     if verbose
-      fprintf(1,'\nInitial obj=%10.6e, alpha=%6.2e, nonzeros=%7d\n',...
-	  f,alpha,num_nz_x);
+      fprintf(1,'\nInitial obj=%10.6e, nonzeros=%7d\n',f,num_nz_x);
     end
 
     while keep_going
@@ -475,7 +513,7 @@ for cont_loop = 1:cont_steps
       dd  = du(:)'*du(:) + dv(:)'*dv(:);  
       if dGd <= 0
         % something wrong if we get to here
-        if verbose, fprintf(1,' dGd=%12.4e, nonpositive curvature detected\n', dGd); end
+        fprintf(1,' dGd=%12.4e, nonpositive curvature detected\n', dGd);
         alpha = alphamax;
       else
         alpha = min(alphamax,max(alphamin,dd/dGd));
@@ -488,10 +526,10 @@ for cont_loop = 1:cont_steps
              iter, f, alpha, num_nz_x);
       end
 
+      % update iteration counts, store results and times
       iter = iter + 1;
       objective(iter) = f;
       times(iter) = cputime-t0;
-      alphas(iter) = alpha;
 
       if compute_mse
         err = true - x;
@@ -499,68 +537,77 @@ for cont_loop = 1:cont_steps
       end
 
       switch stopCriterion
-	case 0,
-	  % compute the stopping criterion based on the change 
-	  % of the number of non-zero components of the estimate
-	  num_changes_active = (sum(nz_x(:)~=nz_x_prev(:)));
-	  if num_nz_x >= 1
-	    criterionActiveSet = num_changes_active;
-	  else
-	    criterionActiveSet = tolA / 2;
-	  end
-	  keep_going = (criterionActiveSet > tolA);
-	  if verbose
-	    fprintf(1,'Delta n-zeros = %d (target = %e)\n',...
-		criterionActiveSet , tolA) 
-	  end
-	case 1,
-	  % compute the stopping criterion based on the relative
-	  % variation of the objective function.
-	  criterionObjective = abs(f-prev_f)/(prev_f);
-	  keep_going =  (criterionObjective > tolA);
-	  if verbose
-	    fprintf(1,'Delta obj. = %e (target = %e)\n',...
-		criterionObjective , tolA) 
-	  end
-	case 2,
-	  % stopping criterion based on relative norm of step taken
-	  delta_x_criterion = norm(dx(:))/norm(x(:));
-	  keep_going = (delta_x_criterion > tolA);
-	  if verbose
-	    fprintf(1,'Norm(delta x)/norm(x) = %e (target = %e)\n',...
-		delta_x_criterion,tolA) 
-	  end
-	case 3,
-	  % compute the "LCP" stopping criterion - again based on the previous
-	  % iterate. Make it "relative" to the norm of x.
-	  w = [ min(gradu(:), old_u(:)); min(gradv(:), old_v(:)) ];
-	  criterionLCP = norm(w(:), inf);
-	  criterionLCP = criterionLCP / ...
-	      max([1.0e-6, norm(old_u(:),inf), norm(old_v(:),inf)]);
-	  keep_going = (criterionLCP > tolA);
-	  if verbose
-	    fprintf(1,'LCP = %e (target = %e)\n',criterionLCP,tolA) 
-	  end
-	case 4,
-	  % continue if not yeat reached target value tolA
-	  keep_going = (f > tolA);
-	  if verbose
-	    fprintf(1,'Objective = %e (target = %e)\n',f,tolA) 
-	  end
-	otherwise,
-	  error(['Unknown stopping criterion']);
+          case 0,
+              % compute the stopping criterion based on the change
+              % of the number of non-zero components of the estimate
+              num_changes_active = (sum(nz_x(:)~=nz_x_prev(:)));
+              if num_nz_x >= 1
+                  criterionActiveSet = num_changes_active;
+              else
+                  criterionActiveSet = tolA / 2;
+              end
+              keep_going = (criterionActiveSet > tolA);
+              if verbose
+                  fprintf(1,'Delta n-zeros = %d (target = %e)\n',...
+                      criterionActiveSet , tolA)
+              end
+          case 1,
+              % compute the stopping criterion based on the relative
+              % variation of the objective function.
+              criterionObjective = abs(f-prev_f)/(prev_f);
+              keep_going =  (criterionObjective > tolA);
+              if verbose
+                  fprintf(1,'Delta obj. = %e (target = %e)\n',...
+                      criterionObjective , tolA)
+              end
+          case 2,
+              % stopping criterion based on relative norm of step taken
+              delta_x_criterion = norm(dx(:))/norm(x(:));
+              keep_going = (delta_x_criterion > tolA);
+              if verbose
+                  fprintf(1,'Norm(delta x)/norm(x) = %e (target = %e)\n',...
+                      delta_x_criterion,tolA)
+              end
+          case 3,
+              % compute the "LCP" stopping criterion - again based on the previous
+              % iterate. Make it "relative" to the norm of x.
+              w = [ min(gradu(:), old_u(:)); min(gradv(:), old_v(:)) ];
+              criterionLCP = norm(w(:), inf);
+              criterionLCP = criterionLCP / ...
+                  max([1.0e-6, norm(old_u(:),inf), norm(old_v(:),inf)]);
+              keep_going = (criterionLCP > tolA);
+              if verbose
+                  fprintf(1,'LCP = %e (target = %e)\n',criterionLCP,tolA)
+              end
+          case 4,
+              % continue if not yeat reached target value tolA
+              keep_going = (f > tolA);
+              if verbose
+                  fprintf(1,'Objective = %e (target = %e)\n',f,tolA)
+              end
+          case 5,
+            % stopping criterion based on relative norm of step taken
+            delta_x_criterion = sqrt(dd)/sqrt(x(:)'*x(:));
+            keep_going = (delta_x_criterion > tolA);
+            if verbose
+                fprintf(1,'Norm(delta x)/norm(x) = %e (target = %e)\n',...
+                    delta_x_criterion,tolA)
+            end
+          otherwise,
+              error(['Unknown stopping criterion']);
       end % end of the stopping criteria switch
       
       % take no less than miniter... 
       if iter<=miniter
-	keep_going = 1;
-      else %and no more than maxiter iterations  
-	if iter > maxiter
-	  keep_going = 0;
-	end
+	      keep_going = 1;
+      elseif iter > maxiter %and no more than maxiter iterations  
+	        keep_going = 0;
       end
       
     end % end of the main loop of the BB-QP algorithm
+
+    % increment continuation loop counter
+    cont_loop = cont_loop+1;
     
 end % end of the continuation loop
 % Print results
@@ -584,7 +631,7 @@ end
 % overdetermined, otherwise we are certainly applying CG to a problem with a
 % singular Hessian
 
-if debias
+if (debias & (sum(x(:)~=0)~=0))
   
   if (num_nz_x > length(y(:)))
     if verbose
