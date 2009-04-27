@@ -5,7 +5,7 @@ function classes = getClasses(source)
 if nargin < 1
     source = '.';
 end
-excludeList = {'dependsOn','viewClassTree','getClasses'};
+excludeList = {'dependsOn','viewClassTree','getClasses','Abstractlayout','Circlelayout','Circularlayout','Graphlayout','GraphlayoutNode','Gridlayout','Gvizlayout','Treelayout','Springlayout','Randlayout','Radiallayout','Gvizlayout'};
 classes = setdiff(findClasses(dirinfo(source)),excludeList)';
 
 
