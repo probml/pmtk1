@@ -5,12 +5,13 @@ classdef ModelList
     
     properties
       models;
-       bestModel; % plugin
-      selMethod;
-      predMethod; 
-      nfolds; LLmean; LLse; % for CV
+      bestModel; % plugin
+      selMethod = 'bic';
+      predMethod = 'plugin'; 
+      nfolds = 5; LLmean; LLse; % for CV
       loglik; penloglik; posterior; % for BIC etc
-      occamWindowThreshold;
+      occamWindowThreshold = 0;
+      verbose = false;
     end
     
     %%  Main methods
@@ -39,8 +40,8 @@ classdef ModelList
           [X, y] = processArgs(varargin, '-X', [], '-y', []);
           Nx = size(X,1);
           switch lower(mlist.selMethod)
-            case 'cv', [mlist.bestModel, mlist.LLmean, mlist.LLse] = ...
-                selectCV(mlist.models, X, y, mlist.nfolds);
+            case 'cv', [mlist.models, mlist.bestModel, mlist.LLmean, mlist.LLse] = ...
+                selectCV(mlist, X, y);
             otherwise
               switch lower(mlist.selMethod)
                 case 'bic', pen = log(Nx)/2;
@@ -80,15 +81,9 @@ classdef ModelList
           end % switch
         end % funciton
         
-       
-        
-    end % methods 
-    
-    methods(Access = 'protected')
-     
-      
-      function [models] = fitManyModels(ML, X, y)
-        % May be overriden in subclass if efficient regpath methods exist
+       function [models] = fitManyModels(ML, X, y)
+        % May be overriden in subclass if efficient method exists
+        % for computing full regularization path
         models = ML.models;
         Nm = length(models);
         for m=1:Nm
@@ -98,25 +93,73 @@ classdef ModelList
             models{m} = fit(models{m}, X, y);
           end
         end
-      end
-      
-      function [models, bestModel, loglik, penLL] = selectPenLoglik(ML, X, y, penalty)
-        models = ML.models;
+       end % fitManyModels
+        
+       function [models, bestModel, loglik, penLL] = selectPenLoglik(ML, X, y, penalty)
+        models = fitManyModels(ML, X, y);
         Nm = length(models);
         penLL = zeros(1, Nm);
         loglik = zeros(1, Nm);
-        models = fitManyModels(ML, X, y);
         for m=1:Nm % for every model
           if isempty(y)
             loglik(m) = sum(logprob(models{m}, X),1);
           else
             loglik(m) = sum(logprob(models{m}, X, y),1);
           end
-          penLL(m) = loglik(m) - penalty*nparams(models{m}); %#ok
+          penLL(m) = loglik(m) - penalty*dof(models{m}); %#ok 
         end
         bestNdx = argmax(penLL);
         bestModel = models{bestNdx};
-      end
+       end % selectPenLoglik
+      
+       function [models, bestModel, LLmean, LLse] = selectCV(ML, X, y)
+         Nfolds = ML.nfolds;
+         Nx = size(X,1);
+         randomizeOrder = true;
+         [trainfolds, testfolds] = Kfold(Nx, Nfolds, randomizeOrder);
+         LL = [];
+         complexity = [];      
+         for f=1:Nfolds % for every fold
+           if ML.verbose, fprintf('starting fold %d of %d\n', f, Nfolds); end
+           Xtrain = X(trainfolds{f},:); Xtest = X(testfolds{f},:);
+           ytrain = y(trainfolds{f},:); ytest = y(testfolds{f},:);
+           models = fitManyModels(ML, Xtrain, ytrain);
+           Nm = length(models);
+           for m=1:Nm
+             complexity(m) = dof(models{m}); %#ok
+             if isempty(y)
+               ll = logprob(models{m}, Xtest);
+             else
+               ll = logprob(models{m}, Xtest, ytest);
+             end
+             LL(testfolds{f},m) = ll; %#ok
+           end
+         end % f
+         LLmean = mean(LL,1);
+         LLse = std(LL,0,1)/Nx;
+         bestNdx = oneStdErrorRule(-LLmean, LLse, complexity);
+         %bestNdx = argmax(LLmean);
+         % Now refit all models to all the data.
+         % Typically we just refit the chosen model
+         % but we may want compare all models.
+         % The extra cost is negligible since we've already fit
+         % all models many times...
+         for m=1:Nm
+           if isempty(y)
+             models{m} = fit(models{m}, X);
+           else
+             models{m} = fit(models{m}, X, y);
+           end
+         end
+         bestModel = models{bestNdx};
+       end
+
+
+    end % methods 
+    
+    methods(Static = true)  
+      
+      
       
     end
 

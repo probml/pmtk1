@@ -11,14 +11,16 @@ classdef LinregL2 < Linreg
     %% Main methods
     methods
       function obj = LinregL2(varargin)
-        % m = LinregL2(lambda, transfomer, w, sigma2, method)
+        % m = LinregL2(lambda, transfomer, w, sigma2, method, dof)
         % method is one of {'ridgeQR', 'ridgeSVD'}
-        [ obj.lambda, obj.transformer, obj.w, obj.sigma2,obj.method] = processArgs(varargin,...
+        [obj.lambda, obj.transformer, obj.w, obj.sigma2, obj.method, obj.df] = ...
+          processArgs(varargin,...
           '-lambda'      , 0, ...
           '-transformer', []                      ,...
           '-w'          , []                      ,...
           '-sigma2'     , []                      , ....
-          '-method', 'ridgeQR');
+          '-method', 'ridgeQR', ...
+          '-df', 0);
       end
        
         function model = fit(model,varargin)
@@ -35,6 +37,7 @@ classdef LinregL2 < Linreg
             X = X(:,2:end); % remove leading column of 1s
           end
           model.w = ridgereg(X, y, model.lambda, model.method, onesAdded);
+          model.df = dofRidge(model, X, model.lambda);
           
           n = size(X,1);
           if onesAdded
@@ -54,7 +57,6 @@ end % class
 
 %%%%%%%%%%
 function [w]= ridgereg(X, y, lambda, method, computeOffset)
-disp('rr2')
 
 if computeOffset
   % center input and output, so we can estimate w0 separately

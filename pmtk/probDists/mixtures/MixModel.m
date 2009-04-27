@@ -109,11 +109,11 @@ classdef MixModel < ProbDist
       K = model.nmix;
     end
   
-     function np = nparams(model)
+     function np = dof(model)
       K = nmixtures(model);
       np = K-1;
       for i=1:K
-       np = np + nparams(model.distributions{i});
+       np = np + dof(model.distributions{i});
       end
      end
 

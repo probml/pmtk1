@@ -34,7 +34,7 @@ classdef MvnDist < ParamDist
       m.domain = 1:m.ndims;
     end
 
-     function np = nparams(model)
+     function np = dof(model)
        d = model.ndims;
        switch model.covtype
          case 'full'

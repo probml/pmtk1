@@ -4,6 +4,7 @@ classdef Linreg < CondProbDist
 
     properties
         w;                % weight vector
+        df; % degrees of freedom
         sigma2;           % noise variance                          
         transformer;      % A data transformer object, e.g. KernelTransformer
     end
@@ -33,17 +34,14 @@ classdef Linreg < CondProbDist
         end
 
         function py = predict(model,X)
-          % Input args:
-          % 'X' - X(i,:) is i'th example
-          %
-          % Output
+          %  X(i,:) is i'th input
           % py(i) = p(y|X(i,:), params), a GaussDist
-          %X = process_options(varargin, 'X', []);
+         
           if ~isempty(model.transformer)
             X = test(model.transformer, X);
           end
           n = size(X,1);
-          muHat = (X*model.w);
+          muHat = X*model.w(:);
           sigma2Hat = model.sigma2*ones(n,1); % constant variance!
           py = GaussDist(muHat, sigma2Hat);
         end
@@ -54,10 +52,13 @@ classdef Linreg < CondProbDist
             model.sigma2 = rand(1,1);
         end
 
-        function np = nparams(model)
-          np = length(model.w);
+        function np = dof(model)
+          np = model.df; % length(model.w);
         end
           
+        function d = ndimensions(model)
+          d = length(model.w);
+        end
 
         function p = logprob(model, X, y)
         % p(i) = log p(y(i) | X(i,:), model params)
