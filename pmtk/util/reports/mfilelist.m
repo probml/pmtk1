@@ -7,7 +7,7 @@ function [info,mfiles] = mfilelist(directory,mfiles)
     if(nargin < 2)
         mfiles = {};
     end
-    mf = dir([directory,'\*.m']);
+    mf = dir([directory,filesep(),'*.m']);
     mfiles = {mf.name};
     info = what(directory);
     flist = dir(directory);
@@ -15,7 +15,7 @@ function [info,mfiles] = mfilelist(directory,mfiles)
     for i=1:numel(dlist)
         dirname = dlist{i};
         if(~strcmp(dirname,'.') && ~strcmp(dirname,'..'))
-            [newInfo,newMfiles] = mfilelist([directory,'\',dirname],mfiles);
+            [newInfo,newMfiles] = mfilelist([directory,filesep(),dirname],mfiles);
             info = [info, newInfo];
             mfiles = [mfiles,newMfiles];
         end
