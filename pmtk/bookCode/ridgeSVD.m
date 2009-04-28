@@ -1,4 +1,4 @@
-function [w, mseTrain, mseTest, df, gcv] = ridgeSVD(Xtrain, ytrain, Xtest, ytest, lambdas, doStandardize)
+function [w, mseTrain, mseTest, df, gcv, errTest] = ridgeSVD(Xtrain, ytrain, Xtest, ytest, lambdas, doStandardize)
 % Ridge regression using SVD
 % [w, mseTrain, mseTest, df, gcv] = ridgeSVD(Xtrain, ytrain, Xtest, ytest, lambdas)
 % The offset term (w0) will be the first element of w.
@@ -62,6 +62,7 @@ for i=1:length(lambdas)
     ntest = size(Xtest, 1);
     ypredTest = [ones(ntest,1) Xtest]*w(:,i);
     mseTest(i) = mean((ypredTest-ytest).^2);
+    errTest(i,:) = (ytest-ypredTest).^2;
   else
     mseTest = [];
   end

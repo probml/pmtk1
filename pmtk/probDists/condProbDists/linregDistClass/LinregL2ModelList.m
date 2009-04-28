@@ -11,20 +11,22 @@ classdef LinregL2ModelList < ModelList
     %% Main methods
     methods
       function ML = LinregL2ModelList(varargin)
-        % m = LinregL2ModelList(lambdas, X, nlambdas, transformer, selMethod, predMethod, nfolds,
+        % m = LinregL2ModelList(lambdas, nlambdas, transformer, selMethod, predMethod, nfolds,
         % verbose) 
         % eg m = LinregL2ModelList( '-nlambdas', 10)
         % See ModelList for explanation of arguments
         [ML.lambdas,  ML.nlambdas, ML.transformer, ML.selMethod, ML.predMethod, ...
-          ML.nfolds, ML.verbose] = ...
+          ML.nfolds, ML.verbose, ML.costFnForCV] = ...
           processArgs(varargin,...
           '-lambdas', [], ...
-          '-nlambdas', 10, ...
+          '-nlambdas', [], ...
           '-transformer', [], ...
           '-selMethod', 'bic', ...
           '-predMethod', 'plugin', ...
           '-nfolds', 5, ...
-          '-verbose', false);
+          '-verbose', false, ...
+           '-costFnForCV', (@(M,D) -logprob(M,D)) ...
+           );
          if  ~isempty(ML.nlambdas)
           ML.lambdas = []; % will auto-generate once we see X,y
         end
@@ -37,6 +39,7 @@ classdef LinregL2ModelList < ModelList
         % w0(m)
         % sigma2(m)
         % dof(m) = degrees of freedom
+        % lambda(m)
         Nm = length(ML.models);
         d = ndimensions(ML.models{1});
         W = zeros(d,Nm); w0 = zeros(1,Nm); sigma2 = zeros(1,Nm);
@@ -52,7 +55,8 @@ classdef LinregL2ModelList < ModelList
       
     
       
-      function [models] = fitManyModels(ML, X, y)
+      function [models] = fitManyModels(ML, D)
+        X = D.X; y = D.Y; clear D;
         if isempty(ML.lambdas)
           ML.lambdas = [0 logspace(0, log(LinregL2ModelList.maxLambdaLinregL2(X)), ML.nlambdas-1)];
         end
@@ -60,11 +64,8 @@ classdef LinregL2ModelList < ModelList
           if ~isempty(ML.transformer)
             [X, model.transformer] = train(ML.transformer, X);
           end
-          % center input and output, so we can estimate w0 separately
-          xbar = mean(X);
-          XC = X - repmat(xbar,size(X,1),1);
-          ybar = mean(y);
-          yC = y-ybar;
+          [XC, xbar] = center(X);
+          [yC, ybar] = center(y);
           
           [U,D,V] = svd(XC,'econ');
           D2 = diag(D.^2);
@@ -80,7 +81,7 @@ classdef LinregL2ModelList < ModelList
             end
             df = sum(D2./(D2+lambda));
             if ML.addOffset
-              w0 = ybar - xbar*w;
+              w0 = ybar - xbar*w; 
               ww = [w0; w(:)];
               ypred = [ones(n,1) X]*ww(:);
             else
@@ -101,13 +102,13 @@ classdef LinregL2ModelList < ModelList
       function lambda = maxLambdaLinregL2(X)
         % auto-generate a reasonable range of lambdas
         % Obviously 0 is the minimum
-        % We set the max to be 100 * the largest squared singular value
+        % We set the max to be the largest squared singular value
         XC  = center(X);
         [n,d] = size(XC);
         D22 = eig(XC'*XC); % evals of X'X = svals^2 of X
         D22 = sort(D22, 'descend');
         D22 = D22(1:min(n,d));
-        lambda= 2*max(D22);
+        lambda= 1*max(D22);
         if 0 % debug - svd slower than computing evals
           %X = rand(10,20);
           [U,D,V] = svd(XC,'econ'); % D2(i) = singular value

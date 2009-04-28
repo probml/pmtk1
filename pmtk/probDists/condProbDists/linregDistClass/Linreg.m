@@ -24,10 +24,12 @@ classdef Linreg < CondProbDist
         end
        
         function model = fit(model,varargin)
-          % m = fit(m, X, y)
+          % m = fit(m, D)
+          % D is DataTable containing:
           % X(i,:) is i'th input; do *not* include a column of 1s
           % y(i) is i'th response
-          [X, y] = processArgs(varargin, '-X', [], '-y', []);
+          [D] = processArgs(varargin, '-D', []);
+          X = D.X; y = D.Y; clear D
           if ~isempty(model.transformer)
             [X, model.transformer] = train(model.transformer, X);
           end
@@ -81,14 +83,22 @@ classdef Linreg < CondProbDist
         function d = ndimensions(model)
           d = length(model.w);
         end
-
-        function p = logprob(model, X, y)
-        % p(i) = log p(y(i) | X(i,:), model params)
-            [yhat] = mean(predict(model, X));
-            s2 = model.sigma2;
-            p = -1/(2*s2)*(y(:)-yhat(:)).^2 - 0.5*log(2*pi*s2);
-        end
         
+        function p = logprob(model, D)
+          % D is DataTable containing X(i,:) and y(i)
+          % p(i) = log p(y(i) | X(i,:), model params)
+          X = D.X; y = D.Y; clear D;
+          [yhat] = mean(predict(model, X));
+          s2 = model.sigma2;
+          p = -1/(2*s2)*(y(:)-yhat(:)).^2 - 0.5*log(2*pi*s2);
+        end
+               
+        function p = squaredErr(model, D)
+          % p(i) = (y(i) - yhat(i))^2
+          X = D.X; y = D.Y; clear D;
+          yhat = mean(predict(model, X));
+          p  = (y(:)-yhat(:)).^2;
+        end
 
     end
 

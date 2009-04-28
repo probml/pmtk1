@@ -72,30 +72,22 @@ properties:
   end
   
   methods
-    function obj = DataTable(X, Y, Xnames, Ynames)
-      if nargin ==0; return;end
-      if nargin < 1
-        X = [];
-      end
-      if nargin < 2
-        Y = [];
-      end
-      if nargin < 3
-        [n d] = size(X);
-        Xnames = {};
+    function obj = DataTable(varargin)
+      % DataTable(X, Y, Xnames, Ynames)
+      [obj.X, obj.Y, Xnames, Ynames] = processArgs(varargin, ...
+        '-X', [], '-Y', [], '-Xnames', [], '-Ynames', []);
+      if isempty(Xnames)
+        [n d] = size(obj.X);
         for j=1:d
           Xnames{j} = sprintf('X%d', j);
         end
       end
-      if(nargin < 4)
-        [n  T] = size(Y);
-        Ynames = {};
+      if isempty(Ynames)
+        [n  T] = size(obj.Y);
         for j=1:T
           Ynames{j} = sprintf('Y%d',j);
         end
       end
-      obj.X = X;
-      obj.Y = Y;
       obj.Xnames = Xnames;
       obj.Ynames = Ynames;
     end
@@ -109,7 +101,12 @@ properties:
     end
     
     function n = ncases(D)
-      n = size(D.X,1);
+      %n =  size(D.X,1);
+      if isvector(D.Y)
+        n = length(D.Y);
+      else
+        n = size(D.Y,1); 
+      end
     end
     
     function C = horzcat(A,B)
@@ -143,7 +140,7 @@ properties:
         switch property
           case 'X'
             obj.X(rowNDX,colNDX) = value;
-          case 'Y'
+          case {'Y','y'}
             obj.Y(rowNDX,colNDX) = value;
           otherwise
             error([property, ' is not a property of this class']);
@@ -178,7 +175,7 @@ properties:
         switch property
           case 'X'
             B = A.X(rowNDX,colNDX);
-          case 'Y'
+          case {'Y','y'}
             B = A.Y(rowNDX,:);
           otherwise
             error([property, ' is not a property of this class']);

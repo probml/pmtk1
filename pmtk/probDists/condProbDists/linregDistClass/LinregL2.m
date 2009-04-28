@@ -4,32 +4,30 @@ classdef LinregL2 < Linreg
 
     properties
         lambda;
-        method;
     end
  
   
     %% Main methods
     methods
       function obj = LinregL2(varargin)
-        % m = LinregL2(lambda, transfomer, w, w0, sigma2, method, dof)
-        % method is one of {'ridgeQR', 'ridgeSVD'}
-        [obj.lambda, obj.transformer, obj.w, obj.w0, obj.sigma2, obj.method, obj.df, obj.addOffset] = ...
+        % m = LinregL2(lambda, transfomer, w, w0, sigma2,  dof, addOffset)
+        [obj.lambda, obj.transformer, obj.w, obj.w0, obj.sigma2, obj.df, obj.addOffset] = ...
           processArgs(varargin,...
           '-lambda'      , 0, ...
           '-transformer', [], ...                 
           '-w'          , [], ...   
           '-w0'          , [], ...   
           '-sigma2'     , [], ...                     
-          '-method', 'ridgeQR', ...
           '-df', 0, ...
           '-addOffset', true);
       end
        
         function model = fit(model,varargin)
-          % m = fit(m, X, y)
-          % X(i,:) is i'th input; do *not* include a column of 1s
-          % y(i) is i'th response
-          [X, y] = processArgs(varargin, '-X', [], '-y', []);
+          % m = fit(m, D)
+          % D.X(i,:) is i'th input; do *not* include a column of 1s
+          % D.y(i) is i'th response
+          [D] = processArgs(varargin, '-D', []);
+          X = D.X; y = D.Y; clear D
           if ~isempty(model.transformer)
             [X, model.transformer] = train(model.transformer, X);
           end
