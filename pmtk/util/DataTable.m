@@ -1,4 +1,68 @@
 classdef DataTable
+  % Wraps up X and Y into a single structure.
+  % Can optionally assign names to the columns.
+  % Can access subsets of the X and Y data together:
+  % D = DataTable(X,Y);
+  % D(1:n).X or D(1:n).Y extracts first n cases of X and Y
+  % Concatenating D's is like concatentating the X's and Y's.
+  
+  %{
+ Examples
+  
+  setSeed(0);
+   X = rand(3,2)
+  Y = rand(3,1)
+  D = DataTable(X,Y)
+  [ncases(D), ndimensions(D), noutputs(D)] % [3 2 1]
+  
+  X12 = D(1:2).X
+   DH=[D D]
+   DV = [D; D]
+   DV2 = [D; DataTable(X(1,:),[])]
+  
+  X   =
+    0.5488    0.5449
+    0.7152    0.4237
+    0.6028    0.6459
+Y =
+    0.4376
+    0.8918
+    0.9637
+D = 
+DataTable
+properties:
+         X: [3x2 double]
+         Y: [3x1 double]
+    Xnames: {'X1'  'X2'}
+    Ynames: {'Y1'} 
+X12 =
+    0.5488    0.5449
+    0.7152    0.4237
+ DH = 
+DataTable
+properties:
+         X: [3x4 double]
+         Y: [3x2 double]
+    Xnames: {'X1'  'X2'  'X1'  'X2'}
+    Ynames: {'Y1'  'Y1'}
+  
+  DV = 
+DataTable
+properties:
+         X: [6x2 double]
+         Y: [6x1 double]
+    Xnames: {'X1'  'X2'}
+    Ynames: {'Y1'}
+  
+  DV2 = 
+DataTable
+properties:
+         X: [4x2 double]
+         Y: [3x1 double]
+    Xnames: {'X1'  'X2'}
+    Ynames: {'Y1'}
+  
+  %}
   
   properties
     X;
@@ -18,12 +82,14 @@ classdef DataTable
       end
       if nargin < 3
         [n d] = size(X);
+        Xnames = {};
         for j=1:d
           Xnames{j} = sprintf('X%d', j);
         end
       end
       if(nargin < 4)
         [n  T] = size(Y);
+        Ynames = {};
         for j=1:T
           Ynames{j} = sprintf('Y%d',j);
         end
@@ -47,11 +113,15 @@ classdef DataTable
     end
     
     function C = horzcat(A,B)
-      C = [A;B];
+      C = DataTable([A.X B.X],[A.Y B.Y], [A.Xnames, B.Xnames], [A.Ynames, B.Ynames]);
+      %C = [A;B];
     end
     
     function C = vertcat(A,B)
-      C = data([A.X;B.X],[A.Y;B.Y],A.Xnames,A.Ynames);
+      if ~isequal(A.Xnames, B.Xnames) || ~isequal(A.Ynames, B.Ynames)
+        warning('columns have different names');
+      end
+      C = DataTable([A.X;B.X],[A.Y;B.Y], A.Xnames, A.Ynames);
     end
     
     function obj = subsasgn(obj, S, value)

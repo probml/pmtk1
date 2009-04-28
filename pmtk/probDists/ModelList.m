@@ -141,8 +141,7 @@ classdef ModelList
          %bestNdx = argmax(LLmean);
          % Now refit all models to all the data.
          % Typically we just refit the chosen model
-         % but we may want compare all models.
-         % The extra cost is negligible since we've already fit
+         % but the extra cost is negligible since we've already fit
          % all models many times...
          ML.models = models;
          models = fitManyModels(ML, X, y);
