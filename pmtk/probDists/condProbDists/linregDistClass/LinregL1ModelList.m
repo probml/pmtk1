@@ -12,32 +12,32 @@ classdef LinregL1ModelList < ModelList
     %% Main methods
     methods
       function ML = LinregL1ModelList(varargin)
-        % m = LinregL1ModelList(lambdas, X, y, nlambdas, transformer, selMethod, predMethod, nfolds,
-        % verbose, debias) 
+        % m = LinregL1ModelList(lambdas, nlambdas, transformer, selMethod, predMethod, nfolds,
+        % verbose, debias, costFnForCV) 
         % eg m = LinregL1ModelList('-nlambdas', 5) 
         % eg m = LinregL1ModelList('-lambdas', 'all') computes full reg path 
-        % Debias means we fit the params by least squares after identifying
+        % De-bias means we fit the params by least squares after identifying
         % support sets.
         % See ModelList for explanation of arguments
-        [ML.lambdas, X, y, ML.nlambdas, ML.transformer, ML.selMethod, ML.predMethod, ...
-          ML.nfolds, ML.verbose, ML.debias] = ...
+        [ML.lambdas, ML.nlambdas, ML.transformer, ML.selMethod, ML.predMethod, ...
+          ML.nfolds, ML.verbose, ML.debias, ML.costFnForCV] = ...
           processArgs(varargin,...
           '-lambdas', 'all', ...
-          '-X', [], ...
-          '-y', [], ...
           '-nlambdas', [], ...
           '-transformer', [], ...
           '-selMethod', 'bic', ...
           '-predMethod', 'plugin', ...
           '-nfolds', 5, ...
           '-verbose', false, ...
-          '-debias', false);
+          '-debias', false, ...
+           '-costFnForCV', (@(M,D) -logprob(M,D)) ...
+           );
         if  ~isempty(ML.nlambdas)
           ML.lambdas = []; % will auto-generate once we see X,y
         end
       end
        
-      function [W, w0, sigma2, dof, lambda, shrinkage] = getParamsForAllModels(ML, varargin)
+      function [W, w0, sigma2, dof, lambda, shrinkage] = getParamsForAllModels(ML)
         % Extract parameters from models in list and convert to matrix
         % W(:,m) = weights for model m
         % w0(m)
@@ -45,7 +45,6 @@ classdef LinregL1ModelList < ModelList
         % dof(m) = degrees of freedom
         % lambda(m) = lambda for model m
         % srhinkage(m) = norm(W(:,m))/maxnorm
-        %[X,y] = processArgs(varargin, '-X', [], '-y', []); 
         Nm = length(ML.models);
         d = ndimensions(ML.models{1});
         W = zeros(d,Nm); w0 = zeros(1,Nm); sigma2 = zeros(1,Nm);
@@ -69,22 +68,25 @@ classdef LinregL1ModelList < ModelList
       end
       
       
-      function [models] = fitManyModels(ML, X, y)
+      function [models] = fitManyModels(ML, D)
         % We use lars to find the supports
-        % but then fit an 'unbiased' estimate of the weights
+        % but then optionally fit an 'unbiased' estimate of the weights
+        X = D.X; y = D.Y; clear D
         if ~isempty(ML.transformer)
           [X, model.transformer] = train(ML.transformer, X);
         end
-        if isempty(ML.lambdas) 
-          ML.lambdas = [0 logspace(0, log(lambdaMaxLasso(X,y)), ML.nlambdas-1)];
-        end
-        lambdas = ML.lambdas;
         [XC, xbar] = center(X);
         %XC = mkUnitVariance(XC);
         [yC, ybar] = center(y);
+        if isempty(ML.lambdas) 
+          ML.lambdas = linspace(0, lambdaMaxLasso(XC,yC), ML.nlambdas);
+          %ML.lambdas = [0 exp(logspace(0, log(lambdaMaxLasso(XC,yC)), ML.nlambdas-1))];
+        end
+        lambdas = ML.lambdas;
         if ischar(lambdas) && strcmp(lambdas, 'all') 
           W = lars(XC, yC, 'lasso'); 
           lambdas = recoverLambdaFromLarsWeights(X,y,W);
+          %lambdas = recoverLambdaFromLarsWeights(XC,yC,W);
         else
           W = larsLambda(XC,yC,lambdas);
         end

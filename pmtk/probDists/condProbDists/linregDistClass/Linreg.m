@@ -42,6 +42,7 @@ classdef Linreg < CondProbDist
             model.w0 = w(end);
             model.w = w(1:end-1);
           else
+            model.w0 = 0;
             model.w = w;
           end
           model.df = length(w);
@@ -58,13 +59,14 @@ classdef Linreg < CondProbDist
             X = test(model.transformer, X);
           end
           n = size(X,1);
-          if model.addOffset
-            X = [X ones(n,1)];
-            w = [model.w(:); model.w0];
+          w0 = model.w0;
+          ww = [model.w; w0];
+          if isempty(model.w)
+            X1 = ones(n,1);
           else
-            w = model.w(:);
+            X1 = [X ones(n,1)];
           end
-          muHat = X*w;
+          muHat = X1*ww;
           sigma2Hat = model.sigma2*ones(n,1); % constant variance!
           py = GaussDist(muHat, sigma2Hat);
         end

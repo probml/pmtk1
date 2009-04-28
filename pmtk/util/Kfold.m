@@ -16,7 +16,7 @@ function  [trainfolds, testfolds] = Kfold(N, K, randomize)
 % [trainfolds, testfolds] = Kfold(100, -1)
 % trainfolds{1} = 1:99, testfolds{1} = 100, etc
 
-if nargin < 3, randomize = 0; end
+if nargin < 3, randomize = 1; end
 
 if K==-1
   for i=1:N

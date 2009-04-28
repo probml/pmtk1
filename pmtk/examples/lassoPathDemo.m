@@ -3,14 +3,24 @@
 
 clear all
 load('prostate.mat') % from prostateDataMake
-ndx = find(istrain);
-y = y(ndx); X = X(ndx,:);
+ndxTrain = find(istrain);
+ytrain = y(ndxTrain); Xtrain = X(ndxTrain,:);
+Dtrain = DataTable(Xtrain, ytrain, names);
+
+% It is very important to shuffle the cases to reproduce the figure
+% since there seems to be an ordering effect in the data
+setSeed(0);
+n = length(ndxTrain);
+perm = randperm(n);
+Dtrain  = Dtrain(perm);
+
+
 T = StandardizeTransformer(false);
 
 
 % Compute solutions at discontinuities using lars
 ML = LinregL1ModelList('-lambdas', 'all', '-transformer', T);
-ML = fit(ML, X, y);
+ML = fit(ML, Dtrain);
 [W, w0, sigma2, df, lambdas] = getParamsForAllModels(ML);
 figure;
 plot(df, W, 'o-');
@@ -19,9 +29,9 @@ title('lasso path on prostate')
 
 % Now compute solutions on dense path using lars + interpolation
 %lambdas = [logspace(4, 0, 20) 0];
-ML = LinregL1ModelList('-nlambdas', 50, '-transformer', T);
-ML = fit(ML, X, y);
-[W, w0, sigma2, df, lambdas, shrinkage] = getParamsForAllModels(ML, X, y);
+ML = LinregL1ModelList('-nlambdas', 20, '-transformer', T);
+ML = fit(ML, Dtrain);
+[W, w0, sigma2, df, lambdas, shrinkage] = getParamsForAllModels(ML);
 figW = figure;
 Nm = size(W,2);
 xvec = shrinkage;
@@ -40,15 +50,17 @@ figure;
 plot(xvec, ML.penloglik, 'o-')
 title('BIC vs df(lambda)')
 hold on
-plot(xvec(bestNdx), ML.penloglik(bestNdx), 'ro', 'markersize', 12)
-
+%plot(xvec(bestNdx), ML.penloglik(bestNdx), 'ro', 'markersize', 12)
+ylim = get(gca, 'ylim');
+h = line([xvec(bestNdx) xvec(bestNdx)], [ylim(1), ylim(2)]);
+set(h, 'color', 'r', 'linestyle', '-.');
 
 
 % Now do CV
-MLcv = LinregL1ModelList('-nlambdas', 50, '-transformer', T, ...
+MLcv = LinregL1ModelList('-nlambdas', 20, '-transformer', T, ...
   '-selMethod', 'cv', '-nfolds', 5, '-verbose', true);
-MLcv = fit(MLcv, X, y);
-[Wcv, w0cv, sigma2cv, dfcv, lambdascv, shrinkagecv] = getParamsForAllModels(MLcv, X, y);
+MLcv = fit(MLcv, D);
+[Wcv, w0cv, sigma2cv, dfcv, lambdascv, shrinkagecv] = getParamsForAllModels(MLcv);
 
 
 % Fitted models same as in BIC, only bestModel ndx differs...
@@ -66,7 +78,11 @@ title('lasso path on prostate, red = BIC, black = 5-CV')
 
 
 figure;
-errorbar(xvec, MLcv.LLmean, MLcv.LLse);
+yvec = -MLcv.costMean; %loglik
+errorbar(xvec, yvec, MLcv.costSe);
 title('CV loglik vs df(lambda)')
 hold on
-plot(xvec(bestNdx), MLcv.LLmean(bestNdx), 'ko', 'markersize', 12)
+ylim = get(gca, 'ylim');
+h = line([xvec(bestNdx) xvec(bestNdx)], [ylim(1), ylim(2)]);
+set(h, 'color', 'k', 'linestyle', ':');
+%plot(xvec(bestNdx), yvec, 'ko', 'markersize', 12)

@@ -12,7 +12,7 @@ classdef LinregL2ModelList < ModelList
     methods
       function ML = LinregL2ModelList(varargin)
         % m = LinregL2ModelList(lambdas, nlambdas, transformer, selMethod, predMethod, nfolds,
-        % verbose) 
+        % verbose, costFnForCV) 
         % eg m = LinregL2ModelList( '-nlambdas', 10)
         % See ModelList for explanation of arguments
         [ML.lambdas,  ML.nlambdas, ML.transformer, ML.selMethod, ML.predMethod, ...

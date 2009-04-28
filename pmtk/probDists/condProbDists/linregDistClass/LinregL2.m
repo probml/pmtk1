@@ -4,14 +4,16 @@ classdef LinregL2 < Linreg
 
     properties
         lambda;
+        computeDf = false;
     end
  
   
     %% Main methods
     methods
       function obj = LinregL2(varargin)
-        % m = LinregL2(lambda, transfomer, w, w0, sigma2,  dof, addOffset)
-        [obj.lambda, obj.transformer, obj.w, obj.w0, obj.sigma2, obj.df, obj.addOffset] = ...
+        % m = LinregL2(lambda, transfomer, w, w0, sigma2,  df, computeDf, addOffset)
+        [obj.lambda, obj.transformer, obj.w, obj.w0, obj.sigma2, obj.df, ...
+          obj.computeDf, obj.addOffset] = ...
           processArgs(varargin,...
           '-lambda'      , 0, ...
           '-transformer', [], ...                 
@@ -19,6 +21,7 @@ classdef LinregL2 < Linreg
           '-w0'          , [], ...   
           '-sigma2'     , [], ...                     
           '-df', 0, ...
+          '-computeDf', false, ... 
           '-addOffset', true);
       end
        
@@ -53,7 +56,9 @@ classdef LinregL2 < Linreg
             if ~model.addOffset, w0 = 0; end
           end
           model.w = w; model.w0 = w0;
-          model.df = LinregL2.dofRidge(X, model.lambda);
+          if model.computeDf
+            model.df = LinregL2.dofRidge(X, model.lambda);
+          end
           ww = [w(:); w0];
           X1 = [X ones(n,1)]; % column of 1s for w0 term
           yhat = X1*ww;
@@ -62,6 +67,10 @@ classdef LinregL2 < Linreg
           model.ndimsY = size(y,2);
         end
 
+        %function np = dof(model)
+        %  np = model.df; % length(model.w);
+        %end
+        
     end % methods
 
     methods(Static = true)

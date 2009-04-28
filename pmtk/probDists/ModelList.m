@@ -5,7 +5,7 @@ classdef ModelList
     
     properties
       models;
-      bestModel; % plugin
+      bestNdx; % plugin
       selMethod = 'bic';
       predMethod = 'plugin'; 
       nfolds = 5; costMean; costSe; % for CV
@@ -43,7 +43,7 @@ classdef ModelList
           [D] = processArgs(varargin, '-D', []);
           Nx = ncases(D);
           switch lower(mlist.selMethod)
-            case 'cv', [mlist.models, mlist.bestModel, mlist.costMean, mlist.costSe] = ...
+            case 'cv', [mlist.models, mlist.bestNdx, mlist.costMean, mlist.costSe] = ...
                 selectCV(mlist, D);
             otherwise
               switch lower(mlist.selMethod)
@@ -51,7 +51,7 @@ classdef ModelList
                 case 'aic',  pen =  Nx/2;
                 case 'loglik', pen = 0; % for log marginal likelihood
               end
-              [mlist.models, mlist.bestModel, mlist.loglik, mlist.penloglik] = ...
+              [mlist.models, mlist.bestNdx, mlist.loglik, mlist.penloglik] = ...
                 selectPenLoglik(mlist, D, pen);
               mlist.posterior = exp(normalizeLogspace(mlist.penloglik));
           end 
@@ -64,7 +64,7 @@ classdef ModelList
           nX = ncases(D);
           switch mlist.predMethod
             case 'plugin'
-              ll = logprob(mlist.bestModel, D);
+              ll = logprob(mlist.models{mlist.bestNdx}, D);
             case 'bma'
               maxPost = max(mlist.posterior);
               f = mlist.occamWindowThreshold;
@@ -90,7 +90,7 @@ classdef ModelList
         end
        end % fitManyModels
         
-       function [models, bestModel, loglik, penLL] = selectPenLoglik(ML, D, penalty)
+       function [models, bestNdx, loglik, penLL] = selectPenLoglik(ML, D, penalty)
         models = fitManyModels(ML, D);
         Nm = length(models);
         penLL = zeros(1, Nm);
@@ -100,13 +100,13 @@ classdef ModelList
           penLL(m) = loglik(m) - penalty*dof(models{m}); %#ok 
         end
         bestNdx = argmax(penLL);
-        bestModel = models{bestNdx};
+        %bestModel = models{bestNdx};
        end % selectPenLoglik
       
-       function [models, bestModel, NLLmean, NLLse] = selectCV(ML, D)
+       function [models, bestNdx,  NLLmean, NLLse] = selectCV(ML, D)
          Nfolds = ML.nfolds;
          Nx = ncases(D);
-         randomizeOrder = false;
+         randomizeOrder = true;
          [trainfolds, testfolds] = Kfold(Nx, Nfolds, randomizeOrder);
          NLL = [];
          complexity = [];      
@@ -132,15 +132,13 @@ classdef ModelList
          % all models many times...
          ML.models = models;
          models = fitManyModels(ML, D);
-         bestModel = models{bestNdx};
+         %bestModel = models{bestNdx};
        end
 
 
     end % methods 
     
     methods(Static = true)  
-     
-      
     end
 
 end

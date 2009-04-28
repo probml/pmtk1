@@ -26,10 +26,11 @@ classdef LinregL1 < Linreg
       end
        
         function model = fit(model,varargin)
-          % m = fit(m, X, y)
-          % X(i,:) is i'th input; do *not* include a column of 1s
-          % y(i) is i'th response
-          [X, y] = processArgs(varargin, '-X', [], '-y', []);
+          % m = fit(m, D)
+          % D.X(i,:) is i'th input; do *not* include a column of 1s
+          % D.y(i) is i'th response
+          [D] = processArgs(varargin, '-D', []);
+          X = D.X; y = D.Y; clear D
           if ~isempty(model.transformer)
             [X, model.transformer] = train(model.transformer, X);
           end
