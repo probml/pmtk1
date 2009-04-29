@@ -145,8 +145,10 @@ function varargout = processArgs(args,varargin)
        end
     end
     
-    
-    if any(positions  <= numel(positionalArgs))                                                  , error('You cannot specified an argument positionally, and by name in the same function call.');end
+    if any(~positions)
+       error('The following argument names are invalid: %s',cellstring(userArgNames(positions == 0),' , '));
+    end
+    if any(positions  <= numel(positionalArgs))                                                  , error('You cannot specify an argument positionally, and by name in the same function call.');end
     values = args(userArgNamesNDX + 1);
     if any(typecheck)
        for i=1:numel(userArgNamesNDX)
