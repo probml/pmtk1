@@ -1,4 +1,4 @@
-function varargout = processArgs(args,varargin)
+function varargout = processArgs(args,varargin)    
 % Similar to process_options, however, allows for arguments to be passed by
 % the user either as name/value pairs, or positionally, or both. 
 
@@ -74,34 +74,34 @@ function varargout = processArgs(args,varargin)
     if isempty(varargin)                                                           ,error('PROGRAMMER ERROR - you have not passed in any name/default pairs to processArgs');  end
     argnames  = varargin(1:2:end);
     maxNargs  = numel(argnames);
-    required  = cellfun(@(c)ismember(REQ,c),argnames);
-    typecheck = cellfun(@(c)ismember(TYPE,c),argnames);
+    required  = cellfun(@(c)any(REQ==c(1:min(3,end))),argnames);
+    typecheck = cellfun(@(c)any(TYPE==c(1:min(3,end))),argnames); 
     if ~iscellstr(argnames)                                                        ,error('PROGRAMMER ERROR - you must pass to processArgs name/default pairs'); end
-    argnames  = lower(cellfuncell(@(c)c(c~=REQ & c~=TYPE),argnames));
+    argnames(required | typecheck)  = cellfuncell(@(c)c(c~=REQ & c~=TYPE),argnames(required | typecheck));
     defaults = varargin(2:2:end);
     varargout = defaults;
     if mod(numel(varargin),2)                                                      ,error('PROGRAMMER ERROR - you have passed in an odd number of arguments to processArgs, which requires name/default pairs');  end
     if any(cellfun(@isempty,argnames))                                             ,error('PROGRAMMER ERROR - empty-string names are not allowed');end
     if nargout >= 0 && nargout ~= maxNargs                                         ,error('PROGRAMMER ERROR - processArgs requires the same number of output arguments as named/default input pairs'); end
     if ~isempty(PREFIX) && ~all(cellfun(@(c)~isempty(c) && c(1)==PREFIX,argnames)) ,error('PROGRAMMER ERROR - processArgs requires that each argument name begin with the prefix %s',PREFIX); end
-    if numel(unique(argnames)) ~= numel(argnames)                                  ,error('PROGRAMMER ERROR - you can not use the same argument name twice');end
+    %if numel(unique(argnames)) ~= numel(argnames)                                  ,error('PROGRAMMER ERROR - you can not use the same argument name twice');end
 %% PROCESS ARGS - PASSED BY USER    
     if numel(args) == 0 
         if any(required)                                                           ,error('The following required arguments were not specified:\n%s',cellString(argnames(required))); 
         else  return;
         end
     end
-    if ~isempty(PREFIX)
-        userstrings = lower(args(cellfun(@ischar,args)));
-        problem = ismember(userstrings,cellfuncell(@(c)c(2:end),argnames));
-        if any(problem)
-            if sum(problem) == 1
-                warning('processArgs:missingPrefix','The specified value ''%s'', matches an argument name, except for a missing prefix %s. It will be interpreted as a value, not a name.',userstrings{problem},PREFIX)
-            else
-                warning('processArgs:missingPrefix','The following values match an argument name, except for missing prefixes %s:\n\n%s\n\nThey will be interpreted as values, not names.',PREFIX,cellString(userstrings(problem)));
-            end
-        end
-    end
+%     if ~isempty(PREFIX)
+%         userstrings = lower(args(cellfun(@ischar,args)));
+%         problem = ismember(userstrings,cellfuncell(@(c)c(2:end),argnames));
+%         if any(problem)
+%             if sum(problem) == 1
+%                 warning('processArgs:missingPrefix','The specified value ''%s'', matches an argument name, except for a missing prefix %s. It will be interpreted as a value, not a name.',userstrings{problem},PREFIX)
+%             else
+%                 warning('processArgs:missingPrefix','The following values match an argument name, except for missing prefixes %s:\n\n%s\n\nThey will be interpreted as values, not names.',PREFIX,cellString(userstrings(problem)));
+%             end
+%         end
+%     end
     userArgNamesNDX = find(cellfun(@(c)ischar(c) && ~isempty(c) && c(1)==PREFIX,args));
     if ~isempty(userArgNamesNDX) && ~isequal(userArgNamesNDX,userArgNamesNDX(1):2:numel(args)-1)
         if isempty(PREFIX)
@@ -110,10 +110,9 @@ function varargout = processArgs(args,varargin)
             error('\n(1) every named argument must be followed by its value\n(2) no positional argument may be used after the first named argument\n(3) every argument name must begin with the ''%s'' character\n(4) values cannot be strings beginning with the %s character\n',PREFIX,PREFIX); 
         end
     end
-    if ~isempty(userArgNamesNDX) && numel(unique(args(userArgNamesNDX))) ~= numel(userArgNamesNDX)
-                                                                                                 error('You have specified the same argument name twice');
-    end
-    enum = enumerate(argnames);
+%     if ~isempty(userArgNamesNDX) && numel(unique(args(userArgNamesNDX))) ~= numel(userArgNamesNDX)
+%        error('You have specified the same argument name twice');
+%     end
     argsProvided = false(1,maxNargs);
     if isempty(userArgNamesNDX)
         positionalArgs = args;
@@ -123,26 +122,37 @@ function varargout = processArgs(args,varargin)
         positionalArgs = args(1:userArgNamesNDX(1)-1); 
     end
     if numel(positionalArgs) + numel(userArgNamesNDX) > maxNargs                                , error('You have specified %d too many arguments to the function',numel(positionalArgs)+numel(userArgNamesNDX)- maxNargs);end
+    
     for i=1:numel(positionalArgs)
-        arg = args{i};
-        if ~isempty(arg)  % don't overwrite default value if positional arg is empty, i.e. '',{},[]
+        if ~isempty(args{i})  % don't overwrite default value if positional arg is empty, i.e. '',{},[]
            argsProvided(i) = true;
            if typecheck(i) && ~isa(args{i},class(defaults{i}))                                  , error('Argument %d must be of type %s',i,class(defaults{i}));  end
            varargout{i} = args{i};
         end
     end
-    for i=1:numel(userArgNamesNDX)
-        argname = lower(args{userArgNamesNDX(i)});
-        argvalue = args{userArgNamesNDX(i)+1};
-        if ismember(genvarname(argname),fieldnames(enum))
-            posindex = enum.(genvarname(argname));
-        else
-           error('%s is not a valid argument name',argname); 
-        end
-        if posindex <= numel(positionalArgs)                                                   , error('You cannot specified an argument positionally, and by name in the same function call.');end
-        if typecheck(posindex) && ~isa(argvalue,class(defaults{posindex}))                     , error('Argument %s must be of type %s',argname,class(defaults{posindex})); end
-        varargout{posindex} = argvalue;
-        argsProvided(posindex) = true;
+
+    %positions = cellfun(@(a)find(cellfun(@(b)~isempty(b),strfind(argnames,a))),lower(args(userArgNamesNDX))); %vectorized version is too slow
+    userArgNames = args(userArgNamesNDX);
+    positions = zeros(1,numel(userArgNames));
+    used = false(1,numel(argnames));
+    for i=1:numel(userArgNames)
+       for j=1:numel(argnames)
+          if ~used(j) && strcmpi(userArgNames{i},argnames{j})
+              positions(i) = j;
+              used(j) = true;
+              break;
+          end
+       end
     end
-    if any(~argsProvided & required)                                                           , error('The following required arguments were either not specified, or were given empty values:\n%s',cellString(argnames(~argsProvided & required))); end
     
+    
+    if any(positions  <= numel(positionalArgs))                                                  , error('You cannot specified an argument positionally, and by name in the same function call.');end
+    values = args(userArgNamesNDX + 1);
+    if any(typecheck)
+       for i=1:numel(userArgNamesNDX)
+          if typecheck(positions(i)) && ~isa(args{userArgNamesNDX(i)+1},class(defaults{positions(i)})), error('Argument %s must be of type %s',args{userArgNamesNDX(i)},class(defaults{positions(i)})); end
+       end
+    end    
+    varargout(positions) = values;
+    argsProvided(positions) = true;
+    if any(~argsProvided & required)                                                           , error('The following required arguments were either not specified, or were given empty values:\n%s',cellString(argnames(~argsProvided & required))); end

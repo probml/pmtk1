@@ -248,13 +248,13 @@ function testProcessArgs()
     
     
     caught = false;                
-    try
-       test8(); 
-    catch
-        caught = true;
-    end
-    assert(caught);
-    caught = false;
+%     try
+%        test8(); 
+%     catch
+%         caught = true;
+%     end
+%     assert(caught);
+%     caught = false;
     
     caught = false;                
     try
