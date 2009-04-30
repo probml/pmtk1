@@ -16,6 +16,9 @@ clear y; % unsupervised!
 %m = fit(DiscreteMixDist('nmixtures',numel(lookfor)),'data',X,'nrestarts',1);
 fitEng = EmMixModelEng('-maxIter', 10, '-nrestarts', 1, '-verbose', true);
 model = MixDiscrete('-nmixtures', numel(classes), '-support', [0 1], '-fitEng', fitEng);
+for k=1:numel(classes)
+    model.distributions{k}.productDist = true;
+end
 model = fit(model, X);
 
 % Visualize fitted model
