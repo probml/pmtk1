@@ -4,7 +4,8 @@ classdef LinregL2 < Linreg
 
     properties
         lambda;
-        computeDf = false;
+        computeDf;
+        X; % store data to compute dof later
     end
  
   
@@ -20,22 +21,22 @@ classdef LinregL2 < Linreg
           '-w'          , [], ...   
           '-w0'          , [], ...   
           '-sigma2'     , [], ...                     
-          '-df', 0, ...
+          '-df', [], ...
           '-computeDf', false, ... 
           '-addOffset', true);
       end
        
-        function model = fit(model,varargin)
+        function model = fit(model,D)
           % m = fit(m, D)
           % D.X(i,:) is i'th input; do *not* include a column of 1s
           % D.y(i) is i'th response
-          [D] = processArgs(varargin, '-D', []);
-          X = D.X; y = D.Y; clear D
+          %[D] = processArgs(varargin, '-D', []);
+          X = D.X; y = D.Y; 
           if ~isempty(model.transformer)
             [X, model.transformer] = train(model.transformer, X);
           end
-          %[model.w, model.w0] = ridgereg(X, y, model.lambda, model.method, model.addOffset);
-        
+          %[model.w, model.w0] = ridgereg(X, y, model.lambda, model.method,
+          %model.addOffset);
           [n,d] = size(X);
           n = length(y);
           if d==0 % no inputs
@@ -63,13 +64,13 @@ classdef LinregL2 < Linreg
           X1 = [X ones(n,1)]; % column of 1s for w0 term
           yhat = X1*ww;
           model.sigma2 = mean((yhat-y).^2);
-          model.ndimsX = size(X,2);
-          model.ndimsY = size(y,2);
+          model.X = X;
         end
 
-        %function np = dof(model)
-        %  np = model.df; % length(model.w);
-        %end
+        function df = dof(model)
+          % slow since need evals of X
+         df = LinregL2.dofRidge(model.X, model.lambda);
+        end
         
     end % methods
 

@@ -5,7 +5,7 @@ setSeed(0);
 switch sampling
   case 'irregular', xtrain = [-1:0.1:-0.5,  3:0.1:3.5]';
   case 'sparse',    xtrain = [-3, -2, 0, 2, 3]';
-  case 'dense',     xtrain = [-5:0.4:5]';
+  case 'dense',     xtrain = [-5:0.6:5]'; %[-5:0.4:5]';
   case 'thibaux',   xtrain = linspace(0,20,n)';
 end
 if strcmp(sampling, 'thibaux')

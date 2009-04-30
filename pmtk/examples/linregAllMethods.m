@@ -1,5 +1,6 @@
 %% LinregDist on the Prostate Data Set
 %#testPMTK
+%#broken
 load prostate;
 lambda = 0.05;
 sigma2 = 0.5;

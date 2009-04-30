@@ -1,7 +1,8 @@
-function demoLinregRobust()
-% linear regression where we minimize the L1 norm of the residuals
-% Based on code by John D'Errico
-% http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=8553&objectType=FILE
+function linregRobustDemo()
+%% linear regression where we minimize the L1 norm of the residuals using
+%% linear programming
+%#author John D'Errico
+%#url http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=8553&objectType=FILE
 
 seed = 0; setSeed(seed);
 x = sort(rand(10,1));

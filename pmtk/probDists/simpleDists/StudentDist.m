@@ -5,17 +5,14 @@ classdef StudentDist < ParamDist
     mu;
     sigma2;
     dof;
+    productDist;
   end
   
   %% Main methods
   methods
-    function m = StudentDist(dof, mu, sigma2)
-      if nargin == 0
-        mu = []; sigma2 = []; dof = [];
-      end
-      m.mu  = mu;
-      m.dof = dof;
-      m.sigma2 = sigma2;
+    function m = StudentDist(varargin)
+      [m.dof, m.mu, m.sigma2, m.productDist] = processArgs(varargin, ...
+        '-dof', [], '-mu', [], '-sigma2', [], '-productDist', false);
     end
 
     function model = setParams(model, param)
@@ -40,41 +37,53 @@ classdef StudentDist < ParamDist
       sigma = sqrt(var(obj));
       mu = obj.mu;
       nu = obj.dof;
-      l = mu + sigma*tinv(alpha/2, nu);
-      u = mu + sigma*tinv(1-(alpha/2), nu);
+      l = mu + sigma.*tinv(alpha/2, nu);
+      u = mu + sigma.*tinv(1-(alpha/2), nu);
     end
     
     function logZ = lognormconst(obj)
       v = obj.dof;
-      logZ = -gammaln(v/2 + 1/2) + gammaln(v/2) + 0.5 * log(v * pi .* obj.sigma2);
+      logZ = -gammaln(v/2 + 1/2) + gammaln(v/2) + 0.5 * log(v .* pi .* obj.sigma2);
     end
     
     
-    function [L,Lij] = logprob(obj, X)
-       % L(i) = sum_j logprob(X(i,j) | params(j))
-       % Lij(i,j) = logprob(X(i,j) | params(j))
-      N  = size(X,1);
-      d=ndistrib(obj);
-      if size(X,2) == 1, X = repmat(X, 1, d); end
-      %L = zeros(N,d);
-      logZ = lognormconst(obj);
+    function L = logprob(obj, X)
+      % Return col vector of log probabilities for each row of X
+       % L(i) = log p(X(i) | params) 
+       % L(i) = log p(X(i) | params(i)) (set distrib)
+       % L(i) = sum_j log p(X(i,j) | params(j)) (prod distrib)
+       % L = sum_j log p(X(1,j) | params(j)) (prod distrib)
+      N = size(X,1);
       v = obj.dof; mu = obj.mu; s2 = obj.sigma2;
-      M = repmat(rowvec(mu), N, 1);
-      S2 = repmat(s2, N, 1);
-      V = repmat(v, N, 1);
-      LZ = repmat(logZ, N, 1);
-      Lij = (-(V+1)/2) .* log(1 + (1./V).*( (X-M).^2 ./ S2 ) ) - LZ;
-      L = sum(Lij,2);
-      if 0 % debugging
-      for j=1:d
-        v = obj.dof(j); mu = obj.mu(j); s2 = obj.sigma2(j); 
-        x = X(:,j);
-        L2(:,j) = (-(v+1)/2) * log(1 + (1/v)*( (x-mu).^2 / s2 ) ) - logZ(j);
+      logZ = lognormconst(obj);
+      if ~obj.productDist
+        X = X(:);
+        if isscalar(mu)
+          M = repmat(mu, N, 1); S2 = repmat(s2, N, 1);
+          V = repmat(v, N, 1); LZ = repmat(logZ, N, 1);
+        else
+          % set distribution
+          M = mu(:); S2 = s2(:); V = v(:); LZ = logZ(:);
+        end
+        L = (-(V+1)/2) .* log(1 + (1./V).*( (X-M).^2 ./ S2 ) ) - LZ;
+      else
+        M = repmat(rowvec(mu), N, 1);
+        S2 = repmat(rowvec(s2), N, 1);
+        V = repmat(rowvec(v), N, 1);
+        LZ = repmat(rowvec(logZ), N, 1);
+        Lij = (-(V+1)/2) .* log(1 + (1./V).*( (X-M).^2 ./ S2 ) ) - LZ;
+        L = sum(Lij,2);
+        if 0 % debugging
+          for j=1:d
+            v = obj.dof(j); mu = obj.mu(j); s2 = obj.sigma2(j);
+            x = X(:,j);
+            L2(:,j) = (-(v+1)/2) * log(1 + (1/v)*( (x-mu).^2 / s2 ) ) - logZ(j);
+          end
+          assert(approxeq(Lij,L2))
+        end
       end
-      assert(approxeq(Lij,L2))
-      end
-     
     end
+    
    
    
      function X = sample(obj, n)
@@ -97,7 +106,7 @@ classdef StudentDist < ParamDist
     end
 
     function v = var(obj)
-      v = (obj.dof./(obj.dof-2))*obj.sigma2;
+      v = (obj.dof./(obj.dof-2)).*obj.sigma2;
     end
    
     function obj = fit(obj, varargin)

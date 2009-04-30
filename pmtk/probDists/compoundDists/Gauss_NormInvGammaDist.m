@@ -1,15 +1,16 @@
-classdef Gauss_NormInvGammaDist < CompoundDist
+classdef Gauss_NormInvGammaDist < ParamDist % CompoundDist
   % p(X,mu,sigma2|m,k,a,b) = N(X|mu, sigma2) NIG(mu,sigma2| m,k,a,b)
   
   properties
     muSigmaDist;
+    productDist;
   end
   
   %% Main methods
   methods 
-     function m = Gauss_NormInvGammaDist(prior)
-        if(nargin < 1), prior = []; end
-        m.muSigmaDist = prior;
+     function m = Gauss_NormInvGammaDist(varargin)
+        [m.muSigmaDist, m.productDist] = processArgs(varargin, ...
+          '-prior', [], '-productDist', false);
      end
      
      function obj = fit(obj, varargin)
@@ -33,10 +34,17 @@ classdef Gauss_NormInvGammaDist < CompoundDist
        obj.muSigmaDist = NormInvGammaDist('mu', mn, 'k', kn, 'a', an, 'b', bn);
      end
   
-     function m = marginal(obj)
-       a = obj.muSigmaDist.a; b = obj.muSigmaDist.b; m = obj.muSigmaDist.mu; k = obj.muSigmaDist.k;
-       m = StudentDist(2*a, m, b.*(1+k)./a); 
+     function p = logprob(obj, X)
+       % p(i) = log p(X(i)) log marginal likelihood
+       p = logprob(marginalizeOutParams(obj), X);
      end
+   
+     function m = marginalizeOutParams(obj)
+       a = obj.muSigmaDist.a; b = obj.muSigmaDist.b;
+       mu = obj.muSigmaDist.mu; k = obj.muSigmaDist.k;
+       m = StudentDist(2*a, mu, b.*(1+k)./a, obj.productDist); 
+     end
+   
      
   end
   

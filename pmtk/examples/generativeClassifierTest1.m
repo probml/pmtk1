@@ -13,26 +13,26 @@ for binary=0:1
             Xtrain = Xtrain01; Xtest = Xtest01;
             prior = BetaDist(1,1);
             if bayes
-                classCond = copy(Bernoulli_BetaDist('prior', prior),1,Nclasses);
+                classCond = copy(Bernoulli_BetaDist('-prior', prior, '-productDist', true),1,Nclasses);
             else
-                classCond = copy(BernoulliDist('prior', prior),1,Nclasses);
+                classCond = copy(BernoulliDist('-prior', prior, '-productDist', true),1,Nclasses);
             end
         else
             Xtrain = XtrainC; Xtest = XtestC;
             prior = NormInvGammaDist('mu', 0, 'k', 0.01, 'a', 0.01, 'b', 0.01);
             if bayes
-                classCond = copy(Gauss_NormInvGammaDist(prior),1,Nclasses);
+                classCond = copy(Gauss_NormInvGammaDist(prior, '-productDist', true),1,Nclasses);
             else
-                classCond = copy(GaussDist('prior', prior),1,Nclasses);
+                classCond = copy(GaussDist('-prior', prior, '-productDist', true),1,Nclasses);
             end
         end
         if bayes
             alpha = 1*ones(1,Nclasses);
             classPrior = Discrete_DirichletDist(DirichletDist(alpha), 1:Nclasses);
         else
-            classPrior = DiscreteDist('-support',1:Nclasses);
+            classPrior = DiscreteDist('-nstates',Nclasses);
         end
-        model = GenerativeClassifierDist('classPrior', classPrior, 'classConditionals', classCond);
+        model = GenerativeClassifierDist('-classPrior', classPrior, '-classConditionals', classCond);
         model = fit(model,'X',Xtrain,'y',ytrain);
         pred  = predict(model,Xtest);
     end

@@ -4,7 +4,8 @@ classdef Bernoulli_BetaDist < Binom_BetaDist
  
   methods 
     function obj =  Bernoulli_BetaDist(varargin)
-      [obj.muDist] = process_options(varargin, 'prior', []);
+      [obj.muDist, obj.productDist] = processArgs(varargin, ...
+        '-prior', [], '-productDist', false);
       obj.N = 1;
     end
            

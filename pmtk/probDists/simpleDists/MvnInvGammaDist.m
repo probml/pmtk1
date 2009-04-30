@@ -14,11 +14,12 @@ classdef MvnInvGammaDist < ParamDist
             [mu, Sigma, a, b] = process_options(...
                 varargin, 'mu', [], 'Sigma', [], 'a', [], 'b', []);
             b = rowvec(b);
-            if(numel(b) == 1 && numel(mu) > 1), b = b*ones(1,numel(mu)); end;
-            if(length(b) ~= length(a)), a = a*ones(1,length(b)); end;
+            %if(numel(b) == 1 && numel(mu) > 1), b = b*ones(1,numel(mu)); end;
+            %if(length(b) ~= length(a)), a = a*ones(1,length(b)); end;
             m.mu = mu; m.Sigma = Sigma; m.a = a; m.b = b;
         end
 
+        %{
         function m = setParam(m, param)
           m.mu = param.mu;
           m.Sigma = param.Sigma;
@@ -32,7 +33,8 @@ classdef MvnInvGammaDist < ParamDist
           m.a = param.a;
           m.b = param.b;
         end
-
+%}
+        
     		function m = mode(obj, varargin)
           [covtype] = processArgs(varargin, '-covtype', 'spherical');
 					d = length(obj.mu);

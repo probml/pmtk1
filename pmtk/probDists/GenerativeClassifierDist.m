@@ -10,10 +10,12 @@ classdef GenerativeClassifierDist < ParamDist
     methods
         
         function obj = GenerativeClassifierDist(varargin)
-            [obj.transformer,obj.classConditionals,obj.classPrior] = process_options(varargin,...
-                'transformer'           ,[],...
-                'classConditionals'     ,[],...
-                'classPrior'            ,[]);
+          % GenerativeClassifierDist(transformer, classConditionals,
+          % classPrior)
+            [obj.transformer,obj.classConditionals,obj.classPrior] = processArgs(varargin,...
+                '-transformer'           ,[],...
+                '-classConditionals'     ,[],...
+                '-classPrior'            ,[]);
         end
               
         
@@ -31,7 +33,8 @@ classdef GenerativeClassifierDist < ParamDist
                 [X,obj.transformer] = train(obj.transformer,X);
             end
             for c=1:length(obj.classConditionals)
-                obj.classConditionals{c} = fit(obj.classConditionals{c},'-data',X(y==obj.classPrior.support(c),:));
+              Xc = X(y==obj.classPrior.support(c),:);
+              obj.classConditionals{c} = fit(obj.classConditionals{c},'-data',Xc);
             end
         end
         
@@ -46,7 +49,7 @@ classdef GenerativeClassifierDist < ParamDist
             C = length(obj.classConditionals);
             L = zeros(n,C);
             for c=1:C
-                L(:,c) = sum(logprob(obj.classConditionals{c},X),2) + logpy(c);
+                L(:,c) = logprob(obj.classConditionals{c},X) + logpy(c);
             end;
             post = exp(normalizeLogspace(L));
             pred = DiscreteDist('-T', post', '-support', obj.classPrior.support);

@@ -43,12 +43,18 @@ classdef LinregAllSubsetsModelList < ModelList
         end
        end
       
+    end
+    
+    methods(Access = 'protected')
       
       function [models] = fitManyModels(ML, D)
-        X = D.X; y = D.Y; clear D;
-        d = size(X,2);
+        X = D.X; y = D.Y; 
+        [n,d] = size(X);
         ndx = ind2subv(2*ones(1,d),1:(2^d))-1; % bit vectors
         m = 1;
+         [XC, xbar] = center(X);
+         [yC, ybar] = center(y);
+         lambda = 0.001; % for numerical stability
         for i=1:size(ndx,1)
           include  = find(ndx(i,:));
           if length(include) > ML.maxSize
@@ -58,12 +64,41 @@ classdef LinregAllSubsetsModelList < ModelList
             modelStr = sprintf('%d ', include);
             fprintf('fitting model %d (%s)\n', m, modelStr);
           end
-          Dtmp = DataTable(X(:,include),y);
-          models{m} = fit(LinregL2('-lambda', 0.001), Dtmp);
-          ww = models{m}.w;
-          %ww = X(:,include) \ y;
-          w = zeros(d,1); w(include) = ww;
-          models{m}.w = w;
+          
+          if 1
+            % for speed, we copy the fitting code from LinregL2 here
+            di = length(include);
+            if di==0
+              w = [];
+              w0 = ybar;
+            else
+              XX  = [XC(:,include); sqrt(lambda)*eye(di)];
+              yy = [yC; zeros(di,1)];
+              w  = XX \ yy; % QR
+              w0 = ybar - xbar(include)*w;
+            end           
+            ww = [w(:); w0];
+            X1 = [X(:,include) ones(n,1)]; % column of 1s for w0 term
+            yhat = X1*ww;
+            sigma2 = mean((yhat-y).^2);
+            models{m} = LinregL2('-w', w, '-w0', w0, '-sigma2', sigma2, '-lambda',lambda);
+          end
+          
+          if 0 % debug
+            % create object then fit it - slow
+            Dtmp = DataTable(X(:,include),y);
+            tmp = LinregL2('-lambda', 0.001);
+            tmp = fit(tmp, Dtmp);
+            assert(approxeq(tmp.w, models{m}.w))
+            assert(approxeq(tmp.w0, models{m}.w0))
+            assert(approxeq(tmp.sigma2, models{m}.sigma2))
+            %models{m} = tmp;
+          end
+          
+          % zero-pad
+          w = models{m}.w;
+          wpad = zeros(d,1); wpad(include) = w;
+          models{m}.w = wpad;
           m = m + 1;
         end
       end % fitManyModels

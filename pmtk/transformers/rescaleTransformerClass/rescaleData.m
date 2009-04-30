@@ -6,7 +6,7 @@ x = double(x);
 if nargin < 2
   minVal = -1; maxVal = 1;
 end
-if nargin < 4
+if nargin < 4 || isempty(minx)
   minx = min(x,[],1); rangex = range(x,1);
 end
 % rescale to 0:1

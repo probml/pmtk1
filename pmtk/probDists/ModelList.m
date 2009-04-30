@@ -28,27 +28,27 @@ classdef ModelList
           if nargin == 0; return; end
           [obj.models, obj.selMethod, obj.nfolds, ...
             obj.predMethod, obj.occamWindowThreshold, obj.costFnForCV] = processArgs(varargin, ...
-            '-models', {}, '-selMethod', '-cv', '-nfolds', 5, ...
+            '-models', {}, '-selMethod', 'bic', '-nfolds', 5, ...
             '-predMethod', 'plugin', '-occamWindowThreshold', 0, ...
             '-costFnForCV', (@(M,D) -logprob(M,D)));
         end
         
-        function mlist = fit(mlist, varargin)
+        function mlist = fit(mlist, D)
           % m = fit(m, D)
           % D is a DataTable
           % Stores best model in m.bestModel.
           % For BIC, updates m.models with fitted params.
           % Also stores vector of loglik/ penloglik (for BIC etc)
           % or LLmean/ LLse (for CV)
-          [D] = processArgs(varargin, '-D', []);
           Nx = ncases(D);
+          assert(Nx>0)
           switch lower(mlist.selMethod)
             case 'cv', [mlist.models, mlist.bestNdx, mlist.costMean, mlist.costSe] = ...
                 selectCV(mlist, D);
             otherwise
               switch lower(mlist.selMethod)
                 case 'bic', pen = log(Nx)/2;
-                case 'aic',  pen =  Nx/2;
+                case 'aic',  pen =  1;
                 case 'loglik', pen = 0; % for log marginal likelihood
               end
               [mlist.models, mlist.bestNdx, mlist.loglik, mlist.penloglik] = ...
@@ -57,10 +57,9 @@ classdef ModelList
           end 
         end
                     
-        function ll = logprob(mlist, varargin)
+        function ll = logprob(mlist, D)
           % ll(i) = logprob(m, D) 
           % D is a DataTable
-          [D] = processArgs(varargin, '-D', []);
           nX = ncases(D);
           switch mlist.predMethod
             case 'plugin'
@@ -80,6 +79,9 @@ classdef ModelList
           end % switch
         end % funciton
         
+    end
+    
+    methods(Access = 'protected')
        function [models] = fitManyModels(ML, D)
         % May be overriden in subclass if efficient method exists
         % for computing full regularization path
@@ -97,7 +99,11 @@ classdef ModelList
         loglik = zeros(1, Nm);
         for m=1:Nm % for every model
           loglik(m) = sum(logprob(models{m}, D),1);
-          penLL(m) = loglik(m) - penalty*dof(models{m}); %#ok 
+          if penalty==0
+             penLL(m) = loglik(m); % for marginal likleihood, dof not defined
+          else
+            penLL(m) = loglik(m) - penalty*dof(models{m}); 
+          end
         end
         bestNdx = argmax(penLL);
         %bestModel = models{bestNdx};
@@ -128,7 +134,7 @@ classdef ModelList
          %bestNdx = argmax(LLmean);
          % Now refit all models to all the data.
          % Typically we just refit the chosen model
-         % but the extra cost is negligible since we've already fit
+         % but the extra cost of fitting all again is negligible since we've already fit
          % all models many times...
          ML.models = models;
          models = fitManyModels(ML, D);

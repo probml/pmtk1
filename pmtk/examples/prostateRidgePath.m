@@ -1,12 +1,12 @@
 %% Ridge regression path on prostate cancer data
 % Reproduce fig 3.7  on p61 of Elements 1st ed
 
-clear all
 load('prostate.mat') % from prostateDataMake
-%lambdas = [logspace(4, 0, 20) 0];
+
 ndxTrain = find(istrain);
-ytrain = y(ndxTrain); Xtrain = X(ndxTrain,:);
-Dtrain = DataTable(Xtrain, ytrain, names);
+ndxTest = find(~istrain);
+Dtrain = DataTable(X(ndxTrain,:), y(ndxTrain), names);
+Dtest = DataTable(X(ndxTest,:), y(ndxTest), names);
 
 % It is very important to shuffle the cases to reproduce the figure
 % since there seems to be an ordering effect in the data
@@ -15,11 +15,10 @@ n = length(ndxTrain);
 perm = randperm(n);
 Dtrain  = Dtrain(perm);
 
-
 %T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()});
 T = StandardizeTransformer(false);
 
-% BIC
+%% Reg path 
 ML = LinregL2ModelList('-nlambdas', 20, '-transformer', T);
 ML = fit(ML, Dtrain);
 [W, w0, sigma2, df, lambdas] = getParamsForAllModels(ML);
@@ -27,6 +26,7 @@ figW=figure;
 plot(df, W, 'o-');
 legend(names(1:8))
 
+%% BIC
 bestNdx = find(ML.bestModel.lambda==lambdas);
 h = line(df([bestNdx bestNdx]), [min(W(:)), max(W(:))]);
 set(h, 'color', 'r', 'linestyle', '--');
@@ -45,7 +45,7 @@ h = line([df(bestNdx) df(bestNdx)], [ylim(1), ylim(2)]);
 set(h, 'color', 'r', 'linestyle', '-.');
 drawnow
 
-% Now do CV
+%% CV on loglik
 MLcv = LinregL2ModelList('-nlambdas', 20, '-transformer', T, ...
   '-selMethod', 'cv', '-nfolds', 5, '-verbose', true);
  % '-costFnForCV', @(M,D) squaredErr(M,D));
@@ -72,6 +72,7 @@ hold on
 ylim = get(gca, 'ylim');
 h = line([df(bestNdx) df(bestNdx)], [ylim(1), ylim(2)]);
 set(h, 'color', 'k', 'linestyle', ':');
+
 
 
 

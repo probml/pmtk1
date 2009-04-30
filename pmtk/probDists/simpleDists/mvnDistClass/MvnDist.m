@@ -112,6 +112,7 @@ classdef MvnDist < ParamDist
 
     function L = logprob(model,X)
       % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
+      if isa(X, 'DataTable'), X=X.X; end
       mu = model.mu; Sigma = model.Sigma;
       d = length(mu);
       logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);

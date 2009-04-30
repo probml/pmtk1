@@ -55,7 +55,7 @@ classdef UgmGaussDist < UgmDist
       end
 
       
-      function np = nparams(model)
+      function np = dof(model)
         d = ndimensions(model);
         np = nedges(model.G) + d; % num elts in precmat, plus mu
       end
@@ -67,6 +67,7 @@ classdef UgmGaussDist < UgmDist
         % X(i,:) = case i
         % SS - sufficient statistics, SS.S, SS.mu, SS.N
         [X, SS] = processArgs(varargin, '-X', [], '-SS', []);
+        if isa(X, 'DataTable'), X = X.X; end
         if isempty(SS)
           SS.mu = mean(X);
           SS.N = size(X,1);
@@ -88,6 +89,7 @@ classdef UgmGaussDist < UgmDist
         [X, SS, method, lambda, W] = processArgs(...
           varargin, '-X', [], '-SS', [], '-method', 'glasso', '-lambda', 1e-3,  ...
           '-warmstartCov', []);
+        if isa(X, 'DataTable'), X = X.X; end
         if isempty(SS)
           SS.mu = mean(X);
           SS.N = size(X,1);

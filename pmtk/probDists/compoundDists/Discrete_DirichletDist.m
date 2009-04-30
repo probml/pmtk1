@@ -1,4 +1,4 @@
-classdef Discrete_DirichletDist < CompoundDist
+classdef Discrete_DirichletDist < ParamDist % CompoundDist
  % p(X,theta|alpha) = Discrete(X|theta) Dir(theta|alpha) 
   
  properties
@@ -25,14 +25,25 @@ classdef Discrete_DirichletDist < CompoundDist
      end
     
     
+     %{
     function m = marginal(obj)
       % This may not be correct...
       m =  DiscreteDist('-T', normalize(obj.muDist.alpha,2)');
     end
+     %}
+     
+      function p = logprob(obj, X)
+       % p(i) = log p(X(i)) log marginal likelihood
+       % just plug in posterior mean params
+       T = normalize(obj.muDist.alpha,1);
+       m = DiscreteDist('-T', T);
+       p = logprob(m, X);
+      end
      
     function p = pmf(model)
       % predictive density - just plug in posterior mean params
-      p =  DiscreteDist('-T', mean(model.muDist));
+      T = normalize(model.muDist.alpha,1);
+      p =  DiscreteDist('-T', T);
       p = p.T; % return it as a table!
     end
     

@@ -61,17 +61,19 @@ classdef NormInvGammaDist < ParamDist
       %}
     end
     
-    function m = mean(obj)
+    function [mmu, msigma2] = mean(obj)
       nu = obj.a*2; sigma2 = 2*obj.b/nu;
-      m = [obj.mu, nu/(nu-2)*sigma2];
+      %m = [obj.mu, nu/(nu-2)*sigma2];
+      mmu = obj.mu; msigma2 = nu/(nu-2)*sigma2;
       %m1 = marginal(obj, 'mu');
       %m2 = marginal(obj, 'sigma');
       %m = [mean(m1) mean(m2)];
     end
         
-    function m = mode(obj)
-      nu = obj.a*2; sigma2 = 2*obj.b/nu;
-      m = [obj.mu, (nu*sigma2)/(nu-1)];
+    function [mmu, msigma2] = mode(obj)
+      nu = obj.a*2; sigma2 = 2*obj.b./nu;
+      %m = [obj.mu, (nu*sigma2)/(nu-1)];
+      mmu = obj.mu; msigma2 = nu.*sigma2./(nu-1);
     end
       
     function v = var(obj)

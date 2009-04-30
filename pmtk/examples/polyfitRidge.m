@@ -5,20 +5,22 @@
 n = 21;
 [xtrain, ytrain, xtest, ytest] = polyDataMake('sampling', 'thibaux','n',n);
 deg = 14;
-m = LinregDist();
-m.transformer =  ChainTransformer({RescaleTransformer, ...
-    PolyBasisTransformer(deg)});
+%m = LinregDist();
+m = LinregL2;
+m.transformer =  ChainTransformer({RescaleTransformer, PolyBasisTransformer(deg,false)});
 lambdas = [0 0.00001 0.001];
 for k=1:length(lambdas)
     lambda = lambdas(k);
-    m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', 'L2', 'lambda', lambda);
+    m.lambda = lambda;
+    %m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', 'L2', 'lambda', lambda);
+    m = fit(m, DataTable(xtrain, ytrain));
     format bank
     m.w
-    ypred = mean(predict(m, xtest));
+    ypredTest = predict(m, xtest);
     figure;
     scatter(xtrain,ytrain,'b','filled');
     hold on;
-    plot(xtest, ypred, 'k', 'linewidth', 3);
+    plot(xtest, ypredTest, 'k', 'linewidth', 3);
     hold off
     title(sprintf('degree %d, lambda %10.8f', deg, lambda))
 end

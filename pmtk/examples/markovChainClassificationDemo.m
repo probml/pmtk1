@@ -30,7 +30,7 @@ end
 %% Create Class Prior
 classPrior = DiscreteDist('-T',normalize(ones(nstates,1)));
 %% Create Generative Classifier
-classifier = GenerativeClassifierDist('classConditionals',classConditionals,'classPrior',classPrior);
+classifier = GenerativeClassifierDist('-classConditionals',classConditionals,'-classPrior',classPrior);
 %% Fit Classifier
 classifier = fit(classifier,'X',Xtrain,'y',ytrain);
 %% Classify Test Examples

@@ -5,19 +5,16 @@ classdef BetaBinomDist < ParamDist
     b;
     N;
     support;
+    productDist;
   end
  
   %% Main methods
   methods 
-    function obj =  BetaBinomDist(N,a,b)
-      % betabinomdist(N, a, b) 
-      if nargin == 0
-        N = []; a = []; b = [];
-      end
-      obj.a = a;
-      obj.b = b;
-      obj.N = N;
-      if ~isempty(N), obj.support = 0:N(1); end
+    function obj =  BetaBinomDist(varargin)
+      % betaBinomdist(N, a, b, productDist)
+      [obj.N, obj.a, obj.b, obj.productDist] = processArgs(varargin, ...
+        '-N', [], '-a', [], '-b', [], '-productDist', false);
+      if ~isempty(obj.N), obj.support = 0:obj.N(1); end
     end
  
     
@@ -36,23 +33,38 @@ classdef BetaBinomDist < ParamDist
      end  
      
    
-     function p = logprob(obj, X)
-       % p(i,j) = log p(x(i) | params(j)), x(i) in 0:N
-       d = ndistrib(obj);
+     function L = logprob(obj, X)
+       % Return column vector of log probabilities for each row of X
+      % L(i) = log p(X(i) | params)
+      % L(i) = log p(X(i) | params(i)) (set distrib)
+      % L(i) = sum_j log p(X(i,j) | params(j)) (prod distrib)
+      % where X(i,j) in 0:N(j)
        n = size(X,1);
-       if size(X,2) == 1, X = repmat(X, 1, d); end
-       p = zeros(n,d);
-       for j=1:d
-         a = obj.a(j); b = obj.b(j); n = obj.N(j);
-         p(:,j) = betaln(X(:,j)+a, n-X(:,j)+b) - betaln(a,b) + nchoosekln(n, X(:,j));
+       a = obj.a; b = obj.b; N = obj.N;
+       if ~obj.productDist
+         X = X(:);
+         if isscalar(a)
+           a = repmat(a, n, 1); b = repmat(b, n, 1); N = repmat(N, n, 1);
+         end
+        L = betaln(X+a, N-X+b) - betaln(a,b) + nchoosekln(N, X);
+       else
+         d = length(a);
+         Lij = zeros(n,d);
+         for j=1:d
+           Lij(:,j) = betaln(X(:,j)+a(j), N(j)-X(:,j)+b(j)) - ...
+             betaln(a(j),b(j)) + nchoosekln(N(j), X(:,j));
+         end
+         L = sum(Lij,2);
        end
      end
        
      function logZ = lognormconst(obj)
-        d = ndistrib(obj);
-        for j=1:d
-          logZ(j) = betaln(obj.a, obj.b);
-        end
+       a = obj.a; b = obj.b;
+       d = length(a);
+       logZ = zeros(1,d);
+       for j=1:d
+         logZ(j) = betaln(a(j), b(j));
+       end
      end
      
      function obj = fit(obj, varargin)

@@ -9,19 +9,19 @@ ytrain = sampleDiscrete(pi,Ntrain,1);
 ytest = sampleDiscrete(pi,Ntest,1);
 classCond = cell(1,Nclasses);
 prior = MvnInvWishartDist('mu', zeros(d,1), 'Sigma', eye(d), 'dof', d+1, 'k', 0.01);
+priorC = DirichletDist(1*ones(1,Nclasses));
 for bayes=0:1
     if bayes
         classCond = copy(Mvn_MvnInvWishartDist(prior),1,Nclasses);
     else
         classCond = copy(MvnDist('-ndims',d,'-prior', prior),1,Nclasses);
     end
-    if bayes
-        alpha = 1*ones(1,Nclasses);
-        classPrior = Discrete_DirichletDist(DirichletDist(alpha), 1:Nclasses);
+    if bayes      
+        classPrior = Discrete_DirichletDist(priorC);
     else
-        classPrior = DiscreteDist('-support',1:Nclasses);
+        classPrior = DiscreteDist('-nstates', Nclasses, '-prior', priorC);
     end
-    model = GenerativeClassifierDist('classPrior', classPrior, 'classConditionals', classCond);
+    model = GenerativeClassifierDist('-classPrior', classPrior, '-classConditionals', classCond);
     model = fit(model,'X',Xtrain,'y',ytrain);
     pred  = predict(model,Xtest);
 end

@@ -7,6 +7,7 @@ classdef DiscreteDist  < ParamDist
     prior; % DirichletDist or 'none'
     priorStrength;
     support;
+    productDist;
   end
   
   
@@ -20,9 +21,10 @@ classdef DiscreteDist  < ParamDist
       % Each distribution has the same support.
       % 'prior' - 'none' or 'dirichlet' or DirichletDist.
       % Same prior is used for each distribution.
-      if nargin == 0; return ; end
-      [T, nstates, support, prior, obj.priorStrength] = processArgs(varargin, ...
-        '-T', [], '-nstates', [], '-support', [], '-prior', 'none', '-priorStrength', 0);
+      if nargin == 0; return ; end % must be able to call the constructor with no args...
+      [T, nstates, support, prior, obj.priorStrength, obj.productDist] = processArgs(varargin, ...
+        '-T', [], '-nstates', [], '-support', [], '-prior', 'none', ...
+        '-priorStrength', 0, '-productDist', false);
       if isempty(support) 
         if ~isempty(nstates)
           support = 1:nstates;
@@ -31,7 +33,6 @@ classdef DiscreteDist  < ParamDist
           support = 1:nstates;
         end
       end
-      % must be able to call the constructor with no args...
       %if isempty(support), error('must specify support or nstates or T'); end
       if(~approxeq(normalize(T,1),T))
          error('Each column must sum to one'); 
@@ -66,20 +67,26 @@ classdef DiscreteDist  < ParamDist
   
   
     
-    function [L,Lij] = logprob(obj,X)
-      % L(i) = sum_j logprob(X(i,j) | params(j))
-      % Lij(i,j) = logprob(X(i,j) | params(j))
-        n = size(X,1);
-        d = ndistrib(obj);
-        if size(X,2) == 1, X = repmat(X, 1, d); end
+    function L = logprob(obj,X)
+      % Return column vector of log probabilities for each row of X
+      % L(i) = log p(X(i) | params)
+      % L(i) = log p(X(i) | params(i)) (set distrib)
+      % L(i) = sum_j log p(X(i,j) | params(j)) (prod distrib)
+      X = canonizeLabels(X,obj.support);
+      n = size(X,1);
+      T = obj.T;
+      if ~obj.productDist
+        L = log(T(X));
+      else
+        d = size(T,2);
         Lij = zeros(n,d);
-        X = canonizeLabels(X,obj.support);
         for j=1:d
-            Lij(:,j) = log(eps + obj.T(X(:,j),j)); 
+          Lij(:,j) = log(T(X(:,j),j));
         end
         L = sum(Lij,2);
+      end
     end
-    
+
     function L = logprior(model)
       if strcmp(model.prior, 'none')
         L = 0;

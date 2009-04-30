@@ -67,11 +67,13 @@ classdef LinregL1ModelList < ModelList
         end
       end
       
-      
+    end
+    
+    methods(Access = 'protected')
       function [models] = fitManyModels(ML, D)
         % We use lars to find the supports
         % but then optionally fit an 'unbiased' estimate of the weights
-        X = D.X; y = D.Y; clear D
+        X = D.X; y = D.Y; 
         if ~isempty(ML.transformer)
           [X, model.transformer] = train(ML.transformer, X);
         end

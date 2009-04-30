@@ -1,4 +1,6 @@
 %% Run Every Demo
+
+Copy of prostateLinregAll;               pclear(2);
 NBbayesGaussDemo;                        pclear(2);
 alarmNetwork;                            pclear(2);
 bernoulliDistTest;                       pclear(2);
@@ -25,7 +27,7 @@ dirichletHistPlotDemo;                   pclear(2);
 %discreteDensityEstimationShootout;      pclear(2); % broken
 discreteDistTest;                        pclear(2);
 discrete_DirichletDistTest;              pclear(2);
-%galaxyMixtureGibbsDemo;                 pclear(2); % broken
+galaxyMixtureGibbsDemo;                  pclear(2);
 gammaPlotDemo;                           pclear(2);
 gammaRainfallDemo;                       pclear(2);
 %gaussCVfitDemo;                         pclear(2); % broken
@@ -56,7 +58,7 @@ isingImageDenoiseDemo;                   pclear(2);
 %isingLassoVotingDemo;                   pclear(2); % inprogress
 isolatedWordClassification;              pclear(2);
 jtreeSampleTest;                         pclear(2);
-%kmeansModelSelDemo2d;                   pclear(2); % broken
+kmeansModelSelDemo2d;                    pclear(2);
 kmeansTransformerDemo;                   pclear(2);
 knn3ClassHeatMaps;                       pclear(2);
 laplacePlotDemo;                         pclear(2);
@@ -67,6 +69,7 @@ linregAllMethods;                        pclear(2);
 linregBasis;                             pclear(2);
 linregGaussVsNIG;                        pclear(2);
 linregPolyFitDegree;                     pclear(2);
+linregPolyFitDegreeDemo;                 pclear(2);
 linregPolyFitErrorBars;                  pclear(2);
 linregPolyFitN;                          pclear(2);
 linregPolyFitNoErrorBars;                pclear(2);
@@ -97,13 +100,15 @@ mkMisconceptionUGM;                      pclear(2);
 mkSprinklerDgm;                          pclear(2);
 %mnistClassifyDemo;                      pclear(2); % broken
 mnistErrorVsN;                           pclear(2);
+modelSelGgmDemo;                         pclear(2);
+modelSelGmmDemo;                         pclear(2);
 modelSelect1D;                           pclear(2);
 modelSelect2D;                           pclear(2);
 mvnCondition2D;                          pclear(2);
 mvnCovDemo;                              pclear(2);
 mvnHeightWeight;                         pclear(2);
 mvnImputationDemo;                       pclear(2);
-mvnImputationEmDemo;                     pclear(2);
+%mvnImputationEmDemo;                    pclear(2); % broken
 mvnImputationPima;                       pclear(2);
 mvnInferMuSigma1D;                       pclear(2);
 mvnInferParamsMean1d;                    pclear(2);
@@ -127,6 +132,10 @@ oldFaithfulEMvsGibbs;                    pclear(2);
 plotMFCC;                                pclear(2);
 poissonPlotDemo;                         pclear(2);
 postModelsExhaustiveDemo;                pclear(2);
+prostateAllSubsetsDemo;                  pclear(2);
+prostateLassoPath;                       pclear(2);
+prostateLinregAll;                       pclear(2);
+prostateRidgePath;                       pclear(2);
 rainyDayDemo;                            pclear(2);
 saCoolingSchedule;                       pclear(2);
 saDemoCamel;                             pclear(2);
@@ -143,6 +152,5 @@ studentVSGauss;                          pclear(2);
 undirectedChainFwdBackDemo;              pclear(2);
 wiPlotDemo;                              pclear(2);
 %wordSegmentation;                       pclear(2); % broken
-
 
 

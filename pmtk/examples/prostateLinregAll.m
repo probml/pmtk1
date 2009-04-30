@@ -2,11 +2,13 @@
 % Reproduce fig 3.6  on p58 of Elements 1st ed
 % and table 3.3 on p57
 
+%#testPMTK
+
 clear all
 load('prostate.mat') % from prostateDataMake
 ndxTrain = find(istrain);
 ndxTest = find(~istrain);
-ndx = 1:4;
+ndx = 1:8;
 Dtrain = DataTable(X(ndxTrain,ndx), y(ndxTrain), names);
 Dtest = DataTable(X(ndxTest,ndx), y(ndxTest), names);
 
@@ -20,9 +22,9 @@ Dtrain  = Dtrain(perm);
 
 %T = ChainTransformer({StandardizeTransformer(false),AddOnesTransformer()});
 T = StandardizeTransformer(true);
-Nfolds = 5;
+Nfolds = 2; % for speed
 
-%{
+
 %% least squares
 M = fit(Linreg, Dtrain);
 mseLS = squaredErr(M, Dtest);
@@ -39,7 +41,7 @@ ML = fit(ML, Dtrain);
 [W, w0, sigma2, df, lambdas] = getParamsForAllModels(ML);
 mseRidge = squaredErr(ML.models{ML.bestNdx}, Dtest);
 mseRidgeMean = mean(mseRidge); mseRidgeSe = stderr(mseRidge);
-bestNdx = find(ML.bestModel.lambda==lambdas);
+bestNdx = ML.bestNdx;
 wRidge = W(:,bestNdx)';
 w0Ridge = w0(bestNdx);
 
@@ -61,10 +63,9 @@ ML = fit(ML, Dtrain);
 [W, w0, sigma2, df, lambdas, shrinkage] = getParamsForAllModels(ML);
 mseL1 = squaredErr(ML.models{ML.bestNdx}, Dtest);
 mseLassoMean = mean(mseL1); mseLassoSe = stderr(mseL1);
-bestNdx = find(ML.bestModel.lambda==lambdas);
-assert(bestNdx == ML.bestNdx);
-wLasso = W(:,bestNdx)';
-w0Lasso = w0(bestNdx);
+bestNdx = ML.bestNdx;
+wLasso = W(:,ML.bestNdx)';
+w0Lasso = w0(ML.bestNdx);
 
 figure;
 errorbar(shrinkage, ML.costMean, ML.costSe);
@@ -75,7 +76,7 @@ ylim = get(gca, 'ylim');
 h = line([shrinkage(bestNdx) shrinkage(bestNdx)], [ylim(1), ylim(2)]);
 set(h, 'color', 'k', 'linestyle', ':');
 
-%}
+
 
 %% Subsets
 % 2-fold CV for speed
@@ -112,7 +113,6 @@ ylim = get(gca, 'ylim');
 h = line([sz(bestNdx) sz(bestNdx)], [ylim(1), ylim(2)]);
 set(h, 'color', 'k', 'linestyle', ':');
 
-break
 
 %% Summary  (table 3.3)
 d = ndimensions(Dtrain);

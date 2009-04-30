@@ -5,7 +5,7 @@
 %#testPMTK
 %% Sample
 setSeed(0);                        
-m = BernoulliDist('mu',0.7);        % 70% probability of success
+m = BernoulliDist('-mu',0.7);        % 70% probability of success
 n = 100;
 X = sample(m, n);
 %% Update & Plot
@@ -14,8 +14,8 @@ figure; hold on;
 ns = [0 5 50 100];
 legendstr = cell(length(ns)+1,1);
 for i=1:length(ns)
-    n = ns(i);
-    mm = Bernoulli_BetaDist('prior',BetaDist(0.5,0.5));
+    n = ns(i);te
+    mm = Bernoulli_BetaDist('-prior',BetaDist(0.5,0.5));
     mm = fit(mm, 'data', X(1:n));
     plot(mm.muDist, 'plotArgs', {styles{i}, 'linewidth', 2});
     legendstr{i} = sprintf('n=%d', n);

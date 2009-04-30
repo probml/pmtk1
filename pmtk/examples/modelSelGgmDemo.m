@@ -7,22 +7,24 @@ obj = UgmGaussDist(Gtrue);
 obj = mkRndParams(obj);
 n = 100;
 X = sample(obj, n);
+Dtrain = DataTable(X);
 Xtest = sample(obj, 1000);
+Dtest = DataTable(Xtest);
 
 Gs = mkAllUG(UndirectedGraph(), d);
 models = cellfuncell(@(G) UgmGaussDist(G), Gs);
 ML = ModelList(models, 'bic');
-ML = fit(ML, X);
+ML = fit(ML, Dtrain);
 nM = length(ML.models);
 
 
-modelL1 = fitStructure(UgmGaussDist(), X, '-lambda', 1e-3);
+modelL1 = fitStructure(UgmGaussDist(), Dtrain, '-lambda', 1e-3);
 
 % figure out model indexes of chosen model
 for i=1:length(Gs)
     if isequal(Gs{i}, Gtrue), truendx = i; end
     if isequal(Gs{i}, modelL1.G), L1ndx = i; end
-    if isequal(Gs{i}, ML.bestModel.G), bestNdx = i; end
+    if isequal(Gs{i}, ML.models{ML.bestNdx}.G), bestNdx = i; end
 end
 
 postG = ML.posterior;
@@ -42,11 +44,11 @@ line([0 64],[0.1*pbest 0.1*pbest]);
 
 
 % Compute test set log likelihood for different methods
-loglikL1 = sum(logprob(modelL1, Xtest), 1);
+loglikL1 = sum(logprob(modelL1, Dtest), 1);
 ML.predMethod = 'plugin';
-loglikBest = sum(logprob(ML, Xtest), 1);
+loglikBest = sum(logprob(ML, Dtest), 1);
 ML.predMethod = 'bma';
-loglikBMA = sum(logprob(ML, Xtest), 1);
+loglikBMA = sum(logprob(ML, Dtest), 1);
 
 
 fprintf('NLL on test: L1 %5.3f, best %5.3f,  BMA %5.3f\n', ...

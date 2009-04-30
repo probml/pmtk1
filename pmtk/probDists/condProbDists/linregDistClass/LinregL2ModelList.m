@@ -53,7 +53,9 @@ classdef LinregL2ModelList < ModelList
         end
        end
       
+    end
     
+    methods(Access = 'protected')
       
       function [models] = fitManyModels(ML, D)
         X = D.X; y = D.Y; clear D;

@@ -3,10 +3,10 @@
 degs = 1:2;
 for i=1:length(degs)
     deg = degs(i);
-    m = LinregDist;
-    m.transformer =  ChainTransformer({RescaleTransformer, PolyBasisTransformer(deg)});
-    m = fit(m, 'X', xtrain, 'y', ytrain);
-    ypredTest = mean(predict(m, xtest));
+    m = Linreg;
+    m.transformer =  ChainTransformer({RescaleTransformer, PolyBasisTransformer(deg,false)});
+    m = fit(m, DataTable(xtrain, ytrain));
+    ypredTest = predict(m, xtest);
     figure;
     scatter(xtrain,ytrain,'b','filled');
     hold on;
@@ -16,3 +16,4 @@ for i=1:length(degs)
     %set(gca,'ylim',[-10 15]);
     set(gca,'xlim',[-1 21]);
 end
+

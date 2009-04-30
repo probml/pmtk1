@@ -23,13 +23,13 @@ classdef Linreg < CondProbDist
                         '-sigma2'     , []);
         end
        
-        function model = fit(model,varargin)
+        function model = fit(model,D)
           % m = fit(m, D)
           % D is DataTable containing:
           % X(i,:) is i'th input; do *not* include a column of 1s
           % y(i) is i'th response
-          [D] = processArgs(varargin, '-D', []);
-          X = D.X; y = D.Y; clear D
+          %[D] = processArgs(varargin, '-D', []);
+          X = D.X; y = D.Y; 
           if ~isempty(model.transformer)
             [X, model.transformer] = train(model.transformer, X);
           end
@@ -48,13 +48,12 @@ classdef Linreg < CondProbDist
           model.df = length(w);
           yhat = X*w;
           model.sigma2 = mean((yhat-y).^2);
-          model.ndimsX = size(X,2);
-          model.ndimsY = size(y,2);
         end
 
-        function py = predict(model,X)
+        function [yhat, py] = predict(model,X)
           %  X(i,:) is i'th input
-          % py(i) = p(y|X(i,:), params), a GaussDist
+          % yhat(i) = E[y | X(i,:)]
+          % py(i) = p(y|X(i,:)), a GaussDist
           if ~isempty(model.transformer)
             X = test(model.transformer, X);
           end
@@ -66,9 +65,11 @@ classdef Linreg < CondProbDist
           else
             X1 = [X ones(n,1)];
           end
-          muHat = X1*ww;
-          sigma2Hat = model.sigma2*ones(n,1); % constant variance!
-          py = GaussDist(muHat, sigma2Hat);
+          yhat = X1*ww;
+          if nargout >= 2
+            sigma2Hat = model.sigma2*ones(n,1); % constant variance!
+            py = GaussDist(yhat, sigma2Hat);
+          end
         end
   
         function model = mkRndParams(model, d)
@@ -89,16 +90,21 @@ classdef Linreg < CondProbDist
         function p = logprob(model, D)
           % D is DataTable containing X(i,:) and y(i)
           % p(i) = log p(y(i) | X(i,:), model params)
-          X = D.X; y = D.Y; clear D;
-          [yhat] = mean(predict(model, X));
+          X = D.X; y = D.Y; 
+          yhat = predict(model, X);
           s2 = model.sigma2;
           p = -1/(2*s2)*(y(:)-yhat(:)).^2 - 0.5*log(2*pi*s2);
+          if 0 % debug
+            [yhat, py] = predict(model, X);
+            pp = logprob(py, y);
+            assert(approxeq(p, pp))
+          end
         end
                
         function p = squaredErr(model, D)
           % p(i) = (y(i) - yhat(i))^2
-          X = D.X; y = D.Y; clear D;
-          yhat = mean(predict(model, X));
+          X = D.X; y = D.Y; 
+          yhat = predict(model, X);
           p  = (y(:)-yhat(:)).^2;
         end
 

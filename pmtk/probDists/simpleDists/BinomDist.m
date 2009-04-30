@@ -6,6 +6,7 @@ classdef BinomDist < ParamDist
     N;
     prior;
     support;
+    productDist;
   end
   
   %% Main methods
@@ -14,8 +15,8 @@ classdef BinomDist < ParamDist
       % binomdist(N,mu) binomial distribution
       % N is mandatory; mu can be omitted or set to [] if it will be
       % estimated (using fit). N and mu can be vectors.
-      [obj.N, obj.mu, obj.prior] = process_options(varargin, ...
-        'N', 0, 'mu', [], 'prior', 'none');
+      [obj.N, obj.mu, obj.prior, obj.productDist] = processArgs(varargin, ...
+        '-N', 0, '-mu', [], '-prior', 'none', '-productDist', false);
       obj.support = 0:obj.N;
     end
     
@@ -41,20 +42,34 @@ classdef BinomDist < ParamDist
      end
     
      function [L,Lij] = logprob(obj, X)
-       % L(i) = sum_j logprob(X(i,j) | params(j))
-       % Lij(i,j) = logprob(X(i,j) | params(j))
+        % Return col vector of log probabilities for each row of X
+       % L(i) = log p(X(i) | params)
+       % L(i) = log p(X(i) | params(i)) (set distrib)
+       % L(i) = sum_j log p(X(i,j) | params(j)) (prod distrib)
+       % L = sum_j log p(X(1,j) | params(j)) (prod distrib)
        % for X(i,j) in 0:N(j)
-       d = ndistrib(obj);
        n = size(X,1);
-       if size(X,2) == 1, X = repmat(X, 1, d); end
-       Lij = zeros(n, d);
-       for j=1:d
-         % LOG1P  Compute log(1+z) accurately.
-         Nj = obj.N(1);
-         Xj = X(:,j);
-         Lij(:,j) = nchoosekln(Nj, Xj) + Xj.*log(obj.mu(j)) + (Nj - Xj).*log1p(-obj.mu(j));
+       if ~obj.productDist
+         X = X(:);
+         if isscalar(obj.mu)
+           M = repmat(obj.mu, n, 1); N = repmat(obj.N, n, 1);
+         else
+           M = obj.mu(:);
+           N = repmat(obj.N(1), n, 1);
+           %N = obj.N(:);
+         end
+         L = nchoosekln(N, X) + X.*log(M) + (N - X).*log1p(-M);
+       else
+         d = length(obj.mu);
+         Lij = zeros(n, d);
+         for j=1:d
+           % LOG1P  Compute log(1+z) accurately.
+           Nj = obj.N(1); %obj.N(j);
+           Xj = X(:,j);
+           Lij(:,j) = nchoosekln(Nj, Xj) + Xj.*log(obj.mu(j)) + (Nj - Xj).*log1p(-obj.mu(j));
+         end
+         L = sum(Lij,2);
        end
-       L = sum(Lij,2);
      end
 
      function m = mean(obj)
@@ -95,13 +110,14 @@ classdef BinomDist < ParamDist
                           error(['unknown prior ' prior])
                   end
               case 'BetaDist' % MAP estimate
-                  m = Binom_BetaDist('N', obj.N, 'prior', prior);
-                  m = fit(m, 'suffStat', SS);
-                  obj.mu = mode(m.muDist);
-                  
                   a = prior.a; b = prior.b;
-                  mm = (SS.nsucc + a - 1) ./ (SS.nsucc + SS.nfail + a + b - 2);
-                  assert(approxeq(mm, obj.mu))
+                  obj.mu = (SS.nsucc + a - 1) ./ (SS.nsucc + SS.nfail + a + b - 2);
+                  if 1 % debug
+                    m = Binom_BetaDist('-N', obj.N, '-prior', prior);
+                    m = fit(m, 'suffStat', SS);
+                    mm = mode(m.muDist);
+                    assert(approxeq(mm, obj.mu))
+                  end
               otherwise
                   error('unknown prior ')
           end

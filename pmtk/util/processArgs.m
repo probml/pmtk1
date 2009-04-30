@@ -91,17 +91,19 @@ function varargout = processArgs(args,varargin)
         else  return;
         end
     end
-%     if ~isempty(PREFIX)
-%         userstrings = lower(args(cellfun(@ischar,args)));
-%         problem = ismember(userstrings,cellfuncell(@(c)c(2:end),argnames));
-%         if any(problem)
-%             if sum(problem) == 1
-%                 warning('processArgs:missingPrefix','The specified value ''%s'', matches an argument name, except for a missing prefix %s. It will be interpreted as a value, not a name.',userstrings{problem},PREFIX)
-%             else
-%                 warning('processArgs:missingPrefix','The following values match an argument name, except for missing prefixes %s:\n\n%s\n\nThey will be interpreted as values, not names.',PREFIX,cellString(userstrings(problem)));
-%             end
-%         end
-%     end
+    if 1 % slow, but helpful in transition from process_options to processArgs
+     if ~isempty(PREFIX)
+         userstrings = lower(args(cellfun(@ischar,args)));
+         problem = ismember(userstrings,cellfuncell(@(c)c(2:end),argnames));
+         if any(problem)
+             if sum(problem) == 1
+                 warning('processArgs:missingPrefix','The specified value ''%s'', matches an argument name, except for a missing prefix %s. It will be interpreted as a value, not a name.',userstrings{problem},PREFIX)
+             else
+                 warning('processArgs:missingPrefix','The following values match an argument name, except for missing prefixes %s:\n\n%s\n\nThey will be interpreted as values, not names.',PREFIX,cellString(userstrings(problem)));
+             end
+         end
+     end
+    end
     userArgNamesNDX = find(cellfun(@(c)ischar(c) && ~isempty(c) && c(1)==PREFIX,args));
     if ~isempty(userArgNamesNDX) && ~isequal(userArgNamesNDX,userArgNamesNDX(1):2:numel(args)-1)
         if isempty(PREFIX)

@@ -3,21 +3,19 @@ classdef GaussDist < ParamDist
   properties
     mu;
     sigma2;
+    productDist;
+    prior; % for MAP estimation
   end
   
   
   %% Main methods
   methods 
-     function m = GaussDist(mu, sigma2)
-      % GaussDist(mu, sigma2) 
+     function m = GaussDist(varargin)
+      % GaussDist(mu, sigma2, productDist) 
       % Note that sigma2 is the variance, not the standard deviation.
-      % mu and sigma2 can be vectors; in this case, the result is a MVN with a
-      % diagonal covariance matrix (product of independent 1d Gaussians).
-      if nargin < 2
-        sigma2 = []; mu = [];
-      end
-      m.mu  = mu;
-      m.sigma2 = sigma2;
+      % mu and sigma2 can be vectors
+      [m.mu, m.sigma2, m.productDist, m.prior] = processArgs(varargin, ...
+        '-mu', [], '-sigma2', [], '-productDist', false, '-prior', 'none');
      end
      
      
@@ -73,36 +71,49 @@ classdef GaussDist < ParamDist
      end
      
      function [L,Lij] = logprob(obj, X)
-       % L(i) = sum_j logprob(X(i,j) | params(j))
-       % Lij(i,j) = logprob(X(i,j) | params(j))
-       n = size(X,1);
-       d = ndistrib(obj);
-       if size(X,2) == 1, X = repmat(X, 1, d); end
+       % Return col vector of log probabilities for each row of X
+       % L(i) = log p(X(i) | params)
+       % L(i) = log p(X(i) | params(i)) (set distrib)
+       % L(i) = sum_j L(i,j)   (prod distrib)
+       % L(i,j) = log p(X(i,j) | params(j))
+       N = size(X,1);
+       mu = obj.mu; s2 = obj.sigma2;
        logZ = lognormconst(obj);
-       LZ = repmat(logZ(:)', n, 1);
-       M = repmat(obj.mu(:)', n, 1);
-       S2 = repmat(obj.sigma2(:)', n, 1);
-       Lij = -0.5*(M-X).^2 ./ S2 - LZ;
-       L = sum(Lij,2);
-       %{
-       LijSlow = zeros(n,d);
-       for j=1:d %  
-         xj = X(:,j);
-         LijSlow(:,j) = (-0.5/obj.sigma2(j) .* (obj.mu(j) - xj).^2) - logZ(j);
+       Lij= [];
+       if ~obj.productDist
+         X = X(:);
+         if isscalar(mu)
+           M = repmat(mu, N, 1); S2 = repmat(s2, N, 1);  LZ = repmat(logZ, N, 1);
+         else
+           % set distribution
+           M = mu(:); S2 = s2(:);  LZ = logZ(:);
+         end
+         L = -0.5*(M-X).^2 ./ S2 - LZ;
+       else
+         if size(X,2) ~= length(mu)
+           X = repmat(X(:), 1, length(mu));
+           % to evaluate a set of points at a set of params
+         end
+         M = repmat(rowvec(mu), N, 1);
+         S2 = repmat(rowvec(s2), N, 1);
+         LZ = repmat(rowvec(logZ), N, 1);
+         Lij = -0.5*(M-X).^2 ./ S2 - LZ;
+         L = sum(Lij,2);
        end
-       assert(approxeq(Lij, LijSlow))
-       %}
      end
+    
+   
+   
 
      function obj = fit(obj, varargin)
       % m = fit(model, 'name1', val1, 'name2', val2, ...)
       % Arguments are
-      % data - data(i) = case i
+      % data - data(i,:) = case i. Fits vector of params, one per column.
       % prior - 'none' or NormInvGammDist
       % clampedMu - set to true to not update the mean
       % clampedSigma - set to true to not update the variance
       [X, prior, clampedMu, clampedSigma] = process_options(varargin, ...
-        'data',[],'prior', 'none', 'clampedMu', false, 'clampedSigma',false);
+        'data',[],'prior', obj.prior, 'clampedMu', false, 'clampedSigma',false);
       switch class(prior)
         case 'char'
           switch prior
@@ -116,11 +127,9 @@ classdef GaussDist < ParamDist
            m = Gauss_NormInvGammaDist(prior);
            m = fit(m, 'data', X);
            post = m.muSigmaDist;
-           m = mode(post);
-           obj.mu = m.mu;
-           obj.sigma2 = m.sigma2;
+           [obj.mu, obj.sigma2] = mode(post);
          otherwise
-           error(['unknown prior '])
+           error('unknown prior ')
       end
      end
       

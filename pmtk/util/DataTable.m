@@ -73,9 +73,12 @@ properties:
   
   methods
     function obj = DataTable(varargin)
-      % DataTable(X, Y, Xnames, Ynames)
+      %DataTable(X, Y, Xnames, Ynames)
       [obj.X, obj.Y, Xnames, Ynames] = processArgs(varargin, ...
         '-X', [], '-Y', [], '-Xnames', [], '-Ynames', []);
+      %%if nargin < 3, Xnames = []; end
+      %if nargin < 4, Ynames = []; end
+      %obj.X = X; obj.Y = Y;
       if isempty(Xnames)
         [n d] = size(obj.X);
         for j=1:d
@@ -101,12 +104,7 @@ properties:
     end
     
     function n = ncases(D)
-      %n =  size(D.X,1);
-      if isvector(D.Y)
-        n = length(D.Y);
-      else
-        n = size(D.Y,1); 
-      end
+      n =  max(size(D.Y,1), size(D.X,1));
     end
     
     function C = horzcat(A,B)

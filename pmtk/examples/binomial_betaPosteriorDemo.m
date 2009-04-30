@@ -11,14 +11,14 @@ for i = 1:numel(data)
     N0 = data(i).N0;
     N1 = data(i).N1;
     N = N1+N0;
-    m = Binom_BetaDist('N',N, 'prior',BetaDist(a,b));
+    m = Binom_BetaDist('-N',N, '-prior',BetaDist(a,b));
     prior = m.muDist; % BetaDist
     suffStat.nsucc = N1;
     suffStat.nfail = N-N1;
     m = fit(m, 'suffStat', suffStat);
     post = m.muDist;
     % The likelihood is the prior with a flat prior
-    m2 = Binom_BetaDist('N',N, 'prior',BetaDist(1,1));
+    m2 = Binom_BetaDist('-N',N, '-prior',BetaDist(1,1));
     m2 = fit(m2, 'suffStat', suffStat);
     lik = m2.muDist;
     figure;

@@ -1,12 +1,12 @@
 %% All subsets regression on prostate cancer data
 % Reproduce fig 3.5  on p56 of Elements 1st ed
 
-%#slow
 
 clear all
 load('prostate.mat') % from prostateDataMake
 ndxTrain = find(istrain);
-ytrain = y(ndxTrain); Xtrain = X(ndxTrain,:);
+ndx = 1:8;
+ytrain = y(ndxTrain); Xtrain = X(ndxTrain,ndx);
 Dtrain = DataTable(Xtrain, ytrain, names);
 
 T = StandardizeTransformer(false);
