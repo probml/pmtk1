@@ -379,12 +379,13 @@ classdef MvnDist < ParamDist
       end
     end
 
-    function Xc = impute(model, X)
+    function [Xc, V] = impute(model, X)
       % Fill in NaN entries of X using posterior mode on each row
-      % There is nothing specific to Mvn's in this implementation
-      % However, it doesn't make sense to store it in the ParamDist class.
-      [n] = size(X,1);
+      % Xc(i,j) = E[X(i,j) | D]
+      % V(i,j) = Variance
+      [n,d] = size(X);
       Xc = X;
+      V = zeros(n,d);
       for i=1:n
         hidNodes = find(isnan(X(i,:)));
         if isempty(hidNodes), continue, end;
@@ -392,6 +393,7 @@ classdef MvnDist < ParamDist
         visValues = X(i,visNodes);
         postH = marginal(model, hidNodes, visNodes, visValues);
         Xc(i,hidNodes) = rowvec(mode(postH));
+        V(i,hidNodes) = rowvec(var(postH));
       end
     end
 

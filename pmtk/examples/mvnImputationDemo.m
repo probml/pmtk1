@@ -1,23 +1,56 @@
 %% Imputation for an MVN 
 %#testPMTK
-d = 10; seed = 0; pcMissing = 0.3;
-setSeed(seed);
+
+function mvnImputationDemo()
+
+seeds = [0,1];
+rnd = [0,1];
+for i=1:length(seeds)
+  setSeed(seeds(i));
+  for j=1:length(rnd)
+    r = rnd(j);
+    helper(r);
+  end
+end
+end
+
+function helper(r)
+
+d = 10;  pcMissing = 0.3;
 model = mkRndParams(MvnDist(), d);
-%model = condition(model);
 n = 5;
 Xfull = sample(model, n);
-%missing = rand(n,d) < pcMissing;
-missing = zeros(n,d);
-missing(:, 1:floor(pcMissing*d)) = 1;
-Xmiss = Xfull;
-Xmiss(find(missing)) = NaN;
-XmissImg = Xmiss;
-XmissImg(find(missing)) = 0;
-Ximpute = impute(model, Xmiss); % all the work happens here
-figure; nr = 1; nc = 3;
-subplot(nr,nc,1); imagesc(Xfull); title('full data'); colorbar
-subplot(nr,nc,2); imagesc(XmissImg); title(sprintf('%3.2f pc missing', pcMissing)); colorbar
-%subplot(2,2,3); imagesc(missing);
-subplot(nr,nc,3); imagesc(Ximpute); title('imputed data'); colorbar
-set(gcf,'position',[10 500 600 200])
 
+if r
+  % Random missing pattern
+  missing = rand(n,d) < pcMissing;
+else
+  % Make the first 3 stripes (features) be completely missing
+  missing = false(n,d);
+  missing(:, 1:floor(pcMissing*d)) = true;
+end
+
+Xmiss = Xfull;
+Xmiss(missing) = NaN;
+XmissImg = Xmiss;
+XmissImg(missing) = 0;
+[Ximpute,V] = impute(model, Xmiss); % all the work happens here
+
+nr = 2; nc = 2;
+%{
+figure; 
+subplot(nr,nc,1); imagesc(Xfull); title('full data'); colorbar
+subplot(nr,nc,2); imagesc(missing); title('missing pattern'); colorbar
+subplot(nr,nc,3); imagesc(XmissImg); title('observed data'); colorbar
+subplot(nr,nc,4); imagesc(Ximpute); title('imputed mean'); colorbar
+%set(gcf,'position',[10 500 600 200])
+%}
+
+figure;
+subplot(nr,nc,1); hintonScale(Xfull, ones(n,d)); title('full data'); colorbar
+%subplot(nr,nc,2); hintonScale(missing, ones(n,d));title('missing pattern'); colorbar
+subplot(nr,nc,2); hintonScale(Xfull, 1-missing); title('observed data'); colorbar
+subplot(nr,nc,3); hintonScale(Ximpute, V); title('imputed mean (color)/ variance (size)'); colorbar
+subplot(nr,nc,4); hintonScale(Xfull, missing); title('hidden truth'); colorbar
+
+end
