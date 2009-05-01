@@ -1,6 +1,7 @@
 %Plot the entropy of a Bernoulli random variable
 %Written by Matthew Dunham
 function bernoulliEntropyFig
+    
     close all;
     x = 0:0.0001:1;
     H = @(x) -(x.*log2(x) + (1-x).*log2(1-x));
@@ -10,4 +11,5 @@ function bernoulliEntropyFig
     ylabel('H(X)');
     set(gca,'XTick',[0,0.5,1]);
     set(gca,'YTick',[0,0.5,1]);
+    if doPrintPmtk, doPrintPmtkFigures('bernoulliEntropy'); end;
 end

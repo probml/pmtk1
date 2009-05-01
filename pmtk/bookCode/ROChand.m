@@ -1,4 +1,5 @@
 function ROChand
+
 %ROC curves for two hypothetical classification systems. A is better than
 %B. Plots true positive rate, (tpr) vs false positive rate, (fpr).
 %Code by Matthew Dunham
@@ -48,7 +49,8 @@ annotation(gcf,'textbox',[0.45 0.25 0.104 0.1205],'String',{'AUC'},...
     'LineStyle','none',...
     'Color',[0 0 1]);
 
-pdfcrop;
-print(gcf,'-dpdf','test.pdf');
+%pdfcrop;
+%print(gcf,'-dpdf','test.pdf');
+if doPrintPmtk, doPrintPmtkFigures('ROChand'); end;
 
 end

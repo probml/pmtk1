@@ -1,5 +1,6 @@
 function emLogLikelihoodMax
 
+
 f1 = @(x) log(normpdf(x,0,0.25))+1;
 f2 = @(x) log(normpdf(x,1,0.2))+20;
 f3 = @(x) 5*sin(2*(x-0.5)) + f1(0.5*x) + f2(0.5*x)+ 3.5+20*normpdf(x,-2,0.5)-20*normpdf(x,3,1) -70*normpdf(x,4,0.5) + 40*normpdf(x,-3,0.5)+100*normpdf(x,-4,0.8)+10*normpdf(x,3,0.3)-10*normpdf(x,-2.8,0.5);
@@ -35,6 +36,7 @@ annotation(gcf,'textbox',[0.4185 0.02411 0.08859 0.1012],...
 
 
 pdfcrop;
+if doPrintPmtk, doPrintPmtkFigures('emLogLikelihoodMax'); end;
 
 
 end

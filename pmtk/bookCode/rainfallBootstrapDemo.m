@@ -1,4 +1,5 @@
 function rainfallBootstrapDemo()
+
 % Bootstrap estimate of sampling distribution of MOM and MLE for Gamma distribution
 % MOM = method of moments, MLE = maximum likelihood estimate
 % Based on Rice (1995) p251, 258
@@ -33,7 +34,7 @@ hist(bsampMLE);
 title(sprintf('b MLE, se = %5.3f', std(bsampMLE)))
 set(gca,'xlim',[0.5 3.5])
 
-
+if doPrintPmtk, doPrintPmtkFigures('rainfallBootstrapDemo'); end;
 %%%%%%
 function [asamp, bsamp] = bootstrap(B, X, estimator)
 

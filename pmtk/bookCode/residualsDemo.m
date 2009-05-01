@@ -38,5 +38,7 @@ for i=1:Ntrain
   set(h, 'linewidth', 2, 'color', 'b')
 end
 legend(hh, 'prediction','truth')
+
+if doPrintPmtk, doPrintPmtkFigures('linRegResiduals'); end;
 restoreSeed;
 

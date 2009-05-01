@@ -1,7 +1,6 @@
 % shrinkageDemoBaseball
 
 shrinkageDemoBaseballData() % load data
-
 Y = data(:,1);
 p = data(:,2);
 n = 45;
@@ -22,8 +21,9 @@ for i=1:d
   line([Y(i); shrunk(i)], [1; 0]);
 end
 title('MLE (top) and shrinkage estimates (bottom)')
-
+if doPrintPmtk, doPrintPmtkFigures('shrinkageDemoBaseballParams'); end;
 
 figure(2);clf;bar([p'; MLE'; shrunk']')
 legend('true', 'MLE', 'shrunk')
-title(sprintf('MSE MLE = %6.4f, MSE shrunk = %6.4f', mse(p-MLE), mse(p-shrunk)));
+title(sprintf('MSE MLE = %6.4f, MSE shrunk = %6.4f', mse(p,MLE), mse(p,shrunk)));
+if doPrintPmtk, doPrintPmtkFigures('shrinkageDemoBaseballPred'); end;

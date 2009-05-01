@@ -1,4 +1,5 @@
 function bayesLinRegDemo2d()
+
 % Reproduced fig 3.7 from Bishop's book
 % Written by Matthew Dunham
 
@@ -104,6 +105,7 @@ figure(2);
 legend('Underlying Model','Data Points','OLS','MAP','Location','NorthWest');
 
 end
+if doPrintPmtk, doPrintPmtkFigures('bayesLinRegPlot2d'); end;
 
 %%%%%%%%%%%
 

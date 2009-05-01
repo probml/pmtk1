@@ -95,4 +95,4 @@ annotation(gcf,'doublearrow',rel2absX([1.1,1.1]),rel2absY([0.3,f1(1.1)]),'HeadLe
 
 
 maximizeFigure;
-pdfcrop;
+if doPrintPmtk, doPrintPmtkFigures('subgradient'); end;

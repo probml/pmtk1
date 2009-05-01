@@ -1,5 +1,6 @@
 function optLowerbound
 
+
     f = @(x) exp(-x);
     domain = 0:0.01:3;
     xi = 1;
@@ -25,6 +26,8 @@ function optLowerbound
     'String',{'\xi'},...
     'FontSize',20,...
     'LineStyle','none');
+
+    if doPrintPmtk, doPrintPmtkFigures('optLowerbound'); end;
 
 
 

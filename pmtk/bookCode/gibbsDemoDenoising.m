@@ -20,7 +20,7 @@ img2 = +1*(img>m) + -1*(img<m); % -1 or +1
 
 figure(1);clf; imagesc(img2); 
 colormap gray; axis square; axis off
-
+if doPrintPmtk, doPrintPmtkFigures('gibbsDemoDenoisingNoNoise'); end;
 y = img2 + sigma*randn(size(img2)); %y = noise signal
 
 figure(1);clf
@@ -28,6 +28,8 @@ imagesc(y);colormap gray; axis square; axis off
 title(sprintf('sigma=%2.1f', sigma))
 fname = sprintf('figures/gibbsDemoDenoisingOrigS%2.1f.eps', sigma);
 if doPrint, print(gcf, '-depsc', fname); end
+fname = strrep(sprintf('gibbsDemoDenoisingOrigS%2.1f', sigma), '.', '-');
+if doPrintPmtk, doPrintPmtkFigures(fname); end;
 
 
 % observation model
@@ -54,6 +56,8 @@ imagesc(Xinit);colormap gray; axis square; axis off
 title('initial guess')
 fname = sprintf('figures/gibbsDemoDenoisingInitS%2.1f.eps', sigma);
 if doPrint, print(gcf, '-depsc', fname); end
+fname = strrep(sprintf('gibbsDemoDenoisingInitS%2.1f', sigma), '.', '-');
+if doPrintPmtk, doPrintPmtkFigures(fname); end;
 
 fig = figure(3); clf
 
@@ -87,13 +91,15 @@ for iter =1:maxIter
     imagesc(X);  axis('square'); colormap gray; axis off;
     title(sprintf('sample %d', iter));
     drawnow
-  end
-  if doPrint % iter==10000 | iter==50000 | iter==100000
-    figure;
-    imagesc(X);colormap gray; axis square; axis off
-    title(sprintf('sample %d', iter))
-    fname = sprintf('figures/gibbsDemoDenoisingIter%dJ%3.2fS%2.1f.eps', iter, J, sigma);
-    print(gcf, '-depsc', fname);
+    if (doPrint || doPrintPmtk) % iter==10000 | iter==50000 | iter==100000
+      figure;
+      imagesc(X);colormap gray; axis square; axis off
+      title(sprintf('sample %d', iter))
+      fname = sprintf('figures/gibbsDemoDenoisingIter%dJ%3.2fS%2.1f.eps', iter, J, sigma);
+      if doPrint, print(gcf, '-depsc', fname); end;
+      fname = strrep(sprintf('gibbsDemoDenoisingIter%dJ%3.2fS%2.1f', iter, J, sigma), '.', '-');
+      if doPrintPmtk, doPrintPmtkFigures(fname); end;
+    end
   end
 end
 nSamples = (maxIter-burnIn);
@@ -104,3 +110,4 @@ imagesc(avgX);colormap gray; axis square; axis off
 title(sprintf('posterior mean of last %d samples', nSamples))
 fname = sprintf('figures/gibbsDemoDenoisingMean%dJ%3.2fS%2.1f.eps', iter, J, sigma);
 if doPrint, print(gcf, '-depsc', fname); end
+if doPrintPmtk, doPrintPmtkFigures('gibbsDemoDenoisingAvg'); end;

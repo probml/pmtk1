@@ -1,4 +1,3 @@
-close all; clear all
 seed = 0; randn('state', seed); rand('state', seed);
 mix = gmm(1, 3, 'spherical');
 mix.centres = [-1 0 1]';
@@ -12,6 +11,7 @@ Xtrain = gmmsamp(mix, n);
 figure(1);clf
 hist(Xtrain, bins);
 title('Xtrain')
+if doPrintPmtk, doPrintPmtkFigures('kmeansModelSelData'); end;
 
 
 Xtest = gmmsamp(mix, n);
@@ -74,5 +74,6 @@ mix = gmm(1, K, 'spherical');
 mix = gmmem(mix, Xtrain, options);
 pmodel = gmmprob(mix, finebins(:));
 plot(finebins, pmodel, '-');
+if doPrintPmtk, doPrintPmtkFigures('kmeansModelSelGMM3'); end;
 
 

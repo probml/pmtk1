@@ -4,7 +4,7 @@ doPrint = 0;
 folder = 'C:\kmurphy\PML\Figures';
 seed = 0; rand('state', seed); randn('state', seed);
 
-if 1
+if 0
   load('mnistALL.mat'); % mnist structure
   %train_images: [28x28x60000 uint8]  0 to 255
   %   test_images: [28x28x10000 uint8]
@@ -17,7 +17,7 @@ if 1
   name = 'mnist3'
 end
 
-if 0
+if 1
   load('olivettifaces.mat'); % 0 to 255, from http://www.cs.toronto.edu/~roweis/data.html
   X=faces'; clear faces; % 4096x400  (64x64=4096) 
   % 10 images per person, 40 images
@@ -81,6 +81,7 @@ end
 fname = sprintf('%s/pcaImages_%s_images', folder, name)
 if doPrint, print(gcf, '-depsc', sprintf('%s.eps'),fname); end
 if doPrint, print(gcf, '-djpeg', sprintf('%s.jpg',fname)); end
+if doPrintPmtk, doPrintPmtkFigures(sprintf('pcaImages_%s_images',name)); end;
 
 mu = mean(X);
 XC = X-repmat(mu,size(X,1),1);
@@ -102,6 +103,8 @@ end
 fname = sprintf('%s/pcaImages_%s_basis', folder, name)
 if doPrint, print(gcf, '-depsc', sprintf('%s.eps',fname)); end
 if doPrint, print(gcf, '-djpeg', sprintf('%s.jpg',fname)); end
+if doPrintPmtk, doPrintPmtkFigures(sprintf('pcaImages_%_basis',name)); end;
+
 
 % Plot reconstruction error
 figure(3); clf
@@ -121,6 +124,7 @@ ylabel('mse'); xlabel('K'); title('reconstruction error');
 fname = sprintf('%s/pcaImages_%s_recon', folder, name)
 if doPrint, print(gcf, '-depsc', sprintf('%s.eps',fname)); end
 if doPrint, print(gcf, '-djpeg', sprintf('%s.jpg',fname)); end
+if doPrintPmtk, doPrintPmtkFigures(sprintf('pcaImages_%s_recon', name)); end;
 
 % Scree plot
 figure(4);clf

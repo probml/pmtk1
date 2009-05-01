@@ -1,4 +1,5 @@
 function parzenWindowDemo
+
 %Demonstrate a non-parametric (parzen) density estimator in 1D with a 
 %Gaussian kernel
 %
@@ -17,13 +18,14 @@ function parzenWindowDemo
     
     data = generateData;
     domain = 0:0.001:1;
-    kernel = 'gauss';
-    %kernel = 'cube';
+    %kernel = 'gauss';
+    kernel = 'cube';
     switch kernel
       case 'gauss', hvals = [0.005,0.01,0.1];
       case 'cube', hvals = [0.01,0.1,0.5];
     end
     for i=1:numel(hvals)
+       hvalstr = num2str(hvals(i)); decloc = strfind(hvalstr, '.'); if(isempty(decloc)), decloc = 0; end;
        setupFig(hvals(i));
        plot(domain,f(domain'),'-g','LineWidth',2.5);
        hold on
@@ -31,8 +33,10 @@ function parzenWindowDemo
        set(h,'markersize',14,'color','k');
        g = kernelize(hvals(i), kernel);
        plot(domain,g(domain'),'-b','LineWidth',2.5);
+       if doPrintPmtk, doPrintPmtkFigures(sprintf('parzen%sH0p%s',strcat(upper(kernel(1)), kernel(2:end)), hvalstr((decloc+1):end))); end;
     end
     placeFigures('nrows',3,'ncols',1,'square',false);
+
     
     function data = generateData
     %Generate data from a mixture of gaussians. 

@@ -1,4 +1,4 @@
-function gmmSingularity
+%function gmmSingularity
 % Illustration of how singularities can arrise in the likelihood function
 % of GMMS
 %
@@ -29,7 +29,7 @@ function gmmSingularity
     xlabel('x','FontSize',26);
     ylabel('p(x)','FontSize',26);
     set(gca,'FontSize',18,'LineWidth',2,'XTick',[],'YTick',[],'box','on');
-    pdfcrop;
+    if doPrintPmtk, doPrintPmtkFigures('gmmSingularity'); end;
 
 
-end
+%end

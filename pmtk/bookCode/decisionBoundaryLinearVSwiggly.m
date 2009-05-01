@@ -1,4 +1,5 @@
 function decisionBoundaryLinearVSwiggly
+
 %Illustration of a linear vs 'wiggly' decision boundary. We make four
 %misclassifications using the linear boundary and none using the
 %'wiggly' boundary; however, in the latter case, we may have overfit. 
@@ -31,8 +32,10 @@ class2(33,:) = [];
 
 plotData;
 plot(domain,f(domain),'-k','LineWidth',4);
+if doPrintPmtk, doPrintPmtkFigures('decisionBoundaryLinear'); end;
 plotData;
 plot(domain,g(domain),'-k','LineWidth',4);
+if doPrintPmtk, doPrintPmtkFigures('decisionBoundaryWiggly'); end;
 
 
  function plotData

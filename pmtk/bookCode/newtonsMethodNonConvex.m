@@ -1,6 +1,7 @@
 function newtonsMethodNonConvex
 %Newton's method on a non convex function. 
 
+
 hold all;
 
 xmin = -4;  xmax = 13;
@@ -49,6 +50,5 @@ annotation(gcf,'textbox'        ,[0.76 0 0.09946 0.11],...
 axis([xmin,xmax,ymin,ymax]);
 set(gca,'XTick',[Xk,maximum],'XTickLabel',{'',''},'YTick',[],'FontSize',16,'Box','on','LineWidth',2);
 
-pdfcrop;
-
+if doPrintPmtk; doPrintPmtkFigures('newtonsMethodNonConvex'); end;
 end

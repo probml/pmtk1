@@ -68,3 +68,5 @@ if(0) % Print a histogram of unigram frequencies
     bar(ugramsNorm);
     title('Unigrams');
 end
+
+if doPrintPmtk, doPrintPmtkFigures('uniBigram'); end;

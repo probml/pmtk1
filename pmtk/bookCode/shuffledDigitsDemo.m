@@ -8,6 +8,7 @@ load('mnistALL') % already randomly shuffled across classes
 % test_labels: [10000x1 uint8]
 
 doPlot = 0;
+doPrint = 0;
 if 1
   % to illustrate that shuffling the features does not affect classification performance
   perm  = randperm(28*28);
@@ -38,5 +39,10 @@ for i=1:9
   subplot(3,3,i)
   imagesc(img2); colormap(gray); axis off
   title(sprintf('true class = %d', y))
+
 end
 
+figure(1);
+if(doPrintPmtk), doPrintPmtkFigures('mnistTestShuffled'); end;
+figure(2);
+if(doPrintPmtk), doPrintPmtkFigures('mnistTestUnshuffled'); end;

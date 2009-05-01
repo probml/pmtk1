@@ -1,6 +1,6 @@
 function fisherLDAdemo()
 
-doPlot = 1;
+doPrint = 0;
 folder = 'C:\kmurphy\PML\Figures';
 
 seed = 0; rand('state', seed); randn('state', seed);
@@ -53,7 +53,8 @@ str = {'means', 'fisher', 'pca'};
 legend([h1 h2 h3],str)
 
 fname = sprintf('%s/fisherLDAdemoData.eps', folder)
-if doPlot, print(gcf, '-depsc', fname); end
+if doPrint, print(gcf, '-depsc', fname); end
+if doPrintPmtk, doPrintPmtkFigures('fisherLDAdemoData'); end;
 
 XprojMean = X*wMean;
 XprojFisher = X*wFisher;
@@ -61,15 +62,17 @@ XprojPCA = X*wPCA;
 
 figure(2);clf; plotData(XprojMean, maleNdx, femaleNdx, str{1})
 fname = sprintf('%s/fisherLDAdemoProjMean.eps', folder)
-if doPlot, print(gcf, '-depsc', fname); end
+if doPrint, print(gcf, '-depsc', fname); end
 
 figure(3);clf; plotData(XprojFisher, maleNdx, femaleNdx, str{2})
 fname = sprintf('%s/fisherLDAdemoProjFisher.eps', folder)
-if doPlot, print(gcf, '-depsc', fname); end
+if doPrint, print(gcf, '-depsc', fname); end
+if doPrintPmtk, doPrintPmtkFigures('fisherLDAdemoProjFisher'); end;
 
 figure(4);clf; plotData(XprojPCA, maleNdx, femaleNdx, str{3})
 fname = sprintf('%s/fisherLDAdemoProjPCA.eps', folder)
-if doPlot, print(gcf, '-depsc', fname); end
+if doPrint, print(gcf, '-depsc', fname); end
+if doPrintPmtk, doPrintPmtkFigures('fisherLDAdemoProjPCA'); end;
 
 
 %%%%%%%%

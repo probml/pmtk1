@@ -49,3 +49,5 @@ annotation(gcf,'textbox',[0 0.7723 0.1 0.1],'String',{'Training Image'},'FitBoxT
 annotation(gcf,'textbox',[0 0.6148 0.1 0.1],'String',{'Test Image','50% Occlusion'},'HorizontalAlignment','left','FitBoxToText','off','LineStyle','none','FontSize',8);
 annotation(gcf,'textbox',[0 0.4246 0.1 0.1],'String',{'Interim Result','After 5','Iterations'},'HorizontalAlignment','left','FitBoxToText','off','LineStyle','none','FontSize',8);
 annotation(gcf,'textbox',[0 0.2436 0.1 0.1],'String',{'Recoverd','Image'},'HorizontalAlignment','left','FitBoxToText','off','LineStyle','none','FontSize',8);
+
+if doPrintPmtk, doPrintPmtkFigures('hopfieldDemo'); end;

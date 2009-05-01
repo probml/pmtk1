@@ -1,4 +1,5 @@
 function [U,G] = surfer(root,n)
+
 % SURFER  Create the adjacency graph of a portion of the Web.
 %    [U,G] = surfer(root,n) starts at the URL root and follows
 %    Web links until it forms an adjacency graph with n nodes.
@@ -137,7 +138,7 @@ delete(t1)
 delete(t2)
 delete(slow)
 set(quit,'string','close','callback','close(gcf)','value',0)
-
+if doPrintPmtk, doPrintPmtkFigures('harvard500spy'); end;
 
 
 %------------------------

@@ -3,6 +3,7 @@
 
 load anscombe; %stacked columnwise, source: R - builtin dataset
 
+
 pointSpec = {'o','MarkerSize'     , 11,...
                  'LineWidth'      , 1.2,...
                  'MarkerEdgeColor', 'r',...
@@ -35,3 +36,4 @@ end
 set(get(gcf,'children'),axisSpec{:}); %Set properties in parallel
 maximizeFigure;
 pdfcrop;
+if doPrintPmtk, doPrintPmtkFigures('anscombe'); end;

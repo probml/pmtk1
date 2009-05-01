@@ -1,4 +1,5 @@
 function saddle
+
 % Illustration of a saddle point
 %
 % Code by Matthew Dunham
@@ -33,7 +34,7 @@ function saddle
     'FitBoxToText','off',...
     'LineStyle','none');
 
-    pdfcrop;
+    if doPrintPmtk, doPrintPmtkFigures('saddle'); end;
 
 
 

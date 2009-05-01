@@ -21,3 +21,4 @@ for i=1:length(rhos)
 end
 
   
+if doPrintPmtk, doPrintPmtkFigures('corrcoef'); end;

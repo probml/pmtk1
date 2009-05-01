@@ -1,4 +1,5 @@
 function knnDensityEstimationDemo
+
 % An illustration of density estimation with k-nearest neighbours.
 % Contrast this with parzenWindowDemo(), where rather than fixing the
 % number of points, K, as we do here, we fix the window size. 
@@ -29,6 +30,7 @@ function knnDensityEstimationDemo
        % volume V, in this 1D case, is just the window size. 
        densityEst = kvals(i)./(window*n); 
        plot(domain,densityEst,'-b','LineWidth',2.5);
+       if doPrintPmtk, doPrintPmtkFigures(sprintf('knnDensityEstimationDemoK%d', kvals(i))); end;
     end
     try
         placeFigures('nrows',numel(kvals),'ncols',1,'square',false)

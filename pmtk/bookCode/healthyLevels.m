@@ -2,6 +2,7 @@
 % Written by Matthew Dunham  and  Kevin Murphy
 function healthyLevels
 
+
 close all;
 no = 0; yes = 1;
 data = generateData;     % [cholesterol, insulin]
@@ -9,7 +10,7 @@ data = generateData;     % [cholesterol, insulin]
 
 doPrint = 0;
 %folder = 'C:\kmurphy\PML\Figures\healthyLevels';
-folder = 'C:/kmurphy/PML/Figures/healthyLevels';
+%folder = 'C:/kmurphy/PML/Figures/healthyLevels';
 
 
 plotML;
@@ -101,7 +102,11 @@ function plotPriorPost
     shading interp;
     if doPrint
       fname = sprintf('%s/healthyLevels%s.eps', folder, priorType)
-      print(gcf, fname, '-depsc')
+      pdfcrop; print_pdf(fname)
+    end
+    if doPrintPmtk
+      fname = sprintf('healthyLevels%s', priorType);
+      doPrintPmtkFigures(fname);
     end
 
     points = [3 12];
@@ -137,8 +142,12 @@ function plotGeneralizations
       plotSurface(@(Y,X)genFn(Y,X),data(1:points(i),:),yes,yes,no,...
       		  scale, ttl);
       if doPrint
-      fname = sprintf('%s/healthyLevelsGen%d%s.eps', folder, points(i), priorType)
-      print(gcf, fname, '-depsc')
+        fname = sprintf('%s/healthyLevelsGen%d%s.eps', folder, points(i), priorType)
+        pdfcrop; print_pdf(fname);
+      end
+      if doPrintPmtk
+        fname = sprintf('healthyLevelsGen%d%s', points(i), priorType);
+        print_pdf(fname);
       end
     
     end
@@ -156,7 +165,11 @@ for i=1:length(points)
     plotSampledHypotheses(@(h,d)posteriorFn(h,d),data(1:points(i),:),no,ttl);
     if doPrint
       fname = sprintf('%s/healthyLevelsSamples%d%s.eps', folder, points(i), priorType)
-      print(gcf, fname, '-depsc')
+      pdfcrop; print_pdf(fname);
+    end
+    if doPrintPmtk
+      fname = sprintf('healthyLevelsSamples%d%s', points(i), priorType);
+      doPrintPmtkFigures(fname);
     end
 end
 end
@@ -211,8 +224,13 @@ function plotML
 	title(sprintf('ML predictive, n=%d', points(i)))
 	if doPrint
 	  fname = sprintf('%s/healthyLevelsMLpred%d.eps', folder, points(i))
-	  print(gcf, fname, '-depsc')
+	  %print(gcf, fname, '-depsc')
+    pdfcrop; print_pdf(fname);
 	end
+  if doPrintPmtk
+    fname = sprintf('healthyLevelsMLpred%d', points(i));
+    doPrintPmtkFigures(fname);
+  end
     end
 end
 
@@ -227,8 +245,12 @@ function plotBayes
       title(sprintf('Bayes predictive, n=%d, %s', points(i), priorType))
       
       if doPrint
-	fname = sprintf('%s/healthyLevelsBayesPred%d%s.eps', folder, points(i), priorType)
-	print(gcf, fname, '-depsc')
+        fname = sprintf('%s/healthyLevelsBayesPred%d%s.eps', folder, points(i), priorType)
+        pdcrop; print_pdf(fname);
+      end
+      if doPrintPmtk
+        fname = sprintf('healthyLevelsBayesPred%d%s', points(i), priorType);
+        doPrintPmtkFigures(fname);
       end
     end
 end

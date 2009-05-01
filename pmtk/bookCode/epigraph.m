@@ -1,4 +1,5 @@
 function epigraph
+
 % The epigraph of a convex function is a convex set.
 %
 % Code by Matthew Dunham
@@ -17,5 +18,5 @@ function epigraph
     ylabel('y','FontSize',20);
     legend([p2,p1(1)],{'y = f(x)','epi(f)'},'FontSize',16,'Location','Best');
     placeFigures;
-    pdfcrop;
+    if doPrintPmtk, doPrintPmtkFigures('epigraph'); end;
 end

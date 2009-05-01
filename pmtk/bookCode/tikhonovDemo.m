@@ -1,4 +1,5 @@
 function  demoTikhonov(lambda)
+
 if nargin < 1, lambda = 10; end
 % Tikhonov regularization for a piecewise smooth function
 % Based on code by Uri Ascher
@@ -29,7 +30,7 @@ plot(x,y','bo');
 hold on
 plot(x,w','rx-','linewidth',2);
 title(sprintf('noise=%3.1f, %s=%6.4f', noise, '\lambda', lambda));
-
+if doPrintPmtk, doPrintPmtkFigures(sprintf('tikhonov%d', lambda)); end;
 % nested fn
   function u = fun(z)
     if z < .25

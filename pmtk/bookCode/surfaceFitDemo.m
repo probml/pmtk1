@@ -1,6 +1,7 @@
  function demoSurfaceFit()
       % Based on code by Romain Thibaux <thibaux@eecs.berkeley.edu>
       load moteData; % X,y
+      
       N = size(X,1);
       for useQuad = 0:1
         if ~useQuad
@@ -24,6 +25,11 @@
         %title('Temperature at midnight')
         %zlabel('Temperature');
       end
-    end
+
+figure(1);
+if(doPrintPmtk), doPrintPmtkFigures('surfaceLinear'); end;
+figure(1);
+if(doPrintPmtk), doPrintPmtkFigures('surfaceQuad'); end;
+end
    
    

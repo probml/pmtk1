@@ -1,8 +1,5 @@
 function newcombPostPred()
-
 seed = 1; randn('state', seed); rand('state', seed);
-folder = 'C:/kmurphy/PML/Figures';
-doSave = 0;
 
 % Data from http://www.stat.columbia.edu/~gelman/book/data/light.asc
 D = [28 26 33 24 34 -44 27 16 40 -2  29 22 24 21 25 30 23 29 31 19 ...
@@ -11,9 +8,11 @@ D = [28 26 33 24 34 -44 27 16 40 -2  29 22 24 21 25 30 23 29 31 19 ...
       29 27 28 29 16 23];
 
 doPlot(D)
+if doPrintPmtk, doPrintPmtkFigures('newcombPostPredOutlier'); end;
 
 D(6) = []; % remove outlier
 doPlot(D)
+if doPrintPmtk, doPrintPmtkFigures('newcombPostPred'); end;
 
 %%%%%%%%%%%%%
 function doPlot(D)
@@ -31,8 +30,8 @@ qqplot(pred, unif);
 xlabel('quantiles of uniform')
 ylabel('quantiles of predictive distribution')
 
-figure;
-gqqplot(pred, 'unif');
-hold on
-h=gqqplot(unif, 'unif');
-set(h,'color','r','marker','o')
+%figure;
+%gqqplot(pred, 'unif');
+%hold on
+%h=gqqplot(unif, 'unif');
+%set(h,'color','r','marker','o')

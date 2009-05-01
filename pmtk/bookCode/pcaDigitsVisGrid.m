@@ -1,7 +1,5 @@
 % reproduce fig 14.23 from Hastie's book p489
 % which embeds digit 3 into 2D and then samples the space
-
-clear
 if 0
   load usps_all; % data(1:256, 1:1100, 1:10) 
   c = 3;
@@ -52,5 +50,8 @@ for i=1:5
     %pause
   end
 end
-
+figure(1)
+if doPrintPmtk, doPrintPmtkFigures('fht14-23images'); end;
+figure(2)
+if doPrintPmtk, doPrintPmtkFigures('fht14-23dots'); end;
 % figure(3);imagesc(reshape(X(73,:),16,16));colormap(gray)

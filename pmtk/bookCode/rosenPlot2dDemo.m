@@ -1,6 +1,6 @@
 % rosenbrock argmin = (1,1) min = 0
 % http://orion.uwaterloo.ca/~hwolkowi/henry/teaching/w06/666.w06/666miscfiles/extrosenfn.m
-doSave = 1;
+doSave = 0;
 close all
 %alpha=1;
 alpha=100;
@@ -27,6 +27,7 @@ hold on
 %h=plot3(1,1,log(1+0),'ko');
 %set(h,'markerfacecolor','k','markersize',12)
 if doSave, pdfcrop; print(gcf, '-dpdf', 'C:\kmurphy\PML\pdfFigures\rosenSurf.pdf'); end
+if doPrintPmtk, doPrintPmtkFigures('rosenSuf'); end;
 
 [xc,yc] = meshgrid(-2:.05:2);
 zc = rosen([xc(:),yc(:)]);
@@ -37,3 +38,4 @@ hold on
 h=plot(1,1,'bo');
 set(h,'markerfacecolor','b','markersize',12)
 if doSave, pdfcrop; print(gcf, '-dpdf', 'C:\kmurphy\PML\pdfFigures\rosenContour.pdf'); end
+if doPrintPmtk, doPrintPmtkFigures('rosenContour'); end;

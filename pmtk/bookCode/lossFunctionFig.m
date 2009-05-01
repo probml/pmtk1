@@ -2,6 +2,7 @@
 % Written by Matthew Dunham
 function lossFunctionFig
 
+
 close all;
 qvals = [0.3,1,2,10];
 for i=1:length(qvals)
@@ -22,9 +23,13 @@ function plotLoss(q)
     set(gca,'XTick',-2:2);
     set(gca,'YTick',0:2);
     annotation(gcf,'textbox','String',{['q = ',num2str(q)]},'FontSize',12,'FontName','Arial','FitHeightToText','off','LineStyle','none','Position',[0.4842 0.6101 0.1296 0.08278]);
-folder = 'C:\kmurphy\PML\Figures';
-fname = sprintf('%s/lossFn%3.1f.eps', folder, q)
-print(gcf, fname, '-deps');
+%folder = 'C:\kmurphy\PML\Figures';
+%fname = sprintf('%s/lossFn%3.1f.eps', folder, q)
+%print(gcf, fname, '-deps');
+qstr = sprintf('%s', num2str(q));
+decloc = strfind(qstr, '.');
+if(isempty(decloc)), qstr = strcat(qstr, '.0'); decloc = strfind(qstr, '.'); end;
+if doPrintPmtk, doPrintPmtkFigures(sprintf('lossFn%s-%s', qstr(1:(decloc-1)), qstr((decloc+1):end))); end;
 end
 
 function hingeLoss(epsilon)
@@ -39,9 +44,10 @@ function hingeLoss(epsilon)
     annotation(gcf,'textbox','String',{'-e'},'FontSize',16,'FontName','Symbol','FitHeightToText','off','LineStyle','none','Position',[0.38 0.05797 0.02089 0.06884]);
     annotation(gcf,'textbox','String',{'e'},'FontSize',16,'FontName','Symbol','FitHeightToText','off','LineStyle','none','Position',[0.6 0.0579 0.02089 0.06884]);
 
-folder = 'C:\kmurphy\PML\Figures';
-fname = sprintf('%s/hingeLossFn.eps', folder)
-print(gcf, fname, '-deps');
+%folder = 'C:\kmurphy\PML\Figures';
+%fname = sprintf('%s/hingeLossFn.eps', folder)
+%print(gcf, fname, '-deps');
+if doPrintPmtk, doPrintPmtkFigures('hingeLossFn'); end;
 
 end
 

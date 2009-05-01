@@ -7,9 +7,9 @@ X = load('faithful.txt');
 figure(1);clf; plot(X(:,1), X(:,2), '.', 'markersize', 10)
 title('old faithful data')
 grid on
-folder = 'C:\kmurphy\PML\Figures';
-fname = sprintf('%s/faithful.eps', folder)
-if doPrint, print(gcf,'-depsc',fname); end
+
+if doPrint, pdfcrop; print_pdf('faithful'); end;
+if doPrintPmtk, doPrintPmtkFigures('faithful'); end;
 
 seed = 4; rand('state', seed); randn('state', seed);
 
@@ -17,7 +17,9 @@ seed = 4; rand('state', seed); randn('state', seed);
 K = 2;
 [mu, assign, errHist] = kmeansSimple(X, K, 'fn', @plotKmeans, 'maxIter', 10);
 
-
+figure(2)
+if doPrint, pdfcrop; print_pdf('kmeansDemoFaithfulIter2'); end;
+if doPrintPmtk, doPrintPmtkFigures('kmeansDemoFaithfulIter2'); end;
 
 %%%%%%
 
@@ -37,9 +39,9 @@ for k=1:K
   grid on
 end
 title(sprintf('iteration %d, error %5.4f', iter, err))
-folder = 'C:\kmurphy\PML\Figures';
-fname = sprintf('%s/kmeansDemoFaithfulIter%d.eps', folder, iter)
-if doPrint, print(gcf,'-depsc',fname); end
+%folder = 'C:\kmurphy\PML\Figures';
+%fname = sprintf('%s/kmeansDemoFaithfulIter%d.eps', folder, iter)
+%if doPrint, print(gcf,'-depsc',fname); end
 pause
 end
 

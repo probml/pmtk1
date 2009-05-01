@@ -1,7 +1,7 @@
 data = load('heightWeightDataSimple.txt'); % data(:,1) = class, 2 = height, 3 = weight
 X = data(:,2:3);
 
-X = mkUnitVariance(X);
+X = standardize(X);
 Y = data(:,1);
 [n d] = size(X);
 [W, Z, evals, Xrecon, mu] = pcaFast(X, 1);
@@ -25,3 +25,6 @@ wPCA=W;
 s  = 5;
 h=line([mu(1)-s*wPCA(1) mu(1)+s*wPCA(1)], [mu(2)-s*wPCA(2) mu(2)+s*wPCA(2)]);
 set(h, 'color', 'g', 'linewidth', 3, 'linestyle', '--')
+
+%if doPrintPmtk, doPrintPmtkFigures('heightWeightPCA'); end;
+if doPrintPmtk, doPrintPmtkFigures('heightWeightPCAstnd'); end;

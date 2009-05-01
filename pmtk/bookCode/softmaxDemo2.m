@@ -6,3 +6,4 @@ subplot(nr,nc,2);bar(softmax([3 0 1]/1)); title(sprintf('%s=1','T'))
 subplot(nr,nc,3);bar(softmax([3 0 1]/0.1)); title(sprintf('%s=0.1','T'))
 subplot(nr,nc,4);bar(softmax([3 0 1]/0.01)); title(sprintf('%s=0.01','T'))
 
+if doPrintPmtk, doPrintPmtkFigures('softmaxDemo2'); end;

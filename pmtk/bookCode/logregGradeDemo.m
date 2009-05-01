@@ -45,6 +45,7 @@ for ii=1:N
   set(h,'markerfacecolor', 'k');
 end
 title('logistic regression')
+if doPrintPmtk, doPrintPmtkFigures('logregGradeLogreg'); end;
 
 
 
@@ -79,6 +80,7 @@ for ii=1:N
   set(h,'markerfacecolor', 'k');
 end
 title('linear regression')
+if doPrintPmtk, doPrintPmtkFigures('logregGradeLinreg'); end;
 
 % draw the decision boundary
 ps = Xdense*beta;

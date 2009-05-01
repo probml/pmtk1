@@ -14,6 +14,7 @@ for i=1:3
     title(sprintf('%s(%2.1fx + %2.1f)', '\sigma', a, a*b));
   end
 end
+if doPrintPmtk, doPrintPmtkFigures('sigmoidPlot'); end;
 
 figure(2);clf
 xs = -3:0.1:3;

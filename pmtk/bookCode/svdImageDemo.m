@@ -1,7 +1,5 @@
 % based on Cleve Moler's book ch10 p25
-clear all
 doPrint = 0;
-folder = 'C:\kmurphy\PML\Figures';
 %load detail
 load clown
 %figure(1);clf
@@ -20,12 +18,10 @@ for i=1:R
   Xhat = (U(:,1:k)*S(1:k,1:k)*V(:,1:k)');
   image(Xhat);colormap(gray(64));axis image; axis off
   title(sprintf('rank %d', k))
-  %fname = sprintf('%s/svdImageDemoClown%d.eps', folder, k);
-  fname = sprintf('%s/svdImageDemoClown%d.jpg', folder, k);
-  if doPrint
-    print(gcf, '-djpeg', fname)
-  end
-  pause
+  fname = sprintf('svdImageDemoClown%d.jpg', k);
+  if doPrint, print(gcf, '-djpeg', fname); end;
+  if doPrintPmtk, doPrintPmtkFigures(fname); end;
+  %pause
 end
 end
 
@@ -55,7 +51,8 @@ X2 = reshape(X(perm), size(X));
 sigma2 = diag(S2);
 figure(1); hold on
 plot(log(sigma2(1:K)), 'g:', 'linewidth', 3)
-fname = sprintf('%s/svdImageDemoClownSigmaScrambled.eps', folder)
+fname = sprintf('svdImageDemoClownSigmaScrambled.eps');
+if doPrintPmtk, doPrintPmtkFigures('svdImageDemoClownSigmaScrambled'); end;
 if doPrint
   print(gcf, '-depsc', fname)
 end

@@ -1,5 +1,3 @@
-clear all
-
 Ns = [1 10 50];
 for i=1:length(Ns)
   n = Ns(i);
@@ -25,9 +23,9 @@ for i=1:length(Ns)
   xlabel('\theta')
   ylabel('R')
   title(sprintf('risk functions for n=%d',n))
+  if doPrintPmtk, doPrintPmtkFigures(sprintf('riskFnBernoulliN%d', n)); end;
 end
 
-%ns = 15:40;
 ns = 1:40;
 figure(1);clf
 R = 1./(6*ns);
@@ -43,3 +41,23 @@ plot(ns,R, 'g--*', 'linewidth', 2);
 xlabel('n');
 ylabel('bayes risk for uniform prior')
 legend('mle', 'Beta(1,1)', sprintf('Beta(%s,%s)',str,str), 'location', 'northeast');
+if doPrintPmtk, doPrintPmtkFigures('riskFnBernoulliBayes'); end;
+
+
+ns = 15:40;
+
+figure(1);clf
+R = 1./(6*ns);
+plot(ns,R, 'bo-', 'linewidth', 2);
+hold on
+
+R = 1./(6*(2+ns));
+plot(ns,R, 'r:x', 'linewidth', 2);
+
+R = ns./(4* (ns+sqrt(ns)).^2);
+plot(ns,R, 'g--*', 'linewidth', 2);
+
+xlabel('n');
+ylabel('bayes risk for uniform prior')
+legend('mle', 'Beta(1,1)', sprintf('Beta(%s,%s)',str,str), 'location', 'northeast');
+if doPrintPmtk, doPrintPmtkFigures('riskFnBernoulliBayes15to40'); end;

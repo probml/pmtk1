@@ -18,6 +18,5 @@ plot(xs(inside), ys(inside), 'bo');
 hold on
 plot(xs(outside), ys(outside), 'rx');
 axis square
-print(gcf,'-depsc','C:/kmurphy/figures/other/mc_pi.eps')
-
-
+%print(gcf,'-depsc','C:/kmurphy/figures/other/mc_pi.eps')
+if doPrintPmtk, doPrintPmtkFigures('mc-pi'); end;

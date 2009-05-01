@@ -1,5 +1,6 @@
 function demoPlotPdfCdf()
 
+
 % Generate Bishop Figure 1.12 showing an arbitray PDF and its corresponding CDF.
 % By Matt Dunham
 
@@ -42,5 +43,7 @@ annotation(gcf,'textbox','String',{'dx'},'FitHeightToText','off',...
 annotation(gcf,'textbox','String',{'x'},'FitHeightToText','off',...
     'LineStyle','none',...
     'Position',[0.85 0.0765 0.02598 0.03286]);
+
+if doPrintPmtk, doPrintPmtkFigures('pdfDemo'); end;
 
 end

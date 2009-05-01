@@ -1,4 +1,4 @@
-function gmmLikelihoodConvexHull
+%function gmmLikelihoodConvexHull 
 %Illustration of the likelihood surface created by a GMM with 10 isotropic
 %components in 2d. The centers are marked with a '+' symbol. The three
 %modes are marked with blue triangles. The green line is the convex hull of
@@ -30,6 +30,7 @@ z = reshape(z,nrows,ncols);
 
 figure;
 surf(x1, y1, z);
+if doPrintPmtk, doPrintPmtkFigures('gmmLikelihoodSurf'); end;
 
 figure;
 contour(x1,y1,z,'-r'); hold on;
@@ -46,7 +47,6 @@ plot(mu(k,1),mu(k,2),'-g','LineWidth',3);
 
 set(gca,'box','on','XTick',[],'YTick',[],'LineWidth',3);
 maximizeFigure;
-pdfcrop;
+if doPrintPmtk, doPrintPmtkFigures('gmmLikelihoodConvexHull'); end;
 
-
-end
+%end

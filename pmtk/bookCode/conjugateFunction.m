@@ -1,5 +1,6 @@
 function conjugateFunction
 % Illustration of a conjugate function
+
    
 
     f = @(x) -log(5*x) - 5;
@@ -7,7 +8,9 @@ function conjugateFunction
     offset = 0.04;
     t = @(x) -(1/3)*x + f(3)+1-offset;
     figureA;
+    if doPrintPmtk, doPrintPmtkFigures('conjugateFunctionA'); end;
     figureB;
+    if doPrintPmtk, doPrintPmtkFigures('conjugateFunctionB'); end;
     
     function figureA
         setup;

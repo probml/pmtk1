@@ -1,6 +1,7 @@
 function leastSquaresProjection
 % An illustration of least squares projection
 %
+
 seed = 2;
 rand('twister',seed); randn('state',seed);
 n = 3;
@@ -29,9 +30,9 @@ xlabel('x1'); ylabel('x2'); zlabel('x3');
 plotLines;
 plotPoints;
 labelPoints;
-keyboard
+%keyboard
 
-
+if doPrintPmtk, doPrintPmtkFigures('leastSquaresProj'); end;
   function plotLines
     prefs = {'Color','g','LineStyle','--','LineWidth',2};
     line(X(1,:), X(2,:), X(3,:), prefs{:});

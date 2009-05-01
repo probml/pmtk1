@@ -1,6 +1,7 @@
 function newtonsMethodMin1d
 %Illustration of Newton's method for minimizing a 1d function
 
+
 hold all;
 
 xmin = 0.1;  xmax = 12;
@@ -44,6 +45,6 @@ annotation(gcf,'textbox'        ,[0.345 0 0.09946 0.11],...
 axis([xmin,xmax,ymin,ymax]);
 set(gca,'XTick',[Xk,-b/m],'XTickLabel',{'',''},'YTick',0,'FontSize',16,'Box','on','LineWidth',2);
 
-pdfcrop;
+if doPrintPmtk, doPrintPmtkFigures('newtonsMethodMin1d'); end;
 
 end

@@ -1,6 +1,5 @@
 % Run pagerank algorithm on Cleve Moler's 6 node web example
 
-clear all
 i = [ 2 6 3 4 4 5 6 1 1];
 j = [ 1 1 2 2 3 3 3 4 6];
 n = 6;
@@ -39,5 +38,10 @@ tic
 [x,cnt] = pagerankpow(G);
 toc
 figure;bar(x);set(gca,'xlim',[-10 510]);set(gca,'ylim',[0 0.02])
+
+figure(1);
+if doPrintPmtk, doPrintPmtkFigures('harvard500spy'); end;
+figure(2);
+if doPrintPmtk, doPrintPmtkFigures('harvard500pagerank'); end;
 
 

@@ -4,7 +4,7 @@
 
 seed = 0; randn('state', seed); rand('state', seed);
 folder = 'C:/kmurphy/PML/Figures';
-doSave = 1;
+doSave = 0;
 
 % Data from http://www.stat.columbia.edu/~gelman/book/data/light.asc
 D = [28 26 33 24 34 -44 27 16 40 -2  29 22 24 21 25 30 23 29 31 19 ...
@@ -23,10 +23,7 @@ rep = normrnd(mu, sigma, S, n);
 % Plot data
 figure(1); clf
 hist(D,20); title('Newcombs speed of light data')
-if doSave
-  fname = sprintf('%s/newcombTruth2.eps', folder)
-  print(gcf, '-depsc', fname);
-end
+if doPrintPmtk, doPrintPmtkFigures('newcombTruth2'); end;
 
 % Plot sampled data
 figure(2); clf
@@ -37,10 +34,7 @@ for i=1:9
   %title(sprintf('synth %d', i))
 end
 suplabel('posterior samples', 't')
-if doSave
-  fname = sprintf('%s/newcombSynth2.eps', folder)
-  print(gcf, '-depsc', fname);
-end
+if doPrintPmtk, doPrintPmtkFigures('newcombSynth2'); end;
 
 % compute distribution of test statistic
 test = @(x) min(x);
@@ -54,10 +48,7 @@ title(sprintf('posterior of min(%s), true min=%d', 'x', testValTrue))
 hold on
 line([testValTrue, testValTrue], get(gca,'ylim'), 'color', 'r', 'linewidth', 3)
 pvalBayes = mean(testVal >= testValTrue)
-if doSave
-  fname = sprintf('%s/newcombTestStat2.eps', folder)
-  print(gcf, '-depsc', fname);
-end
+if doPrintPmtk, doPrintPmtkFigures('newcombTestStat2'); end;
 
 
 
@@ -74,8 +65,4 @@ title(sprintf('posterior of var(%s), true var=%3.2f', 'x', testValTrue))
 hold on
 line([testValTrue, testValTrue], get(gca,'ylim'), 'color', 'r', 'linewidth', 3)
 pvalBayes = mean(testVal >= testValTrue)
-
-if doSave
-  fname = sprintf('%s/newcombHistoVar.eps', folder)
-  print(gcf, '-depsc', fname);
-end
+if doPrintPmtk, doPrintPmtkFigures('newcombHistoVar'); end;

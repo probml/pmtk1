@@ -22,26 +22,34 @@ title('raw data')
 styles = plotColors;
 figure(2); clf;
 K = size(B,2);
-for i=1:2
+%nBasis = 2;
+nBasis = 7
+for i=1:nBasis
   plot(times, B(:,i), styles{i});
   hold on
   str{i} = sprintf('pc %d', i);
 end
 title('principal bases')
 legend(str,'location','northwest')
+if(nBasis == 2)
+  if doPrintPmtk, doPrintPmtkFigures('pcaYeastbasis2'); end;
+else
+  if doPrintPmtk, doPrintPmtkFigures('pcaYeastBasis'); end;
+end
 
 figure(3);clf
 scatter(Z(:,1), Z(:,2));
 title('first 2 principal components')
+if doPrintPmtk, doPrintPmtkFigures('pcaYeast2d'); end;
 
-if 0
+if 1
 figure(4);clf
 K = 6;
 pcclusters = clusterdata(Z(:,1:2),K);
 gscatter(Z(:,1), Z(:,2), pcclusters)
 title('clusering of the first 2 PCs')
 end
-
+keyboard
 % Click on some points in R2 (fig 3)
 % and visualize the corrsponding raw data in R7 (fig 4)
 

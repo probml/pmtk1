@@ -1,6 +1,7 @@
 function optMaxLambdaVal
 
 
+
     f = @(x)x-(x-x.*log(-x));
     domain = -1:0.0005:0;
     figure; hold on;
@@ -20,6 +21,8 @@ function optMaxLambdaVal
     'String',{'\eta\xi - g(\eta)'},...
     'FontSize',18,...
     'LineStyle','none');
+
+    if doPrintPmtk, doPrintPmtkFigures('optMaxLambdaVal'); end;
 
 
 

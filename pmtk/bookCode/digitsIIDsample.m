@@ -23,6 +23,7 @@ for i=1:9
   imagesc(img); colormap(gray); axis off; axis image 
 end
 suptitle('training images')
+if doPrintPmtk, doPrintPmtkFigures('mnist7train'); end;
 
 % Fit model
 Non = sum( Xtrain==1, 1);
@@ -41,8 +42,10 @@ for i=1:9
   imagesc(img); colormap(gray); axis off
 end
 suptitle('images generated from iid model')
+if doPrintPmtk, doPrintPmtkFigures('mnist7genIID'); end;
 
 figure(3);clf
 imagesc(reshape(pOn,[28 28])); colormap(jet)
 title('pOn'); colorbar
+if doPrintPmtk, doPrintPmtkFigures('mnist7HeatmapIID'); end;
 

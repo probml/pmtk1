@@ -169,10 +169,15 @@ function makePlots()
     close all;
     data = [16,8,2,64];
     displayHypothesisSpace(inconcept,hypSpace);
+    if doPrintPmtk, doPrintPmtkFigures('joshHypSpace'); end;
     plotDistribution(data,hypSpace,likelihoodFn,1);
+    if doPrintPmtk, doPrintPmtkFigures('numbersLik'); end;
     plotDistribution(data,hypSpace,posteriorFn,0);
+    if doPrintPmtk, doPrintPmtkFigures('numbersPost'); end;
     plotPrior(hypSpace);
+    if doPrintPmtk, doPrintPmtkFigures('numbersPrior'); end;
     visualizePredictive(inconcept,[16],hypSpace);
+    if doPrintPmtk, doPrintPmtkFigures('josh-2-9'); end;
     plotGamma();
 end
 

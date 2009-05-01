@@ -1,6 +1,7 @@
 function newtonsMethodMinQuad
 %A function g and its second order approximation.
 
+
 hold all;
 
 xmin = -5;  xmax = 0;
@@ -46,6 +47,6 @@ annotation(gcf,'textbox'        ,[0.515 0 0.09946 0.11],...
 axis([xmin,xmax,ymin,ymax]);
 set(gca,'XTick',[Xk,minimum],'XTickLabel',{'',''},'YTick',[],'FontSize',16,'Box','on','LineWidth',2);
 
-pdfcrop;
+if doPrintPmtk, doPrintPmtkFigures('newtonsMethodMinQuad'); end;
 
 end

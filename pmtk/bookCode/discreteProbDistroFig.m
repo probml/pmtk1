@@ -3,9 +3,12 @@
 %x=1 and 0 otherwise. 
 %Written by Matthew Dunham
 function discreteProbDistroFig
+
 close all;
 plotHist(1:4);
+if doPrintPmtk, doPrintPmtkFigures('unifHist'); end;
 plotHist(1);
+if doPrintPmtk, doPrintPmtkFigures('deltaHist'); end;
 
 function plotHist(locs)
     figure;
