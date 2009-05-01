@@ -40,8 +40,8 @@ toc
 figure;bar(x);set(gca,'xlim',[-10 510]);set(gca,'ylim',[0 0.02])
 
 figure(1);
-if doPrintPmtk, doPrintPmtkFigures('harvard500spy'); end;
+if doPrintPmtk, printPmtkFigures('harvard500spy'); end;
 figure(2);
-if doPrintPmtk, doPrintPmtkFigures('harvard500pagerank'); end;
+if doPrintPmtk, printPmtkFigures('harvard500pagerank'); end;
 
 

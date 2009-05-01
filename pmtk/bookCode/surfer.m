@@ -138,7 +138,7 @@ delete(t1)
 delete(t2)
 delete(slow)
 set(quit,'string','close','callback','close(gcf)','value',0)
-if doPrintPmtk, doPrintPmtkFigures('harvard500spy'); end;
+if doPrintPmtk, printPmtkFigures('harvard500spy'); end;
 
 
 %------------------------

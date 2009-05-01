@@ -44,7 +44,7 @@ set(gca, 'ylim'    , [-0.2 1.6]                ,...
 xlabel('SAT Score')
 legend({'Actual','Predicted','p( passing | SAT Score , w )'},'Location','NorthWest');
 title('MLE');
-if doPrintPmtk, doPrintPmtkFigures('logregGradeFitted'); end;
+if doPrintPmtk, printPmtkFigures('logregGradeFitted'); end;
 %%  Fit Using Laplace Approximation to the Posterior
 % Here we fit in much the same way but use the Logreg_MvnDist and compute a
 % Laplace approximation to the posterior. 

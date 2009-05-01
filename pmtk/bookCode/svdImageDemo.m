@@ -20,7 +20,7 @@ for i=1:R
   title(sprintf('rank %d', k))
   fname = sprintf('svdImageDemoClown%d.jpg', k);
   if doPrint, print(gcf, '-djpeg', fname); end;
-  if doPrintPmtk, doPrintPmtkFigures(fname); end;
+  if doPrintPmtk, printPmtkFigures(fname); end;
   %pause
 end
 end
@@ -52,7 +52,7 @@ sigma2 = diag(S2);
 figure(1); hold on
 plot(log(sigma2(1:K)), 'g:', 'linewidth', 3)
 fname = sprintf('svdImageDemoClownSigmaScrambled.eps');
-if doPrintPmtk, doPrintPmtkFigures('svdImageDemoClownSigmaScrambled'); end;
+if doPrintPmtk, printPmtkFigures('svdImageDemoClownSigmaScrambled'); end;
 if doPrint
   print(gcf, '-depsc', fname)
 end

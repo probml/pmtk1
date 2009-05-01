@@ -25,7 +25,7 @@ title('train')
 axis(range)
 fname = sprintf('%s/knnClassifyTrainData.eps', folder)
 if doSave, print(gcf, '-depsc', fname); end
-if doPrintPmtk, doPrintPmtkFigures('knnClassifyTrainData'); end;
+if doPrintPmtk, printPmtkFigures('knnClassifyTrainData'); end;
 
 figure;
 plotLabeledData(Xtest, ytest)
@@ -33,7 +33,7 @@ title('test - truth')
 axis(range)
 fname = sprintf('%s/knnClassifyTestData.eps', folder)
 if doSave, print(gcf, '-depsc', fname); end
-if doPrintPmtk, doPrintPmtkFigures('knnClassifyTestData'); end;
+if doPrintPmtk, printPmtkFigures('knnClassifyTestData'); end;
 
 
 
@@ -53,7 +53,7 @@ for K=Ks(:)'
   
   fname = sprintf('%s/knnClassifyTestK%d.eps', folder, K)
   if doSave, print(gcf, '-depsc', fname); end
-  if doPrintPmtk, doPrintPmtkFigures(sprintf('knnClassifyTestK%d', K)); end;
+  if doPrintPmtk, printPmtkFigures(sprintf('knnClassifyTestK%d', K)); end;
 end
 
 

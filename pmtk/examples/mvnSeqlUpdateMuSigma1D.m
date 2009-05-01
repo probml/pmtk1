@@ -27,4 +27,4 @@ ylabel(sprintf('%s', '\sigma^2'))
 legend(h,legendstr);
 title(sprintf('prior = NIW(mu=0, k=%5.3f, %s=%5.3f, S=%5.3f), true %s=%5.3f, %s=%5.3f', ...
     k, '\nu', nu, S, '\mu', muTrue, '\sigma^2', varTrue))
-if doPrintPmtk; doPrintPmtkFigures('muSigmaPost'); end;
+if doPrintPmtk; printPmtkFigures('muSigmaPost'); end;

@@ -4,10 +4,10 @@ function decisionBoundariesDemo1d
 %plotgaussians1d(-1, 3, 1, 1, 0.1)
 figure
 plotgaussians1d(1, -1, 1, 1, 0.5)
-if doPrintPmtk, doPrintPmtkFigures('dboundaries1dConnected'); end;
+if doPrintPmtk, printPmtkFigures('dboundaries1dConnected'); end;
 figure
 plotgaussians1d(1, -1, 3, 1, 0.5)
-if doPrintPmtk, doPrintPmtkFigures('dboundaries1dDisconnected'); end;
+if doPrintPmtk, printPmtkFigures('dboundaries1dDisconnected'); end;
 
 function plotgaussians1d(mu1, mu2, s1, s2, pi1)
 pi2 = 1-pi1;

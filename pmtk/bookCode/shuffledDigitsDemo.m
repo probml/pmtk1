@@ -43,6 +43,6 @@ for i=1:9
 end
 
 figure(1);
-if(doPrintPmtk), doPrintPmtkFigures('mnistTestShuffled'); end;
+if(doPrintPmtk), printPmtkFigures('mnistTestShuffled'); end;
 figure(2);
-if(doPrintPmtk), doPrintPmtkFigures('mnistTestUnshuffled'); end;
+if(doPrintPmtk), printPmtkFigures('mnistTestUnshuffled'); end;

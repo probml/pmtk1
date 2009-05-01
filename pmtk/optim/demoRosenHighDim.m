@@ -47,4 +47,4 @@ end
 final
 t
 
-if doPrintPmtk, doPrintPmtkFigures('rosen10dSpy'); end;
+if doPrintPmtk, printPmtkFigures('rosen10dSpy'); end;

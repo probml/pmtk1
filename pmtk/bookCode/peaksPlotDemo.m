@@ -25,12 +25,12 @@ hold on; h=plot3(Xmin,Ymin,Zmin,'bo');
 set(h,'markerfacecolor','b','markersize',12);
 title(str)
 if doSave, pdfcrop; print(gcf, '-dpdf', 'C:\kmurphy\PML\pdfFigures\peaksSurf.pdf'); end
-if doPrintPmtk, doPrintPmtkFigures('peaksSurf'); end;
+if doPrintPmtk, printPmtkFigures('peaksSurf'); end;
   
 figure(2);clf; contour(X,Y,Z);
 xlabel('x'); ylabel('y'); colorbar;
 if doSave, pdfcrop; print(gcf, '-dpdf', 'C:\kmurphy\PML\pdfFigures\peaksContour.pdf'); end
-if doPrintPmtk, doPrintPmtkFigures('peaksContour'); end;
+if doPrintPmtk, printPmtkFigures('peaksContour'); end;
 
 
 figure(3);clf; imagesc(flipud(Z)); colorbar; 

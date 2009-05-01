@@ -26,4 +26,4 @@ pmax = 10;
 h=line([xbar xbar], [0 pmax]); set(h, 'linewidth', 3,'Color','c');
 legendstr{length(ns)+1} = 'truth';
 legend(legendstr,'Location','NorthWest');
-if doPrintPmtk, doPrintPmtkFigures('betaSeqUpdate'); end;
+if doPrintPmtk, printPmtkFigures('betaSeqUpdate'); end;

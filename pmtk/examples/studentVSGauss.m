@@ -20,7 +20,7 @@ legendStr{end+1} = 'N(0,1)';
 legend(legendStr)
 if useLog, ylabel('log density'); else ylabel('density'); end
 if(useLog)
-if doPrintPmtk, doPrintPmtkFigures('studentTvsGaussLog'); end;
+if doPrintPmtk, printPmtkFigures('studentTvsGaussLog'); end;
 else
-if doPrintPmtk, doPrintPmtkFigures('studentTvsGauss'); end;
+if doPrintPmtk, printPmtkFigures('studentTvsGauss'); end;
 end

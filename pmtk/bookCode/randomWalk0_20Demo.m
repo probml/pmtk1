@@ -29,7 +29,7 @@ function randomWalk0_20Demo
         x0 = find(p0{i})-1;
         suptitle(sprintf('Initial Condition X_0 = %d',x0),12);
         if doPrint, print_pdf(fullfile(folder, sprintf('randomWalk%d.pdf',x0))), end
-        if doPrintPmtk, doPrintPmtkFigures(sprintf('randomWalk%d', x0)); end;
+        if doPrintPmtk, printPmtkFigures(sprintf('randomWalk%d', x0)); end;
     end
     
     function stemPlot(pn,titleNum)

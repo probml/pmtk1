@@ -27,9 +27,9 @@
       end
 
 figure(1);
-if(doPrintPmtk), doPrintPmtkFigures('surfaceLinear'); end;
+if(doPrintPmtk), printPmtkFigures('surfaceLinear'); end;
 figure(1);
-if(doPrintPmtk), doPrintPmtkFigures('surfaceQuad'); end;
+if(doPrintPmtk), printPmtkFigures('surfaceQuad'); end;
 end
    
    

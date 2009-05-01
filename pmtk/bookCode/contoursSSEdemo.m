@@ -46,4 +46,4 @@ grid on
 xlabel('w0')
 ylabel('w1')
 
-if doPrintPmtk, doPrintPmtkFigures('linRegContoursSSE'); end;
+if doPrintPmtk, printPmtkFigures('linRegContoursSSE'); end;

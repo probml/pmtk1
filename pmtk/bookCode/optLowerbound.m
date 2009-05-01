@@ -27,7 +27,7 @@ function optLowerbound
     'FontSize',20,...
     'LineStyle','none');
 
-    if doPrintPmtk, doPrintPmtkFigures('optLowerbound'); end;
+    if doPrintPmtk, printPmtkFigures('optLowerbound'); end;
 
 
 

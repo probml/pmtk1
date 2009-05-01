@@ -22,4 +22,4 @@ nr = 1; nc = 3;
 subplot(nr,nc,1); plot(xs, px, '-');
 subplot(nr,nc,2); plot(ys, ppy, '-');
 subplot(nr,nc,3);  bar(bins,h);
-if doPrintPmtk, doPrintPmtkFigures('changeOfVars'); end;
+if doPrintPmtk, printPmtkFigures('changeOfVars'); end;

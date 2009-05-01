@@ -26,11 +26,11 @@ set(gca,'xticklabel',Nh)
 xlabel('num heads')
 title(sprintf('Marginal likelihood for Beta-Bernoulli model, %s p(D|%s) Be(%s|1,1) d%s', ...
 	      '\int', '\theta', '\theta', '\theta'))
-if doPrintPmtk, doPrintPmtkFigures('joshCoins4'); end;
+if doPrintPmtk, printPmtkFigures('joshCoins4'); end;
 
 figure(2); clf
 plot(exp(logBF), 'o-')
 title('BF(1,0)')
 set(gca,'xtick', 1:2^N)
 set(gca,'xticklabel',Nh)
-if doPrintPmtk, doPrintPmtkFigures('joshCoins4BF'); end;
+if doPrintPmtk, printPmtkFigures('joshCoins4BF'); end;

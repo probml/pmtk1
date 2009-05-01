@@ -51,6 +51,6 @@ annotation(gcf,'textbox',[0.45 0.25 0.104 0.1205],'String',{'AUC'},...
 
 %pdfcrop;
 %print(gcf,'-dpdf','test.pdf');
-if doPrintPmtk, doPrintPmtkFigures('ROChand'); end;
+if doPrintPmtk, printPmtkFigures('ROChand'); end;
 
 end

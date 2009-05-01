@@ -49,5 +49,5 @@ maximizeFigure;
 p = get(gcf,'Position');
 p(3) = 2*p(3)/3;
 set(gcf,'Position',p);
-if doPrintPmtk, doPrintPmtkFigures('convexFn'); end;
+if doPrintPmtk, printPmtkFigures('convexFn'); end;
 

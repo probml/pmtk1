@@ -32,6 +32,6 @@ for i=1:length(f)
   ylabel('log(eigenvalue)')
   title(sprintf('n=%d, d=%d, cond(MLE)=%g, cond(shrink)=%g', ...
 		n, d, cond(Smle), cond(Sshrink)))
-  if doPrintPmtk, doPrintPmtkFigures(sprintf('covshrinkDemoLogN%d', n)); end;
+  if doPrintPmtk, printPmtkFigures(sprintf('covshrinkDemoLogN%d', n)); end;
 end
   

@@ -29,7 +29,7 @@
     xlabel('x','FontSize',26);
     ylabel('p(x)','FontSize',26);
     set(gca,'FontSize',18,'LineWidth',2,'XTick',[],'YTick',[],'box','on');
-    if doPrintPmtk, doPrintPmtkFigures('gmmSingularity'); end;
+    if doPrintPmtk, printPmtkFigures('gmmSingularity'); end;
 
 
 %end

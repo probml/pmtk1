@@ -13,4 +13,4 @@ for j=1:length(mus)
 end
 legend(legendStr)
 title('Laplace distributions')
-if doPrintPmtk, doPrintPmtkFigures('laplace'); end;
+if doPrintPmtk, printPmtkFigures('laplace'); end;

@@ -47,6 +47,6 @@ annotation(gcf,'textbox'        ,[0.515 0 0.09946 0.11],...
 axis([xmin,xmax,ymin,ymax]);
 set(gca,'XTick',[Xk,minimum],'XTickLabel',{'',''},'YTick',[],'FontSize',16,'Box','on','LineWidth',2);
 
-if doPrintPmtk, doPrintPmtkFigures('newtonsMethodMinQuad'); end;
+if doPrintPmtk, printPmtkFigures('newtonsMethodMinQuad'); end;
 
 end

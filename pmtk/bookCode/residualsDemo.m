@@ -39,6 +39,6 @@ for i=1:Ntrain
 end
 legend(hh, 'prediction','truth')
 
-if doPrintPmtk, doPrintPmtkFigures('linRegResiduals'); end;
+if doPrintPmtk, printPmtkFigures('linRegResiduals'); end;
 restoreSeed;
 

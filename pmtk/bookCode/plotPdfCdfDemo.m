@@ -44,6 +44,6 @@ annotation(gcf,'textbox','String',{'x'},'FitHeightToText','off',...
     'LineStyle','none',...
     'Position',[0.85 0.0765 0.02598 0.03286]);
 
-if doPrintPmtk, doPrintPmtkFigures('pdfDemo'); end;
+if doPrintPmtk, printPmtkFigures('pdfDemo'); end;
 
 end

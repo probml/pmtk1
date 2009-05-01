@@ -60,7 +60,7 @@ hold on
 %Identify the parameters w1 & w2 which maximize the posterior (joint)
 [i,j]=max(Log_Joint);                                                               
 plot(W(j,1),W(j,2),'.','MarkerSize',40);
-if doPrintPmtk, doPrintPmtkFigures('logregLaplaceDemoGirolami-post'); end;
+if doPrintPmtk, printPmtkFigures('logregLaplaceDemoGirolami-post'); end;
 
 %Compute the Laplace Approximation
 

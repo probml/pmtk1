@@ -21,4 +21,4 @@ end
 legend(legendStr);
 title('InvGamma distributions')
 
-if doPrintPmtk, doPrintPmtkFigures('invGammaDist'); end;
+if doPrintPmtk, printPmtkFigures('invGammaDist'); end;

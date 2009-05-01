@@ -81,7 +81,7 @@ end
 fname = sprintf('%s/pcaImages_%s_images', folder, name)
 if doPrint, print(gcf, '-depsc', sprintf('%s.eps'),fname); end
 if doPrint, print(gcf, '-djpeg', sprintf('%s.jpg',fname)); end
-if doPrintPmtk, doPrintPmtkFigures(sprintf('pcaImages_%s_images',name)); end;
+if doPrintPmtk, printPmtkFigures(sprintf('pcaImages_%s_images',name)); end;
 
 mu = mean(X);
 XC = X-repmat(mu,size(X,1),1);
@@ -103,7 +103,7 @@ end
 fname = sprintf('%s/pcaImages_%s_basis', folder, name)
 if doPrint, print(gcf, '-depsc', sprintf('%s.eps',fname)); end
 if doPrint, print(gcf, '-djpeg', sprintf('%s.jpg',fname)); end
-if doPrintPmtk, doPrintPmtkFigures(sprintf('pcaImages_%_basis',name)); end;
+if doPrintPmtk, printPmtkFigures(sprintf('pcaImages_%_basis',name)); end;
 
 
 % Plot reconstruction error
@@ -124,7 +124,7 @@ ylabel('mse'); xlabel('K'); title('reconstruction error');
 fname = sprintf('%s/pcaImages_%s_recon', folder, name)
 if doPrint, print(gcf, '-depsc', sprintf('%s.eps',fname)); end
 if doPrint, print(gcf, '-djpeg', sprintf('%s.jpg',fname)); end
-if doPrintPmtk, doPrintPmtkFigures(sprintf('pcaImages_%s_recon', name)); end;
+if doPrintPmtk, printPmtkFigures(sprintf('pcaImages_%s_recon', name)); end;
 
 % Scree plot
 figure(4);clf

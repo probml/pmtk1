@@ -10,7 +10,7 @@ N = [1 2 10];
 for i=1:length(N)
    figure(i);
    convolutionHist(N(i),samples,bins);
-   if doPrintPmtk, doPrintPmtkFigures(sprintf('clt%d.pdf', N(i))); end;
+   if doPrintPmtk, printPmtkFigures(sprintf('clt%d.pdf', N(i))); end;
 end
 
 %%

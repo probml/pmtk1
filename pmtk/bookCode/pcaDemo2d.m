@@ -19,4 +19,4 @@ Xrecon2 = Z2*W' + repmat(mu, 2,1);
 h=line([Xrecon2(1,1) Xrecon2(2,1)], [Xrecon2(1,2) Xrecon2(2,2)], 'color', 'm');
 axis equal
 
-if doPrintPmtk, doPrintPmtkFigures('pcaDemo2'); end;
+if doPrintPmtk, printPmtkFigures('pcaDemo2'); end;

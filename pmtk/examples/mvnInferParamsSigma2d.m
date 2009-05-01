@@ -20,12 +20,12 @@ prior = InvWishartDist(2, eye(2));
 plotMarginals(prior);
 %set(gcf, 'name', 'prior');
 suplabel('prior');
-if doPrintPmtk, doPrintPmtkFigures('MVNcovDemoPriorMarg'); end;
+if doPrintPmtk, printPmtkFigures('MVNcovDemoPriorMarg'); end;
 
 plotSamples2d(prior, 9);
 subplot(3,3,1); gaussPlot2d(mtrue.mu, mtrue.Sigma);  title('truth');
 suplabel('prior');
-if doPrintPmtk, doPrintPmtkFigures('MVNcovDemoPriorSamples'); end;
+if doPrintPmtk, printPmtkFigures('MVNcovDemoPriorSamples'); end;
 
 for i=1:length(ns)
     n = ns(i);
@@ -34,11 +34,11 @@ for i=1:length(ns)
     post = m.SigmaDist;
     plotMarginals(post);
     suplabel(sprintf('post after %d obs', n));
-    if doPrintPmtk, doPrintPmtkFigures(sprintf('MVNcovDemoPost%dMarg', n)); end;
+    if doPrintPmtk, printPmtkFigures(sprintf('MVNcovDemoPost%dMarg', n)); end;
 
     plotSamples2d(post, 9);
     hold off
     subplot(3,3,1); gaussPlot2d(mtrue.mu, mtrue.Sigma); title('truth');
     suplabel(sprintf('post after %d obs', n));
-    if doPrintPmtk, doPrintPmtkFigures(sprintf('MVNcovDemoPost%dSamples', n)); end;
+    if doPrintPmtk, printPmtkFigures(sprintf('MVNcovDemoPost%dSamples', n)); end;
 end

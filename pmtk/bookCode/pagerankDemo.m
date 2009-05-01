@@ -61,7 +61,7 @@ for k = 1:n
 end
 
 follow_link = 0 ;
-if doPrintPmtk, doPrintPmtkFigures('smallwebMoler'); end;
+if doPrintPmtk, printPmtkFigures('smallwebMoler'); end;
 input ('hit enter to start at node alpha: ') ;
 
 % write the stats to the figure

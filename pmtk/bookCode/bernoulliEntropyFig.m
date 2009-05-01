@@ -11,5 +11,5 @@ function bernoulliEntropyFig
     ylabel('H(X)');
     set(gca,'XTick',[0,0.5,1]);
     set(gca,'YTick',[0,0.5,1]);
-    if doPrintPmtk, doPrintPmtkFigures('bernoulliEntropy'); end;
+    if doPrintPmtk, printPmtkFigures('bernoulliEntropy'); end;
 end

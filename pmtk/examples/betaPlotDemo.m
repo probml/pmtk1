@@ -12,5 +12,5 @@ end
 legend(legendStr,'Location','NorthWest');
 title('beta distributions')
 
-if doPrintPmtk, doPrintPmtkFigures('betadist'); end
+if doPrintPmtk, printPmtkFigures('betadist'); end
 %%

@@ -11,7 +11,7 @@ for c = 1:16
     axis tight
 end
 suptitle('K-Means Clustering of Profiles');
-if doPrintPmtk, doPrintPmtkFigures('yeastKmeans16'); end;
+if doPrintPmtk, printPmtkFigures('yeastKmeans16'); end;
 
 figure;
 for c = 1:16
@@ -21,7 +21,7 @@ for c = 1:16
     axis off    % turn off the axis
 end
 suptitle('K-Means centroids')
-if doPrintPmtk, doPrintPmtkFigures('yeastKmeans16Centroids'); end;
+if doPrintPmtk, printPmtkFigures('yeastKmeans16Centroids'); end;
 
 
 

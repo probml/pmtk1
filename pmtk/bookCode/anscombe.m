@@ -36,4 +36,4 @@ end
 set(get(gcf,'children'),axisSpec{:}); %Set properties in parallel
 maximizeFigure;
 pdfcrop;
-if doPrintPmtk, doPrintPmtkFigures('anscombe'); end;
+if doPrintPmtk, printPmtkFigures('anscombe'); end;

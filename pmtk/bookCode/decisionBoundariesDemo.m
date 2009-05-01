@@ -11,7 +11,7 @@ mu1 = [1 1]'; mu2 = [-1 -1]';
 S1 = eye(2); S2 = eye(2);
 plotgaussians2(p1, mu1, S1, p2, mu2, S2);
 title('linear boundary')
-if doPrintPmtk, doPrintPmtkFigures('dboundaries2classLinear'); end;
+if doPrintPmtk, printPmtkFigures('dboundaries2classLinear'); end;
 
 
 % parabolic decision boundary
@@ -21,7 +21,7 @@ mu1 = [1 1]'; mu2 = [-1 -1]';
 S1 = [2 0; 0 1]; S2 = eye(2);
 plotgaussians2(p1, mu1, S1, p2, mu2, S2);
 title('parabolic boundary')
-if doPrintPmtk, doPrintPmtkFigures('dboundaries2classParabolic'); end;
+if doPrintPmtk, printPmtkFigures('dboundaries2classParabolic'); end;
 
 
 % 3 class
@@ -32,13 +32,13 @@ figure;
 S1 = eye(2); S2 = eye(2); S3 = eye(2); 
 plotgaussians3(p1, mu1, S1, p2, mu2, S2, p3, mu3, S3);
 title('All boundaries are linear')
-if doPrintPmtk, doPrintPmtkFigures('dboundaries3classLinear'); end;
+if doPrintPmtk, printPmtkFigures('dboundaries3classLinear'); end;
 
 figure;
 S1 = [4 0; 0 1]; S2 = eye(2); S3 = eye(2); 
 plotgaussians3(p1, mu1, S1, p2, mu2, S2, p3, mu3, S3);
 title('Some linear, some quadratic')
-if doPrintPmtk, doPrintPmtkFigures('dboundaries3classParabolic'); end;
+if doPrintPmtk, printPmtkFigures('dboundaries3classParabolic'); end;
 
 
 function h = plotgaussians3(p1,mu1,S1,p2,mu2,S2,p3,mu3,S3)

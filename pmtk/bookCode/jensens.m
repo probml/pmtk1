@@ -20,7 +20,7 @@ function jensens
     set(gca,'YTickLabel',{'f(E[x])','f(b)','E[f(x)]','f(a)'});
     set(gca,'FontSize',28,'LineWidth',2);
     placeFigures('square',false);
-    if doPrintPmtk, doPrintPmtkFigures('jensens'); end;
+    if doPrintPmtk, printPmtkFigures('jensens'); end;
 
 
 

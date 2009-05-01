@@ -50,5 +50,5 @@ annotation(gcf,'textbox'        ,[0.76 0 0.09946 0.11],...
 axis([xmin,xmax,ymin,ymax]);
 set(gca,'XTick',[Xk,maximum],'XTickLabel',{'',''},'YTick',[],'FontSize',16,'Box','on','LineWidth',2);
 
-if doPrintPmtk; doPrintPmtkFigures('newtonsMethodNonConvex'); end;
+if doPrintPmtk; printPmtkFigures('newtonsMethodNonConvex'); end;
 end

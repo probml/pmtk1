@@ -23,7 +23,7 @@ rep = normrnd(mu, sigma, S, n);
 % Plot data
 figure(1); clf
 hist(D,20); title('Newcombs speed of light data')
-if doPrintPmtk, doPrintPmtkFigures('newcombTruth2'); end;
+if doPrintPmtk, printPmtkFigures('newcombTruth2'); end;
 
 % Plot sampled data
 figure(2); clf
@@ -34,7 +34,7 @@ for i=1:9
   %title(sprintf('synth %d', i))
 end
 suplabel('posterior samples', 't')
-if doPrintPmtk, doPrintPmtkFigures('newcombSynth2'); end;
+if doPrintPmtk, printPmtkFigures('newcombSynth2'); end;
 
 % compute distribution of test statistic
 test = @(x) min(x);
@@ -48,7 +48,7 @@ title(sprintf('posterior of min(%s), true min=%d', 'x', testValTrue))
 hold on
 line([testValTrue, testValTrue], get(gca,'ylim'), 'color', 'r', 'linewidth', 3)
 pvalBayes = mean(testVal >= testValTrue)
-if doPrintPmtk, doPrintPmtkFigures('newcombTestStat2'); end;
+if doPrintPmtk, printPmtkFigures('newcombTestStat2'); end;
 
 
 
@@ -65,4 +65,4 @@ title(sprintf('posterior of var(%s), true var=%3.2f', 'x', testValTrue))
 hold on
 line([testValTrue, testValTrue], get(gca,'ylim'), 'color', 'r', 'linewidth', 3)
 pvalBayes = mean(testVal >= testValTrue)
-if doPrintPmtk, doPrintPmtkFigures('newcombHistoVar'); end;
+if doPrintPmtk, printPmtkFigures('newcombHistoVar'); end;

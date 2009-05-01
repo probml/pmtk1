@@ -23,7 +23,7 @@ annotate;
 for i=1:length(w_1)
     plotSig(w_1(i),w_2(i),mainFig);    
 end
-if doPrintPmtk, doPrintPmtkFigures('sigmoidPlot2dBW'); end;
+if doPrintPmtk, printPmtkFigures('sigmoidPlot2dBW'); end;
 %%
 % Plot a single 2d sigmoid with specified values for w1, w2 to the
 % specified figure, 'fig' at relative position, (w1,w2)

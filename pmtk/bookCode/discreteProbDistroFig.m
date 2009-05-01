@@ -6,9 +6,9 @@ function discreteProbDistroFig
 
 close all;
 plotHist(1:4);
-if doPrintPmtk, doPrintPmtkFigures('unifHist'); end;
+if doPrintPmtk, printPmtkFigures('unifHist'); end;
 plotHist(1);
-if doPrintPmtk, doPrintPmtkFigures('deltaHist'); end;
+if doPrintPmtk, printPmtkFigures('deltaHist'); end;
 
 function plotHist(locs)
     figure;

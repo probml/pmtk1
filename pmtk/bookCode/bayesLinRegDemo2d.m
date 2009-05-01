@@ -105,7 +105,7 @@ figure(2);
 legend('Underlying Model','Data Points','OLS','MAP','Location','NorthWest');
 
 end
-if doPrintPmtk, doPrintPmtkFigures('bayesLinRegPlot2d'); end;
+if doPrintPmtk, printPmtkFigures('bayesLinRegPlot2d'); end;
 
 %%%%%%%%%%%
 

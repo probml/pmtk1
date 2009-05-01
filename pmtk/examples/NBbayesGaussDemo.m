@@ -99,4 +99,4 @@ for i=1:length(method)
 
 end
 
-if doPrintPmtk, doPrintPmtkFigures('NBbayesGaussDemoPlot2d'); end;
+if doPrintPmtk, printPmtkFigures('NBbayesGaussDemoPlot2d'); end;

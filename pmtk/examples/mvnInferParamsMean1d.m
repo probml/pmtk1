@@ -26,6 +26,6 @@ for i=1:numel(priorVars)
     legendstr{3} = 'post';
     legend(legendstr,'Location','NorthWest')
     title(sprintf('prior variance = %3.2f', priorVar))
-    if doPrintPmtk, doPrintPmtkFigures(figstr{i}); end;
+    if doPrintPmtk, printPmtkFigures(figstr{i}); end;
 end
 

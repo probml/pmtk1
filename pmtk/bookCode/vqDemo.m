@@ -5,7 +5,7 @@ load clown;
 A = X;
 figure;
 imagesc(A); colormap(gray); title('original')
-if doPrintPmtk; pdfcrop; doPrintPmtkFigures('vqDemoClownOrig'); end;
+if doPrintPmtk; pdfcrop; printPmtkFigures('vqDemoClownOrig'); end;
 [nrows ncols ncolors] = size(A);
 data = reshape(A, [nrows*ncols ncolors]); % data(i,:) = rgb value for pixel i
 %K = 8;
@@ -22,5 +22,5 @@ for K=[2,4]
   figure;
   imagesc(Qimg); colormap(gray)
   title(sprintf('K=%d',K))
-  if doPrintPmtk, doPrintPmtkFigures(sprintf('vqDemoClown%d', K)); end;
+  if doPrintPmtk, printPmtkFigures(sprintf('vqDemoClown%d', K)); end;
 end

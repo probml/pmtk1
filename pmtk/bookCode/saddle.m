@@ -34,7 +34,7 @@ function saddle
     'FitBoxToText','off',...
     'LineStyle','none');
 
-    if doPrintPmtk, doPrintPmtkFigures('saddle'); end;
+    if doPrintPmtk, printPmtkFigures('saddle'); end;
 
 
 

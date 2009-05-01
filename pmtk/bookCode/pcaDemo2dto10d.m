@@ -27,7 +27,7 @@ ylabel('proportion of variance')
 xlabel('K')
 axis_pct
 if doPrint, fname = sprintf('%s/pcaDemo2dto10dEmbedScree.eps',folder); print(gcf, '-depsc', fname); end
-if doPrintPmtk, doPrintPmtkFigures('pcaDemo2dto10dEmbedScree'); end;
+if doPrintPmtk, printPmtkFigures('pcaDemo2dto10dEmbedScree'); end;
 
 
 
@@ -49,4 +49,4 @@ plot(cumsum(evals)/sum(evals), 'ro-', 'linewidth', 2)
 axis_pct
 xlabel('K')
 if doPrint, fname = sprintf('%s/pcaDemo2dto10dRotateScree.eps',folder); print(gcf, '-depsc', fname); end
-if doPrintPmtk, doPrintPmtkFigures('pcaDemo2dto10dRotateScree'); end;
+if doPrintPmtk, printPmtkFigures('pcaDemo2dto10dRotateScree'); end;

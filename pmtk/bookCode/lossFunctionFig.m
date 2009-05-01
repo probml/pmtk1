@@ -29,7 +29,7 @@ function plotLoss(q)
 qstr = sprintf('%s', num2str(q));
 decloc = strfind(qstr, '.');
 if(isempty(decloc)), qstr = strcat(qstr, '.0'); decloc = strfind(qstr, '.'); end;
-if doPrintPmtk, doPrintPmtkFigures(sprintf('lossFn%s-%s', qstr(1:(decloc-1)), qstr((decloc+1):end))); end;
+if doPrintPmtk, printPmtkFigures(sprintf('lossFn%s-%s', qstr(1:(decloc-1)), qstr((decloc+1):end))); end;
 end
 
 function hingeLoss(epsilon)
@@ -47,7 +47,7 @@ function hingeLoss(epsilon)
 %folder = 'C:\kmurphy\PML\Figures';
 %fname = sprintf('%s/hingeLossFn.eps', folder)
 %print(gcf, fname, '-deps');
-if doPrintPmtk, doPrintPmtkFigures('hingeLossFn'); end;
+if doPrintPmtk, printPmtkFigures('hingeLossFn'); end;
 
 end
 

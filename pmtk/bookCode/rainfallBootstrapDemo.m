@@ -34,7 +34,7 @@ hist(bsampMLE);
 title(sprintf('b MLE, se = %5.3f', std(bsampMLE)))
 set(gca,'xlim',[0.5 3.5])
 
-if doPrintPmtk, doPrintPmtkFigures('rainfallBootstrapDemo'); end;
+if doPrintPmtk, printPmtkFigures('rainfallBootstrapDemo'); end;
 %%%%%%
 function [asamp, bsamp] = bootstrap(B, X, estimator)
 

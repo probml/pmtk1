@@ -12,12 +12,12 @@ nbins = 7;
 figure;
 plotHist(data,nbins,n);
 plotPDFs(data);
-if doPrintPmtk, doPrintPmtkFigures('gaussVsT'); end;
+if doPrintPmtk, printPmtkFigures('gaussVsT'); end;
 figure;
 plotHist(data,nbins,n+nn);
 plotHist(outliers,nn,n+nn);
 plotPDFs([data ; outliers]);
-if doPrintPmtk, doPrintPmtkFigures('gaussVsToutlier'); end;
+if doPrintPmtk, printPmtkFigures('gaussVsToutlier'); end;
 warning('on','stats:tlsfit:IterOrEvalLimit');
 end
 

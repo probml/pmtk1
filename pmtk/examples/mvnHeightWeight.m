@@ -30,7 +30,7 @@ for i=1:2
     xlabel('height')
     ylabel('weight')
     title('red = female, blue=male');
-    if doPrintPmtk, doPrintPmtkFigures(plotName{i}); end;
+    if doPrintPmtk, printPmtkFigures(plotName{i}); end;
 end
 
 

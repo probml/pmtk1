@@ -36,7 +36,7 @@ annotation(gcf,'textbox',[0.4185 0.02411 0.08859 0.1012],...
 
 
 pdfcrop;
-if doPrintPmtk, doPrintPmtkFigures('emLogLikelihoodMax'); end;
+if doPrintPmtk, printPmtkFigures('emLogLikelihoodMax'); end;
 
 
 end

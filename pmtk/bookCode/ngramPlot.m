@@ -69,4 +69,4 @@ if(0) % Print a histogram of unigram frequencies
     title('Unigrams');
 end
 
-if doPrintPmtk, doPrintPmtkFigures('uniBigram'); end;
+if doPrintPmtk, printPmtkFigures('uniBigram'); end;

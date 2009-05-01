@@ -2,7 +2,7 @@
 figure(1);clf
 pscatter(X,'y', y);
 suptitle(sprintf('iris data, red=setosa, green=versicolor, blue=virginica'));
-if doPrintPmtk, doPrintPmtkFigures('fisherIrisPairs'); end;
+if doPrintPmtk, printPmtkFigures('fisherIrisPairs'); end;
 
 figure(2);clf
 for dim=1:4
@@ -16,7 +16,7 @@ set(gca,'xticklabel',classnames);
 xlabel(''); ylabel('');
 title(sprintf('%s', varnames{dim}))
 end
-if doPrintPmtk, doPrintPmtkFigures('irisBoxNotch'); end;
+if doPrintPmtk, printPmtkFigures('irisBoxNotch'); end;
 
 
 figure(3); clf

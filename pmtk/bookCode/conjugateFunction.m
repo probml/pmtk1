@@ -8,9 +8,9 @@ function conjugateFunction
     offset = 0.04;
     t = @(x) -(1/3)*x + f(3)+1-offset;
     figureA;
-    if doPrintPmtk, doPrintPmtkFigures('conjugateFunctionA'); end;
+    if doPrintPmtk, printPmtkFigures('conjugateFunctionA'); end;
     figureB;
-    if doPrintPmtk, doPrintPmtkFigures('conjugateFunctionB'); end;
+    if doPrintPmtk, printPmtkFigures('conjugateFunctionB'); end;
     
     function figureA
         setup;

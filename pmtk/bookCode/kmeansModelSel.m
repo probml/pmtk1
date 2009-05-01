@@ -11,7 +11,7 @@ Xtrain = gmmsamp(mix, n);
 figure(1);clf
 hist(Xtrain, bins);
 title('Xtrain')
-if doPrintPmtk, doPrintPmtkFigures('kmeansModelSelData'); end;
+if doPrintPmtk, printPmtkFigures('kmeansModelSelData'); end;
 
 
 Xtest = gmmsamp(mix, n);
@@ -74,6 +74,6 @@ mix = gmm(1, K, 'spherical');
 mix = gmmem(mix, Xtrain, options);
 pmodel = gmmprob(mix, finebins(:));
 plot(finebins, pmodel, '-');
-if doPrintPmtk, doPrintPmtkFigures('kmeansModelSelGMM3'); end;
+if doPrintPmtk, printPmtkFigures('kmeansModelSelGMM3'); end;
 
 

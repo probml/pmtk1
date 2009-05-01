@@ -34,7 +34,7 @@ subplot(4,1,4); bar(sf*thetaPostMean);title('posterior mean*1000 (red line=pop m
 popMean = a/(a+b);
 hold on;h=line([0 20], sf*[popMean popMean]);
 set(h,'color','r','linewidth',2)
-if doPrintPmtk, doPrintPmtkFigures('cancerRatesEb'); end;
+if doPrintPmtk, printPmtkFigures('cancerRatesEb'); end;
 
 
 % 95% credible interval
@@ -48,4 +48,4 @@ end
 title('95% credible interval on theta, *=median')
 
 fprintf('%4.4f ', thetaPostMean*1000); fprintf('\n')
-if doPrintPmtk, doPrintPmtkFigures('cancerRatesCredibleEb'); end;
+if doPrintPmtk, printPmtkFigures('cancerRatesCredibleEb'); end;

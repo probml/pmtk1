@@ -19,4 +19,4 @@ hold on
 plot(xs(outside), ys(outside), 'rx');
 axis square
 %print(gcf,'-depsc','C:/kmurphy/figures/other/mc_pi.eps')
-if doPrintPmtk, doPrintPmtkFigures('mc-pi'); end;
+if doPrintPmtk, printPmtkFigures('mc-pi'); end;

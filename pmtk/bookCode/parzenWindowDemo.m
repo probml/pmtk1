@@ -33,7 +33,7 @@ function parzenWindowDemo
        set(h,'markersize',14,'color','k');
        g = kernelize(hvals(i), kernel);
        plot(domain,g(domain'),'-b','LineWidth',2.5);
-       if doPrintPmtk, doPrintPmtkFigures(sprintf('parzen%sH0p%s',strcat(upper(kernel(1)), kernel(2:end)), hvalstr((decloc+1):end))); end;
+       if doPrintPmtk, printPmtkFigures(sprintf('parzen%sH0p%s',strcat(upper(kernel(1)), kernel(2:end)), hvalstr((decloc+1):end))); end;
     end
     placeFigures('nrows',3,'ncols',1,'square',false);
 

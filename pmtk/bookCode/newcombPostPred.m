@@ -8,11 +8,11 @@ D = [28 26 33 24 34 -44 27 16 40 -2  29 22 24 21 25 30 23 29 31 19 ...
       29 27 28 29 16 23];
 
 doPlot(D)
-if doPrintPmtk, doPrintPmtkFigures('newcombPostPredOutlier'); end;
+if doPrintPmtk, printPmtkFigures('newcombPostPredOutlier'); end;
 
 D(6) = []; % remove outlier
 doPlot(D)
-if doPrintPmtk, doPrintPmtkFigures('newcombPostPred'); end;
+if doPrintPmtk, printPmtkFigures('newcombPostPred'); end;
 
 %%%%%%%%%%%%%
 function doPlot(D)

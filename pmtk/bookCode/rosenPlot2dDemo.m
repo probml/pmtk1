@@ -27,7 +27,7 @@ hold on
 %h=plot3(1,1,log(1+0),'ko');
 %set(h,'markerfacecolor','k','markersize',12)
 if doSave, pdfcrop; print(gcf, '-dpdf', 'C:\kmurphy\PML\pdfFigures\rosenSurf.pdf'); end
-if doPrintPmtk, doPrintPmtkFigures('rosenSuf'); end;
+if doPrintPmtk, printPmtkFigures('rosenSuf'); end;
 
 [xc,yc] = meshgrid(-2:.05:2);
 zc = rosen([xc(:),yc(:)]);
@@ -38,4 +38,4 @@ hold on
 h=plot(1,1,'bo');
 set(h,'markerfacecolor','b','markersize',12)
 if doSave, pdfcrop; print(gcf, '-dpdf', 'C:\kmurphy\PML\pdfFigures\rosenContour.pdf'); end
-if doPrintPmtk, doPrintPmtkFigures('rosenContour'); end;
+if doPrintPmtk, printPmtkFigures('rosenContour'); end;

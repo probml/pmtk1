@@ -13,8 +13,8 @@ for i=1:length(dofs)
     plotSamples2d(p,9);
     suptitle(sprintf('Wi(dof=%3.1f, S), E=[%3.1f, %3.1f; %3.1f, %3.1f], %s=%3.1f', ...
         dof, M(1,1), M(1,2), M(2,1), M(2,2), '\rho', R(1,2)));
-    if(dof == 3 && doPrintPmtk), doPrintPmtkFigures('WiDof3Ellipse'); end;
+    if(dof == 3 && doPrintPmtk), printPmtkFigures('WiDof3Ellipse'); end;
     %h=figure;clf
     plotMarginals(p);
-    if(dof == 3 && doPrintPmtk), doPrintPmtkFigures('WiDof3Plot'); end;
+    if(dof == 3 && doPrintPmtk), printPmtkFigures('WiDof3Plot'); end;
 end

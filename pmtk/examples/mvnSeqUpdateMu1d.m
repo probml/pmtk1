@@ -25,4 +25,4 @@ legend(h,legendstr);
 title(sprintf('prior = N(mu0=0, v0=%5.3f), true %s = %5.3f', 1/k, '\mu', mutrue))
 line([mutrue, mutrue], [0 pmax],'color','k','linewidth',3);
 
-if doPrintPmtk, doPrintPmtkFigures('muPost'); end;
+if doPrintPmtk, printPmtkFigures('muPost'); end;

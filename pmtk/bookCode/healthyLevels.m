@@ -106,7 +106,7 @@ function plotPriorPost
     end
     if doPrintPmtk
       fname = sprintf('healthyLevels%s', priorType);
-      doPrintPmtkFigures(fname);
+      printPmtkFigures(fname);
     end
 
     points = [3 12];
@@ -169,7 +169,7 @@ for i=1:length(points)
     end
     if doPrintPmtk
       fname = sprintf('healthyLevelsSamples%d%s', points(i), priorType);
-      doPrintPmtkFigures(fname);
+      printPmtkFigures(fname);
     end
 end
 end
@@ -229,7 +229,7 @@ function plotML
 	end
   if doPrintPmtk
     fname = sprintf('healthyLevelsMLpred%d', points(i));
-    doPrintPmtkFigures(fname);
+    printPmtkFigures(fname);
   end
     end
 end
@@ -250,7 +250,7 @@ function plotBayes
       end
       if doPrintPmtk
         fname = sprintf('healthyLevelsBayesPred%d%s', points(i), priorType);
-        doPrintPmtkFigures(fname);
+        printPmtkFigures(fname);
       end
     end
 end

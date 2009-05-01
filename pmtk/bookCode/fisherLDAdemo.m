@@ -54,7 +54,7 @@ legend([h1 h2 h3],str)
 
 fname = sprintf('%s/fisherLDAdemoData.eps', folder)
 if doPrint, print(gcf, '-depsc', fname); end
-if doPrintPmtk, doPrintPmtkFigures('fisherLDAdemoData'); end;
+if doPrintPmtk, printPmtkFigures('fisherLDAdemoData'); end;
 
 XprojMean = X*wMean;
 XprojFisher = X*wFisher;
@@ -67,12 +67,12 @@ if doPrint, print(gcf, '-depsc', fname); end
 figure(3);clf; plotData(XprojFisher, maleNdx, femaleNdx, str{2})
 fname = sprintf('%s/fisherLDAdemoProjFisher.eps', folder)
 if doPrint, print(gcf, '-depsc', fname); end
-if doPrintPmtk, doPrintPmtkFigures('fisherLDAdemoProjFisher'); end;
+if doPrintPmtk, printPmtkFigures('fisherLDAdemoProjFisher'); end;
 
 figure(4);clf; plotData(XprojPCA, maleNdx, femaleNdx, str{3})
 fname = sprintf('%s/fisherLDAdemoProjPCA.eps', folder)
 if doPrint, print(gcf, '-depsc', fname); end
-if doPrintPmtk, doPrintPmtkFigures('fisherLDAdemoProjPCA'); end;
+if doPrintPmtk, printPmtkFigures('fisherLDAdemoProjPCA'); end;
 
 
 %%%%%%%%

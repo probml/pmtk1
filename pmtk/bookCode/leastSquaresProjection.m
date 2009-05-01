@@ -32,7 +32,7 @@ plotPoints;
 labelPoints;
 %keyboard
 
-if doPrintPmtk, doPrintPmtkFigures('leastSquaresProj'); end;
+if doPrintPmtk, printPmtkFigures('leastSquaresProj'); end;
   function plotLines
     prefs = {'Color','g','LineStyle','--','LineWidth',2};
     line(X(1,:), X(2,:), X(3,:), prefs{:});

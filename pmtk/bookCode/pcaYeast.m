@@ -32,15 +32,15 @@ end
 title('principal bases')
 legend(str,'location','northwest')
 if(nBasis == 2)
-  if doPrintPmtk, doPrintPmtkFigures('pcaYeastbasis2'); end;
+  if doPrintPmtk, printPmtkFigures('pcaYeastbasis2'); end;
 else
-  if doPrintPmtk, doPrintPmtkFigures('pcaYeastBasis'); end;
+  if doPrintPmtk, printPmtkFigures('pcaYeastBasis'); end;
 end
 
 figure(3);clf
 scatter(Z(:,1), Z(:,2));
 title('first 2 principal components')
-if doPrintPmtk, doPrintPmtkFigures('pcaYeast2d'); end;
+if doPrintPmtk, printPmtkFigures('pcaYeast2d'); end;
 
 if 1
 figure(4);clf

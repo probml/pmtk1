@@ -20,4 +20,4 @@ for i=1:length(ns)
   legendstr{i} = sprintf('n=%d', n);
 end
 legend(h,legendstr);
-if doPrintPmtk, doPrintPmtkFigures('hmmSelfLoopDist'); end;
+if doPrintPmtk, printPmtkFigures('hmmSelfLoopDist'); end;

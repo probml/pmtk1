@@ -30,4 +30,4 @@ for i=1:length(ns)
     title(sprintf('post after %d obs', n)); grid on; axis square
 end
 
-if doPrintPmtk, doPrintPmtkFigures('gauss2dupdate'); end;
+if doPrintPmtk, printPmtkFigures('gauss2dupdate'); end;

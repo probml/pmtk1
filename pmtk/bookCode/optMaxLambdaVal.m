@@ -22,7 +22,7 @@ function optMaxLambdaVal
     'FontSize',18,...
     'LineStyle','none');
 
-    if doPrintPmtk, doPrintPmtkFigures('optMaxLambdaVal'); end;
+    if doPrintPmtk, printPmtkFigures('optMaxLambdaVal'); end;
 
 
 

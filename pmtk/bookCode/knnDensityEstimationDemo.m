@@ -30,7 +30,7 @@ function knnDensityEstimationDemo
        % volume V, in this 1D case, is just the window size. 
        densityEst = kvals(i)./(window*n); 
        plot(domain,densityEst,'-b','LineWidth',2.5);
-       if doPrintPmtk, doPrintPmtkFigures(sprintf('knnDensityEstimationDemoK%d', kvals(i))); end;
+       if doPrintPmtk, printPmtkFigures(sprintf('knnDensityEstimationDemoK%d', kvals(i))); end;
     end
     try
         placeFigures('nrows',numel(kvals),'ncols',1,'square',false)

@@ -31,6 +31,6 @@ for i = 1:numel(data)
     h = plot(post, 'plotArgs', {'b-.', 'linewidth', 3});
     legendstr{3} = sprintf('post Be(%2.1f, %2.1f)', post.a, post.b);
     legend(legendstr)
-    if doPrintPmtk, doPrintPmtkFigures(figname{i}); end;
+    if doPrintPmtk, printPmtkFigures(figname{i}); end;
 end
 

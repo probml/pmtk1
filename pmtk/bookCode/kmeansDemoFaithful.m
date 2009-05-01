@@ -9,7 +9,7 @@ title('old faithful data')
 grid on
 
 if doPrint, pdfcrop; print_pdf('faithful'); end;
-if doPrintPmtk, doPrintPmtkFigures('faithful'); end;
+if doPrintPmtk, printPmtkFigures('faithful'); end;
 
 seed = 4; rand('state', seed); randn('state', seed);
 
@@ -19,7 +19,7 @@ K = 2;
 
 figure(2)
 if doPrint, pdfcrop; print_pdf('kmeansDemoFaithfulIter2'); end;
-if doPrintPmtk, doPrintPmtkFigures('kmeansDemoFaithfulIter2'); end;
+if doPrintPmtk, printPmtkFigures('kmeansDemoFaithfulIter2'); end;
 
 %%%%%%
 

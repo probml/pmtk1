@@ -32,10 +32,10 @@ class2(33,:) = [];
 
 plotData;
 plot(domain,f(domain),'-k','LineWidth',4);
-if doPrintPmtk, doPrintPmtkFigures('decisionBoundaryLinear'); end;
+if doPrintPmtk, printPmtkFigures('decisionBoundaryLinear'); end;
 plotData;
 plot(domain,g(domain),'-k','LineWidth',4);
-if doPrintPmtk, doPrintPmtkFigures('decisionBoundaryWiggly'); end;
+if doPrintPmtk, printPmtkFigures('decisionBoundaryWiggly'); end;
 
 
  function plotData

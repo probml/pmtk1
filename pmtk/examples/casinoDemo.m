@@ -105,7 +105,7 @@ fprintf('Mode Posterior Samples: %d/%d\n',postSampErr,300);
     ylabel('p(loaded)');
     set(gca,'YTick',0:0.5:1);
     title(sprintf('filtered'));
-    if doPrintPmtk, doPrintPmtkFigures('hmmCasinoFiltered'); end;
+    if doPrintPmtk, printPmtkFigures('hmmCasinoFiltered'); end;
     
     figure; hold on;
     area(die-1,'FaceColor',0.75*ones(1,3),'EdgeColor',ones(1,3));
@@ -114,7 +114,7 @@ fprintf('Mode Posterior Samples: %d/%d\n',postSampErr,300);
     ylabel('p(loaded)');
     set(gca,'YTick',0:0.5:1);
     title(sprintf('smoothed'));
-    if doPrintPmtk, doPrintPmtkFigures('hmmCasinoSmoothed'); end;
+    if doPrintPmtk, printPmtkFigures('hmmCasinoSmoothed'); end;
     
     figure; hold on;
     area(die-1,'FaceColor',0.75*ones(1,3),'EdgeColor',ones(1,3));
@@ -123,5 +123,5 @@ fprintf('Mode Posterior Samples: %d/%d\n',postSampErr,300);
     ylabel('MAP state (0=fair,1=loaded)');
     set(gca,'YTick',0:0.5:1);
     title(sprintf('Viterbi'));
-    if doPrintPmtk, doPrintPmtkFigures('hmmCasinoViterbi'); end;
+    if doPrintPmtk, printPmtkFigures('hmmCasinoViterbi'); end;
 %%

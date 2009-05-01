@@ -11,7 +11,7 @@ m = Binom_BetaDist('-N',N,'-prior', BetaDist(a,b));
 %% Prior Predictive
 m0 = marginalizeOutParams(m);                   % BetaBinomDist object
 figure; plot(m0); title('prior predictive')
-if doPrintPmtk, doPrintPmtkFigures('BBpriorpred'); end;
+if doPrintPmtk, printPmtkFigures('BBpriorpred'); end;
 %% Posterior Predictive
 m = fit(m, 'data', X);
 mm = marginalizeOutParams(m);                   % posterior predictive is BetaBinomDist
@@ -23,4 +23,4 @@ hold on
 h3 = plot(m3);
 set(h3, 'faceColor','r','barwidth',0.5);
 legend('postpred', 'plugin');
-if doPrintPmtk, doPrintPmtkFigures('BBpostpred'); end;
+if doPrintPmtk, printPmtkFigures('BBpostpred'); end;
