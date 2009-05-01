@@ -50,7 +50,8 @@ for j=1:length(dims)
   set(gca,'xticklabel',names)
   title(sprintf('time d=%d', d))
 end
-keyboard
+if doPrintPmtk, doPrintPmtkFigures('minfuncRosenBar'); end;
+%keyboard
 end
 %%%%%%%%
 

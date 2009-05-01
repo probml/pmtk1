@@ -1,4 +1,4 @@
-function [Xdata,ydata,W,check] = bolassoMakeData(n,d,r,nDataSets,requireConsistent,noise)
+function [Xdata,ydata,W] = bolassoMakeData(n,d,r,nDataSets,requireConsistent,noise)
 %Generate synthetic data as per section 4.1 in 
 %Bolasso: Model Consistent Lasso Estimation throught the Bootstrap by
 %Fracis R. Bach, available at www.di.ens.fr/~fbach/icml_bolasso.pdf.

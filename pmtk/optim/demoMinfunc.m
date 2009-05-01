@@ -1,6 +1,7 @@
 
 function demoMinfunc()
 
+
 figure(1);clf
 %methods = {'sd', 'csd', 'cg', 'bfgs', 'newton', 'bb'};
 methods = {'sd', 'cg',  'newton', 'bfgs'};
@@ -9,6 +10,8 @@ for i=1:length(methods)
   subplot(nr,nc,i);
   helper(methods{i});
 end
+
+if doPrintPmtk, doPrintPmtkFigures('minfuncRosen2d'); end;
 
 end
 

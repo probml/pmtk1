@@ -47,3 +47,4 @@ end
 final
 t
 
+if doPrintPmtk, doPrintPmtkFigures('rosen10dSpy'); end;

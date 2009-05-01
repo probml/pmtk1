@@ -24,8 +24,8 @@ boot128NDX = 8;
 
 lambda = exp(-15:0.2:0);
 
-[Xc,yc,WloadingC,checkC] = bolassoMakeData(n,d,r,nexpReps,true);       %Lasso path consistent
-[Xnc,ync,WloadingNC,checkNC] = bolassoMakeData(n,d,r,nexpReps,false);    %Lasso path inconsistent
+[Xc,yc,WloadingC] = bolassoMakeData(n,d,r,nexpReps,true);       %Lasso path consistent
+[Xnc,ync,WloadingNC] = bolassoMakeData(n,d,r,nexpReps,false);    %Lasso path inconsistent
 
 
 
