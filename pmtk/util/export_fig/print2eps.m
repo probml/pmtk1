@@ -1,4 +1,6 @@
 %PRINT2EPS  Prints figures to eps with improved line styles
+%#author Oliver Woodford
+%#url http://www.mathworks.com/matlabcentral/fileexchange/23629
 %
 % Examples:
 %   print2eps filename

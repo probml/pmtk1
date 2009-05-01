@@ -1,4 +1,6 @@
 function varargout = pdftops(cmd)
+%#author Oliver Woodford
+%#url http://www.mathworks.com/matlabcentral/fileexchange/23629
 %PDFTOPS  Calls a local pdftops executable with the input command
 %
 % Example:

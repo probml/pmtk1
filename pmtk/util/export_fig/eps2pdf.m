@@ -1,4 +1,6 @@
 %PRINT_PDF  Prints cropped figures or axes to pdf with fonts embedded
+%#author Oliver Woodford
+%#url http://www.mathworks.com/matlabcentral/fileexchange/23629
 %
 % Examples:
 %   print_pdf filename

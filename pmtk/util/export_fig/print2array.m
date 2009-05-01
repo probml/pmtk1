@@ -1,4 +1,6 @@
 %PRINT2ARRAY  Exports a figure to an image array
+%#author Oliver Woodford
+%#url http://www.mathworks.com/matlabcentral/fileexchange/23629
 %
 % Examples:
 %   A = print2array
