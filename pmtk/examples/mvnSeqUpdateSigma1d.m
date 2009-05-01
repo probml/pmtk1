@@ -37,4 +37,6 @@ titlestr = sprintf('prior = IW(%s=%5.3f, S=%5.3f), true %s=%5.3f', ...
     '\nu', nu, S, '\sigma^2', Ctrue);
 title(titlestr)
 line([Ctrue Ctrue], [0 pmax],'color','k','linewidth',3);
+if doPrintPmtk; doPrintPmtkFigures('sigmaPost'); end;
+
 figure(fig2); suptitle(titlestr);

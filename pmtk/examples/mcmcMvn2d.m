@@ -21,7 +21,7 @@ S{2} = mhSample('target', targetFn, 'xinit', xinit, ...
 fullCond = makeFullConditionals(model);
 S{3} = gibbsSample(fullCond, xinit, N);
   
-names= {'mh I', 'mh 0.01 I', 'gibbs'};
+names= {'MH I', 'MH I .01 ', 'gibbs'};
 
 for j=1:length(S)
     samples = S{j};
@@ -31,6 +31,7 @@ for j=1:length(S)
     hold on
     plot(samples(:,1), samples(:,2), '.');
     title(ttl)
+    if doPrintPmtk, doPrintPmtkFigures(sprintf('gauss2d%sSamples', strrep(strrep(names{j},' ',''),'.',''))); end;
     
     figure;
     samplesDist = SampleDist(samples, [1 2]); % convert raw samples to distribution
@@ -47,6 +48,7 @@ for j=1:length(S)
       title(sprintf('approx m=%5.3f, v=%5.3f', mean(margApprox{i}), var(margApprox{i})));
     end
     suptitle(ttl);
+    if doPrintPmtk, doPrintPmtkFigures(sprintf('gauss2d%sMarginals', strrep(strrep(names{j},' ',''),'.',''))); end;
     
     figure;
     for i=1:2

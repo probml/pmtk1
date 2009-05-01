@@ -19,11 +19,13 @@ for k=1:3
     set(h, 'color', colors{k});
 end
 axis tight;
+if doPrintPmtk, doPrintPmtkFigures('mixgauss3Components'); end;
 
 
 figure;
 h=plot(m, 'useLog', false, 'useContour', true, 'npoints', 200);
 axis tight;
+if doPrintPmtk, doPrintPmtkFigures('mixgauss3Contour'); end;
 
 
 figure;
@@ -36,6 +38,7 @@ camlight right;
 lighting phong;
 axis off;
 axis tight;
+if doPrintPmtk, doPrintPmtkFigures('mixgauss3Surf'); end;
 
 X = sample(m, 1000);
 figure;
@@ -43,3 +46,4 @@ h=plot(m, 'useLog', false, 'useContour', true, 'npoints', 200);
 hold on
 plot(X(:,1), X(:,2), '.');
 axis tight;
+if doPrintPmtk, doPrintPmtkFigures('mixgauss3Samples'); end;

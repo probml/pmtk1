@@ -9,4 +9,4 @@ for i=1:4
     plot(b);
     title(sprintf('mu=%5.3f', muValues(i)))
 end
-
+if doPrintPmtk, doPrintPmtkFigures('binomDistPlot'); end;

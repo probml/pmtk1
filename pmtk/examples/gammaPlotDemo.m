@@ -15,3 +15,4 @@ end
 legend(legendStr);
 title('Gamma distributions')
 
+if doPrintPmtk, doPrintPmtkFigures('gammaDist'); end;

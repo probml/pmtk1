@@ -15,3 +15,5 @@ xs = [0.05,  binc(end)];
 h(1)=plot(objMoM, 'xrange', xs, 'plotArgs', {'r-', 'linewidth', 3});
 h(2)=plot(objMLE, 'xrange', xs, 'plotArgs', {'k:', 'linewidth', 3});
 legend(h, 'MoM', 'MLE')
+
+if doPrintPmtk, doPrintPmtkFigures('rainfallDemo'); end;

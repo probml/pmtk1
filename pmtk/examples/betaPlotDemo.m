@@ -11,4 +11,6 @@ for i=1:length(as)
 end
 legend(legendStr,'Location','NorthWest');
 title('beta distributions')
+
+if doPrintPmtk, doPrintPmtkFigures('betadist'); end
 %%

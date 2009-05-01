@@ -29,3 +29,5 @@ for i=1:length(ns)
     subplot(nr,nc,i+3); plot(post, 'xrange', xrange, 'useContour', useContour, 'npoints', 150);
     title(sprintf('post after %d obs', n)); grid on; axis square
 end
+
+if doPrintPmtk, doPrintPmtkFigures('gauss2dupdate'); end;

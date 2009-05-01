@@ -1,6 +1,6 @@
 %% Plot Demo
 
-small = false
+small = false;
 if small
     as = [0.01 0.1 1];
     bs = as;
@@ -20,3 +20,5 @@ for i=1:length(as)
 end
 legend(legendStr);
 title('InvGamma distributions')
+
+if doPrintPmtk, doPrintPmtkFigures('invGammaDist'); end;

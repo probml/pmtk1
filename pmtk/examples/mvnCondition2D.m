@@ -46,3 +46,4 @@ grid off
 h=text(1.2,3.1, 'p(x1|x2=1)'); set(h,'color','k','fontsize',15);
 h=text(2.5,2.1, 'p(x1,x2)'); set(h,'color','r','fontsize',15);
 h=text(2.7,0.4, 'p(x1)'); set(h,'color','b','fontsize',15);
+if doPrintPmtk, doPrintPmtkFigures('gaussCond'); end;

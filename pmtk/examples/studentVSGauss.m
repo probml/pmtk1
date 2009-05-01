@@ -1,6 +1,6 @@
 %% Student T vs Gaussian
 %#testPMTK
-useLog = true;
+useLog = false;
 dofs = [0.1 1 5];
 xr = [-4 4];
 figure;
@@ -19,3 +19,8 @@ h = plot(GaussDist(0, 1), 'useLog', useLog, ...
 legendStr{end+1} = 'N(0,1)';
 legend(legendStr)
 if useLog, ylabel('log density'); else ylabel('density'); end
+if(useLog)
+if doPrintPmtk, doPrintPmtkFigures('studentTvsGaussLog'); end;
+else
+if doPrintPmtk, doPrintPmtkFigures('studentTvsGauss'); end;
+end

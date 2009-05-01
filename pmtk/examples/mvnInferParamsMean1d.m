@@ -1,5 +1,6 @@
 %% MVN Infer Mean 1D with fixed sigma
 priorVars = [1 5];
+figstr = {'gaussStrongPrior', 'gaussWeakPrior'};
 for i=1:numel(priorVars)
     priorVar = priorVars(i);
     prior = MvnDist(0, priorVar);
@@ -25,5 +26,6 @@ for i=1:numel(priorVars)
     legendstr{3} = 'post';
     legend(legendstr,'Location','NorthWest')
     title(sprintf('prior variance = %3.2f', priorVar))
+    if doPrintPmtk, doPrintPmtkFigures(figstr{i}); end;
 end
 

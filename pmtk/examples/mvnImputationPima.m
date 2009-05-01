@@ -65,7 +65,8 @@ for mod = 1:length(fittedModel)
     V = axis; lowLim = max(V(1),V(3)); upLim = min(V(2),V(4));
     plot(lowLim:0.1:upLim, lowLim:0.1:upLim, 'r', 'linewidth', 3);
   end
-  suptitle(sprintf('imputation usign %s data', fitMethodNames{mod}));
+  suptitle(sprintf('imputation using %s data', fitMethodNames{mod}));
 end
 
+if doPrintPmtk, doPrintPmtkFigures('pima-realvsimputed'); end;
 

@@ -1,7 +1,6 @@
+function mvnImputationDemo()
 %% Imputation for an MVN 
 %#testPMTK
-
-function mvnImputationDemo()
 
 seeds = [0,1];
 rnd = [0,1];
@@ -50,7 +49,6 @@ subplot(nr,nc,4); imagesc(XhidImg); title('hidden truth'); colorbar
 %set(gcf,'position',[10 500 600 200])
 %}
 
-
 figure;
 subplot(nr,nc,1); hintonScale(Xfull, ones(n,d)); title('full data'); colorbar
 %subplot(nr,nc,2); hintonScale(missing, ones(n,d));title('missing pattern'); colorbar
@@ -59,6 +57,7 @@ subplot(nr,nc,3); hintonScale(Ximpute, V); colormap('gray');
 title('imputed mean (color)/ variance (size)'); colorbar
 subplot(nr,nc,4); hintonScale(Xfull, missing); colormap('gray');
 title('hidden truth'); colorbar
+
 
 
 

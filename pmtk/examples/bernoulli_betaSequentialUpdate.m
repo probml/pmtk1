@@ -14,7 +14,7 @@ figure; hold on;
 ns = [0 5 50 100];
 legendstr = cell(length(ns)+1,1);
 for i=1:length(ns)
-    n = ns(i);te
+    n = ns(i);
     mm = Bernoulli_BetaDist('-prior',BetaDist(0.5,0.5));
     mm = fit(mm, 'data', X(1:n));
     plot(mm.muDist, 'plotArgs', {styles{i}, 'linewidth', 2});
@@ -26,3 +26,4 @@ pmax = 10;
 h=line([xbar xbar], [0 pmax]); set(h, 'linewidth', 3,'Color','c');
 legendstr{length(ns)+1} = 'truth';
 legend(legendstr,'Location','NorthWest');
+if doPrintPmtk, doPrintPmtkFigures('betaSeqUpdate'); end;

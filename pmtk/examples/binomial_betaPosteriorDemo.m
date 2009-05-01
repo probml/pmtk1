@@ -5,6 +5,7 @@ data(1).b = 2;      data(2).b = 2;
 data(1).N1 = 3;     data(2).N1 = 11;
 data(1).N0 = 17;    data(2).N0 = 13;
 
+figname = {'betaPost', 'betaDemoPost'};
 for i = 1:numel(data)
     a = data(i).a;
     b = data(i).b;
@@ -30,5 +31,6 @@ for i = 1:numel(data)
     h = plot(post, 'plotArgs', {'b-.', 'linewidth', 3});
     legendstr{3} = sprintf('post Be(%2.1f, %2.1f)', post.a, post.b);
     legend(legendstr)
+    if doPrintPmtk, doPrintPmtkFigures(figname{i}); end;
 end
 

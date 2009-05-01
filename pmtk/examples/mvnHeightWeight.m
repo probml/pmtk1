@@ -1,4 +1,5 @@
 %% MVN Height Weight Demo
+plotName = {'heightWeightScatter', 'heightWeightScatterCov'};
 for i=1:2
     if(i==1)
         plotCov = false;
@@ -29,6 +30,7 @@ for i=1:2
     xlabel('height')
     ylabel('weight')
     title('red = female, blue=male');
+    if doPrintPmtk, doPrintPmtkFigures(plotName{i}); end;
 end
 
 

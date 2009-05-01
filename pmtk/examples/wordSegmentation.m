@@ -16,10 +16,11 @@ nstates = 5; d = 13; nmixcomps = 3;
 startDist = DiscreteDist('-T',[1,0,0,0,0]','-support',1:5);
 transmat0 = normalize(diag(ones(nstates,1)) + diag(ones(nstates-1,1),1),2);
 transDist = DiscreteDist('-T',transmat0','-support',1:5);
-emissionDist = cell(5,1);
+emissionDist = cell(nstates,1);
 for i=1:nstates
   if useMix
-    emissionDist{i} = mkRndParams(MvnMixDist('nrestarts',1,'verbose',false),d,nmixcomps);
+    emissionDist{i} = mkRndParams(MixMvn('-nmixtures', nstates, '-ndims', d, '-verbose',false));
+    emissionDist{i}.fitEng.nrestarts = 1;
   else
     emissionDist{i} = mkRndParams(MvnDist(),d);
   end

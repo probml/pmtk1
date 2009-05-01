@@ -5,7 +5,7 @@ mutrue = 5; Ctrue = 10;
 mtrue = MvnDist(mutrue, Ctrue);
 n = 500;
 X = sample(mtrue, n);
-ns = [0 2 5 50 ]
+ns = [0 2 5 50 ];
 figure; hold on;
 pmax = -inf;
 [styles, colors, symbols] =  plotColors();
@@ -24,3 +24,5 @@ end
 legend(h,legendstr);
 title(sprintf('prior = N(mu0=0, v0=%5.3f), true %s = %5.3f', 1/k, '\mu', mutrue))
 line([mutrue, mutrue], [0 pmax],'color','k','linewidth',3);
+
+if doPrintPmtk, doPrintPmtkFigures('muPost'); end;
