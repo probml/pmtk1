@@ -423,7 +423,7 @@ classdef MvnDist < ParamDist
                 case 'diagonal'
                   kappa0 = 0.001; m0 = suff.xbar;%nanmean(data)';
                   % Here, n0 = 2 is the equivalent of d + 1 since we place an inverse gamma prior on each diagonal element
-                  nu0 = 2*ones(1,d); b0 = diag(suff.XX) + 0.01*ones(1,d);
+                  nu0 = 2*ones(1,d); b0 = rowvec(diag(suff.XX)) + 0.01*ones(1,d);
                   priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
                 case 'spherical'
                   kappa0 = 0.001; m0 = suff.xbar;%nanmean(data)';
@@ -441,7 +441,7 @@ classdef MvnDist < ParamDist
           switch lower(covtype)
             case 'diagonal'
               kappa0 = 0.001; m0 = suff.xbar;%nanmean(data)';
-              nu0 = 2*ones(1,d); b0 = diag(suff.XX) + 0.01*ones(1,d);
+              nu0 = 2*ones(1,d); b0 = rowvec(diag(suff.XX)) + 0.01*ones(1,d);
               priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
             case 'spherical'
               kappa0 = 0.001; m0 = suff.xbar;%nanmean(data)';
