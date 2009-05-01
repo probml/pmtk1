@@ -3,7 +3,9 @@
 %m = MixGaussDist('K', 2, 'mu', [-50 50], 'Sigma', reshape([10^2 10^2], [1 1 2]), ...
   %'mixweights', [0.3 0.7]);
   
-m = MvnMixDist('distributions',{MvnDist(-50,100),MvnDist(50,100)},'mixingWeights',DiscreteDist([0.3;0.7]));
+m = MixMvn('-nmixtures', 2, '-ndims', 1);
+m.distributions = {MvnDist(-50,100),MvnDist(50,100)};
+m.mixingDistrib.T = [0.3;0.7];
   
 targetFn = @(x) (logprob(m,x));
     
@@ -14,8 +16,8 @@ for i=1:length(sigmas)
     setSeed(0); 
     proposalFn = @(x) (x + (sigma_prop * randn(1,1)));
     N = 1000;
-    %xinit  = m.mu(2) + randn(1,1);
-    xinit  = subd(marginal(m,2),'mu') + randn(1,1);
+    xinit  = m.distributions{2}.mu + randn(1,1);
+    %xinit  = subd(marginal(m,2),'mu') + randn(1,1);
     [x, ar] = mhSample('target', targetFn, 'proposal', proposalFn, ...
       'xinit', xinit, 'Nsamples', N);
     figure;
@@ -47,8 +49,8 @@ for s=1:length(sigmas)
   proposalFn = @(x) (x + (sigma_prop * randn(1,1)));
   for i=1:length(seeds)
     setSeed(seeds(i));
-    %xinit  = m.mu(2) + randn(1,1);
-    xinit  = subd(marginal(m,2),'mu') + randn(1,1);
+    xinit  = m.distributions{2}.mu + randn(1,1);
+    %xinit  = subd(marginal(m,2),'mu') + randn(1,1);
     [X(:,i), ar] = mhSample('target', targetFn, 'proposal', proposalFn, ...
       'xinit', xinit, 'Nsamples', N);
   end
