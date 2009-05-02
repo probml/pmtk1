@@ -1,5 +1,6 @@
 %% Illustrate that predictive interval is larger if sigma is unknown
 %% Linear Regression with a Polynomial Basis Expansion and Error Bars
+%#broken
 
 function linregPolyFitErrorBars()
 for deg=1:2

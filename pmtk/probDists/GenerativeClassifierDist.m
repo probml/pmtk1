@@ -49,7 +49,7 @@ classdef GenerativeClassifierDist < ParamDist
             C = length(obj.classConditionals);
             L = zeros(n,C);
             for c=1:C
-                L(:,c) = logprob(obj.classConditionals{c},X) + logpy(c);
+                L(:,c) = sum(logprob(obj.classConditionals{c},X),2) + logpy(c);
             end;
             post = exp(normalizeLogspace(L));
             pred = DiscreteDist('-T', post', '-support', obj.classPrior.support);

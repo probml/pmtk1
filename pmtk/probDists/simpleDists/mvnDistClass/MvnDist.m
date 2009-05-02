@@ -372,7 +372,8 @@ classdef MvnDist < ParamDist
             prob = exp(logprob(MvnDist(mu(i), Sigma(i,i)), x));
             plot(x,prob); xlabel(sprintf('Dimension %d',i)); ylabel('p(x)');
           else
-            plotgauss2d( mu([i,j]), Sigma([i,j],[i,j]) );
+            ind = sub2ind([d,d], [i,j,i,j], [i,i,j,j]);
+            plotgauss2d( mu([i,j]), reshape(Sigma(ind),2,2) );
             xlabel(sprintf('Dimension %d',i)); ylabel(sprintf('Dimension %d',j));
           end
         end

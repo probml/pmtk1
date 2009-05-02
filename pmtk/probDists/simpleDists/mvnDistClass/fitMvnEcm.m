@@ -35,7 +35,7 @@ converged = false;
 currentLL = -inf;
  
 % Extract hyper-params for MAP estimation
-prior = mkPrior(model, 'data', data, 'prior', model.prior, 'covtype', model.covtype);
+prior = mkPrior(model, '-data', data, '-prior', model.prior, '-covtype', model.covtype);
 switch class(prior)
   case 'MvnInvWishartDist'
     kappa0 = prior.k; m0 = prior.mu; nu0 = prior.dof; T0 = prior.Sigma;

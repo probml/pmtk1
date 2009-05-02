@@ -36,7 +36,10 @@ classdef DirichletDist < ParamDist
       % var(obj) returns a vector of marginal (component-wise) variances
       a = sum(obj.alpha);
       alpha = obj.alpha;
-      m = (alpha.*(a-alpha))./(a^2*(a+1));
+      numer = alpha.*(bsxfun(@minus,a,alpha));
+      denom = a.^2.*(a+1);
+      m = bsxfun(@rdivide,numer, denom);
+      % m = (alpha.*(bsxfun(@minus,a,alpha)))./(a.^2*(a+1));
     end
 
 

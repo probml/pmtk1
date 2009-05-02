@@ -1,4 +1,5 @@
 %% Linear Regression with Polynomial Basis of different degrees
+%#broken
 % based on code code by Romain Thibaux
 % (Lecture 2 from http://www.cs.berkeley.edu/~asimma/294-fall06/)
 

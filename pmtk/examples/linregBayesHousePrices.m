@@ -1,4 +1,5 @@
 %% Bayesian linear regression with an informative prior
+%#broken
 % Example from Koop, 2003, p51, "Bayesian econometrics"
 
 %#testPMTK

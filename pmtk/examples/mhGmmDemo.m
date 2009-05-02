@@ -1,5 +1,5 @@
-%% MH Sampling from a mixture of two 1d Gaussians using a 1d Gaussian proposal
-%#broken
+%% MH Sampling from a mixture of two 1d Gaussians using a 1d Gaussian
+%% proposal
 %m = MixGaussDist('K', 2, 'mu', [-50 50], 'Sigma', reshape([10^2 10^2], [1 1 2]), ...
   %'mixweights', [0.3 0.7]);
   

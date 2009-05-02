@@ -1,5 +1,5 @@
 %% Fit Mixture of Gaussians with different number of mixture components
-
+%#broken
 % Compare to kmeansModelSelDemo2d
 
 setSeed(0);

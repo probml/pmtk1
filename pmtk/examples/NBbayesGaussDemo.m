@@ -73,6 +73,7 @@ for k=1:K
     bayesConditional{k} = Mvn_MvnInvGammaDist(classifier.classConditionals{k}.prior);
     bayesConditional{k} = fit(bayesConditional{k}, 'data', Xtrain(Ytrain == k,:));
     bayesMarginal{k} = marginal(bayesConditional{k});
+    bayesMarginal{k}.productDist = true;
     ll(:,k) = logprob(bayesMarginal{k}, Xtest);
 end
 

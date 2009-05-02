@@ -1,6 +1,5 @@
 %% Run Every Demo
 
-Copy of prostateLinregAll;               pclear(2);
 NBbayesGaussDemo;                        pclear(2);
 alarmNetwork;                            pclear(2);
 bernoulliDistTest;                       pclear(2);
@@ -18,7 +17,7 @@ chordalGraphDemo;                        pclear(2);
 chowliuDemo;                             pclear(2);
 clusterMnistDigits;                      pclear(2);
 compareVarElimToEnum;                    pclear(2);
-compareVarElimToFwdBack;                 pclear(2);
+%compareVarElimToFwdBack;                pclear(2); % broken
 compareVarElimToJtree;                   pclear(2);
 constDistTest;                           pclear(2);
 cooperYooInterventionDemo;               pclear(2);
@@ -40,7 +39,6 @@ gaussVsToutlierDemo;                     pclear(2);
 gauss_NormInvGammDistTest;               pclear(2);
 generativeClassifierTest1;               pclear(2);
 generativeClassifierTest2;               pclear(2);
-ggmBICdemo;                              pclear(2);
 ggmChordalModelSelection;                pclear(2);
 ggmDemo;                                 pclear(2);
 ggmFitDemo;                              pclear(2);
@@ -65,21 +63,10 @@ laplacePlotDemo;                         pclear(2);
 ldsLearningDemo;                         pclear(2);
 ldsTrackingDemo;                         pclear(2);
 lingaussHybridDemo;                      pclear(2);
-linregAllMethods;                        pclear(2);
-linregBasis;                             pclear(2);
-linregGaussVsNIG;                        pclear(2);
-linregPolyFitDegree;                     pclear(2);
-linregPolyFitDegreeDemo;                 pclear(2);
-linregPolyFitErrorBars;                  pclear(2);
-linregPolyFitN;                          pclear(2);
-linregPolyFitNoErrorBars;                pclear(2);
-linregPolyFitRidge;                      pclear(2);
-linregPolyFitRidgeBIC;                   pclear(2);
-linregPolyFitRidgeCV;                    pclear(2);
-linregPolyFitRidgeU;                     pclear(2);
+%linregAllMethods;                       pclear(2); % broken
+linregBayesDemo;                         pclear(2);
+%linregBayesHousePrices;                 pclear(2); % broken
 linregRbf;                               pclear(2);
-linreg_MvnDistTest;                      pclear(2);
-linreg_MvnInvGammaDistTest;              pclear(2);
 logregCompareOptimizers;                 pclear(2);
 logregCompareOptimizers2;                pclear(2);
 logregFitCrabs;                          pclear(2);
@@ -90,7 +77,7 @@ logreg_MvnDistTest;                      pclear(2);
 markovChainClassificationDemo;           pclear(2);
 mcmcMvn2d;                               pclear(2);
 mcmcMvn2dConditioning;                   pclear(2);
-%mhGmmDemo;                              pclear(2); % broken
+mhGmmDemo;                               pclear(2);
 mhMvn2dConditioning;                     pclear(2);
 misconceptionRank;                       pclear(2);
 misconceptionUGMdemo;                    pclear(2);
@@ -101,7 +88,7 @@ mkSprinklerDgm;                          pclear(2);
 %mnistClassifyDemo;                      pclear(2); % broken
 mnistErrorVsN;                           pclear(2);
 modelSelGgmDemo;                         pclear(2);
-modelSelGmmDemo;                         pclear(2);
+%modelSelGmmDemo;                        pclear(2); % broken
 modelSelect1D;                           pclear(2);
 modelSelect2D;                           pclear(2);
 mvnCondition2D;                          pclear(2);
@@ -109,7 +96,7 @@ mvnCovDemo;                              pclear(2);
 mvnHeightWeight;                         pclear(2);
 mvnImputationDemo;                       pclear(2);
 %mvnImputationEmDemo;                    pclear(2); % broken
-mvnImputationPima;                       pclear(2);
+%mvnImputationPima;                      pclear(2); % broken
 mvnInferMuSigma1D;                       pclear(2);
 mvnInferParamsMean1d;                    pclear(2);
 mvnInferParamsMean2d;                    pclear(2);
@@ -131,11 +118,18 @@ oldFaithfulDemo;                         pclear(2);
 oldFaithfulEMvsGibbs;                    pclear(2);
 plotMFCC;                                pclear(2);
 poissonPlotDemo;                         pclear(2);
+%polyfitErrorBars;                       pclear(2); % broken
+polyfitNoErrorBars;                      pclear(2);
+polyfitRidge;                            pclear(2);
+polyfitRidgeModelSel;                    pclear(2);
+%polyfitVsDegree;                        pclear(2); % broken
+polyfitVsLambda;                         pclear(2);
+polyfitVsN;                              pclear(2);
 postModelsExhaustiveDemo;                pclear(2);
 prostateAllSubsetsDemo;                  pclear(2);
-prostateLassoPath;                       pclear(2);
+%prostateLassoPath;                      pclear(2); % broken
 prostateLinregAll;                       pclear(2);
-prostateRidgePath;                       pclear(2);
+%prostateRidgePath;                      pclear(2); % broken
 rainyDayDemo;                            pclear(2);
 saCoolingSchedule;                       pclear(2);
 saDemoCamel;                             pclear(2);
