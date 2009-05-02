@@ -108,7 +108,7 @@ classdef Linreg < CondProbDist
           p  = (y(:)-yhat(:)).^2;
         end
 
-    end
+    end % methods
 
 
    

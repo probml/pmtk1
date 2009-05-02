@@ -26,7 +26,7 @@ for iter=1:maxIter
     end
     wold = w;
   end
-  eta = 1/(iter+1) % step size decay
+  eta = 1/(iter+1); % step size decay
   if nargout > 1
     f = logregNLLgradHess(w, X, y, lambda);
     ftrace(iter) = f;

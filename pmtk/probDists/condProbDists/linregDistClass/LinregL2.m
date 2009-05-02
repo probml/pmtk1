@@ -4,7 +4,6 @@ classdef LinregL2 < Linreg
 
     properties
         lambda;
-        computeDf;
         X; % store data to compute dof later
     end
  
@@ -12,9 +11,9 @@ classdef LinregL2 < Linreg
     %% Main methods
     methods
       function obj = LinregL2(varargin)
-        % m = LinregL2(lambda, transfomer, w, w0, sigma2,  df, computeDf, addOffset)
+        % m = LinregL2(lambda, transfomer, w, w0, sigma2,  df, addOffset)
         [obj.lambda, obj.transformer, obj.w, obj.w0, obj.sigma2, obj.df, ...
-          obj.computeDf, obj.addOffset] = ...
+          obj.addOffset] = ...
           processArgs(varargin,...
           '-lambda'      , 0, ...
           '-transformer', [], ...                 
@@ -22,7 +21,6 @@ classdef LinregL2 < Linreg
           '-w0'          , [], ...   
           '-sigma2'     , [], ...                     
           '-df', [], ...
-          '-computeDf', false, ... 
           '-addOffset', true);
       end
        
@@ -57,9 +55,10 @@ classdef LinregL2 < Linreg
             if ~model.addOffset, w0 = 0; end
           end
           model.w = w; model.w0 = w0;
-          if model.computeDf
-            model.df = LinregL2.dofRidge(X, model.lambda);
-          end
+          %if model.computeDf
+          %  model.df = LinregL2.dofRidge(X, model.lambda);
+          %end
+          model.df = []; % use dof(model)
           ww = [w(:); w0];
           X1 = [X ones(n,1)]; % column of 1s for w0 term
           yhat = X1*ww;
