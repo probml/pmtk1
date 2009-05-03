@@ -17,19 +17,18 @@ legend({'Class1','Class2'},'Location','BestOutside');
 %% Cross Validation
 % First we find the optimal hyper-parameters using CV
 if 0
-  [lambdaL2, sigmaL2, lambdaL1, sigmaL1] = logregModelSel2d();
+  [lambdaL2, sigmaL2, lambdaL1, sigmaL1] = logregModelSel2d()
 else
   % For speed, we just hard-code the results
   lambdaL2 = 10;
   sigmaL2 = 0.3;
-  lambdaL1 = 2;
+  lambdaL1 = 1;
   sigmaL1 =  0.4;
-  
-  lambdaL1 = 2.1544;
-  sigmaL1 = 0.2;
+  %lambdaL1 = 2.1544;
+  %sigmaL1 = 0.2;
 end
 
-%{
+
 %% Create the model
 % We will make use of PMTK's transformer objects to easily preprocess the data
 % and perform the basis expansion. We chain 2 transformers together, which
@@ -37,13 +36,13 @@ end
 % our model, (which we will create shortly), all of the details of the
 % transformation are retained, and where appropriate, applied to future test data.
 %
-T = ChainTransformer({StandardizeTransformer(false)      ,...
-    KernelTransformer('rbf',sigmaL2)} );
+T = ChainTransformer({StandardizeTransformer(false), KernelTransformer('rbf',sigmaL2)} );
 %
 % We now create a new logistic regression model and pass it the transformer object
 % we just created.
 % We specify that the y labels are from {1,2} (as opposed to, say, {0,1})
-model = LogregBinaryL2('-lambda', lambdaL2, '-labelSpace', [1,2], '-transformer', T);
+model = LogregL2('-lambda', lambdaL2, '-labelSpace', [1,2], ...
+  '-transformer', T, '-addOffset', false);
 
 %% Fit the Model
 % We now find a MAP estimate of the parameters
@@ -58,8 +57,10 @@ model = fit(model,D);
 [X1grid, X2grid] = meshgrid(-3:0.02:3,-3:0.02:3);
 [nrows,ncols] = size(X1grid);
 testData = [X1grid(:),X2grid(:)];
-[yhat, pred] = predict(model,testData); % pred is a Bernoulli
-pclass1 = pmf(pred); % table of probabilities
+[yhat, pred] = predict(model,testData); % pred is a DiscreteDist
+pclass01 = pmf(pred);
+pclass1 = pclass01(1,:);
+%pclass1 = pmf(pred); % table of probabilities
 probGrid = reshape(pclass1,nrows,ncols);
 %% Plot the Predictive Distribution
 % We can now make use of Matlab's excellent plotting capabilities and plot the
@@ -81,14 +82,14 @@ plot(X(Y==2,1),X(Y==2,2),'xb','LineWidth',2,'MarkerSize',7);
 title('Decision Boundary (L2 Logistic Regression)');
 box on;
 contour(X1grid,X2grid,probGrid,'LineColor','k','LevelStep',0.5,'LineWidth',2.5);
-%}
+
 
 %% L1 Prior
 % Now lets use an L1 prior and refit the model
 T = ChainTransformer({StandardizeTransformer(false)      ,...
     KernelTransformer('rbf',sigmaL1)} );
 model = LogregL1('-lambda', lambdaL1, '-labelSpace',[1,2], ...
-  '-transformer', T, '-verbose', false, '-addOnes', false); %'-optMethod', 'iteratedRidge');
+  '-transformer', T, '-verbose', false, '-addOffset', false); 
 model = fit(model,D);
 
 [X1grid, X2grid] = meshgrid(-3:0.02:3,-3:0.02:3);

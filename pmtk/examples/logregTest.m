@@ -11,6 +11,10 @@ mL2 = fit(mL2, D);
 predMAPL2 = predict(mL2,X);
 llL2 = logprob(mL2, D);
 
+mMLE = Logreg('-labelSpace', 1:C);
+mMLE = fit(mMLE, D);
+
+
 mL1 = LogregL1('-lambda', 0.1);
 mL1 = fit(mL1, D);
 

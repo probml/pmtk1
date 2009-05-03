@@ -2,7 +2,7 @@
 
 %try
 
-
+%{
 bernoulliDistTest;                       pclear(0);
 bernoulli_betaSequentialUpdate;          pclear(0);
 binom_betaPostPredDemo;                  pclear(0);
@@ -41,11 +41,9 @@ laplacePlotDemo;                         pclear(0);
 ldsLearningDemo;                         pclear(0);
 ldsTrackingDemo;                         pclear(0);
 lingaussHybridDemo;                      pclear(0);
-%linregAllMethods;                       pclear(0); % broken
 linregBayesHousePrices;                  pclear(0);
 logregFitCrabs;                          pclear(0);
 logregSAT;                               pclear(0);
-logreg_MvnDistTest;                      pclear(0);
 markovChainClassificationDemo;           pclear(0);
 mcmcMvn2dConditioning;                   pclear(0);
 misconceptionUGMdemo;                    pclear(0);
@@ -62,7 +60,8 @@ numericalIntNIGdemo;                     pclear(0);
 oldFaithfulDemo;                         pclear(0);
 poissonPlotDemo;                         pclear(0);
 prostateLinregAll;                       pclear(0);
-rainyDayDemo;                            pclear(0);
+%}
+rainyDayDgmDemo;                            pclear(0);
 sampleDistDemo;                          pclear(0);
 sampleHIWdemo;                           pclear(0);
 sprinklerDGMdemo;                        pclear(0);

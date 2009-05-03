@@ -1,4 +1,4 @@
-classdef LinregConjugate < CondProbDist
+classdef LinregConjugate < ProbDist
   %% Linear regression with conjugate prior
   % p(w,sigma2) = Mvn(w | 0, lambda*sigma2*I)  IG(sigma2 | a,b)
   % or, if sigma2 is fixed, just Mvn(w | 0, lambda*I)

@@ -1,4 +1,4 @@
-classdef InputCPD < CondProbDist 
+classdef InputCPD < Cpd
   % This represents a root node that is always observed
   
   properties 

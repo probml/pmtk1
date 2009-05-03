@@ -1,4 +1,4 @@
-classdef LogregBinary < ParamDist
+classdef LogregBinary < ProbDist
   %% Binary Logistic Regression
   
   properties

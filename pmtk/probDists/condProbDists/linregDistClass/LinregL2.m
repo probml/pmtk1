@@ -4,7 +4,7 @@ classdef LinregL2 < Linreg
 
     properties
         lambda;
-        X; % store data to compute dof later
+        Xtrain; % store data to compute dof later
     end
  
   
@@ -24,59 +24,32 @@ classdef LinregL2 < Linreg
           '-addOffset', true);
       end
        
-        function model = fit(model,D)
-          % m = fit(m, D)
-          % D.X(i,:) is i'th input; do *not* include a column of 1s
-          % D.y(i) is i'th response
-          %[D] = processArgs(varargin, '-D', []);
-          X = D.X; y = D.Y; 
-          if ~isempty(model.transformer)
-            [X, model.transformer] = train(model.transformer, X);
-          end
-          %[model.w, model.w0] = ridgereg(X, y, model.lambda, model.method,
-          %model.addOffset);
-          [n,d] = size(X);
-          n = length(y);
-          if d==0 % no inputs
-            w0 = mean(y);
-            w = [];
-          else
-            [XC, xbar] = center(X);
-            [yC, ybar] = center(y);
-            if model.lambda==0
-              w = XC \ yC; % least squares
-            else
-              d = size(XC,2);
-              XX  = [XC; sqrt(model.lambda)*eye(d)];
-              yy = [yC; zeros(d,1)];
-              w  = XX \ yy; % QR
-            end
-            w0 = ybar - xbar*w;
-            if ~model.addOffset, w0 = 0; end
-          end
-          model.w = w; model.w0 = w0;
-          %if model.computeDf
-          %  model.df = LinregL2.dofRidge(X, model.lambda);
-          %end
-          model.df = []; % use dof(model)
-          ww = [w(:); w0];
-          X1 = [X ones(n,1)]; % column of 1s for w0 term
-          yhat = X1*ww;
-          model.sigma2 = mean((yhat-y).^2);
-          model.X = X;
-        end
-
+        
         function df = dof(model)
           % slow since need evals of X
-         df = LinregL2.dofRidge(model.X, model.lambda);
+         df = LinregL2.dofRidge(model.Xtrain, model.lambda);
         end
         
     end % methods
 
+    methods(Access = 'protected')
+      
+      function [w, out, model] = fitCore(model, XC, yC)
+        d = size(XC,2);
+        XX  = [XC; sqrt(model.lambda)*eye(d)];
+        yy = [yC; zeros(d,1)];
+        w  = XX \ yy; % QR
+        out = [];
+        model.Xtrain = XC; % for dof computation
+      end
+      
+    end
+        
     methods(Static = true)
+      
       function df = dofRidge(X, lambdas)
         % Compute the degrees of freedom for a given lambda value
-        % Elements of Statistical Learning p63
+        % Elements1e p63
         [n,d] = size(X);
         if d==0, df = 0; return; end
         XC  = center(X);
@@ -93,6 +66,7 @@ classdef LinregL2 < Linreg
           df(i) = sum(D2./(D2+lambdas(i)));
         end
       end
+      
     end % methods
 
 end % class

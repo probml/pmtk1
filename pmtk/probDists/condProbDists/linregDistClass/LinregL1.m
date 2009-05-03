@@ -25,45 +25,30 @@ classdef LinregL1 < Linreg
           '-addOffset', true);
       end
        
-        function model = fit(model,varargin)
-          % m = fit(m, D)
-          % D.X(i,:) is i'th input; do *not* include a column of 1s
-          % D.y(i) is i'th response
-          [D] = processArgs(varargin, '-D', []);
-          X = D.X; y = D.Y; clear D
-          if ~isempty(model.transformer)
-            [X, model.transformer] = train(model.transformer, X);
-          end
-          % We can center at training time but not at test time
-          % since w0 will compensate (is this correct??)
-          % (If we need to center at test time, use a transformer)
-          [XC, xbar] = center(X);
-          %XC = mkUnitVariance(XC);
-          [yC, ybar] = center(y);
-          switch lower(model.method)
-            case 'shooting'
-              w = LassoShooting(XC, yC, model.lambda, 'offsetAdded', false);
-            case 'l1_ls'
-              w = l1_ls(XC, yC, model.lambda, 1e-3, true);
-            otherwise
-              error('%s is not a supported L1 algorithm', model.method);
-          end
-          if model.addOffset
-            w0 = ybar - xbar*w;
-          else
-            w0 = 0;
-          end
-          model.w = w; model.w0 = w0;
-          n = size(X,1);
-          X1 = [ones(n,1) X];
-          ww = [w0; w];
-          yhat = X1*ww;
-          model.sigma2 = mean((yhat-y).^2);
-          model.df = sum(abs(w) ~= 0); % num non zeros
-          model.ndimsX = size(X,2);
-          model.ndimsY = size(y,2);
-        end
-
+     
+       function df = dof(model)
+         df = sum(abs(model.w) ~= 0);  % num non zeros
+       end
+        
+        
+        
     end % methods
+    
+    methods(Access = 'protected')
+      
+      function [w, output, model] = fitCore(model, XC, yC)
+        switch lower(model.method)
+          case 'shooting'
+            w = LassoShooting(XC, yC, model.lambda, 'offsetAdded', false);
+          case 'l1_ls'
+            w = l1_ls(XC, yC, model.lambda, 1e-3, true);
+          otherwise
+            error('%s is not a supported L1 algorithm', model.method);
+        end
+        output = [];
+      end
+      
+    end
+    
   
 end % class

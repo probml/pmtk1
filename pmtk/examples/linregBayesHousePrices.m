@@ -30,4 +30,4 @@ xstar = [5000 2 2 1];
 [yhat,py] = predict(m, xstar);
 fprintf('predicted price %5.3f +- %5.3f\n', mean(py), sqrt(var(py)));
 
-assert(approxeq(yhat, 70468))
+assert(approxeq(yhat, 70468.39, 1e-1))

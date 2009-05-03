@@ -19,7 +19,7 @@ classdef LogregL1 < Logreg
       % "Learning sparse Bayesian classifiers: multi-class formulation, 
       %     fast algorithms, and generalization bounds"
       [m.lambda, m.transformer, m.verbose, m.w, m.w0, m.nclasses,  m.optMethod,...
-        m.labelSpace, m.addOnes] = ...
+        m.labelSpace, m.addOffset] = ...
         processArgs( varargin ,...
         '-lambda', [], ...
         '-transformer', [], ...
@@ -29,34 +29,21 @@ classdef LogregL1 < Logreg
         '-nclasses'   , [], ...
         '-optMethod', 'projection', ...
         '-labelSpace', [], ...
-        '-addOnes', true);
+        '-addOffset', true);
      end
     
-     
-     function [model,output] = fit(model,D)
-       % m = fit(m, D) Compute MAP estimate
-       % D is DataTable containing:
-       % X(i,:) is i'th input; do *not* include a column of 1s
-       % y(i) is i'th response
-       X = D.X; y = D.Y;
-       if ~isempty(model.transformer)
-         [X, model.transformer] = train(model.transformer, X);
-         if addOffset(model.transformer), error('don''t add column of 1s'); end
+    
+       function df = dof(model)
+         df = sum(abs(model.w(:)) ~= 0);  % num non zeros
        end
-       n = size(X,1);
-       if model.addOnes
-         X = [ones(n,1) X];
-         offsetAdded = true;
-       else
-         offsetAdded = false;
-       end
-       [n,d] = size(X);
-       U = unique(y);
-       if isempty(model.labelSpace), model.labelSpace = U; end
-       if isempty(model.nclasses), model.nclasses = length(model.labelSpace); end
-       C = model.nclasses;
-       Y1 = oneOfK(y, C);
-       winit = zeros(d*(C-1),1);
+        
+       
+    end % methods
+    
+     methods(Access = 'protected')
+       
+      function [w, output, model] = fitCore(model, X, Y1,  winit)
+        % Y1 is n*C (one of K)   
        switch model.optMethod
          % The boundopt code regularizes w0...
          case 'boundoptOverrelaxed'
@@ -64,27 +51,23 @@ classdef LogregL1 < Logreg
          case 'boundoptStepwise',
             [w, output]  = boundOptL1stepwise(X, Y1, model.lambda);
          otherwise % minFunc
+           d = size(X,2);
+           C = model.nclasses;
            lambdaVec = model.lambda*ones(d,C-1);
-           if(offsetAdded),lambdaVec(:,1) = 0;end % don't regularize w0
+           if model.addOffset,lambdaVec(:,1) = 0;end % don't regularize w0
            lambdaVec = lambdaVec(:);
-           % unpenalized objective:
-           objective = @(w,junk) multinomLogregNLLGradHessL2(w, X, Y1,0,false);
+           % unpenalized objective (lambda=0 turns off L2 regularizer)
+           objective = @(w,junk) LogregL2.multinomLogregNLLGradHessL2(w, X, Y1,0,false);
            options.verbose = model.verbose; 
-           options.order = -1; % significant speed improvement with this setting
-           options.maxIter = 250;
+           if strcmpi(model.optMethod, 'projection')
+             options.order = -1; % significant speed improvement with this setting
+             options.maxIter = 250;
+           end
            [w,output.fEvals] = L1General(model.optMethod, objective, winit,lambdaVec, options);
        end
-       W = reshape(w, d, C-1);
-       if model.addOnes
-         model.w0 = W(1,:);
-         model.w = W(2:end,:);
-       else
-         model.w = W;
-         model.w0 = 0;
-       end
-     end
+      end % fitCore
       
-
-    end % methods
+    end % methods protected
+    
 
 end

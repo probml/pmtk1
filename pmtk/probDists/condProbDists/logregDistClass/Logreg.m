@@ -1,4 +1,4 @@
-classdef Logreg < ParamDist
+classdef Logreg < ProbDist
   %% Multinomial Logistic Regression
   
   properties
@@ -9,7 +9,7 @@ classdef Logreg < ParamDist
     labelSpace;           % labels for y
     optMethod;
     verbose;
-    addOnes = true;
+    addOffset; 
   end
   
   %% Main methods
@@ -17,8 +17,9 @@ classdef Logreg < ParamDist
     
     function m = Logreg(varargin)
        % Logreg(transformer, w, w0, nclasses, optMethod,
-      % labelSpace)
-      [m.transformer, m.verbose,  m.w, m.w0, m.nclasses,  m.optMethod, m.labelSpace] = ...
+      % labelSpace, addOffset)
+      [m.transformer, m.verbose,  m.w, m.w0, m.nclasses,  m.optMethod, ...
+        m.labelSpace, m.addOffset] = ...
         processArgs( varargin ,...
         '-transformer', [], ...
         '-verbose', false, ...
@@ -26,23 +27,48 @@ classdef Logreg < ParamDist
         '-w0', [], ...
         '-nclasses'   , [], ...
         '-optMethod', 'lbfgs', ...
-        '-labelSpace', []);
+        '-labelSpace', [], ...
+        '-addOffset', false);
     end
     
-    function model = fit(model,D)
-      % m = fit(m, D) Compute MLE (not recommended)
-      % D is DataTable containing:
-      % X(i,:) is i'th input; do *not* include a column of 1s
-      % y(i) is i'th response
-      tmp = LogregL2('-lambda', 0, '-optMethod', model.optMethod, ...
-        '-labelSpace', model.labelSpace, '-verbose', model.verbose, ...
-         '-transformer', model.transformer);
-      tmp = fit(tmp, D);
-      model.w = tmp.w; model.w0 = tmp.w0;
-      model.labelSpace = tmp.labelSpace;
-      model.transformer = tmp.transformer;
-    end
     
+    function [model,output] = fit(model,D)
+       % m = fit(m, D) Compute MLE estimate
+       % D is DataTable containing:
+       % X(i,:) is i'th input; do *not* include a column of 1s
+       % y(i) is i'th response
+       X = D.X; y = D.Y;
+       if ~isempty(model.transformer)
+         [X, model.transformer] = train(model.transformer, X);
+         if addOffset(model.transformer), error('don''t add column of 1s'); end %#ok
+       end
+       n = size(X,1);
+       if model.addOffset
+         X = [ones(n,1) X];
+       end
+       d = size(X,2);
+       U = unique(y);
+       if isempty(model.labelSpace), model.labelSpace = U; end
+       if isempty(model.nclasses), model.nclasses = length(model.labelSpace); end
+       C = model.nclasses;
+       Y1 = oneOfK(y, C);
+       winit = zeros(d*(C-1),1);
+       [W, output, model] = fitCore(model, X, Y1,  winit);
+       if model.addOffset
+         model.w0 = W(1,:);
+         model.w = W(2:end,:);
+       else
+         model.w = W;
+         model.w0 = 0;
+       end   
+    end
+      
+    function df = dof(model)
+       % Unregularized MLE has maximal dof
+       df = length(model.w(:));
+    end
+     
+  
     
     function [yhat, pred] = predict(obj,X)
       % yhat(i) = most probable label for X(i,:)
@@ -51,7 +77,7 @@ classdef Logreg < ParamDist
         X = test(obj.transformer, X);
       end
       [n,d] = size(X);
-      if obj.addOnes
+      if obj.addOffset
         X = [ones(n,1) X];
         W = [obj.w0; obj.w];
       else
@@ -76,6 +102,15 @@ classdef Logreg < ParamDist
     
   end % methods
   
-  
+  methods(Access = 'protected')
+    
+   function [W, output, model] = fitCore(model, X, Y1,  winit) 
+     tmp = LogregL2('-lambda', 0, '-optMethod', model.optMethod, ...
+        '-labelSpace', model.labelSpace, '-verbose', model.verbose, ...
+         '-transformer', model.transformer);
+       [W, output] = fitCore(tmp, X, Y1, winit);
+   end
+    
+  end
   
 end % class

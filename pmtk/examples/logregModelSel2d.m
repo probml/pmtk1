@@ -8,14 +8,20 @@ function [lambdaL2, sigmaL2, lambdaL1, sigmaL1] = logregModelSel2d()
 load bishop2class
 D = DataTable(X,Y);
 
-
+%lambdaRange = logspace(-2,1.5,30);
+%sigmaRange = 0.1:0.1:2;
+%lambdaL2 = 7.8805;
+%sigmaL2 = 0.2;
 lambdaRange = logspace(-1,1,5);
 sigmaRange = 0.1:0.1:0.3;
 [lambdaL2, sigmaL2] = helper(lambdaRange, sigmaRange, D, 'L2');
-%lambdaL2 = []; sigmaL2 = [];
 
+%lambdaRange = logspace(-1,1,10);
+%sigmaRange = [0.2,0.5:0.5:4];
 lambdaRange = [0.5, 1, 2, 5]; 
 sigmaRange = [0.1, 0.2,0.4];
+% lambdaL1 = 2.1544;
+%    sigmaL1 = 0.2;
 [lambdaL1, sigmaL1] = helper(lambdaRange, sigmaRange, D, 'L1');
 
 
@@ -32,13 +38,12 @@ for li = 1:nl
   for si = 1:ns
     lambda = lambdaRange(li);
     sigma = sigmaRange(si);
-    T = ChainTransformer({StandardizeTransformer(false),...
-      KernelTransformer('rbf', sigma)});
+    T = ChainTransformer({StandardizeTransformer(false), KernelTransformer('rbf', sigma)});
     switch reg
       case 'L2',
-        models{m} = LinregL2('-lambda', lambda, '-transformer', T);
+        models{m} = LogregL2('-lambda', lambda, '-transformer', T, '-addOffset', false);
       case 'L1',
-        models{m} = LinregL1('-lambda', lambda, '-transformer', T);
+        models{m} = LogregL1('-lambda', lambda, '-transformer', T, '-addOffset', false);
     end
     sigmaModel(m) = sigma; %#ok
     lambdaModel(m) = lambda; %#ok

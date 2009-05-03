@@ -32,7 +32,8 @@ classdef LinregAllSubsetsModelList < ModelList
         % sigma2(m)
         % nnz(m) is num non zeros
         Nm = length(ML.models);
-        d = ndimensions(ML.models{1});
+        %d = ndimensions(ML.models{1});
+        d = length(ML.models{1}.w);
         W = zeros(d,Nm); w0 = zeros(1,Nm);
         sigma2 = zeros(1,Nm); nnz = zeros(1,Nm);
         for m=1:Nm

@@ -3,6 +3,7 @@ function objectCreationTest()
     nprobs = 0;
     excludeList = {'Graphlayout','GraphlayoutNode'};
     classes = setdiff(getClasses(PMTKroot()),excludeList);
+    fprintf('will try to instantiate %d classes\n', length(classes));
     for i=1:numel(classes)
         if ~isabstract(classes{i})
            try

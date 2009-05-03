@@ -1,4 +1,4 @@
-classdef TabularCPD < CondProbDist 
+classdef TabularCPD < Cpd 
 
   properties 
     T;

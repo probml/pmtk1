@@ -1,4 +1,4 @@
-classdef LinGaussCPD < CondProbDist 
+classdef LinGaussCPD < Cpd 
   % p(y|x) = N(y | w'*x + w0, v) where x is all the parents
   
   properties 

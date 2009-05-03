@@ -1,4 +1,4 @@
-classdef LogregBinaryLaplace < ParamDist 
+classdef LogregBinaryLaplace < ProbDist 
 %% Binary logistic regression with Gaussian prior
 % We use Laplace approximation to the posterior
 

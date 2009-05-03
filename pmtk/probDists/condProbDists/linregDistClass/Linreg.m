@@ -1,4 +1,4 @@
-classdef Linreg < CondProbDist
+classdef Linreg < ProbDist
 %% Linear Regression Conditional Distribution (Single Variate Output)
 
 
@@ -15,7 +15,8 @@ classdef Linreg < CondProbDist
     methods
         function obj = Linreg(varargin)
           % Linreg(transformer, addOffset, w, w0, sigma2)
-            [obj.transformer, obj.addOffset, obj.w,  obj.w0, obj.sigma2] = processArgs(varargin,...
+            [obj.transformer, obj.addOffset, obj.w,  obj.w0, ...
+              obj.sigma2] = processArgs(varargin,...
                         '-transformer', [], ...
                         '-addOffset', true, ...
                         '-w'          , [], ...
@@ -23,7 +24,7 @@ classdef Linreg < CondProbDist
                         '-sigma2'     , []);
         end
        
-        function model = fit(model,D)
+        function [model, output] = fit(model,D)
           % m = fit(m, D)
           % D is DataTable containing:
           % X(i,:) is i'th input; do *not* include a column of 1s
@@ -33,23 +34,33 @@ classdef Linreg < CondProbDist
           if ~isempty(model.transformer)
             [X, model.transformer] = train(model.transformer, X);
           end
-          n = size(X,1);
-          if model.addOffset
-            X = [X ones(n,1)];
-          end
-          w = X \ y; % least squares
-          if model.addOffset
-            model.w0 = w(end);
-            model.w = w(1:end-1);
+           [d] = size(X,2);
+          n = length(y);
+          if d==0 % no inputs
+            w0 = mean(y);
+            w = [];
+            output = [];
           else
-            model.w0 = 0;
-            model.w = w;
+            [XC, xbar] = center(X);
+            [yC, ybar] = center(y);
+            [w, output, model] = fitCore(model, XC, yC);
+            w0 = ybar - xbar*w;
           end
-          model.df = length(w);
-          yhat = X*w;
+          model.w = w; model.w0 = w0;
+          if model.addOffset
+            ww = [w0; w(:)];
+            X = [ones(n,1) X]; 
+          else
+            ww = w(:);
+          end
+          yhat = X*ww;
           model.sigma2 = mean((yhat-y).^2);
         end
-
+        
+      
+        
+         
+        
         function [yhat, py] = predict(model,X)
           %  X(i,:) is i'th input
           % yhat(i) = E[y | X(i,:)]
@@ -58,14 +69,13 @@ classdef Linreg < CondProbDist
             X = test(model.transformer, X);
           end
           n = size(X,1);
-          w0 = model.w0;
-          ww = [model.w; w0];
-          if isempty(model.w)
-            X1 = ones(n,1);
+          if model.addOffset
+            X = [ones(n,1) X];
+            ww = [model.w0; model.w];
           else
-            X1 = [X ones(n,1)];
+            ww = model.w;
           end
-          yhat = X1*ww;
+          yhat = X*ww;
           if nargout >= 2
             sigma2Hat = model.sigma2*ones(n,1); % constant variance!
             py = GaussDist(yhat, sigma2Hat);
@@ -80,12 +90,9 @@ classdef Linreg < CondProbDist
         end
 
         function np = dof(model)
-          np = model.df; % length(model.w);
+          np = length(model.w);
         end
-          
-        function d = ndimensions(model)
-          d = length(model.w);
-        end
+     
         
         function p = logprob(model, D)
           % D is DataTable containing X(i,:) and y(i)
@@ -107,10 +114,17 @@ classdef Linreg < CondProbDist
           yhat = predict(model, X);
           p  = (y(:)-yhat(:)).^2;
         end
-
+        
     end % methods
 
-
-   
+    methods(Access = 'protected')
+      
+      function [w, out, model] = fitCore(model, XC, yC) %# ok
+        w = XC \ yC; % least squares
+        out = [];
+      end
+      
+    end
+    
 
 end

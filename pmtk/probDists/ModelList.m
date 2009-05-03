@@ -50,13 +50,20 @@ classdef ModelList
             case 'cv', [mlist.models, mlist.bestNdx, mlist.costMean, mlist.costSe] = ...
                 selectCV(mlist, D);
             otherwise
+              % In statistics, one writes cost = deviance + cp*df
+              % where deviance = -2*loglik, cp = complexity penalty, 
+              % df = degrees of freedom.
+              % We use score = loglik - cp*df
+              % so our cp differs by a factor of 2.
+              % (Why introduce the confusing term 'deviance'
+              % when everything else is based on likelihood?)
               switch lower(mlist.selMethod)
-                case 'bic', pen = log(Nx)/2;
-                case 'aic',  pen =  1;
-                case 'loglik', pen = 0; % for log marginal likelihood
+                case 'bic', cp = log(Nx)/2;
+                case 'aic',  cp =  1;
+                case 'loglik', cp = 0; % for log marginal likelihood
               end
               [mlist.models, mlist.bestNdx, mlist.loglik, mlist.penloglik] = ...
-                selectPenLoglik(mlist, D, pen);
+                selectPenLoglik(mlist, D, cp);
               mlist.posterior = exp(normalizeLogspace(mlist.penloglik));
           end 
           mlist.bestModel = mlist.models{mlist.bestNdx};

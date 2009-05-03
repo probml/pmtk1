@@ -3,6 +3,7 @@ classdef LogregL2 < Logreg
 
     properties
       lambda;
+      Xtrain; % for dof computation
     end  
     
     %% Main methods
@@ -17,7 +18,8 @@ classdef LogregL2 < Logreg
       % B. Krishnapuram et al, PAMI 2004
       % "Learning sparse Bayesian classifiers: multi-class formulation, 
       %     fast algorithms, and generalization bounds"
-      [m.lambda, m.transformer,  m.verbose,  m.w, m.w0, m.nclasses,  m.optMethod, m.labelSpace] = ...
+      [m.lambda, m.transformer,  m.verbose,  m.w, m.w0, m.nclasses,  m.optMethod, ...
+        m.labelSpace, m.addOffset] = ...
         processArgs( varargin ,...
         '-lambda', [], ...
         '-transformer', [], ...
@@ -26,51 +28,47 @@ classdef LogregL2 < Logreg
         '-w0', [], ...
         '-nclasses'   , [], ...
         '-optMethod', 'lbfgs', ...
-        '-labelSpace', []);
+        '-labelSpace', [], ...
+        '-addOffset', true);
      end
     
      
-     function [model,output] = fit(model,D)
-       % m = fit(m, D) Compute MAP estimate
-       % D is DataTable containing:
-       % X(i,:) is i'th input; do *not* include a column of 1s
-       % y(i) is i'th response
-       X = D.X; y = D.Y;
-       if ~isempty(model.transformer)
-         [X, model.transformer] = train(model.transformer, X);
-         if addOffset(model.transformer), error('don''t add column of 1s'); end
-       end
-       n = size(X,1);
-       X = [ones(n,1) X];
-       [n,d] = size(X);
-       offsetAdded = true;
-       U = unique(y);
-       if isempty(model.labelSpace), model.labelSpace = U; end
-       if isempty(model.nclasses), model.nclasses = length(model.labelSpace); end
-       C = model.nclasses;
-       Y1 = oneOfK(y, C);
-       winit = zeros(d*(C-1),1);
+     function df = dof(model)
+       % This is not quite right...Should use evals of Hessian
+       % See Elements2e p233
+       df = LinregL2.dofRidge(model.Xtrain, model.lambda);
+     end
+
+    end % methods
+
+    methods(Access = 'protected')
+      
+      function [w, output, model] = fitCore(model, X, Y1, winit)
+        % Y1 is n*C (one of K)
        switch model.optMethod
-         % The boundopt code regularizes w0...
+         % The boundopt code regularizes w0?
          case 'boundoptOverrelaxed'
            [w, output]  = boundOptL2overrelaxed(X, Y1, model.lambda);
          case 'boundoptStepwise',
-            [w, output]  = boundOptL2stepwise(X, Y1, model.lambda);
+           [w, output]  = boundOptL2stepwise(X, Y1, model.lambda);
          otherwise % minFunc
-           objective = @(w,junk) LogregL2.multinomLogregNLLGradHessL2(w, X, Y1, model.lambda,offsetAdded);
+           objective = @(w,junk) LogregL2.multinomLogregNLLGradHessL2(w, X, Y1, ...
+             model.lambda, model.addOffset);
            options.Method = model.optMethod;
            options.Display = model.verbose;
            [w, f, exitflag, output] = minFunc(objective, winit, options);
        end
-       W = reshape(w, d, C-1);
-       model.w0 = W(1,:);
-       model.w = W(2:end,:);
-     end
+       if model.addOffset
+         model.Xtrain = X(:,2:end);
+       else
+         model.Xtrain = X;
+       end
+      end
       
-
-    end % methods
-
+    end % methods protected
+     
     methods(Static = true)
+      
       function [f,g,H] = multinomLogregNLLGradHessL2(w, X, Y, lambda,offset)
         % Return the negative log likelihood for multinomial logistic regression
         % with an L2 regularizer, lambda. Also return the gradient and Hessian of

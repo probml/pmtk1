@@ -1,4 +1,4 @@
-classdef LinGaussHybridCPD < CondProbDist 
+classdef LinGaussHybridCPD < Cpd
   % p(y|xc, xd) = N(y | w0 + wc'*xc + wd'*[xd-1], v) where xc is all the cts parents
   % and xd is all the discrete parents. (We subtract 1 from xd so state 1
   % codes as 0.) This is linear regression where we treat categorical

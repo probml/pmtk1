@@ -46,7 +46,8 @@ classdef LinregL1ModelList < ModelList
         % lambda(m) = lambda for model m
         % srhinkage(m) = norm(W(:,m))/maxnorm
         Nm = length(ML.models);
-        d = ndimensions(ML.models{1});
+        %d = ndimensions(ML.models{1});
+        d = length(ML.models{1}.w);
         W = zeros(d,Nm); w0 = zeros(1,Nm); sigma2 = zeros(1,Nm);
         dof = zeros(1,Nm);  lambda = zeros(1,Nm);
         for m=1:Nm
