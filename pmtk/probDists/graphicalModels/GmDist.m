@@ -1,4 +1,4 @@
-classdef GmDist 
+classdef GmDist < ProbDist
   % graphical model
   
   properties
