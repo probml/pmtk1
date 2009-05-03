@@ -4,7 +4,7 @@ function [w,fEvals] = L1General(optMethod, gradFunc,w,lambda,params,varargin)
 
 switch lower(optMethod)
   case 'iteratedridge'
-    optfunc = @L1GeneralIteratedRige;
+    optfunc = @L1GeneralIteratedRidge;
   case 'projection'
     options.order = -1;
     optfunc = @L1GeneralProjection;
@@ -26,6 +26,7 @@ switch lower(optMethod)
     options.order = -1;
     optfunc = @L1GeneralProjection;
 end
+% The setting of options above is ignored
 [w,fEvals] = optfunc(gradFunc,w,lambda,params,varargin);
 
 end

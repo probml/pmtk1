@@ -31,6 +31,7 @@ end
 
 % Start log
 if verbose
+  fprintf('L1GeneralProjection\n');
     fprintf('%6s %6s %15s %15s %5s\n','iter','fEvals','stepLen','f(w)','free');
 end
 

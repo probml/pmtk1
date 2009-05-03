@@ -18,7 +18,8 @@ classdef LogregL1 < Logreg
       % B. Krishnapuram et al, PAMI 2004
       % "Learning sparse Bayesian classifiers: multi-class formulation, 
       %     fast algorithms, and generalization bounds"
-      [m.lambda, m.transformer, m.verbose, m.w, m.w0, m.nclasses,  m.optMethod, m.labelSpace] = ...
+      [m.lambda, m.transformer, m.verbose, m.w, m.w0, m.nclasses,  m.optMethod,...
+        m.labelSpace, m.addOnes] = ...
         processArgs( varargin ,...
         '-lambda', [], ...
         '-transformer', [], ...
@@ -27,7 +28,8 @@ classdef LogregL1 < Logreg
         '-w0', [], ...
         '-nclasses'   , [], ...
         '-optMethod', 'projection', ...
-        '-labelSpace', []);
+        '-labelSpace', [], ...
+        '-addOnes', true);
      end
     
      
@@ -39,12 +41,16 @@ classdef LogregL1 < Logreg
        X = D.X; y = D.Y;
        if ~isempty(model.transformer)
          [X, model.transformer] = train(model.transformer, X);
-         if addOnes(model.transformer), error('don''t add column of 1s'); end
+         if addOffset(model.transformer), error('don''t add column of 1s'); end
        end
        n = size(X,1);
-       X = [ones(n,1) X];
+       if model.addOnes
+         X = [ones(n,1) X];
+         offsetAdded = true;
+       else
+         offsetAdded = false;
+       end
        [n,d] = size(X);
-       offsetAdded = true;
        U = unique(y);
        if isempty(model.labelSpace), model.labelSpace = U; end
        if isempty(model.nclasses), model.nclasses = length(model.labelSpace); end
@@ -63,12 +69,19 @@ classdef LogregL1 < Logreg
            lambdaVec = lambdaVec(:);
            % unpenalized objective:
            objective = @(w,junk) multinomLogregNLLGradHessL2(w, X, Y1,0,false);
-           options.verbose = model.verbose;
+           options.verbose = model.verbose; 
+           options.order = -1; % significant speed improvement with this setting
+           options.maxIter = 250;
            [w,output.fEvals] = L1General(model.optMethod, objective, winit,lambdaVec, options);
        end
        W = reshape(w, d, C-1);
-       model.w0 = W(1,:);
-       model.w = W(2:end,:);
+       if model.addOnes
+         model.w0 = W(1,:);
+         model.w = W(2:end,:);
+       else
+         model.w = W;
+         model.w0 = 0;
+       end
      end
       
 

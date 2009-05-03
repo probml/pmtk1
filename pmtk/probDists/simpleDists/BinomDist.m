@@ -20,6 +20,10 @@ classdef BinomDist < ParamDist
       obj.support = 0:obj.N;
     end
     
+    function T = pmf(model)
+      T = model.mu;
+    end
+    
     function d = ndistrib(obj)
       d = length(obj.mu);
     end

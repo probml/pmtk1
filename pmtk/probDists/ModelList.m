@@ -6,6 +6,7 @@ classdef ModelList
     properties
       models;
       bestNdx; % plugin
+      bestModel;
       selMethod = 'bic';
       predMethod = 'plugin'; 
       nfolds = 5; costMean; costSe; % for CV
@@ -18,7 +19,8 @@ classdef ModelList
     %%  Main methods
     methods
         function obj = ModelList(varargin)
-          % ModelList(models, selMethod, nfolds, predMethod, occamWindowThreshold)
+          % ModelList(models, selMethod, nfolds, predMethod,
+          % occamWindowThreshold, costFnForCV, verbose)
           % models is a cell array
           % selMethod - 'bic' or 'aic' or 'loglik' or 'cv' [default cv]
           % nfolds - number of folds [default 5]
@@ -27,10 +29,12 @@ classdef ModelList
           % of best model; 0 means use all models, 0.9 means use top 10%
           if nargin == 0; return; end
           [obj.models, obj.selMethod, obj.nfolds, ...
-            obj.predMethod, obj.occamWindowThreshold, obj.costFnForCV] = processArgs(varargin, ...
+            obj.predMethod, obj.occamWindowThreshold, obj.costFnForCV, ...
+            obj.verbose] = processArgs(varargin, ...
             '-models', {}, '-selMethod', 'bic', '-nfolds', 5, ...
             '-predMethod', 'plugin', '-occamWindowThreshold', 0, ...
-            '-costFnForCV', (@(M,D) -logprob(M,D)));
+            '-costFnForCV', (@(M,D) -logprob(M,D)), ...
+            '-verbose', false);
         end
         
         function mlist = fit(mlist, D)
@@ -55,6 +59,7 @@ classdef ModelList
                 selectPenLoglik(mlist, D, pen);
               mlist.posterior = exp(normalizeLogspace(mlist.penloglik));
           end 
+          mlist.bestModel = mlist.models{mlist.bestNdx};
         end
                     
         function ll = logprob(mlist, D)
@@ -69,7 +74,7 @@ classdef ModelList
               f = mlist.occamWindowThreshold;
               ndx = find(mlist.posterior >= f*maxPost);
               nM = length(ndx);
-              loglik  = zeros(nX, nM);
+              loglik  = zeros(nX, nM); %#ok
               logprior = log(mlist.posterior(ndx));
               logprior = repmat(logprior, nX, 1);
               for m=1:nM

@@ -9,7 +9,8 @@ properties
   lambda; % precision of diagonal Gaussian
   verbose;
   optMethod;
-  predMethod = 'sigmoidTimesGauss';
+  predMethod;
+  nsamples;
 end
 
 
@@ -20,16 +21,19 @@ end
 
        function m = LogregBinaryLaplace(varargin)
        % LogregBinary(transformer, verbose, w, w0, optMethod,
-      % labelSpace)
+      % labelSpace, predMethod, nsamples)
       % The optimizer is used to find the mode
       
-      [m.lambda, m.transformer, m.verbose,   m.optMethod, m.labelSpace] = ...
+      [m.lambda, m.transformer, m.verbose,   m.optMethod, m.labelSpace, ...
+        m.predMethod, m.nsamples] = ...
         processArgs( varargin ,...
         '-lambda', [], ...
         '-transformer', [], ...
         '-verbose', false, ...
         '-optMethod', 'lbfgs', ...
-        '-labelSpace', []);
+        '-labelSpace', [], ...
+        '-predMethod', 'sigmoidTimesGauss', ...
+        '-nsamples', []);
        end
         
        function [model,output] = fit(model,D)
@@ -78,13 +82,14 @@ end
              p = LogregBinaryLaplace.sigmoidTimesGauss(X, model.wDist.mu(:), model.wDist.Sigma);
              pred = BernoulliDist('-mu', p, '-support', model.labelSpace);
            case 'mc'
-             error('not finished')
-             Wsamples = sample(obj.wDist, model.nsamples);
-             samples = zeros(nsamples,C,n);
-             for s=1:nsamples
-               samples(s,:,:) = multiSigmoid(X,Wsamples(s,:))';
+             ns = model.nsamples;
+             wsamples = sample(model.wDist,ns);
+             psamples = zeros(n,ns);
+             for s=1:ns
+               psamples(:,s) = sigmoid(X*wsamples(s,:)');
              end
-             pred = SampleDistDiscrete(samples,model.labelSpace);
+             pred = SampleBasedDist(psamples');
+             p = mean(pred);
          end
          yhat = ones(n,1);
          ndx2 = (p > 0.5);

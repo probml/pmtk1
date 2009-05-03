@@ -27,6 +27,8 @@ classdef LogregDist < CondProbDist
                 'prior', 'none', ...
                 'priorStrength', [], ...
                 'optMethod', 'default');
+              
+              %error('deprecated')
         end
 
         function [obj, output] = fit(obj, varargin)

@@ -50,9 +50,11 @@ classdef GaussDist < ParamDist
       mu = obj.mu;
       l = norminv(alpha/2, mu, sigma);
       u = norminv(1-(alpha/2), mu, sigma);
+      if 0
       z=norminv(1-alpha/2);
       assert(approxeq(l, mu-z*sigma));
       assert(approxeq(u, mu+z*sigma));
+      end
      end
      
      function v = cdf(obj, x)

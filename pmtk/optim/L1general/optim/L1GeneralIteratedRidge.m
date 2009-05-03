@@ -24,6 +24,7 @@ function [w,fEvals] = L1GeneralIteratedRidge(gradFunc,w,lambda,params,varargin)
 
 % Start log
 if verbose
+  fprintf('iterated ridge\n');
     fprintf('%5s %5s %15s %15s %15s %5s\n','iter','fEvals','n(w)','n(step)','f(w)','free');
 end
 

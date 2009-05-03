@@ -9,6 +9,7 @@ classdef Logreg < ParamDist
     labelSpace;           % labels for y
     optMethod;
     verbose;
+    addOnes = true;
   end
   
   %% Main methods
@@ -50,8 +51,12 @@ classdef Logreg < ParamDist
         X = test(obj.transformer, X);
       end
       [n,d] = size(X);
-      X = [ones(n,1) X];
-      W = [obj.w0; obj.w];
+      if obj.addOnes
+        X = [ones(n,1) X];
+        W = [obj.w0; obj.w];
+      else
+        W = obj.w;
+      end
       T = multiSigmoid(X,W(:)); % n*C
       pred = DiscreteDist('-T', T', '-support',obj.labelSpace);
       [p, yhat] = max(T,[],2);
