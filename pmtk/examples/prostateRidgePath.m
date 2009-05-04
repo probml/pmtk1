@@ -1,5 +1,4 @@
 %% Ridge regression path on prostate cancer data
-%#broken
 % Reproduce fig 3.7  on p61 of Elements 1st ed
 
 load('prostate.mat') % from prostateDataMake

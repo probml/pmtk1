@@ -1,4 +1,4 @@
-classdef StudentDist < ParamDist 
+classdef StudentDist < ProbDist 
   %  student T p(X|dof, mu,sigma2) 
   
   properties

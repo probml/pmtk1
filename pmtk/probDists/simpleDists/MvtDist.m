@@ -1,4 +1,4 @@
-classdef MvtDist < ParamDist 
+classdef MvtDist < ProbDist 
   % multivariate student T p(X|dof, mu,Sigma) 
   
   properties

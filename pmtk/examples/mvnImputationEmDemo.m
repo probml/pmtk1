@@ -1,5 +1,4 @@
 %% Imputation for an MVN 
-%#broken
 d = 4; seed = 0; pcMissing = 0.3;
 setSeed(seed);
 model = mkRndParams(MvnDist(), d);

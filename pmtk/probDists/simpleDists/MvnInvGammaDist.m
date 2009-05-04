@@ -1,4 +1,4 @@
-classdef MvnInvGammaDist < ParamDist
+classdef MvnInvGammaDist < ProbDist
     % p(m,s2|params) = N(m|mu, s2 Sigma) IG(s2| a,b)
     properties
         mu;
