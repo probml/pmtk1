@@ -2,7 +2,7 @@
 
 %try
 
-
+%{
 bernoulliDistTest;                       pclear(0);
 bernoulli_betaSequentialUpdate;          pclear(0);
 binom_betaPostPredDemo;                  pclear(0);
@@ -18,6 +18,7 @@ cooperYooInterventionDemo;               pclear(0);
 dataTableDemo;                           pclear(0);
 dirichletHistPlotDemo;                   pclear(0);
 discreteDistTest;                        pclear(0);
+%}
 gammaPlotDemo;                           pclear(0);
 gammaRainfallDemo;                       pclear(0);
 gaussDGMdemo;                            pclear(0);

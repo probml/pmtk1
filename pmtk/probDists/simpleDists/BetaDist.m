@@ -49,8 +49,8 @@ classdef BetaDist < ProbDist
 
     function p = logprob(obj, X)
       % p(i,j) = log p(x(i) | params(j))
+      % This is wrong interface!
       d = length(obj.a);
-
       x = X(:);
       n = length(x);
       p = zeros(n,d);

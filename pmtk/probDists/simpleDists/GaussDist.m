@@ -1,4 +1,4 @@
-classdef GaussDist < ParamDist
+classdef GaussDist < ProbDist
   
   properties
     mu;
@@ -17,13 +17,8 @@ classdef GaussDist < ParamDist
       [m.mu, m.sigma2, m.productDist, m.prior] = processArgs(varargin, ...
         '-mu', [], '-sigma2', [], '-productDist', false, '-prior', 'none');
      end
-     
-     
-     function d = ndistrib(obj)
-       d = length(obj.mu);
-     end
-     
-     
+    
+      
      function obj = mkRndParams(obj, d)
        % Set mu(j) and sigma(j) to random values, for j=1:d.
        if nargin < 2, d = ndistrib(obj); end
@@ -74,10 +69,41 @@ classdef GaussDist < ParamDist
      
      function [L,Lij] = logprob(obj, X)
        % Return col vector of log probabilities for each row of X
+       % If X(i) is a scalar:
+       % L(i) = log p(X(i,1) | params)
+       % L(i) = log p(X(i,1) | params(i))
+       % If X(i,:) is a vector:
+       % Lij(i,j) = log p(X(i,j) | params(j)) 
+       % L(i) = sum_j Lij(i,j)   (product distrib)
+       [nx,nd] = size(X);
+       mmu = obj.mu; s2 = obj.sigma2;
+       d = length(mmu);
+       logZ = lognormconst(obj);
+       if nd==1 % scalar data
+         if d==1 % replicate parameter
+           M = repmat(mmu, nx, 1); S2 = repmat(s2, nx, 1); LZ = repmat(logZ, nx, 1);
+         else % one param per case
+           M = mmu(:); S2 = s2(:);  LZ = logZ(:);
+           assert(length(M)==nx);
+         end
+       else % vector data
+         assert(obj.productDist);
+         assert(nd==d);
+         M = repmat(rowvec(mmu), nx, 1);
+         S2 = repmat(rowvec(s2), nx, 1);
+         LZ = repmat(rowvec(logZ), nx, 1);
+       end
+       Lij = -0.5*(M-X).^2 ./ S2 - LZ;
+       L = sum(Lij,2);
+     end
+    
+     %{
+     function [L,Lij] = logprob(obj, X)
+       % Return col vector of log probabilities for each row of X
        % L(i) = log p(X(i) | params)
        % L(i) = log p(X(i) | params(i)) (set distrib)
-       % L(i) = sum_j L(i,j)   (prod distrib)
-       % L(i,j) = log p(X(i,j) | params(j))
+       % Lij(i,j) = log p(X(i,j) | params(j))  if productDist
+       % L(i) = sum_j Lij(i,j)   (prod distrib)
        N = size(X,1);
        mu = obj.mu; s2 = obj.sigma2;
        logZ = lognormconst(obj);
@@ -103,7 +129,7 @@ classdef GaussDist < ParamDist
          L = sum(Lij,2);
        end
      end
-    
+    %}
    
    
 

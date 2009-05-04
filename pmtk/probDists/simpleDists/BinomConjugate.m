@@ -28,11 +28,14 @@ classdef BinomConjugate < ProbDist
      end
      
      function SS = mkSuffStat(obj,X) 
-       SS.nsucc = sum(X,1);
-       ntrials = size(X,1);
-       SS.nfail = ntrials*obj.N - SS.nsucc;
-      end
-
+       if isempty(X)
+         SS.nsucc = 0; SS.nfail = 0;
+       else
+         SS.nsucc = sum(X,1);
+         ntrials = size(X,1);
+         SS.nfail = ntrials*obj.N - SS.nsucc;
+       end
+     end
 
      function obj = fit(obj, varargin)
        % m = fit(model, data, SS)

@@ -1,4 +1,4 @@
-classdef DiscreteDist  < ParamDist
+classdef DiscreteDist  < ProbDist
 % This class represents a distribution over a discrete support
 % (Multinoulli distribution).
 

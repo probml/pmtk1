@@ -8,7 +8,7 @@ data.n = [1083 855 3461 657 1208 1025 527 1668 583 582 917 857 ...
 X = [data.y(:) data.n(:)-data.y(:)];    % EB matrix of counts
 %% Create & Fit Distribution
 dist = BetaBinomDist();
-dist = fit(dist, 'data', X);
+dist = fit(dist, X);
 %% Extract Statistics
 a = dist.a; b = dist.b;
 display([a b]);

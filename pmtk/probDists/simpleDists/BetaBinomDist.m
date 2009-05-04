@@ -1,4 +1,4 @@
-classdef BetaBinomDist < ParamDist
+classdef BetaBinomDist < ProbDist
   
   properties
     a;
@@ -67,13 +67,10 @@ classdef BetaBinomDist < ParamDist
        end
      end
      
-     function obj = fit(obj, varargin)
-      % m = fit(model, 'name1', val1, 'name2', val2, ...)
-      % Arguments are
-      % data - data(i,1)  = num of successes, data(i,2) = num failures
+     function obj = fit(obj, X)
+      % m = fit(model, X)
+      % X(i,1)  = num of successes, data(i,2) = num failures
       % Uses Tom Minka's fixedpoint method
-      [X] = process_options(...
-        varargin, 'data', []);
       alphas = polya_fit_simple(X);
       obj.a = alphas(1); obj.b = alphas(2);
      end

@@ -4,8 +4,8 @@
 X = dlmread('rainfallData.txt');
 X = X'; X = X(:); % concatenate across rows, not columns
 X = X(1:end-5); % removing trailing 0s
-objMoM = fit(GammaDist, 'data', X, 'method', 'mom');
-objMLE = fit(GammaDist, 'data', X, 'method', 'mle');
+objMoM = fit(GammaDist('-fitMethod','mom'), X);
+objMLE = fit(GammaDist('-fitMethod','mle'), X);
 [v, binc] = hist(X);
 h = binc(2)-binc(1);
 N = length(X);

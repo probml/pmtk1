@@ -16,7 +16,7 @@ legendstr = cell(length(ns)+1,1);
 for i=1:length(ns)
     n = ns(i);
     mm = BernoulliConjugate('-prior',BetaDist(0.5,0.5));
-    mm = fit(mm, 'data', X(1:n));
+    mm = fit(mm, X(1:n));
     plot(mm.muDist, '-plotArgs', {styles{i}, 'linewidth', 2});
     legendstr{i} = sprintf('n=%d', n);
 end

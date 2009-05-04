@@ -5,7 +5,7 @@ classdef BernoulliConjugate < BinomConjugate
   methods 
     function obj =  BernoulliConjugate(varargin)
       [obj.muDist, obj.productDist] = processArgs(varargin, ...
-        '-prior', [], '-productDist', false);
+        '-prior',NoPrior, '-productDist', false);
       obj.N = 1;
     end
            

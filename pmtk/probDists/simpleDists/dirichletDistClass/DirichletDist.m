@@ -1,4 +1,4 @@
-classdef DirichletDist < ParamDist
+classdef DirichletDist < ProbDist
 
 
   properties

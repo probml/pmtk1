@@ -1,6 +1,4 @@
 %EXPORT_FIG  Exports figures suitable for publication
-%#author Oliver Woodford
-%#url http://www.mathworks.com/matlabcentral/fileexchange/23629
 %
 % Examples:
 %   export_fig filename

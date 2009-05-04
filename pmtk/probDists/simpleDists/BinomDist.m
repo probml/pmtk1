@@ -16,7 +16,7 @@ classdef BinomDist < ProbDist
       % N is mandatory; mu can be omitted or set to [] if it will be
       % estimated (using fit). N and mu can be vectors.
       [obj.N, obj.mu, obj.prior, obj.productDist] = processArgs(varargin, ...
-        '-N', 0, '-mu', [], '-prior', 'none', '-productDist', false);
+        '-N', 0, '-mu', [], '-prior', NoPrior, '-productDist', false);
       obj.support = 0:obj.N;
     end
     
@@ -30,7 +30,7 @@ classdef BinomDist < ProbDist
     
     function h=plot(obj, varargin)
       if ndistrib(obj) > 1, error('can only plot 1 distrib'); end
-      [plotArgs] = process_options( varargin, 'plotArgs' ,{});
+      [plotArgs] = processArgs( varargin, '-plotArgs' ,{});
       if ~iscell(plotArgs), plotArgs = {plotArgs}; end
       h=bar(exp(logprob(obj,obj.support')), plotArgs{:});
       set(gca,'xticklabel',obj.support);
@@ -95,39 +95,28 @@ classdef BinomDist < ProbDist
       end
 
       function obj = fit(obj, varargin)
-          % m = fit(model, 'name1', val1, 'name2', val2, ...)
-          % Arguments are
-          % data - X(i,1) is number of successes out of N
-          % suffStat - struct with nsucc, nfail
-          % 'prior' - 'none' or BetaDist [obj.prior]
-          [X, SS, prior] = process_options(varargin,...
-              'data'       , [],...
-              'suffStat'   , [],...
-              'prior'      , obj.prior);
-          if isempty(SS), SS = mkSuffStat(obj,X); end
-          switch class(prior)
-              case 'char'
-                  switch prior
-                      case 'none'
-                          obj.mu = SS.nsucc ./ (SS.nsucc + SS.nfail);
-                      otherwise
-                          error(['unknown prior ' prior])
-                  end
-              case 'BetaDist' % MAP estimate
-                  a = prior.a; b = prior.b;
-                  obj.mu = (SS.nsucc + a - 1) ./ (SS.nsucc + SS.nfail + a + b - 2);
-                  if 1 % debug
-                    m = Binom_BetaDist('-N', obj.N, '-prior', prior);
-                    m = fit(m, 'suffStat', SS);
-                    mm = mode(m.muDist);
-                    assert(approxeq(mm, obj.mu))
-                  end
-              otherwise
-                  error('unknown prior ')
-          end
+        % m = fit(m, X, SS)
+        [X, SS] = processArgs(varargin, ...
+          '-data', [], '-SS', []);
+        if isempty(SS), SS = mkSuffStat(obj,X); end
+        switch class(obj.prior)
+          case 'NoPrior'
+            obj.mu = SS.nsucc ./ (SS.nsucc + SS.nfail);
+          case 'BetaDist'
+            a = obj.prior.a; b = obj.prior.b;
+            obj.mu = (SS.nsucc + a - 1) ./ (SS.nsucc + SS.nfail + a + b - 2);
+            if 1 % debug
+              m = BinomConjugate('-N', obj.N, '-prior', obj.prior);
+              m = fit(m, '-SS', SS);
+              mm = mode(m.muDist);
+              assert(approxeq(mm, obj.mu))
+            end
+          otherwise
+            error('unknown prior ')
+        end
       end
-     
-    
+      
+      
            
   end 
  
