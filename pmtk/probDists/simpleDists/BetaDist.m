@@ -1,4 +1,4 @@
-classdef BetaDist < ParamDist
+classdef BetaDist < ProbDist
 
   properties
     a;
@@ -9,15 +9,12 @@ classdef BetaDist < ParamDist
   %% main functions
   methods
     function obj =  BetaDist(a,b)
-      % a and b can be vectors, in which case must be same length
+      % a and b can be vectors, in which case they must be same length
       if nargin == 0, a = []; b = []; end
       obj.a = a;
       obj.b = b;
     end
 
-    function d = ndistrib(obj)
-      d = length(obj.a);
-    end
 
     function m = mean(obj)
       m = obj.a ./(obj.a + obj.b);
@@ -26,14 +23,14 @@ classdef BetaDist < ParamDist
 
     function m = mode(obj)
        valid = find(obj.a + obj.b > 2);
-       d = ndistrib(obj);
+       d = length(obj.a);
        m = NaN*ones(1,d);
        m(valid) = (obj.a(valid)  - 1) ./ (obj.a(valid) + obj.b(valid) - 2);
     end
 
     function m = var(obj)
       valid = find(obj.a + obj.b > 1);
-      d = ndistrib(obj);
+      d = length(obj.a);
       m = NaN*ones(1,d);
       m(valid) = (obj.a(valid) .* obj.b(valid)) ./ ...
         ( (obj.a(valid) + obj.b(valid)).^2 .* (obj.a(valid) + obj.b(valid) + 1) );
@@ -43,7 +40,7 @@ classdef BetaDist < ParamDist
     function X = sample(obj, n)
       % X(i,j) = sample from params(j) for i=1:n
       assert(useStatsToolbox); %#statsToolbox
-      d = ndistrib(obj);
+      d = length(obj.a);
       X = zeros(n, d);
       for j=1:d
         X(:,j) = betarnd(obj.a(j), obj.b(j), n, 1);
@@ -52,7 +49,8 @@ classdef BetaDist < ParamDist
 
     function p = logprob(obj, X)
       % p(i,j) = log p(x(i) | params(j))
-      d = ndistrib(obj);
+      d = length(obj.a);
+
       x = X(:);
       n = length(x);
       p = zeros(n,d);
@@ -77,25 +75,26 @@ classdef BetaDist < ParamDist
 
 
     function obj = fit(obj, varargin)
-      % m = fit(model, 'name1', val1, 'name2', val2, ...)
+      % m = fit(model, data)
       % Arguments are
       % data - data(i) = case i
       % Compute MLE. Needs stats toolbox.
-      [X] = process_options(...
-        varargin, 'data', []);
+      [X] = processArgs(varargin, '-data', []);
       assert(useStatsToolbox); %#statsToolbox
       phat = betafit(max(1e-6, min(1-1e-6,X(:)))); % prevent 0s and 1s
       %phat = betafit(X(:));
       obj.a = phat(1); obj.b = phat(2);
     end
+    
+    function h=plot(obj, varargin)
+      [plotArgs, npoints] = processArgs(...
+        varargin, '-plotArgs' ,{}, '-npoints', 100);
+     xs = linspace(0, 1, npoints); 
+     p = exp(logprob(obj, xs(:)));
+     h = plot(colvec(xs), colvec(p), plotArgs{:});
+    end
+                
   end
     
-  methods
-      
-      function xrange = plotRange(obj) % over-ride default
-        xrange = [0 1];
-      end 
- 
-  end
 
 end

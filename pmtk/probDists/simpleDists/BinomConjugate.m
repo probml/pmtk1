@@ -1,4 +1,4 @@
-classdef Binom_BetaDist < ParamDist % CompoundDist
+classdef BinomConjugate < ProbDist
  % p(X,theta|a,b,N) = Binom(X|N,theta) Beta(theta|a,b) 
   
  properties
@@ -9,16 +9,11 @@ classdef Binom_BetaDist < ParamDist % CompoundDist
  
   %% Main methods
   methods 
-    function obj =  Binom_BetaDist(varargin)
-      % Binom_BetaDist(N, prior, productDist)
+    function obj =  BinomConjugate(varargin)
+      % BinomConjugate(N, prior, productDist)
       % prior should be a BetaDist object
       [obj.N, obj.muDist, obj.productDist] = processArgs(varargin, ...
         '-N', [], '-prior', [], '-productDist', false);
-       %error('deprecated')
-    end
-
-    function d = ndistrib(obj)
-      d = ndistrib(obj.mu); % length(obj.N);
     end
     
     function m = marginalizeOutParams(obj)
@@ -32,7 +27,7 @@ classdef Binom_BetaDist < ParamDist % CompoundDist
        p = logprob(marginalizeOutParams(obj), X);
      end
      
-     function SS = mkSuffStat(obj,X) %#ok
+     function SS = mkSuffStat(obj,X) 
        SS.nsucc = sum(X,1);
        ntrials = size(X,1);
        SS.nfail = ntrials*obj.N - SS.nsucc;
@@ -40,13 +35,15 @@ classdef Binom_BetaDist < ParamDist % CompoundDist
 
 
      function obj = fit(obj, varargin)
-       % m = fit(model, 'name1', val1, 'name2', val2, ...)
-       % Arguments are
-       % data - X(i,1) is number of successes in N trials
-       % suffStat - nsucc, nfail 
-       [X, SS] = process_options(varargin,...
-           'data'       , [],...
-           'suffStat'   , []);
+       % m = fit(model, data, SS)
+       % data(i,1) is number of successes in N trials
+       % SS - sufficient statistics, struct with fields nsucc, nfail 
+       % Examples
+       % m = fit(m, X)
+       % m = fit(m, '-SS', SS)
+       [X, SS] = processArgs(varargin,...
+           '-data'       , [],...
+           '-SS'   , []);
        if isempty(SS), SS = mkSuffStat(obj,X); end
        a = obj.muDist.a; b = obj.muDist.b;
        obj.muDist = BetaDist(a + SS.nsucc, b + SS.nfail);

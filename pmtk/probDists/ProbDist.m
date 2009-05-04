@@ -6,6 +6,7 @@ classdef ProbDist
     %%  Main methods
     methods
       
+      %{
         function nll = negloglik(obj,X)
             % The negative log likelihood of a data set
             % nll = -(1/n)sum_i(log p(X_i | params))
@@ -13,7 +14,8 @@ classdef ProbDist
             % the number of cases.
             nll = -mean(logprob(obj, X),1);
         end
-        
+        %}
+      
         %{
         % yuck! what is this doing here??
         function [mu, stdErr] = cvScore(obj, X, varargin)
@@ -35,6 +37,7 @@ classdef ProbDist
         end
         %}
         
+      %{
         function bool = isTied(obj)
         % Should return true if any of the parameters are tied.    
            bool = false; 
@@ -47,7 +50,8 @@ classdef ProbDist
         function obj = unclampTied(obj)
         % Unclamp all tied parameters    
         end
-        
+        %}
+      
         function cellArray = copy(obj,varargin)
         % Create a cell array of copies of a probability distribution. Uses
         % repmat semantics - e.g. copy(obj,3) or copy(obj,3,5) or
@@ -60,15 +64,8 @@ classdef ProbDist
            cellArray = num2cell(repmat(obj,varargin{:}));
         end
         
-       
-        
-   
-        
-        
-    end
     
-    
-    methods
+        
         %% Plotting Methods
         function [h,p] = plot(obj, varargin)
         % plot a density function in 2d

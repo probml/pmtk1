@@ -1,4 +1,4 @@
-classdef BinomDist < ParamDist
+classdef BinomDist < ProbDist
  
   
   properties

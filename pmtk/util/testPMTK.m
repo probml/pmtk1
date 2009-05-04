@@ -2,7 +2,7 @@
 
 %try
 
-%{
+
 bernoulliDistTest;                       pclear(0);
 bernoulli_betaSequentialUpdate;          pclear(0);
 binom_betaPostPredDemo;                  pclear(0);
@@ -60,7 +60,6 @@ numericalIntNIGdemo;                     pclear(0);
 oldFaithfulDemo;                         pclear(0);
 poissonPlotDemo;                         pclear(0);
 prostateLinregAll;                       pclear(0);
-%}
 rainyDayDgmDemo;                            pclear(0);
 sampleDistDemo;                          pclear(0);
 sampleHIWdemo;                           pclear(0);
