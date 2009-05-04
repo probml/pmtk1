@@ -60,7 +60,7 @@ set(h, 'color', 'r', 'linestyle', '-.');
 % Now do CV
 MLcv = LinregL1ModelList('-nlambdas', 20, '-transformer', T, ...
   '-selMethod', 'cv', '-nfolds', 5, '-verbose', true);
-MLcv = fit(MLcv, D);
+MLcv = fit(MLcv, Dtrain);
 [Wcv, w0cv, sigma2cv, dfcv, lambdascv, shrinkagecv] = getParamsForAllModels(MLcv);
 
 

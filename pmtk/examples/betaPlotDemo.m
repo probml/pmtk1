@@ -5,7 +5,7 @@ figure;
 legendStr = cell(length(as),1);
 for i=1:length(as)
     a = as(i); b = bs(i);
-    plot(BetaDist(a,b), 'plotArgs', {styles{i}, 'linewidth', 2});
+    plot(BetaDist(a,b), '-plotArgs', {styles{i}, 'linewidth', 2});
     hold on
     legendStr{i} = sprintf('a=%2.1f, b=%2.1f', a, b);
 end

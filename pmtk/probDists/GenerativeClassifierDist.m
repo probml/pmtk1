@@ -1,4 +1,4 @@
-classdef GenerativeClassifierDist < ParamDist
+classdef GenerativeClassifierDist < ProbDist
 
     
     properties

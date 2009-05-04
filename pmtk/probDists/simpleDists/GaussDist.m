@@ -59,7 +59,7 @@ classdef GaussDist < ProbDist
      function X = sample(model, n)
        % X(i,j) = sample from gauss(m.mu(j), m.sigma(j)) for i=1:n
        if nargin < 2, n  = 1; end
-       d = ndistrib(model);
+       d = length(model.mu);
        X = randn(n,d) .* repmat(sqrt(model.sigma2), n, 1) + repmat(model.mu, n, 1);
      end
 
