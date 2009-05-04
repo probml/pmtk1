@@ -1,4 +1,4 @@
-classdef InvWishartDist < ParamDist
+classdef InvWishartDist < ProbDist
     
     properties
         Sigma;

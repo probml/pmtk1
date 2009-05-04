@@ -10,9 +10,14 @@ function [model, loglikTrace] = fitMvnEcm(model, data, prior, varargin)
 [maxIter, opttol, verbose] = process_options(varargin, ...
   'maxIter', 100, 'tol', 1e-4, 'verbose', false); 
 
+allMissing = find(all(isnan(data),2));
+if(~isempty(allMissing)),
+  warningStr = sprintf('%d rows of the data matrix contain no observations.  These will be removed \n');
+  warning('fitMvnEcm:preprocess:missing', warningStr);
+  data = data(setdiffPMTK(1:rows(data), allMissing),:);
+end
 [n,d] = size(data);
-
-dataMissing = isnan(data);	  
+dataMissing = isnan(data);
 missingRows = any(dataMissing,2);
 missingRows = find(missingRows == 1);  
 X = data'; % it will be easier to work with column vectros
@@ -38,9 +43,9 @@ currentLL = -inf;
 prior = mkPrior(model, '-data', data, '-prior', model.prior, '-covtype', model.covtype);
 switch class(prior)
   case 'MvnInvWishartDist'
-    kappa0 = prior.k; m0 = prior.mu; nu0 = prior.dof; T0 = prior.Sigma;
+    kappa0 = prior.k; m0 = prior.mu'; nu0 = prior.dof; T0 = prior.Sigma;
   case 'MvnInvGammaDist'
-    kappa0 = prior.Sigma; m0 = prior.mu; nu0 = prior.a; T0 = prior.b;
+    kappa0 = prior.Sigma; m0 = prior.mu'; nu0 = prior.a; T0 = prior.b;
   case 'NoPrior'
     % Setting hyperparams to zero gives the MLE
     kappa0 = 0; m0 = zeros(d,1); nu0 = 0; T0 = zeros(d,d);

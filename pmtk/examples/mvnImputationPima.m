@@ -39,8 +39,8 @@ end
 
 
 % For comparison we also consider the 'best' model -- the model fitted given that we have access to all the data
-fittedModel = {fit(model,'data',pima,'prior','none'), ...
-	fit(model,'data',pimaNan,'prior','none','fitArgs', {'verbose', false})};
+fittedModel{1} = fit(model,'data',pima,'prior','none');
+fittedModel{2} = fit(model,'data',pimaNan,'prior','none','fitArgs', {'verbose', true});
 
 
 % Impute the missing data and compute mse for each fitted model
