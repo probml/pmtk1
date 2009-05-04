@@ -171,3 +171,58 @@ classdef TabularFactor
     
 
 end
+
+function smallT = marg_table(bigT, bigdom, bigsz, onto, maximize)
+    % MARG_TABLE Marginalize a table
+    % smallT = marg_table(bigT, bigdom, bigsz, onto, maximize)
+    
+    if nargin < 5, maximize = 0; end
+    
+    smallT = reshapePMTK(bigT, bigsz);        % make sure it is a multi-dim array
+    sum_over = setdiffPMTK(bigdom, onto);
+    if isempty(sum_over)
+        smallT = bigT; return;
+    end
+    ndx = lookupIndices(sum_over, bigdom);
+    if maximize
+        for i=1:length(ndx)
+            smallT = max(smallT, [], ndx(i));
+        end
+    else
+        for i=1:length(ndx)
+            smallT = sum(smallT, ndx(i));
+        end
+    end
+    ns = zeros(1, max(bigdom));
+    ns(bigdom) = bigsz;
+    smallT = squeeze(smallT);             % remove all dimensions of size 1
+    smallT = reshapePMTK(smallT, ns(onto)); % put back relevant dims of size 1
+end
+
+function B = extend_domain_table(A, smalldom, smallsz, bigdom, bigsz)
+% EXTEND_DOMAIN_TABLE Expand an array so it has the desired size.
+% B = extend_domain_table(A, smalldom, smallsz, bigdom, bigsz)
+%
+% A is the array with domain smalldom and sizes smallsz.
+% bigdom is the desired domain, with sizes bigsz.
+%
+% Example:
+% smalldom = [1 3], smallsz = [2 4], bigdom = [1 2 3 4], bigsz = [2 1 4 5],
+% so B(i,j,k,l) = A(i,k) for i in 1:2, j in 1:1, k in 1:4, l in 1:5
+
+if isequal(size(A), [1 1]) % a scalar
+  B = A; % * onesPMTK(bigsz);
+  return;
+end
+
+%map = find_equiv_posns(smalldom, bigdom);
+map = lookupIndices(smalldom, bigdom);
+sz = ones(1, length(bigdom));
+sz(map) = smallsz;
+B = reshapePMTK(A, sz); % add dimensions for the stuff not in A
+sz = bigsz;
+sz(map) = 1; % don't replicate along A's dimensions
+B = repmatPMTK(B, sz(:)');
+end
+
+

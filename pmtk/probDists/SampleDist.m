@@ -1,4 +1,4 @@
-classdef SampleDist < ParamFreeDist
+classdef SampleDist < ProbDist
   % Sample based representation of a pdf
   % May represent multiple distributions in pages so long as these are all
   % of he same size, e.g. the same number of samples drawn for each and each
@@ -26,6 +26,7 @@ classdef SampleDist < ParamFreeDist
   %%  Main methods
   methods
     function m = SampleDist(X, domain, support)
+      error('deprecated');
       if nargin == 0; return; end
       if nargin < 1, X = []; end
       m.samples = X;
