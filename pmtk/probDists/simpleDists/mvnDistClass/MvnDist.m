@@ -46,20 +46,6 @@ classdef MvnDist < ProbDist
        end
      end
      
-     %{
-    function model = setParams(model, param)
-    % setParams needed by gibbs samplers
-      model.mu = param.mu;
-      model.Sigma = param.Sigma;
-    end
-
-    function model = setParamsAlt(model, mu, Sigma)
-    % setParams needed by gibbs samplers
-      model.mu = mu;
-      model.Sigma = Sigma;
-    end
-    %}
-     
     function mu = mean(model)
       mu = model.mu;
     end
@@ -115,14 +101,24 @@ classdef MvnDist < ProbDist
     function L = logprob(model,X, normalized)
       % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
       if nargin < 3, normalized = true; end
-      if isa(X, 'DataTable'), X=X.X; end
       mu = model.mu; Sigma = model.Sigma;
       d = length(mu);
       logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
-      XC = bsxfun(@minus,X,rowvec(mu));
-      L = -0.5*sum((XC*inv(Sigma)).*XC,2);
+      switch class(X)
+        case 'struct'
+          SS = X;
+          % SS.n; SS.xbar = 1/n sum_i X(i,:)'; SS.XX2(j,k) = 1/n sum_i X(i,j) X(i,k)
+          n = SS.n;
+          S = n*SS.XX2 - n*SS.xbar*mu' - mu*n*SS.xbar' + n*mu*mu';
+        otherwise
+          if isa(X, 'DataTable'), X=X.X; end
+          n = size(X,1);
+          XC = bsxfun(@minus,X,rowvec(mu));
+          S = (XC'*XC);
+      end
+      L = -0.5*trace(inv(Sigma) * S);
       if normalized
-        L = L - logZ;
+        L = L - n*logZ;
       end
       if false % debugging
         SS = MvnDist.mkSuffStat(X);
@@ -155,8 +151,10 @@ classdef MvnDist < ProbDist
       L = -0.5*sum((XC*inv(Sigma)).*XC,2);
       L = L - logZ;
     end
-
+%}
     function L = logprobSS(model, SS)
+      L = logprob(model, SS);
+%{
       % L = sum_i log p(SS(i) | params)
       % SS.n
       % SS.xbar = 1/n sum_i X(i,:)'
@@ -169,9 +167,10 @@ classdef MvnDist < ProbDist
       d = length(mu);
       logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
       L = -0.5*trace(inv(Sigma) * S) - n*logZ;
+%}
     end
 
-
+%{
     function L = logprobUnnormalized(model, X)
       % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
       % variables
@@ -188,7 +187,7 @@ classdef MvnDist < ProbDist
       X = bsxfun(@minus,X,rowvec(mu));
       L =-0.5*sum((X*inv(Sigma)).*X,2);
     end
-    %}
+%}
     
     function L = logprior(model)
       if strcmp(model.prior, 'none') || isa(model.prior, 'NoPrior')

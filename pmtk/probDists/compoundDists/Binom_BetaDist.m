@@ -1,4 +1,4 @@
-classdef Binom_BetaDist < ParamDist % CompoundDist
+classdef Binom_BetaDist < ProbDist % CompoundDist
  % p(X,theta|a,b,N) = Binom(X|N,theta) Beta(theta|a,b) 
   
  properties

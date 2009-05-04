@@ -1,4 +1,4 @@
-classdef CompoundDist < ParamDist 
+classdef CompoundDist < ProbDist 
 % p(X,theta|alpha) = p(X|theta) p(theta|alpha)   
  
   
