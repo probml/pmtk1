@@ -35,7 +35,7 @@ Sexact = sample(truedist, 1000);
 
 
 % Sample approximation
-psamp = SampleDist(Sexact);
+psamp = SampleBasedDist(Sexact);
 plot(psamp);title('exact samples')
 set(gca,'xlim',[min(range1) max(range1)]);
 set(gca,'ylim',[min(range2) max(range2)]);
@@ -59,7 +59,9 @@ set(gca,'ylim',[min(range2) max(range2)]);
 
 % Laplace approx
 tic
-plaplace = LaplaceApproxDist(logtarget, initVal);
+%plaplace = LaplaceApproxDist(logtarget, initVal);
+[mu,Sigma,logZlaplace] = laplaceApproxNumerical(logtarget, initVal);
+plaplace = MvnDist(mu,Sigma);
 logZlaplace =  lognormconst(plaplace);
 muLaplace = mean(plaplace);
 varLaplace = var(plaplace);

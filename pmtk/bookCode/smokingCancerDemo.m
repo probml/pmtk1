@@ -18,7 +18,7 @@ eta = log( (S(:,L)./(1-S(:,L))) .* (S(:,C)./(1-S(:,C))));
 Sexact = [alpha(:) eta(:)];
 
 % Sample approximation
-psamp = SampleDist(Sexact);
+psamp = SampleBasedDist(Sexact);
 plot(psamp);title('exact samples')
 set(gca,'xlim',[min(range1) max(range1)]);
 set(gca,'ylim',[min(range2) max(range2)]);
@@ -30,6 +30,7 @@ modeSample = NaN;
 logZsample = NaN;
 m = marginal(psamp,1);
 [credSample(1), credSample(2)] = credibleInterval(m);
+pposSample = 1-cdf(m,0);
 pposSample = 1-cdf(m,0);
 
 % Grid method
@@ -47,23 +48,26 @@ grid on
 
 % Laplace approx
 tic
-plaplace = LaplaceApproxDist(logtarget, initVal);
-logZlaplace =  lognormconst(plaplace);
+[mu,Sigma,logZlaplace] = laplaceApproxNumerical(logtarget, initVal);
+plaplace = MvnDist(mu,Sigma);
 muLaplace = mean(plaplace);
 varLaplace = var(plaplace);
 modeLaplace = mode(plaplace);
-m = convertToScalarDist(marginal(plaplace,1));
+%m = convertToScalarDist(marginal(plaplace,1));
+m = marginal(plaplace,1);
+m = GaussDist(m.mu, m.Sigma);
 [credLaplace(1), credLaplace(2)] = credibleInterval(m);
 pposLaplace = 1-cdf(m,0);
 toc
 figure; plot(plaplace); title('Laplace approximation')
-set(gca,'xlim',[min(range1) max(range1)]);
+set(gca,'xlim',[min(range1) max(range1)]); 
 set(gca,'ylim',[min(range2) max(range2)]);
 grid on
 
 % Numerical integration
 tic
-pnum = NumIntDist(logtarget, [min(range1) max(range1) min(range2) max(range2)]);
+xrange = [min(range1) max(range1) min(range2) max(range2)];
+pnum = NumIntDist(logtarget, xrange);
 logZnum =  lognormconst(pnum);
 muNum = mean(pnum);
 varNum = var(pnum);

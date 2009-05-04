@@ -1,4 +1,4 @@
-classdef MvnDist < ParamDist
+classdef MvnDist < ProbDist
   % multivariate normal p(X|mu,Sigma)
 
   properties
@@ -46,6 +46,7 @@ classdef MvnDist < ParamDist
        end
      end
      
+     %{
     function model = setParams(model, param)
     % setParams needed by gibbs samplers
       model.mu = param.mu;
@@ -57,7 +58,8 @@ classdef MvnDist < ParamDist
       model.mu = mu;
       model.Sigma = Sigma;
     end
-    
+    %}
+     
     function mu = mean(model)
       mu = model.mu;
     end
@@ -110,15 +112,18 @@ classdef MvnDist < ParamDist
     end
 
 
-    function L = logprob(model,X)
+    function L = logprob(model,X, normalized)
       % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
+      if nargin < 3, normalized = true; end
       if isa(X, 'DataTable'), X=X.X; end
       mu = model.mu; Sigma = model.Sigma;
       d = length(mu);
       logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
       XC = bsxfun(@minus,X,rowvec(mu));
       L = -0.5*sum((XC*inv(Sigma)).*XC,2);
-      L = L - logZ;
+      if normalized
+        L = L - logZ;
+      end
       if false % debugging
         SS = MvnDist.mkSuffStat(X);
         LL = logprobSS(model, SS);
@@ -126,6 +131,7 @@ classdef MvnDist < ParamDist
       end
     end
 
+    %{
     function L = logprobParam(model,X, param)
       % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
       mu = param.mu; Sigma = param.Sigma;
@@ -182,7 +188,8 @@ classdef MvnDist < ParamDist
       X = bsxfun(@minus,X,rowvec(mu));
       L =-0.5*sum((X*inv(Sigma)).*X,2);
     end
-
+    %}
+    
     function L = logprior(model)
       if strcmp(model.prior, 'none') || isa(model.prior, 'NoPrior')
         L = 0;

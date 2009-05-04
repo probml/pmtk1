@@ -1,4 +1,4 @@
-classdef ConstDist < ParamFreeDist
+classdef ConstDist < ProbDist
   % vector of delta fns (constant values)
   properties
     point;
@@ -51,15 +51,15 @@ classdef ConstDist < ParamFreeDist
        logZ = 0;
      end
      
-      function h = plot(obj)
-            stem(obj.point(:)','LineWidth',3);
-            xlabel('dimension');
-            title('constant distribution');
-            axis tight;
-            grid on;
-      end
+     function h = plot(obj)
+       stem(obj.point(:)','LineWidth',3);
+       xlabel('dimension');
+       title('constant distribution');
+       axis tight;
+       grid on;
+     end
       
-     
+     %{
       function Tfac = convertToTabularFactor(obj,child, ctsParents, dParents, visible, data, nstates,globalDomain) %#ok
           sz = sizePMTK(obj.point);
           ssz = sz(end);
@@ -67,7 +67,7 @@ classdef ConstDist < ParamFreeDist
           tmp(obj.point) = 1; % delta function at set value
           Tfac = TabularFactor(tmp, globalDomain);
       end
-            
+       %}     
   end
   
 end

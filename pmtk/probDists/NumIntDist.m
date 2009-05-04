@@ -1,4 +1,4 @@
-classdef NumIntDist  < ParamFreeDist
+classdef NumIntDist  < ProbDist
    % Compute posterior quantities using numerical integration (up to 3d)
    
   properties
@@ -10,15 +10,15 @@ classdef NumIntDist  < ParamFreeDist
   end
 
   methods
-    function obj = NumDist(logDensityFn, range, tol)
+    function obj = NumIntDist(logDensityFn, Xrange, tol)
       % densityFn(X(i,:)) is the unnormalized density at specifed vector
       % range = [x1min, x1max, x2min, x2max, x3min, x3max]
       if nargin < 3, tol = 1e-5; end
       obj.densityFn = @(X) exp(logDensityFn(X));
       obj.logDensityFn = logDensityFn;
-      obj.range = range;
+      obj.range = Xrange;
       obj.tol = tol;
-      obj.normconst = numericalIntegral(obj.densityFn, range, tol);
+      obj.normconst = numericalIntegral(obj.densityFn, Xrange, tol);
     end
     
     function logZ = lognormconst(obj)

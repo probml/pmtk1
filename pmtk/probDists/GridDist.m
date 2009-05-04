@@ -1,4 +1,4 @@
-classdef GridDist  < ParamFreeDist
+classdef GridDist  < ProbDist
 
   properties
     density;

@@ -1,4 +1,4 @@
-classdef JtreeInfEng 
+classdef JtreeInfEng < InfEng
 % Performs calibration using sum-product message passing on the clique tree
 % induced by the client model. 
     

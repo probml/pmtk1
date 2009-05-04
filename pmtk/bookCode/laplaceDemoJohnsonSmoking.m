@@ -3,7 +3,7 @@
 
 initVal = [2 5]; 
 
-[mu, C, logZ] = laplaceApprox(@smokingCancerLogpost, initVal)
+[mu, C, logZ] = laplaceApproxNumerical(@smokingCancerLogpost, initVal)
 
 
 % Credible interval for alpha
