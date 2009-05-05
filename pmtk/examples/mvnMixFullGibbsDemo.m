@@ -1,6 +1,6 @@
 %% (Full) Gibbs sampling from a mixture of multivariate normals
 %#author Cody Severinski
-
+%#broken
 setSeed(0);
 % Set the number of clusters K
 % the number of observations n to generate in d dimensions,

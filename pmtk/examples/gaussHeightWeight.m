@@ -1,4 +1,5 @@
 %% Height Weight Example
+%#broken
 rawdata = dlmread('heightWeightData.txt'); % comma delimited file
 data.Y = rawdata(:,1); % 1=male, 2=female
 data.X = [rawdata(:,2) rawdata(:,3)]; % height, weight

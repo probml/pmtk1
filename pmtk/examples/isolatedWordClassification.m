@@ -1,4 +1,5 @@
 %% Classifying a speech signal with an HMM as "four" or "five"
+%#broken
 if(~exist('data45.mat','file'))
     error('Please download data45.mat from www.cs.ubc.ca/~murphyk/pmtk and save it in the data directory');
 end

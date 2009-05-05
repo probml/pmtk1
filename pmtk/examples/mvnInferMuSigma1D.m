@@ -1,4 +1,5 @@
 %% Demo of inferring mu and sigma for a 1d Gaussian
+%#broken
 clear;
 setSeed(0);
 muTrue = 10; varTrue = 5^2;

@@ -2,7 +2,7 @@
 % We use a N(0, sigma*eye(2)) proposal and see the effect of changing sigma
 % We also compare to Gibbs sampling
 %#testPMTK
-
+%#broken
 % Compared to mcmcMvn2d which calls the sampling routines
 % directly, rather than using engines and calling the 'marginal' method
 

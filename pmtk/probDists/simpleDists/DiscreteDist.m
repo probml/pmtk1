@@ -46,6 +46,13 @@ classdef DiscreteDist  < ProbDist
     function d = ndistrib(obj)
       d = size(obj.T, 2);
     end
+
+    function d = ndimensions(obj)
+      % Since the support is a set of numbers, the dimension is one
+      % This used to be in ParamDist, but many functions still call ndimensions on a DiscreteDist
+      % Do we want to implement this here, or change the other functions / demos?
+      d = 1;
+    end
     
     function K = nstates(obj)
       K = length(obj.support); % size(obj.T, 1);

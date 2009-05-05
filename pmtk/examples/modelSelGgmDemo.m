@@ -1,5 +1,5 @@
 %% Model selection for GGMs on 4 nodes 
-
+%#broken
 setSeed(0);
 d = 4;
 Gtrue = UndirectedGraph('type', 'loop', 'nnodes', d);

@@ -1,5 +1,6 @@
 %% Perform Gibbs sampling for a Mixture of Gaussians on the Old Faithful Data Set
-%author Cody Severinski
+%#author Cody Severinski
+%#broken
 setSeed(1);
 load oldFaith;
 [n d] = size(X);

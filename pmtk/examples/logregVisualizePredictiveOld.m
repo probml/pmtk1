@@ -5,7 +5,7 @@
 %% Load and Plot the Data
 % Load synthetic data generated from a mixture of Gaussians. Source:
 % <<http://research.microsoft.com/~cmbishop/PRML/webdatasets/datasets.htm>>
-%
+%#broken
 load bishop2class
 figure;
 plot(X(Y==1,1),X(Y==1,2),'xr','LineWidth',2,'MarkerSize',7); hold on;

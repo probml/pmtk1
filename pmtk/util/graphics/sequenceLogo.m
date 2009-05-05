@@ -217,7 +217,8 @@ else % P has sequences that may include ambiguous symbols
     % row:    - number of unique characters
     uniqueList = unique(seqs);
     
-    if ~isAA && ~isnt(uniqueList) && ~NTFlag
+%    if ~isAA && ~isnt(uniqueList) && ~NTFlag
+     if ~isAA && ~NTFlag
         warning('Bioinfo:seqlogo:AmbigiousSequenceAlphabet',...       
             ['The alphabet type of the input sequence may not be nucleotide.',...
               '\nResults being displayed as the default alphabet type nucleotides.',...  

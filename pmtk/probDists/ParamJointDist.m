@@ -1,4 +1,4 @@
-classdef ParamJointDist < ParamDist
+classdef ParamJointDist < ProbDist
     
     % Parametric joint distribution, which supports inference
     % about states of some components (dimensions) given evidence on others.

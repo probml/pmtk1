@@ -1,6 +1,7 @@
 % A simple demo of the spherical, diagonal, and full covariance models for an multivariate normal
 %#testPMK
 %#author Cody Severinski
+%#broken
 
 setSeed(0); doPlot = true; doPrint = false;
 N = 500; d = 3; K = 2;

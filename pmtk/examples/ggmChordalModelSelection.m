@@ -1,4 +1,5 @@
 %% Pick best possible GGM on 4 nodes using exhaustive seach
+%#broken
 
 n = 10; d = 4; seed = 0; graphType = 'loop';
 Phi = 0.1*eye(d); delta = 5; % hyper-params

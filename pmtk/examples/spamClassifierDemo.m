@@ -2,6 +2,7 @@ function [model,baseModel] = spamClassifierDemo()
 %% Spam Classifier Demo
 % Perform classification on spam demo, using dataset from Hastie, Tribshirani,and Friedman
 %#author Cody Severinski
+%#broken
 
 doprint = false;    
     
