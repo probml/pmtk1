@@ -5,7 +5,7 @@ setSeed(seed);
 m = MvnDist();
 m = mkRndParams(m, 2);
 X = sample(m, 500);
-mS = SampleDist(X);
+mS = SampleBasedDist(X);
 figure(1);clf
 for i=1:2
     subplot2(2,2,i,1);

@@ -121,14 +121,17 @@ classdef MvnDist < ProbDist
       end
     end
     
-    function L = logprob(model,X)
+    function L = logprob(model,X, normalize)
       % L(i) = log p(X(i,:) | params)
+      if nargin < 3, normalize = true; end
       mu = model.mu; Sigma = model.Sigma;
       d = length(mu);
-      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
       XC = bsxfun(@minus,X,rowvec(mu));
       L = -0.5*sum((XC*inv(Sigma)).*XC,2);
-      L = L - logZ;
+      if normalize
+        logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
+        L = L - logZ;
+      end
       if false % debugging
         SS = MvnDist.mkSuffStat(X);
         LL = logprobSS(model, SS);

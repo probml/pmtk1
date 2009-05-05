@@ -1,4 +1,4 @@
-classdef PoissonDist < ParamDist
+classdef PoissonDist < ProbDist
   
   properties
     lambda;

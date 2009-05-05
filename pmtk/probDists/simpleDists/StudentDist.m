@@ -124,7 +124,19 @@ classdef StudentDist < ProbDist
         obj.dof = params(3);
     end
       
-     
+    function h=plot(obj, varargin)
+      sf = 2;
+      m = mean(obj); v = sqrt(var(obj));
+      xrange = [m-sf*v, m+sf*v];
+      [plotArgs, npoints, xrange, useLog] = processArgs(...
+        varargin, '-plotArgs' ,{}, '-npoints', 100, ...
+        '-xrange', xrange, '-useLog', false);
+      xs = linspace(xrange(1), xrange(2), npoints);
+      p = logprob(obj, xs(:));
+      if ~useLog, p = exp(p); end
+      h = plot(colvec(xs), colvec(p), plotArgs{:});
+    end
+    
   end % methods
 
   

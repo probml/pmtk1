@@ -1,27 +1,24 @@
-classdef Discrete_DirichletDist < ParamDist % CompoundDist
+classdef Discrete_DirichletDist < ProbDist
  % p(X,theta|alpha) = Discrete(X|theta) Dir(theta|alpha) 
   
  properties
-   muDist; % DirichletDist
+   muDist; % DirichletDist (better to call it paramDist)
    support;
  end
  
   %% Main methods
   methods 
-    function obj =  Discrete_DirichletDist(muDist, support)
-      if(nargin == 0),return;end
-      % muDist is of type DirichletDist
-      obj.muDist = muDist;
-      if nargin < 2, support = 1:ndimensions(muDist); end
-      obj.support = support;
+    function obj =  Discrete_DirichletDist(varargin)
+      [obj.muDist, obj.support] = processArgs(varargin, ...
+        '-muDist', [], '-support', []);
+      if isempty(obj.support)
+        obj.support = 1:nstates(obj); 
+      end
     end
 
-    function d = ndistrib(obj)
-      d = ndistrib(obj.muDist);
-    end
     
      function d = nstates(obj)
-      d = ndimensions(obj.muDist);
+      d = nstates(obj.muDist);
      end
     
     

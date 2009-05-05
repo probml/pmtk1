@@ -1,4 +1,4 @@
-classdef WishartDist < ParamDist
+classdef WishartDist < ProbDist
     
     properties
         Sigma;
@@ -83,13 +83,13 @@ classdef WishartDist < ParamDist
             mm = WishartDist(v, obj.Sigma(query,query));
         end
         
-        function [h,p] = plot(obj, varargin)
-            if ndimensions(obj)==1
-                objS = convertToScalarDist(obj);
-                [h,p] = plot(objS, varargin{:});
-            else
-                error('can only plot 1d')
-            end
+        function [h] = plot(obj, varargin)
+          if ndimensions(obj)==1
+            objS = convertToScalarDist(obj);
+            [h] = plot(objS, varargin{:});
+          else
+            error('can only plot 1d')
+          end
         end
         
         function plotMarginals(obj)
@@ -99,7 +99,7 @@ classdef WishartDist < ParamDist
             for i=1:d
                 subplot2(nr,nc,i,i);
                 m = marginal(obj, i);
-                plot(m, 'plotArgs', {'linewidth',2});
+                plot(m, '-plotArgs', {'linewidth',2});
                 title(sprintf('%s_%d','\sigma^2', i));
             end
             n = 1000;

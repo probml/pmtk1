@@ -1,4 +1,4 @@
-classdef LaplaceDist < ParamDist
+classdef LaplaceDist < ProbDist
   % Laplace distribution or double exponential
   
   properties

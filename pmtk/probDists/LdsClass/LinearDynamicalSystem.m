@@ -1,4 +1,4 @@
-classdef LinearDynamicalSystemDist < ParamDist
+classdef LinearDynamicalSystem < ProbDist
 % A discrete time, stochastic, (switching) linear dynamical system 
 % (state space model), with Gaussian noise. 
     
@@ -39,7 +39,7 @@ classdef LinearDynamicalSystemDist < ParamDist
     
     methods
         
-        function model = LinearDynamicalSystemDist(varargin)
+        function model = LinearDynamicalSystem(varargin)
         % Constructor    
             [model.startDist,model.sysNoise ,model.obsNoise     ,  ...
              model.sysMatrix,model.obsMatrix,model.inputMatrix  ,  ...

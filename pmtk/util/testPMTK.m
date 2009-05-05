@@ -2,7 +2,6 @@
 
 %try
 
-%{
 bernoulliDistTest;                       pclear(0);
 bernoulli_betaSequentialUpdate;          pclear(0);
 binom_betaPostPredDemo;                  pclear(0);
@@ -23,7 +22,6 @@ gammaRainfallDemo;                       pclear(0);
 gaussDGMdemo;                            pclear(0);
 gaussInferMuSigmaDemo;                   pclear(0);
 gaussMixPlot;                            pclear(0);
-%}
 gauss_NormInvGammDistTest;               pclear(0);
 generativeClassifierTest1;               pclear(0);
 generativeClassifierTest2;               pclear(0);

@@ -17,10 +17,11 @@ classdef DirichletDist < ProbDist
        d = size(obj.alpha,1); 
     end
     
-     function d = ndistrib(obj)
-       d = size(obj.alpha,2); 
-     end
+    function K = nstates(obj)
+       K = size(obj.alpha,1); 
+    end
     
+  
 
     function m = mean(obj)
       a = sum(obj.alpha);
@@ -62,10 +63,7 @@ classdef DirichletDist < ProbDist
       logZ = sum(gammaln(obj.alpha)) - gammaln(a);
     end
 
-    function plot(obj) % over-ride default
-      error('not supported')
-    end
-    
+  
 
   end
 

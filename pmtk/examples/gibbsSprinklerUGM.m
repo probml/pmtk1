@@ -16,7 +16,8 @@ ugmGibbs = ugm;
 ugmGibbs.infMethod = GibbsInfEng('Nsamples', 100, 'verbose', true, 'Nchains', 2);
 [jointGibbs, junk, convDiag] = marginal(ugmGibbs, [1 2 3 4]);
 disp('gibbs marginals')
-Jgibbs = pmf(jointGibbs);
+nstates = 2;
+Jgibbs = pmf(jointGibbs, nstates);
 figure; bar(Jgibbs(:)); title('gibbs joint')
 
 disp('convergence diagnostics')

@@ -1,4 +1,4 @@
-classdef MarkovDist < ParamDist
+classdef MarkovDist < ProbDist
 % A discrete state, discrete time, Markov chain
 
     properties

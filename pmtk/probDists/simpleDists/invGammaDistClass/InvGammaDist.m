@@ -1,4 +1,4 @@
-classdef InvGammaDist < ParamDist
+classdef InvGammaDist < ProbDist
     
 
   properties
@@ -8,14 +8,13 @@ classdef InvGammaDist < ParamDist
 
   %% Main methods
   methods
-    function obj =  InvGammaDist(a,b)
+    function obj =  InvGammaDist(varargin)
       % a = shape, b = scale
-      if nargin == 0
-        a = []; b = [];
-      end
-      obj.a = a;
-      obj.b = b;
+      [obj.a, obj.b] = processArgs(varargin, ...
+        '-a', [], '-b', []);
     end
+      
+    
 
     function d = ndimensions(obj)
       d = length(obj.a);

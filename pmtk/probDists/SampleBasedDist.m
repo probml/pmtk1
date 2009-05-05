@@ -4,12 +4,15 @@ classdef SampleBasedDist < ProbDist
   
   properties
     samples; % rows are samples, columns are dimensions
+    domain; % integer labels for the columns
   end
 
   %%  Main methods
   methods
-    function m = SampleBasedDist(X)
-      if nargin == 0; return; end
+    function m = SampleBasedDist(varargin)
+      [X, m.domain] = processArgs(varargin, ...
+        '-X', [], '-domain', []);
+      if isempty(m.domain), m.domain = 1:size(X,2); end
       m.samples = X;
     end
     
@@ -27,7 +30,12 @@ classdef SampleBasedDist < ProbDist
     
     
     function mm = marginal(m, queryVars)
-      mm = SampleBasedDist(m.samples(:, queryVars));
+      if(isempty(m.domain))
+        m.domain = 1:size(m.samples,2);
+      end
+      Q = lookupIndices(queryVars, m.domain);
+      mm = SampleBasedDist(m.samples(:,Q,:), m.domain(Q));
+      %mm = SampleBasedDist(m.samples(:, queryVars));
     end
     
     
@@ -54,6 +62,42 @@ classdef SampleBasedDist < ProbDist
       end
     end
     
+     function p = pmf(obj, nstates)
+      % p(j) = p(X=j), j=1:nstates of the joint configuration
+      % We count the number of unique joint assignments
+      % We assume the samples in column j are integers {1,...,nstates(j)}
+      % We can optionally specify the number of states
+      [Nsamples Ndims] = size(obj.samples); 
+      XX = obj.samples;
+      support = cell(1,Ndims);
+      if nargin < 2
+        for d=1:Ndims
+          support{d} = unique(XX(:,d));
+          nstates(d) = length(support{d});
+        end
+      else
+        if length(nstates)==1, nstates=nstates*ones(1,Ndims); end
+        for d=1:Ndims
+          support{d} = 1:nstates(d);
+        end
+      end
+      if Ndims==1
+        p = normalize(hist(XX, support{1}));
+        return;
+      end
+      ndx = subv2ind(nstates, XX);
+      K = prod(nstates);
+      counts = hist(ndx, 1:K);
+      p = reshape(counts,nstates)/Nsamples;
+     end
+    
+     function s = sample(obj,n)
+       NN = size(obj.samples, 1);
+       if n > NN, error('requesting too many samples'); end
+       perm = randperm(NN);
+       ndx = perm(1:n); % randi(NN,n,1);
+       s = obj.samples(ndx,:);
+     end
     
     function [h, hist_area] = plot(obj, varargin)
       [scaleFactor, useHisto,distNDX] = process_options(...

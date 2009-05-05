@@ -11,7 +11,7 @@ sysNoise  = MvnDist(zeros(stateSize,1),0.1*eye(stateSize));
 obsNoise  = MvnDist(zeros(stateSize,1),eye(obsSize));
 startDist = MvnDist([10;10;1;0],10*eye(stateSize));
 
-groundTruth = LinearDynamicalSystemDist(...
+groundTruth = LinearDynamicalSystem(...
     'sysMatrix' ,sysMatrix  ,...
     'obsMatrix' ,obsMatrix  ,...
     'sysNoise'  ,sysNoise   ,...
@@ -23,7 +23,7 @@ setSeed(0);
 nTimeSteps = 100;
 [Z,Y] = sample(groundTruth,nTimeSteps);
 %% Learn Back the Dynamics
-testModel = LinearDynamicalSystemDist('stateSize',stateSize); % at a minimum, we must specify the dimensionality of the hidden states.
+testModel = LinearDynamicalSystem('stateSize',stateSize); % at a minimum, we must specify the dimensionality of the hidden states.
 testModel = fit(testModel,Y,'verbose',true);
 
 % Initializing the params to sensible values is crucial. Here we simply use

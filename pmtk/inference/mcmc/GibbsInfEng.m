@@ -41,7 +41,7 @@ classdef GibbsInfEng  < InfEng
        % the variables, so we need to 'label' the columns with the right
        % domain
        hidVars = setdiffPMTK(model.domain, visVars);
-       eng.samples = SampleDist(samples, hidVars); % , model.support(hidVars));
+       eng.samples = SampleBasedDist(samples, hidVars); % , model.support(hidVars));
        other = eng.convDiag;
        logZ = [];
     end

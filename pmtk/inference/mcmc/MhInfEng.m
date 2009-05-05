@@ -30,7 +30,8 @@ classdef MhInfEng  < InfEng
        %function x = addVisData(x, V, visVars)
        %  x(V) = visVars;
        %end
-       targetFn = @(xh) logprobUnnormalized(model, MhInfEng.addVisData(xh, V, visVals));
+       %targetFn = @(xh) logprobUnnormalized(model, MhInfEng.addVisData(xh, V, visVals));
+       targetFn = @(xh) logprob(model, MhInfEng.addVisData(xh, V, visVals), false);
        %targetFn = @(xh) logprobUnnormalized(model, xh);
        %hidVars = setdiffPMTK(model.domain, visVars);
        %targetFn = @(xh) logprobUnnormalized(model, xh, 'domain', hidVars, ...
@@ -58,7 +59,7 @@ classdef MhInfEng  < InfEng
        % the variables, so we need to 'label' the columns with the right
        % domain
        hidVars = setdiffPMTK(model.domain, visVars);
-       eng.samples = SampleDist(samples, hidVars);
+       eng.samples = SampleBasedDist(samples, hidVars);
        logZ = [];
        other = eng.convDiag;
      end
