@@ -6,7 +6,7 @@
   doPrint = false;
 
   collapsed = false;
-  Nsamples = 1000;
+  Nsamples = 2500;
   Nburnin = 500;
 
   setSeed(0);

@@ -27,6 +27,10 @@ classdef SampleBasedDist < ProbDist
     function v = var(obj)    
       v = var(obj.samples)';
     end
+
+    function d = ndimensions(obj)
+      d = numel(obj.domain);
+    end
     
     
     function mm = marginal(m, queryVars)

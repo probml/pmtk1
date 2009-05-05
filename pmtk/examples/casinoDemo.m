@@ -1,5 +1,4 @@
 %% HMMs and the occasionally Dishonest Casino
-%#broken
 % This is an example from 
 % 'Biological Sequence Analysis: 
 % Probabilistic Models Proteins and Nucleic Acids' by Durbin, Eddy, Krogh, &

@@ -8,7 +8,6 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
   % Initialize the model
   K = numel(distributions);
   [nobs,d] = size(data);
-  K = numel(distributions);
   prior = cell(K,1);
   priorlik = cell(K,1);
   for k=1:K
@@ -94,14 +93,20 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
       keep = keep + 1;
     end
   end % of itr=1:Nsamples
-  latentDist = SampleDistDiscrete(latentsamples, 1:K);
-  mixDist = SampleDistDiscrete(mixsamples, 1:K);
-  muDist = SampleDist(musamples, 1:d);
-  % from the documentation, I'm not exactly sure how to storethe covariance matrix samples.
-  % Suggest storing the cholesky factor as a vector.  Can recover original matrix using
-  % reshape(w',d,d)'*reshape(w',d,d), where w is the sample cholesky factor
-  SigmaDist = SampleDist(Sigmasamples);      
-
-  dists = struct('muDist', muDist, 'SigmaDist', SigmaDist, 'mixDist', mixDist, 'latentDist', latentDist);
+  latentDist = SampleBasedDist(latentsamples, 1:K);
+  mixDist = SampleBasedDist(mixsamples, 1:K);
+  muDist = cell(K,1); SigmaDist = cell(K,1);
+  for k=1:K
+    muDist{k} = SampleBasedDist(musamples(:,:,k), 1:d);
+    % from the documentation, I'm not exactly sure how to storethe covariance matrix samples.
+    % Suggest storing the cholesky factor as a vector.  Can recover original matrix using
+    % reshape(w',d,d)'*reshape(w',d,d), where w is the sample cholesky factor
+    SigmaDist{k} = SampleBasedDist(Sigmasamples(:,:,k));      
+  end
+  dists = struct;%;('muDist', muDist, 'SigmaDist', SigmaDist, 'mixDist', mixDist, 'latentDist', latentDist);
+  dists.muDist = muDist;
+  dists.SigmaDist = SigmaDist;
+  dists.mixDist = mixDist;
+  dists.latentDist = latentDist;
 end
 

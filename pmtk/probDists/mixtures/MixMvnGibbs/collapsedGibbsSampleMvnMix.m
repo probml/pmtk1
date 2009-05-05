@@ -102,7 +102,7 @@ function dists = collapsedGibbsSampleMvnMix(distributions, mixingWeights, data, 
   end
 
   % With Gibbs sampling complete, create the mcmc struct needed for returning
-  latentDist = SampleDistDiscrete(latent, 1:K);
+  latentDist = SampleBasedDist(latent, 1:K);
 
   mixDist = mixingWeights;
 
@@ -121,10 +121,17 @@ function dists = collapsedGibbsSampleMvnMix(distributions, mixingWeights, data, 
       Sigmasamples(itr,:,k) = rowvec(cholcov(Sigma));
     end
   end
-  muDist = SampleDist(musamples, 1:d);
-  SigmaDist = SampleDist(Sigmasamples);
-  mixDist = SampleDistDiscrete(mix, 1:K);
-  dists = struct('muDist', muDist, 'SigmaDist', SigmaDist, 'mixDist', mixDist, 'latentDist', latentDist);
+  muDist = cell(K,1); SigmaDist = cell(K,1);
+  for k=1:K
+    muDist{k} = SampleBasedDist(musamples(:,:,k), 1:d);
+    SigmaDist{k} = SampleBasedDist(Sigmasamples(:,:,k));
+  end
+  mixDist = SampleBasedDist(mix, 1:K);
+  dists = struct;%;('muDist', muDist, 'SigmaDist', SigmaDist, 'mixDist', mixDist, 'latentDist', latentDist);
+  dists.muDist = muDist;
+  dists.SigmaDist = SigmaDist;
+  dists.mixDist = mixDist;
+  dists.latentDist = latentDist;
 end
 
 function [latent, prior, SSxbar, SSn, SSXX, SSXX2] = initializeCollapsedGibbs(model,X)
