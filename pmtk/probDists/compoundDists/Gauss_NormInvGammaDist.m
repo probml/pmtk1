@@ -1,4 +1,4 @@
-classdef Gauss_NormInvGammaDist < ParamDist % CompoundDist
+classdef Gauss_NormInvGammaDist < ProbDist
   % p(X,mu,sigma2|m,k,a,b) = N(X|mu, sigma2) NIG(mu,sigma2| m,k,a,b)
   
   properties
@@ -31,7 +31,7 @@ classdef Gauss_NormInvGammaDist < ParamDist % CompoundDist
          an = repmat(an, 1, d);
          kn = repmat(kn, 1, d);
        end
-       obj.muSigmaDist = NormInvGammaDist('mu', mn, 'k', kn, 'a', an, 'b', bn);
+       obj.muSigmaDist = NormInvGammaDist('-mu', mn, '-k', kn, '-a', an, '-b', bn);
      end
   
      function p = logprob(obj, X)

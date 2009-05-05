@@ -1,4 +1,4 @@
-classdef NormInvGammaDist < ParamDist
+classdef NormInvGammaDist < ProbDist
   % p(m,s2|params) = N(m|mu, s2 / k0 ) IG(s2| a,b)
   properties
     mu;
@@ -10,20 +10,10 @@ classdef NormInvGammaDist < ParamDist
   %% main methods
   methods
     function m = NormInvGammaDist(varargin)
-      if nargin == 0, varargin = {}; end
-      if ~isempty(varargin) && isa(varargin{1}, 'double')
-        % NormInvGammaDist(mu, k, a, b)
-       mu =  varargin{1}; k = varargin{2}; a= varargin{3};  b = varargin{4};
-      else
-        [mu, k, a, b] = process_options(...
-          varargin, 'mu', [], 'k', [], 'a', [], 'b', []);
-      end
-      m.mu = mu; m.k = k; m.a = a; m.b = b;
+      [m.mu, m.k, m.a, m.b] = processArgs(varargin,  ...
+        '-mu', [], '-k', [],'-a', [], '-b', []);
     end
     
-    function d = ndimensions(obj)
-       d = 2;
-    end
  
     function mm = marginal(obj, queryVar)
       % marginal(obj, 'sigma') or marginal(obj, 'mu')
@@ -46,7 +36,7 @@ classdef NormInvGammaDist < ParamDist
        if nargin < 3, normalize = true; end
       n = size(X,1);
       sigma2 = X(:,2); mu = X(:,1);
-      a = obj.a; b = obj.b; m = obj.mu; k = obj.k;
+      a = obj.a; b = obj.b; m = obj.mu; k = obj.k; %#ok
       L = -(a+3/2)*log(sigma2) - (2*b + k*(m-mu).^2)./(2*sigma2);
       if normalize
         L = L - lognormconst(obj)*ones(n,1);
@@ -82,18 +72,23 @@ classdef NormInvGammaDist < ParamDist
       v = [var(m1) var(m2)];
     end
   
-  end
-    
-  
-  methods
-      function xrange = plotRange(obj)
-          d = length(obj.mu);
-          if d > 1, error('not supported'); end
-          sf = 2;
-          S = obj.b/obj.a;
-          xrange = [obj.mu-sf*S, obj.mu+sf*S, 0.01, sf*S];
-      end
+     function h=plot(obj, varargin)
+       sf = 2;
+       S = obj.b/obj.a;
+       xrange = [obj.mu-sf*S, obj.mu+sf*S, 0.01, sf*S];
+      [plotArgs, npoints, xrange] = processArgs(...
+        varargin, '-plotArgs' ,{}, '-npoints', 100, ...
+        '-xrange', xrange);
+      [X1,X2] = meshgrid(linspace(xrange(1), xrange(2), npoints)',...
+        linspace(xrange(3), xrange(4), npoints)');
+      [nr] = size(X1,1); nc = size(X2,1);
+      X = [X1(:) X2(:)];
+      p = exp(logprob(obj, X));
+      p = reshape(p, nr, nc);
+      [c,h] = contour(X1, X2, p, plotArgs{:});
+     end
+     
       
-  end
+  end % methods
     
 end

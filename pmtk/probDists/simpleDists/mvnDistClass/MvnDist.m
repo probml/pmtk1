@@ -98,9 +98,8 @@ classdef MvnDist < ProbDist
     end
 
 
-    function L = logprob(model,X, normalized)
-      % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
-      if nargin < 3, normalized = true; end
+    function L = loglik(model,X)
+      % L = sum_i log p(X(i,:) | params)
       mu = model.mu; Sigma = model.Sigma;
       d = length(mu);
       logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
@@ -120,6 +119,16 @@ classdef MvnDist < ProbDist
       if normalized
         L = L - n*logZ;
       end
+    end
+    
+    function L = logprob(model,X)
+      % L(i) = log p(X(i,:) | params)
+      mu = model.mu; Sigma = model.Sigma;
+      d = length(mu);
+      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
+      XC = bsxfun(@minus,X,rowvec(mu));
+      L = -0.5*sum((XC*inv(Sigma)).*XC,2);
+      L = L - logZ;
       if false % debugging
         SS = MvnDist.mkSuffStat(X);
         LL = logprobSS(model, SS);
@@ -154,6 +163,8 @@ classdef MvnDist < ProbDist
 %}
     function L = logprobSS(model, SS)
       L = logprob(model, SS);
+      warning('called: logprobSS\n'); % who needs this? 
+    end
 %{
       % L = sum_i log p(SS(i) | params)
       % SS.n
@@ -168,7 +179,7 @@ classdef MvnDist < ProbDist
       logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
       L = -0.5*trace(inv(Sigma) * S) - n*logZ;
 %}
-    end
+  
 
 %{
     function L = logprobUnnormalized(model, X)

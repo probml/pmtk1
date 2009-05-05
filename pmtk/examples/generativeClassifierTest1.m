@@ -19,7 +19,7 @@ for binary=0:1
             end
         else
             Xtrain = XtrainC; Xtest = XtestC;
-            prior = NormInvGammaDist('mu', 0, 'k', 0.01, 'a', 0.01, 'b', 0.01);
+            prior = NormInvGammaDist('-mu', 0, '-k', 0.01, '-a', 0.01, '-b', 0.01);
             if bayes
                 classCond = copy(Gauss_NormInvGammaDist(prior, '-productDist', true),1,Nclasses);
             else
