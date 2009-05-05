@@ -140,51 +140,7 @@ classdef MvnDist < ProbDist
     end
 
     %{
-    function L = logprobParam(model,X, param)
-      % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
-      mu = param.mu; Sigma = param.Sigma;
-      d = length(mu);
-      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
-      XC = bsxfun(@minus,X,rowvec(mu));
-      L = -0.5*sum((XC*inv(Sigma)).*XC,2);
-      L = L - logZ;
-      if false % debugging
-        SS = MvnDist.mkSuffStat(X);
-        LL = logprobSS(model, SS);
-        assert(approxeq(LL, sum(L)));
-      end
-    end
 
-    function L = logprobMuSigma(model,X, mu, Sigma)
-      % L = logprob(model, X):  L(i) = log p(X(i,:) | params)
-      d = length(mu);
-      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
-      XC = bsxfun(@minus,X,rowvec(mu));
-      L = -0.5*sum((XC*inv(Sigma)).*XC,2);
-      L = L - logZ;
-    end
-%}
-    function L = logprobSS(model, SS)
-      L = logprob(model, SS);
-      warning('called: logprobSS\n'); % who needs this? 
-    end
-%{
-      % L = sum_i log p(SS(i) | params)
-      % SS.n
-      % SS.xbar = 1/n sum_i X(i,:)'
-      % SS.XX2(j,k) = 1/n sum_i X(i,j) X(i,k)
-      mu = model.mu; Sigma = model.Sigma;
-      n = SS.n;
-      % SS = sum_i xi xi' + mu mu' - 2mu' xi
-      %S = n*SS.XX2 + n*mu*mu' - 2*mu*n*SS.xbar';
-      S = n*SS.XX2 - n*SS.xbar*mu' - mu*n*SS.xbar' + n*mu*mu';
-      d = length(mu);
-      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
-      L = -0.5*trace(inv(Sigma) * S) - n*logZ;
-%}
-  
-
-%{
     function L = logprobUnnormalized(model, X)
       % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
       % variables

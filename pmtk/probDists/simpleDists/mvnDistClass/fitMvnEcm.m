@@ -120,9 +120,10 @@ while(~converged)
     %SS.XX2 = ESS/n; SS.n = n; SS.xbar = mu/n; % I don't think that SS.xbar = mu / n, but rather just mu;  Also, SS.XX2 looks wrong...
 		%SS.XX2 = sum(expProd,3)/n; SS.n = n; SS.xbar = mu; % Actually, it looks like SS.xbar actually needs to be sum(expVals,2) / n;
 		SS.XX2 = sum(expProd,3)/n; SS.n = n; SS.xbar = sum(expVals,2)/n;
-    currentLL = logprobSS(MvnDist(mu,Sigma), SS);
+    %currentLL = logprobSS(MvnDist(mu,Sigma), SS);
+    currentLL = sum(logprob(MvnDist(mu, Sigma), expVals'));
 
-    if isa(prior, 'MvnInvWishartDist')
+    if ~isa(prior, 'NoPrior')
       currentLL = currentLL + logprob(prior, mu, Sigma);
     end
     loglikTrace(iter) = currentLL;
