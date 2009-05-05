@@ -27,9 +27,7 @@ classdef MvnDist < ProbDist
         '-mu', [], '-Sigma', [], '-ndims', 0, ...
         '-domain', [], '-prior', 'none', '-fitMethod', 'mle', ...
         '-fitArgs', {}, '-covtype', 'full', '-infEng', GaussInfEng());
-      if m.ndims==0
-        m.ndims = length(m.mu);
-      end
+      if m.ndims==0, m.ndims = length(m.mu); end;
       if m.ndims==0, error('must specify ndims and/or mu'); end
       m.domain = 1:m.ndims;
     end
@@ -68,7 +66,6 @@ classdef MvnDist < ProbDist
       domain = 1:length(m.mu);
     end
 
-   
     function [samples, other] = sample(model, n, visVars, visVals)
       % Samples(i,:) is i'th sample
       if(nargin < 2), n = 1; end;
@@ -77,6 +74,7 @@ classdef MvnDist < ProbDist
       [samples] = sample(eng, n);
     end
 
+   
     function [postQuery, logZ, other] = marginal(model, queryVars, visVars, visVals)
       if nargin < 3, visVars = []; visVals = []; end
       [eng, logZ, other] = condition(model.infEng, model, visVars, visVals);
@@ -90,36 +88,11 @@ classdef MvnDist < ProbDist
     end
 
     
-
     function logZ = lognormconst(model)
-      mu = model.mu; Sigma = model.Sigma;
-      d = length(mu);
+      mu = model.mu; Sigma = model.Sigma; d = length(mu);
       logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma); % could be pre-computed
     end
 
-
-    function L = loglik(model,X)
-      % L = sum_i log p(X(i,:) | params)
-      mu = model.mu; Sigma = model.Sigma;
-      d = length(mu);
-      logZ = (d/2)*log(2*pi) + 0.5*logdet(Sigma);
-      switch class(X)
-        case 'struct'
-          SS = X;
-          % SS.n; SS.xbar = 1/n sum_i X(i,:)'; SS.XX2(j,k) = 1/n sum_i X(i,j) X(i,k)
-          n = SS.n;
-          S = n*SS.XX2 - n*SS.xbar*mu' - mu*n*SS.xbar' + n*mu*mu';
-        otherwise
-          if isa(X, 'DataTable'), X=X.X; end
-          n = size(X,1);
-          XC = bsxfun(@minus,X,rowvec(mu));
-          S = (XC'*XC);
-      end
-      L = -0.5*trace(inv(Sigma) * S);
-      if normalized
-        L = L - n*logZ;
-      end
-    end
     
     function L = logprob(model,X, normalize)
       % L(i) = log p(X(i,:) | params)
@@ -139,25 +112,6 @@ classdef MvnDist < ProbDist
       end
     end
 
-    %{
-
-    function L = logprobUnnormalized(model, X)
-      % L(i) = log p(X(i,:) | params) + log Z, columns are the hidden
-      % variables
-      mu = model.mu; Sigma = model.Sigma;
-      %X = insertVisData(model,X);
-      if numel(mu)==1
-        X = X(:); % ensure column vector
-      end
-      [N d] = size(X);
-      if length(mu) ~= d
-        error('X should be N x d')
-        % if some components have been observed, X needs to be expanded...
-      end
-      X = bsxfun(@minus,X,rowvec(mu));
-      L =-0.5*sum((X*inv(Sigma)).*X,2);
-    end
-%}
     
     function L = logprior(model)
       if strcmp(model.prior, 'none') || isa(model.prior, 'NoPrior')
@@ -213,9 +167,11 @@ classdef MvnDist < ProbDist
 
     function obj = mkRndParams(obj, d)
       if nargin < 2, d = ndimensions(obj); end
+%{ Why is this here?  Is it ever called with data?
       if(~isscalar(d) || d~=round(d))
         % d is data n*D
         fprintf('mkRndParams called with data\n');
+
         perm = randperm(size(d,1));
         obj.mu = d(perm(1),:);
         obj.Sigma = 0.05*cov(d);
@@ -226,12 +182,23 @@ classdef MvnDist < ProbDist
         obj.domain = 1:d;
         obj.ndims = d;
       end
+%}
+
+mu, Sigma, ndims, domain, prior, fitMethod, fitArgs, covtype, infEng
+      obj = MvnDist('-mu', randn(d,1), ...
+        '-Sigma',     randpd(d), ...
+        '-prior',     'niw', ...
+        '-fitMethod', 'mle', ...
+        '-fitArgs',   {}, ...
+        '-covtype',   'full', ...
+        '-infEng',    GaussInfEng());
       obj.ndims = d;
       obj.prior = 'niw';
       obj.fitMethod = 'mle';
       obj.fitArgs = {};
       obj.covtype = 'full';
       obj.infEng = GaussInfEng();
+      obj.logZ = (d/2)*log(2*pi) + 0.5*logdet(obj.Sigma);
     end
 
     function d = ndimensions(m)
@@ -255,12 +222,13 @@ classdef MvnDist < ProbDist
       %                     is automatically calculated.
       %
       % 'prior'    -        This can be a string chosen from
-      %       {'none', 'covshrink', 'niw'}
-      %      or an MvnInvWishartDist object.
-      %  If prior = none, we compute the MLE, otherwise a MAP estimate.
+      %       {'none', 'covshrink', 'niw', 'nig'}
+      %                     or an object chosen from
+      %       { NoPrior, MvnInvWishartDist, MvnInvGammaDist }
+      %  In the context of 'none' or NoPrior we compute the MLE, otherwise a MAP estimate.
       %
       % 'covtype'  -        Restrictions on the covariance: 'full' | 'diag' |
-      %                     'isotropic'
+      %                     'spherical'
 
       [X,SS,prior,covtype, fitArgs,fitMethod] = process_options(varargin,...
         'data'              ,[]         ,...
@@ -269,7 +237,6 @@ classdef MvnDist < ProbDist
         'covtype'           ,obj.covtype, ...
         'fitArgs'           , obj.fitArgs, ...
         'fitMethod'         , obj.fitMethod);
-      %if(~strcmpi(covtype,'full')),error('Restricted covtypes not yet implemented');end
       if any(isnan(X))
         obj = fitMvnEcm(obj, X, prior, fitArgs{:}); return;
       end
@@ -332,29 +299,6 @@ classdef MvnDist < ProbDist
       end
     end
 
-    function [] = plotDist(obj)
-      % plot all marginal bivariate distributions
-      mu = mean(obj); Sigma = cov(obj);
-      d = ndimensions(obj);
-      figure(); hold on;
-      for i=1:d
-        for j=1:i
-          subplot2(d,d,j,i); hold on;
-          if (i == j)
-            sub = MvnDist(mu(i), Sigma(i,i));
-            xrange = plotRange(sub);
-            step = (xrange(end) - xrange(1)) /1000;
-            x = (xrange(1):step:xrange(end))';
-            prob = exp(logprob(MvnDist(mu(i), Sigma(i,i)), x));
-            plot(x,prob); xlabel(sprintf('Dimension %d',i)); ylabel('p(x)');
-          else
-            ind = sub2ind([d,d], [i,j,i,j], [i,i,j,j]);
-            plotgauss2d( mu([i,j]), reshape(Sigma(ind),2,2) );
-            xlabel(sprintf('Dimension %d',i)); ylabel(sprintf('Dimension %d',j));
-          end
-        end
-      end
-    end
 
     function [Xc, V] = impute(model, X)
       % Fill in NaN entries of X using posterior mode on each row
@@ -377,60 +321,46 @@ classdef MvnDist < ProbDist
      function model = initPrior(model,data)
        model.prior = mkPrior(model, '-data', data);
      end
+
+    function priorObj = priorobject(obj, priorStr)
+      table = { 'none'  , NoPrior(); ...
+                'niw'   , MvnInvWishartDist(); ...
+                'nig'   , MvnInvGammaDist()};
+      table = cell(table);
+      loc = find(strcmpi(priorStr, table(:,1)));
+      priorObj = table{loc,2};
+    end
      
+
     function priorDist = mkPrior(obj,varargin)
       [data, suff, prior, covtype] = processArgs(varargin, '-data', [], '-suffStat', [], '-prior', obj.prior, '-covtype', obj.covtype);
-      if(isempty(data) && isempty(suff)), return; end;
-      if(~isempty(suff) && isempty(data))
+      %if(isempty(data) && isempty(suff)), return; end;
+      % If the user provides sufficient stats, then use these to make the prior
+      if(~isempty(suff))
         n = suff.n;
         XX = suff.XX;
         xbar = suff.xbar;
-      end
-      if(isempty(suff) && ~isempty(data))
+      else
         n = rows(data);
-        XX = nancov(data);
+        XX = nancov(data) + 0.1*mean(diag(nancov(data)));
         xbar = nanmean(data);
       end
       d = numel(xbar);
+      if(isa(prior, 'char') || isa(prior, 'double')), prior = priorobject(obj, prior); end;
+      kappa0 = 0.01; m0 = xbar;
       switch class(prior)
-        case 'NoPrior'
-          priorDist = NoPrior;
-        case 'char'
-          switch lower(prior)
-            case 'none'
-              priorDist = NoPrior;
-            case 'niw'
-              kappa0 = 0.001; m0 = xbar;%nanmean(data)';
-              % Add a small offsert to T0 in case diag(nanvar(data)) contains dimensions with zero empirical variance
-              nu0 = d + 1; T0 = diag(diag(XX)) + 0.01*eye(d);
-              priorDist = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
-            case 'nig'
-              switch lower(covtype)
-                case 'diagonal'
-                  kappa0 = 0.001; m0 = xbar;%nanmean(data)';
-                  % Here, n0 = 2 is the equivalent of d + 1 since we place an inverse gamma prior on each diagonal element
-                  nu0 = 2*ones(1,d); b0 = rowvec(diag(XX)) + 0.01*ones(1,d);
-                  priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-                case 'spherical'
-                  kappa0 = 0.001; m0 = xbar;%nanmean(data)';
-                  nu0 = 2; b0 = mean(diag(XX)) + 0.01;
-                  priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
-                otherwise
-                  error('MvnDist:mkPrior:invalidCombo','Error, invalid combination of prior and covtype');
-              end
-          end
+        % It will be double if for some reason it was not initialized, ie, obj.prior = [];
+        case {'NoPrior', 'double'}
+          priorDist = NoPrior();
         case 'MvnInvWishartDist'
-          kappa0 = 0.001; m0 = xbar;%nanmean(data)';
           nu0 = d + 1; T0 = diag(diag(XX)) + 0.01*eye(d);
           priorDist = MvnInvWishartDist('mu', m0, 'Sigma', T0, 'dof', nu0, 'k', kappa0);
         case 'MvnInvGammaDist'
           switch lower(covtype)
             case 'diagonal'
-              kappa0 = 0.001; m0 = xbar;%nanmean(data)';
               nu0 = 2*ones(1,d); b0 = rowvec(diag(XX)) + 0.01*ones(1,d);
               priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
             case 'spherical'
-              kappa0 = 0.001; m0 = xbar;%nanmean(data)';
               nu0 = 2; b0 = mean(diag(XX)) + 0.01;
               priorDist = MvnInvGammaDist('mu', m0, 'Sigma', kappa0, 'a', nu0, 'b', b0);
             otherwise
