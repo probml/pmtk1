@@ -184,7 +184,6 @@ classdef MvnDist < ProbDist
       end
 %}
 
-mu, Sigma, ndims, domain, prior, fitMethod, fitArgs, covtype, infEng
       obj = MvnDist('-mu', randn(d,1), ...
         '-Sigma',     randpd(d), ...
         '-prior',     'niw', ...
@@ -198,7 +197,6 @@ mu, Sigma, ndims, domain, prior, fitMethod, fitArgs, covtype, infEng
       obj.fitArgs = {};
       obj.covtype = 'full';
       obj.infEng = GaussInfEng();
-      obj.logZ = (d/2)*log(2*pi) + 0.5*logdet(obj.Sigma);
     end
 
     function d = ndimensions(m)
