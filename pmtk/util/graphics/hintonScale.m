@@ -10,15 +10,17 @@ function [] = hintonScale(X, W, varargin)
   [ncolors] = size(C,1);
 
   % Make all data fit in the needed range
-  if(any(X(:) < 0)), X = X - min(X(:)); end;
+  %if(any(X(:) < 0)), X = abs(X); end;
   Xmin = min(X(:)); Xmax = max(X(:));
 
+  transform = @(x)(round(ncolors*(x - Xmin + 1/2)./(Xmax - Xmin + 1/2)));
+%{
   if(scale)
     X = (ncolors-1)*(X - Xmin)./(Xmax - Xmin) + 1;
   else
     X = (X / Xmax)*(ncolors-1) + 1;
   end
-
+%}
   % Make all weights positive
   W = abs(W);
   Smax = max(W(:)); Smin = Smax / 100;
@@ -48,10 +50,10 @@ function [] = hintonScale(X, W, varargin)
   
   for i=1:S
     for j=1:R
-      m = sqrt((abs(W(i,j)) - Smin) / Smax);
+      m = ((abs(W(i,j)) - Smin) / Smax);
       m = max(Smin, min(m,Smax)*0.95);
       if real(m)
-        fill(xn*m+j,yn*m+i,C(ceil(X(i,j)),:))
+        fill(xn*m+j,yn*m+i,C(transform(X(i,j)),:))
         plot(xn1*m+j,yn1*m+i,'w',xn2*m+j,yn2*m+i,'k')
       end
     end
@@ -59,5 +61,5 @@ function [] = hintonScale(X, W, varargin)
   
   plot([0 R R 0 0]+0.5,[0 0 S S 0]+0.5,'w');
   grid on
-
+  colorbar
 end
