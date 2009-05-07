@@ -1,4 +1,4 @@
-classdef UnifDist < ParamDist 
+classdef UnifDist < ProbDist 
   %  continuous uniform distribution
   
   properties
