@@ -4,12 +4,20 @@ function [] = hintonScale(varargin)
 % The user can specify two optional arguments
 % 'map'   which colormap to use
 % We make use of rel2absX and rel2absY from pmtk/bookCode
-  if nargin < 2
-    X = varargin{1}{1}; map = 'Jet';
-    if(numel(varargin{1}) == 1), W = NaN*ones(size(X)); end;
+  if nargin <= 2
+    X = varargin{1}{1};
+    if(numel(varargin{1}) > 1)
+      W = abs(varargin{1}{2});
+    else
+      W = NaN*ones(size(X));
+    end
     nplots = 1;
     Xmin = min(X(:)); Xmax = max(X(:));
     Smin = min(W(:))*0.95; Smax = max(W(:))*1.05;
+    if(numel(varargin{2}) == 2)
+      [imap, ititle] = processArgs(varargin{2}, '-map', 'Jet', '-title', '');
+      map{1,:} = imap; plotTitle{1,:} = ititle;
+    end
   end
   %[map] = processArgs(varargin, '-map', 'Jet');
   if(nargin > 2)
@@ -18,7 +26,7 @@ function [] = hintonScale(varargin)
     localMinW = zeros(nplots,1); localMaxW = zeros(nplots,1);
     for i=1:nplots
       [imap, ititle] = processArgs(varargin{2*i}, '-map', 'Jet', '-title', '');
-      map{i,:} = imap; title{i} = ititle;
+      map{i,:} = imap; plotTitle{i,:} = ititle;
       allX{i} = varargin{2*i-1}{1};
       localMinX(i) = min(min(allX{i})); localMaxX(i) = max(max(allX{i}));
       if(numel(varargin{2*i-1}) > 1)
@@ -37,13 +45,13 @@ function [] = hintonScale(varargin)
   allSameMap = all(strcmpi(map{1}, map));
   if(~allSameMap)
     warning('Cannot (yet) support multiple colormaps in subplots.  Using the first');
-    C = colormap(map{1,:});
   end
-    [ncolors] = size(C,1);
-    transform = @(x)(round(ncolors*(x - Xmin + 1/2)./(Xmax - Xmin + 1/2)));
+  end
+  C = colormap(map{1,:});
+  [ncolors] = size(C,1);
+  transform = @(x)(round(ncolors*(x - Xmin + 1/2)./(Xmax - Xmin + 1/2)));
 
   %map = map{1};
-  end
 
 
 
@@ -57,7 +65,9 @@ function [] = hintonScale(varargin)
     %  [ncolors] = size(C,1);
     %  transform = @(x)(round(ncolors*(x - localMinX(p) + 1/2)./(localMaxX(p) - localMinX(p) + 1/2)));
     %end
+    if(nplots > 1)
     X = allX{p}; W = allW{p};
+    end
 
     % DEFINE BOX EDGES
     xn1 = [-1 -1 +1]*0.5;
@@ -85,15 +95,19 @@ function [] = hintonScale(varargin)
     m = ((abs(W) - Smin) / (Smax - Smin));
     for i=1:S
       for j=1:R
-        if real(m(i,j))
+        if (isfinite(m(i,j)))%real(m(i,j))
           fill(xn*m(i,j)+j,yn*m(i,j)+i,C(transform(X(i,j)),:));
           plot(xn1*m(i,j)+j,yn1*m(i,j)+i,'w',xn2*m(i,j)+j,yn2*m(i,j)+i,'k')
+        else
+          fill(xn+j,yn+i,C(transform(X(i,j)),:));
+          plot(xn1+j,yn1+i,'w',xn2+j,yn2+i,'k')
         end
       end
     end
     
     plot([0 R R 0 0]+0.5,[0 0 S S 0]+0.5,'w');
     grid on;
+    title(plotTitle{p,:});
 
     % Not working yet
     %if(~allSameMap)

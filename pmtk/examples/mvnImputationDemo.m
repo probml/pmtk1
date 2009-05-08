@@ -48,7 +48,7 @@ subplot(nr,nc,3); imagesc(Ximpute); title('imputed mean'); colorbar
 subplot(nr,nc,4); imagesc(XhidImg); title('hidden truth'); colorbar
 %set(gcf,'position',[10 500 600 200])
 
-hintonScale({Xfull, ones(n,d)}, {'-map', 'gray', '-title', 'full data'}, {Xfull, 1-missing}, {'-map', 'Jet', '-title', 'missing pattern'}, {Ximpute, V}, {'-title', 'observed data'}, {Xfull, missing}, {'-title', 'hidden truth'});
+hintonScale({Xfull}, {'-map', 'gray', '-title', 'full data'}, {Xfull, 1-missing}, {'-map', 'Jet', '-title', 'missing pattern'}, {Ximpute, V}, {'-title', 'observed data'}, {Xfull, missing}, {'-title', 'hidden truth'});
 %figure;
 %subplot(nr,nc,1); hintonScale(Xfull, ones(n,d)); title('full data');
 %%subplot(nr,nc,2); hintonScale(missing, ones(n,d));title('missing pattern'); colorbar
