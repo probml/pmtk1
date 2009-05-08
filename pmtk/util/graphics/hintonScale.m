@@ -35,12 +35,16 @@ function [] = hintonScale(varargin)
 
   if(size(map,1) > 1)
   allSameMap = all(strcmpi(map{1}, map));
-    if(~allSameMap), warning('Different maps in subplots not supported yet.  Using the first'); end;
-  map = map{1};
+  if(~allSameMap)
+    warning('Cannot (yet) support multiple colormaps in subplots.  Using the first');
+    C = colormap(map{1,:});
   end
-  C = colormap(map);
-  [ncolors] = size(C,1);
-  transform = @(x)(round(ncolors*(x - Xmin + 1/2)./(Xmax - Xmin + 1/2)));
+    [ncolors] = size(C,1);
+    transform = @(x)(round(ncolors*(x - Xmin + 1/2)./(Xmax - Xmin + 1/2)));
+
+  %map = map{1};
+  end
+
 
 
   figure();
@@ -48,17 +52,12 @@ function [] = hintonScale(varargin)
   [plotRows,plotCols] = nsubplots(nplots);
   for p=1:nplots
     subplot(plotRows, plotCols, p);
+    %if(~allSameMap)
+    %  C = colormap(map{p,:});
+    %  [ncolors] = size(C,1);
+    %  transform = @(x)(round(ncolors*(x - localMinX(p) + 1/2)./(localMaxX(p) - localMinX(p) + 1/2)));
+    %end
     X = allX{p}; W = allW{p};
-    % an [m,3] color matrix
-
-
-    % Make all data fit in the needed range
-    %if(any(X(:) < 0)), X = abs(X); end;
-    %Xmin = min(X(:)); Xmax = max(X(:));
-    
-    % Make all weights positive
-    %W = abs(W);
-    %Smax = max(abs(W(:))); Smin = Smax / 100;
 
     % DEFINE BOX EDGES
     xn1 = [-1 -1 +1]*0.5;
@@ -96,6 +95,13 @@ function [] = hintonScale(varargin)
     plot([0 R R 0 0]+0.5,[0 0 S S 0]+0.5,'w');
     grid on;
 
+    % Not working yet
+    %if(~allSameMap)
+    %  caxis([localMinX(p), localMaxX(p)]);
+    %  colormap(map{p,:});
+    %  colorbar;
+    %end
+
   end
     msize = @(m)((abs(m) - Smin) / (Smax - Smin));
     breaks = 0.05:0.20:0.85;
@@ -111,8 +117,11 @@ function [] = hintonScale(varargin)
        annotation('textbox', location + [-0.01, 0.05, 0, 0], 'String', sprintf('%3.2f', breaks(s)*(Smax - Smin) + Smin), 'LineStyle', 'none');
     end
     annotation('textbox', [0.00, 0.99, 0.20, 0], 'String', 'Abs(Weight)', 'LineStyle', 'none');
-    annotation('textbox', [0.90, 0.99, 0.20, 0], 'String', 'Value', 'LineStyle', 'none');  
-    axes('Position', [0.05 0.05 0.95 0.85], 'Visible', 'off');
-    caxis([Xmin, Xmax]);
-    colorbar;
+    annotation('textbox', [0.90, 0.99, 0.20, 0], 'String', 'Value', 'LineStyle', 'none');
+   % if(allSameMap)
+      axes('Position', [0.05 0.05 0.95 0.85], 'Visible', 'off');
+      caxis([Xmin, Xmax]);
+      colormap(map{1,:});
+      colorbar;
+   % end
 end
