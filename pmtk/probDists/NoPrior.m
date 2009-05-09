@@ -10,6 +10,11 @@ classdef NoPrior < ProbDist
     methods
       function m = NoPrior()
       end
+      
+      function p = logprob(m, X)
+        n = size(X,1);
+        p = zeros(n,1);
+      end
     end
        
 end

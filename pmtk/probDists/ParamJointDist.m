@@ -51,12 +51,13 @@ classdef ParamJointDist < ProbDist
         end
         
         function L = logprob(model, X)
-          error('deprecated')
+          %error('deprecated')
             % L(i) = log p(X(i,:) | params), where columns are hidden nodes
             if ~model.conditioned, model = condition(model); end
             %L = logprob(model.infEng, X, normalize);
+            L = logprob(model.infEng, X);
             %XX = insertVisData(model,X);
-            L = logprobUnnormalized(model, X) - lognormconst(model);
+            %L = logprobUnnormalized(model, X) - lognormconst(model);
         end
         
         function XX = insertVisData(model, X)
@@ -128,7 +129,7 @@ classdef ParamJointDist < ProbDist
         end
         
         function Xc = impute(model, X)
-          error('deprecated')
+          %error('deprecated')
             % Fill in NaN entries of X using posterior mode on each row
             [n] = size(X,1);
             Xc = X;
@@ -144,39 +145,7 @@ classdef ParamJointDist < ProbDist
             end
         end
         
-        %{
-        function [Xc,model] = emImpute(model,X)
-            % Fill in NaN entries of X using the EM algorithm
-            warning('buggy') % KPM
-            [n] = size(X,1);
-            Xc = X;
-            
-            oldlikelihood = -inf;
-            newlikelihood = +inf;
-            count = 1;
-            while(~approxeq(oldlikelihood,newlikelihood,0.0001))
-                
-                % E Step
-                for i=1:n
-                    hidNodes = find(isnan(X(i,:)));
-                    if isempty(hidNodes), continue, end;
-                    visNodes = find(~isnan(X(i,:)));
-                    visValues = X(i,visNodes);
-                    tmp = condition(model,visNodes,visValues);
-                    postH = marginal(tmp,hidNodes);
-                    Xc(i,hidNodes) = rowvec(mode(postH));
-                end
-                % M step
-                model = fit(model,'data',Xc);
-                oldlikelihood = newlikelihood;
-                newlikelihood = sum(logprob(model,Xc));
-                count = count + 1;
-                fprintf('iter: %d\n',count)
-            end
-        end
-        %}
-        
-        
+       
     end
     
 end
