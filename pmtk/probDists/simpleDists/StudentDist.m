@@ -15,18 +15,6 @@ classdef StudentDist < ProbDist
         '-dof', [], '-mu', [], '-sigma2', [], '-productDist', false);
     end
 
-    function model = setParams(model, param)
-      model.mu = param.mu;
-      model.dof = param.dof;
-      model.sigma2 = param.sigma2;
-    end
-
-    function model = setParamsAlt(model, dof, mu, sigma2)
-      model.dof = dof;
-      model.mu = mu;
-      model.sigma2 = sigma2;
-    end
-
     function d = ndistrib(m)
       d = length(m.mu);
     end

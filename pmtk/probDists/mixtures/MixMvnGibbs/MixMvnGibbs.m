@@ -1,4 +1,8 @@
 classdef MixMvnGibbs < MixMvn
+
+  properties
+    samples;
+  end
  
   % Gibbs sampling for a mixture of multivariate normals
   
@@ -18,31 +22,19 @@ classdef MixMvnGibbs < MixMvn
       end
       model.distributions = distributions;
     end
-
-    function model = setParamsAlt(model, mixingWeights, distributions)
-      model.mixingWeights = colvec(mixingWeights);
-      model.distributions = distributions;
-    end
     
     function pred = predict(model,data) % old name
       pred = inferLatent(model,data);
     end
 
-    function model = mean(model, dists)
+    function model = mean(model)
+      sampleDists = model.samples;
       % Performs full Bayes Model averaging by averaging over each sampled mu, Sigma, and mixing weights
-      mu = dists.muDist.samples;
-      Sigmatmp = dists.SigmaDist.samples;
-      mix = dists.mixDist.samples;
-      %latent = dists.latentDist.samples;
-
+      mu = samplesDists.mu.samples;
+      Sigmatmp = sampleDists.Sigma.samples;
+      mix = sampleDists.mixingWeights.samples;
       [N, d, K] = size(mu);
-      % Need to post-process Sigma
-      Sigma = zeros(d,d,N,K);
-      for s=1:N
-        for k=1:K
-          Sigma(:,:,s,k) = reshape(Sigmatmp(s,:,k)',d,d)'*reshape(Sigmatmp(s,:,k)',d,d);
-        end
-      end
+      Sigma = recoversigma(model);
       % perform model averaging
       muAvg = mean(dists.muDist);
       SigmaAvg = mean(Sigma,3);
@@ -54,24 +46,48 @@ classdef MixMvnGibbs < MixMvn
       model.mixingDistrib.T = colvec(mixAvg);
     end
 
-    function [dists] = latentGibbsSample(model,X,varargin)
-      dists = latentGibbsSampleMvnMix(model.distributions, model.mixingDistrib, X, varargin{:});
+    function [model, latent] = gibbssample(model,X,varargin)
+      [method, fixlatent, Nsamples, Nburnin, thin, verbose] = processArgs(varargin, ...
+        '-method', 'collapsed', ...
+        '-fixlatent', 'false', ...
+        '-Nsamples', 1000, ...
+        '-Nburnin', 500, ...
+        '-thin', 1, ...
+        '-verbose', true);
+      switch lower(method)
+        case 'full'
+          [muS, sigmaS, mixS, latent] = latentGibbsSampleMvnMix(model.distributions, model.mixingDistrib, X, Nsamples, Nburnin, thin, verbose);
+        case 'collapsed'
+          [muS, sigmaS, mixS, latent] = collapsedGibbsSampleMvnMix(model.distributions, model.mixingDistrib, X, Nsamples, Nburnin, thin, verbose);
+      end
+
+      if(fixlatent)
+        [muS, sigmaS, mixS, latent] = processLabelSwitching(muS, sigmaS, mixS, latent, X);
+      end
+      model.samples.mu = muS;
+      model.samples.Sigma = sigmaS;
+      model.samples.mixingWeights = mixS;
     end
-    
-    function dists = collapsedGibbs(model,X,varargin)
-      dists = collapsedGibbsSampleMvnMix(model.distributions, model.mixingDistrib, X, varargin{:});
+  
+  end % methods
+
+  methods(Access = 'protected')
+
+    function [Sigma] = recoversigma(model)
+      % The current implementation of SampleBasedDist does not allow us to store 
+      % samples of matrices, and thus stores Sigma as a row vector.
+      % This method allows us to recover the original Sigma
+      [N,dsq, K] = size(model.samples.Sigma);
+      d = sqrt(dsq); % since dsq i a d*d matrix as a row vector
+      Sigma = zeros(d,d,N,K);
+      for s=1:N
+        for k=1:K
+          Sigma(:,:,s,k) = reshape(Sigmatmp(s,:,k),d,d);
+        end
+      end
     end
 
-    function muPredDist = preditMu(model, muDist)
-      mus = muDist.samples;
-      K = ndistrib(muDist);
-      muPredDist = copy(MvnDist(), K, 1);
-      
-    end
-    
-       
-    
-  end % methods
+  end % protected methods
   
 end
 

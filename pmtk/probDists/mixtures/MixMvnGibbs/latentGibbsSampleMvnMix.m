@@ -1,9 +1,9 @@
-function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, varargin)
-  [Nsamples, Nburnin, thin, verbose] = process_options(varargin, ...
-    'Nsamples'  , 1000, ...
-    'Nburnin'   , 500, ...
-    'thin'    , 1, ...
-    'verbose'   , false );
+function [muS, sigmaS, mixS, latentS] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, varargin)
+  [Nsamples, Nburnin, thin, verbose] = processArgs(varargin, ...
+    '-Nsamples'  , 1000, ...
+    '-Nburnin'   , 500, ...
+    '-thin'    , 1, ...
+    '-verbose'   , false );
   
   % Initialize the model
   K = numel(distributions);
@@ -88,25 +88,22 @@ function [dists] = latentGibbsSampleMvnMix(distributions, mixingWeights, data, v
       mixsamples(keep,:) = rowvec(mixingWeights.T);
       for k=1:K
         musamples(keep,:,k) = rowvec(distributions{k}.mu);
-        Sigmasamples(keep,:,k) = rowvec(cholcov(distributions{k}.Sigma));
+        Sigmasamples(keep,:,k) = rowvec(distributions{k}.Sigma);
       end
       keep = keep + 1;
     end
   end % of itr=1:Nsamples
-  latentDist = SampleBasedDist(latentsamples, 1:K);
-  mixDist = SampleBasedDist(mixsamples, 1:K);
-  muDist = cell(K,1); SigmaDist = cell(K,1);
+  latentS = SampleBasedDist(latentsamples, 1:K);
+  mixS = SampleBasedDist(mixsamples, 1:K);
+  muS = cell(K,1); SigmaS = cell(K,1);
   for k=1:K
-    muDist{k} = SampleBasedDist(musamples(:,:,k), 1:d);
-    % from the documentation, I'm not exactly sure how to storethe covariance matrix samples.
-    % Suggest storing the cholesky factor as a vector.  Can recover original matrix using
-    % reshape(w',d,d)'*reshape(w',d,d), where w is the sample cholesky factor
-    SigmaDist{k} = SampleBasedDist(Sigmasamples(:,:,k));      
+    muS{k} = SampleBasedDist(musamples(:,:,k), 1:d);
+    SigmaS{k} = SampleBasedDist(Sigmasamples(:,:,k));      
   end
-  dists = struct;%;('muDist', muDist, 'SigmaDist', SigmaDist, 'mixDist', mixDist, 'latentDist', latentDist);
-  dists.muDist = muDist;
-  dists.SigmaDist = SigmaDist;
-  dists.mixDist = mixDist;
-  dists.latentDist = latentDist;
+%  dists = struct;%;('muDist', muDist, 'SigmaDist', SigmaDist, 'mixDist', mixDist, 'latentDist', latentDist);
+%  dists.muDist = muDist;
+%  dists.SigmaDist = SigmaDist;
+%  dists.mixDist = mixDist;
+%  dists.latentDist = latentDist;
 end
 

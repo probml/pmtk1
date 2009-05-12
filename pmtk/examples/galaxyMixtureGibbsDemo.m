@@ -5,7 +5,7 @@
   doPlot = true;
   doPrint = false;
 
-  collapsed = false;
+  method = 'collapsed';
   Nsamples = 2500;
   Nburnin = 500;
 
@@ -25,14 +25,14 @@
   model.mixingDistrib.prior = DirichletDist(ones(K,1));
 
   % Initiate the sampler
-  if(collapsed)
-      dists = collapsedGibbs(model, galaxies, 'Nsamples', Nsamples, 'Nburnin', Nburnin, 'verbose', true);
-  else
-    dists = latentGibbsSample(model, galaxies, 'Nsamples', Nsamples, 'Nburnin', Nburnin, 'verbose', true);
-  end
+  [model, latent] = gibbssample(model, galaxies, '-method', method, '-Nsamples', Nsamples, '-Nburnin', Nburnin, '-verbose', true);
 
   % Perform postprocessing on the labels
   [distsout, permOut] = processLabelSwitching(dists, galaxies);
+
+  % New stuff here
+  modelAvg = mean(model, distsout);
+
 
   
 

@@ -1,4 +1,4 @@
-    function [distsout, permOut] = processLabelSwitching(dists, X, varargin)
+    function [muoutDist, SigmaoutDist, mixoutDist, latentoutDist] = processLabelSwitching(muDist, SigmaDist, mixDist, latentDist, X, varargin)
       % Implements the KL - algorithm for label switching from 
       %@article{ stephens2000dls,
       % title = "{Dealing with label switching in mixture models}",
@@ -8,11 +8,11 @@
       % year = "2000",
       % publisher = "Blackwell Publishers"
       %}
-      [verbose, maxitr] = process_options(varargin, 'verbose', true, 'maxitr', inf);
-      muDist = dists.muDist;
-      SigmaDist = dists.SigmaDist;
-      mixDist = dists.mixDist;
-      latentDist = dists.latentDist;
+      [verbose, maxitr] = processArgs(varargin, '-verbose', true, '-maxitr', inf);
+      %muDist = dists.muDist;
+      %SigmaDist = dists.SigmaDist;
+      %mixDist = dists.mixDist;
+      %latentDist = dists.latentDist;
 
       N = size(latentDist.samples, 1);
       [n,d] = size(X);
@@ -31,7 +31,7 @@
       Sigma = zeros(d,d,N,K); invS = zeros(d,d,N,K);
       for s=1:N
         for k=1:K
-          Sigma(:,:,s,k) = reshape(Sigmatmp(s,:,k)',d,d)'*reshape(Sigmatmp(s,:,k)',d,d);
+          Sigma(:,:,s,k) = reshape(Sigmatmp(s,:,k),d,d);
           invS(:,:,s,k) = inv(Sigma(:,:,s,k));
           logconst(s,k) = 1/2*logdet(2*pi*Sigma(:,:,s,k));
         end
