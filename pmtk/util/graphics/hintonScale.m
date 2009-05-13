@@ -30,7 +30,7 @@ function [] = hintonScale(varargin)
       allX{i} = varargin{2*i-1}{1};
       localMinX(i) = min(min(allX{i})); localMaxX(i) = max(max(allX{i}));
       if(numel(varargin{2*i-1}) > 1)
-        allW{i} = abs(varargin{2*i-1}{1});
+        allW{i} = abs(varargin{2*i-1}{2});
       else
         allW{i} = NaN*ones(size(varargin{2*i-1}{1}));
       end
@@ -49,7 +49,8 @@ function [] = hintonScale(varargin)
   end
   C = colormap(map{1,:});
   [ncolors] = size(C,1);
-  transform = @(x)(round(ncolors*(x - Xmin + 1/2)./(Xmax - Xmin + 1/2)));
+  %transform = @(x)(round(ncolors*(x - Xmin + 1/2)./(Xmax - Xmin + 1/2)));
+  transform = @(x)(fix((x-Xmin)/(Xmax-Xmin)*(ncolors-1))+1);
 
   %map = map{1};
 
@@ -91,14 +92,14 @@ function [] = hintonScale(varargin)
     yticks = get(gca,'ytick');
     set(gca,'ytick',yticks(find(yticks == floor(yticks))))
     set(gca,'ydir','reverse');
-    
+
     m = ((abs(W) - Smin) / (Smax - Smin));
     for i=1:S
       for j=1:R
         if (isfinite(m(i,j)))%real(m(i,j))
           fill(xn*m(i,j)+j,yn*m(i,j)+i,C(transform(X(i,j)),:));
           plot(xn1*m(i,j)+j,yn1*m(i,j)+i,'w',xn2*m(i,j)+j,yn2*m(i,j)+i,'k')
-        else
+        elseif(~isfinite(m(i,j)) && isfinite(X(i,j)))
           fill(xn+j,yn+i,C(transform(X(i,j)),:));
           plot(xn1+j,yn1+i,'w',xn2+j,yn2+i,'k')
         end
@@ -133,9 +134,10 @@ function [] = hintonScale(varargin)
     annotation('textbox', [0.00, 0.99, 0.20, 0], 'String', 'Abs(Weight)', 'LineStyle', 'none');
     annotation('textbox', [0.90, 0.99, 0.20, 0], 'String', 'Value', 'LineStyle', 'none');
    % if(allSameMap)
-      axes('Position', [0.05 0.05 0.95 0.85], 'Visible', 'off');
+      axes('Position', [0.85 0.1 0.15 0.8], 'Visible', 'off');
       caxis([Xmin, Xmax]);
       colormap(map{1,:});
       colorbar;
+      %colorbar('location', 'SouthOutside');
    % end
 end
