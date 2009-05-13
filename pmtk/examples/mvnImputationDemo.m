@@ -34,7 +34,9 @@ Xmiss = Xfull;
 Xmiss(missing) = NaN;
 XmissImg = Xmiss;
 XmissImg(missing) = 0;
+Xhid = Xfull;
 XhidImg = Xfull;
+Xhid(~missing) = NaN;
 XhidImg(~missing) = 0;
 [Ximpute,V] = impute(model, Xmiss); % all the work happens here
 
@@ -49,11 +51,10 @@ subplot(nr,nc,3); imagesc(Ximpute); title('imputed mean'); colorbar
 subplot(nr,nc,4); imagesc(XhidImg); title('hidden truth'); colorbar
 %set(gcf,'position',[10 500 600 200])
 
-
 hintonScale({Xfull}, {'-map', 'gray', '-title', 'full data'}, ...
-  {Xfull, 1-missing}, {'-map', 'Jet', '-title', 'observed'}, ...
+  {Xmiss}, {'-map', 'Jet', '-title', 'observed'}, ...
   {Ximpute, V}, {'-title', 'imputed mean'}, ...
-  {Xfull, missing}, {'-title', 'hidden truth'});
+  {Xhid}, {'-title', 'hidden truth'});
 
 %{
 figure;
