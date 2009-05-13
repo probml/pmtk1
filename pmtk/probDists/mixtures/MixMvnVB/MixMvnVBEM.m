@@ -42,7 +42,7 @@ classdef MixMvnVBEM < ProbDist
       param = cell(nrestarts, 1);
       L = zeros(nrestarts, 1);
       if(any(~strcmpi(model.covtype, 'full')))
-        error('Restricted covariances not fully implemented yet');
+        warning('Restricted covariances not rigourously tested yet');
       end
       for r=1:nrestarts
         [param{r}, L(r)] = VBforMixMvn(model.alpha, model.mu, model.k, model.T, model.dof, model.covtype, data, varargin{:});

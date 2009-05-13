@@ -56,7 +56,12 @@ while(iter <= maxIter && ~converged)
   % Calculate r
   logPiTilde = digamma(alphan) - digamma(sum(alphan));
   for k = 1:K
-    logLambdaTilde(k) = sum(digamma(1/2*(vn(k) + 1 - [1:d]))) + d*log(2)  + logdet(Tn(:,:,k));
+    switch lower(covtype{k})
+      case 'full' % Wishart Dist on precision
+        logLambdaTilde(k) = sum(digamma(1/2*(vn(k) + 1 - [1:d]))) + d*log(2)  + logdet(Tn(:,:,k));
+      case {'diagonal', 'spherical'} % Gamma dist on precision
+        logLambdaTilde(k) = sum(digamma(vn(k)) - log(diag(Tn(:,:,k))));
+    end
     XC = bsxfun(@minus, X, mn(k,:));
     E(:,k) = d./kn(k) + vn(k)*sum((XC*Tn(:,:,k)).*XC,2);
   end
@@ -82,8 +87,14 @@ while(iter <= maxIter && ~converged)
   ElogpmuSigma = zeros(1,K);
   for k=1:K
     mc = mn(k,:) - m0(k,:);
-    ElogpmuSigma(k) = d*log(k0(k)/(2*pi)) + logLambdaTilde(k) - d*k0(k)/kn(k) - k0(k)*vn(k)*sum((mc*Tn(:,:,k)).*mc,2) - vn(k)*trace(invT0(:,:,k)*Tn(:,:,k)) + (v0(k) - d - 1)*logLambdaTilde(k) + 2*logWishartConst(invT0(:,:,k), v0(k));
-    % Factor of 2 on the last term as we then sum and then divide by 2 in the next line
+    ElogpmuSigma(k) = d*log(k0(k)/(2*pi)) + logLambdaTilde(k) - d*k0(k)/kn(k) - k0(k)*vn(k)*sum((mc*Tn(:,:,k)).*mc,2);
+    switch lower(covtype{k})
+      case 'full'
+        ElogpmuSigma(k) = ElogpmuSigma(k) - vn(k)*trace(invT0(:,:,k)*Tn(:,:,k)) + (v0(k) - d - 1)*logLambdaTilde(k) + 2*logWishartConst(invT0(:,:,k), v0(k));
+      % Factor of 2 on the last term as we then sum and then divide by 2 in the next line
+      case {'diagonal', 'spherical'}
+        ElogpmuSigma(k) = ElogpmuSigma(k) + 2*sum(vn(k)*log(diag(Tn(:,:,k))) - gammaln(vn(k)) + (vn(k)-1)*logLambdaTilde(k) - vn(k));
+    end
   end
     ElogpmuSigma = 1/2*sum(ElogpmuSigma);
   %10.75
@@ -94,6 +105,12 @@ while(iter <= maxIter && ~converged)
   ElogqmuSigma = zeros(1,K);
   for k=1:K
     ElogqmuSigma(k) = 1/2*logLambdaTilde(k) + d/2*log(kn(k)/(2*pi)) - d/2 - WishartEntropy(logLambdaTilde(k), Tn(:,:,k), vn(k));
+    switch lower(covtype{k})
+      case 'full'
+        H = vn(k)/2*logdet(Tn(:,:,k)) + vn(k)*d/2*log(2) + mvtGammaln(d,vn(k)/2) - (vn(k) - d - 1)/2*logLambdaTilde(k) + vn(k)*d/2;
+      case {'diagonal', 'spherical'}
+        H = sum(gammaln(vn(k)) - (vn(k)-1)*digamma(vn(k)) - log(diag(Tn(:,:,k))) + vn(k));
+    end
   end
   ElogqmuSigma = sum(ElogqmuSigma);
   
