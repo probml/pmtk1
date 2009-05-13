@@ -173,7 +173,7 @@ for iter = 1:options.maxIter
     end
     pause(.01);
   end
-
+fprintf('Iteration %d, loglik = %3.2f\n', iter, L(iter))
   % check if the  likelihood increase is less than threshold
   if iter>1
     likIncr = abs((L(iter)-L(iter-1))/L(iter-1));

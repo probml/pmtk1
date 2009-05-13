@@ -14,26 +14,42 @@ classdef MixMvnVBEM < ProbDist
     Sigma;
     dof;
     k;
+    covtype;
 
   end
 
   methods
 
     function model = MixMvnVBEM(varargin)
-    [model.alpha, model.mu, model.k, model.Sigma, model.dof, model.nrestarts] = processArgs(varargin, ...
+    [model.alpha, model.mu, model.k, model.Sigma, model.dof, model.covtype, model.nrestarts] = processArgs(varargin, ...
       '-alpha', [], ...
       '-mu', [], ...
       '-k', [], ...
       '-Sigma', [], ...
       '-dof', [], ...
+      '-covtype', [], ...
       '-nrestarts', 1);
     end
 
-    function model = fit(model, data)
+    function model = fit(model, data, varargin)
       %error('not yet implemented')
-      for r=1:model.nrestarts
-        [param{r}, L(r)] = VBforMixMvn(model.alpha, model.mu, model.k, model.Sigma, model.dof, data);
+      K = numel(model.alpha);
+      %prior = cell(1,K);
+      %for k=1:K
+      %  prior{k} = mkPrior(MvnDist('-mu', model.mu(k,:)', '-Sigma', model.Sigma(:,:,k), '-covtype', model.covtype), '-data', data);
+      %end
+      nrestarts = model.nrestarts;
+      param = cell(nrestarts, 1);
+      L = zeros(nrestarts, 1);
+      for r=1:nrestarts
+        [param{r}, L(r)] = VBforMixMvn(model.alpha, model.mu, model.k, model.Sigma, model.dof, model.covtype, data, varargin{:});
       end
+      best = argmin(L);
+      model.alpha = param{best}.alpha;
+      model.mu = param{best}.mu;
+      model.Sigma = param{best}.Sigma;
+      model.dof = param{best}.dof;
+      model.k = param{best}.k;
       %model = gmmVBEM;
     end
     

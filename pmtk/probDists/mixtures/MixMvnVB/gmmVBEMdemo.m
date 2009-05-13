@@ -42,7 +42,7 @@ PriorPar.v = 20;
 clear options;
 options.maxIter = 100;
 options.threshold = 1e-5;
-options.displayFig = 1;
+options.displayFig = 0;
 options.displayIter = 1;
 
 % Call the function
