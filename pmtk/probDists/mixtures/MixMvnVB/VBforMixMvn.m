@@ -137,12 +137,21 @@ function [alphan, kn, mn, Tn, vn] = VBemM(Nk, xbar, S, alpha0, k0, m0, invT0, v0
   d = size(xbar,2);
   alphan = alpha0 + Nk;
   kn = k0 + Nk;
-  vn = v0 + Nk;
   mn = zeros(K,d);
   invTn = zeros(d,d,K); Tn = zeros(d,d,K);
   for k=1:K
     mn(k,:) = ( k0(k)*m0(k,:) + Nk(k)*xbar(k,:) ) / kn(k);
     invTn(:,:,k) = invT0(:,:,k) + Nk(k)*S(:,:,k) + (k0(k)*Nk(k) / (k0(k) + Nk(k)) ) * (xbar(k,:) - m0(k,:))'*(xbar(k,:) - m0(k,:));
+    switch lower(covtype{k})
+      case 'full'
+      vn(k) = v0(k) + Nk(k);
+      case 'diagonal'
+      vn(k) = v0(k) + Nk(k)/2;
+      invTn(:,:,k) = diag(diag( invTn(:,:,k) ));
+      case 'spherical'
+      vn(k) = v0(k) + Nk(k)*d/2;
+      invTn(:,:,k) = sum(diag(invTn(:,:,k)))*eye(d);
+    end
     Tn(:,:,k) = inv(invTn(:,:,k));
   end
 end

@@ -44,7 +44,7 @@ classdef MixMvnVBEM < ProbDist
       for r=1:nrestarts
         [param{r}, L(r)] = VBforMixMvn(model.alpha, model.mu, model.k, model.Sigma, model.dof, model.covtype, data, varargin{:});
       end
-      best = argmin(L);
+      best = argmax(L);
       model.alpha = param{best}.alpha;
       model.mu = param{best}.mu;
       model.Sigma = param{best}.Sigma;
