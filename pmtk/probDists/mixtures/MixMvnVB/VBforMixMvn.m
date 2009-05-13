@@ -112,7 +112,7 @@ while(iter <= maxIter && ~converged)
   if iter>1, converged = convergenceTest(L(iter), L(iter-1), tol); end;
   if converged
     Lfinal = L(end); 
-    param = struct('alpha', alphan, 'mu', mn, 'k', kn, 'Sigma', Tn, 'dof', vn);
+    param = struct('alpha', alphan, 'mu', mn, 'k', kn, 'T', Tn, 'dof', vn);
   end;
   iter = iter + 1;
 end
@@ -156,12 +156,13 @@ function [alphan, kn, mn, Tn, vn] = VBemM(Nk, xbar, S, alpha0, k0, m0, invT0, v0
   end
 end
 
-function [lnZ] = logWishartConst(S, v)
+% These aren't going to work for diagonal or spherical covariances
+function [lnZ] = logWishartConst(S, v, covtype)
   d = size(S,1);
   lnZ = -(v*d/2)*log(2) - mvtGammaln(d,v/2) + (v/2)*logdet(S);
 end
 
-function [h] = WishartEntropy(T, S, v)
+function [h] = WishartEntropy(T, S, v, covtype)
   d = size(S,1);
   h = + v/2*logdet(S) + v*d/2*log(2) + mvtGammaln(d,v/2) - (v - d - 1)/2*T + v*d/2;
 end

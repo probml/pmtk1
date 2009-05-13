@@ -9,23 +9,23 @@ classdef MixMvnVBEM < ProbDist
     % as hyper params - see Bishop ch 10
     % The parameter defining the Dirichlet for the mixingDistrib
     alpha;
-    % The following are the parameters for a MvnInvWisharDist()
+    % The following are the parameters for a MvnInvWishartDist() / MvnInvGammaDist()
     mu;
-    Sigma;
+    T;
     dof;
     k;
-    covtype;
+    covtype; %'full', or 'diagonal', or 'spherical'
 
   end
 
   methods
 
     function model = MixMvnVBEM(varargin)
-    [model.alpha, model.mu, model.k, model.Sigma, model.dof, model.covtype, model.nrestarts] = processArgs(varargin, ...
+    [model.alpha, model.mu, model.k, model.T, model.dof, model.covtype, model.nrestarts] = processArgs(varargin, ...
       '-alpha', [], ...
       '-mu', [], ...
       '-k', [], ...
-      '-Sigma', [], ...
+      '-T', [], ...
       '-dof', [], ...
       '-covtype', [], ...
       '-nrestarts', 1);
@@ -41,16 +41,18 @@ classdef MixMvnVBEM < ProbDist
       nrestarts = model.nrestarts;
       param = cell(nrestarts, 1);
       L = zeros(nrestarts, 1);
+      if(any(~strcmpi(model.covtype, 'full')))
+        error('Restricted covariances not fully implemented yet');
+      end
       for r=1:nrestarts
-        [param{r}, L(r)] = VBforMixMvn(model.alpha, model.mu, model.k, model.Sigma, model.dof, model.covtype, data, varargin{:});
+        [param{r}, L(r)] = VBforMixMvn(model.alpha, model.mu, model.k, model.T, model.dof, model.covtype, data, varargin{:});
       end
       best = argmax(L);
       model.alpha = param{best}.alpha;
       model.mu = param{best}.mu;
-      model.Sigma = param{best}.Sigma;
+      model.T = param{best}.T;
       model.dof = param{best}.dof;
       model.k = param{best}.k;
-      %model = gmmVBEM;
     end
     
     function [ph, LL] = conditional(model,data)
