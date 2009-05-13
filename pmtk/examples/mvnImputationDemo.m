@@ -2,8 +2,8 @@ function mvnImputationDemo()
 %% Imputation for an MVN 
 %#testPMTK
 
-seeds = [0,1];
-rnd = [0,1];
+seeds = 0; % [0,1];
+rnd = 0; % [0,1];
 for i=1:length(seeds)
   setSeed(seeds(i));
   for j=1:length(rnd)
@@ -17,6 +17,7 @@ function helper(r)
 
 d = 10;  pcMissing = 0.3;
 model = mkRndParams(MvnDist(), d);
+%model = mkRndParams(DiscreteProdDist('-ndims', d, '-nstates', 3));
 n = 5;
 Xfull = sample(model, n);
 
@@ -48,16 +49,23 @@ subplot(nr,nc,3); imagesc(Ximpute); title('imputed mean'); colorbar
 subplot(nr,nc,4); imagesc(XhidImg); title('hidden truth'); colorbar
 %set(gcf,'position',[10 500 600 200])
 
-hintonScale({Xfull}, {'-map', 'gray', '-title', 'full data'}, {Xfull, 1-missing}, {'-map', 'Jet', '-title', 'missing pattern'}, {Ximpute, V}, {'-title', 'observed data'}, {Xfull, missing}, {'-title', 'hidden truth'});
-%figure;
-%subplot(nr,nc,1); hintonScale(Xfull, ones(n,d)); title('full data');
-%%subplot(nr,nc,2); hintonScale(missing, ones(n,d));title('missing pattern'); colorbar
-%subplot(nr,nc,2); hintonScale(Xfull, 1-missing); title('observed data');
-%subplot(nr,nc,3); hintonScale(Ximpute, V); 
-%title('imputed mean (color)/ variance (size)');
-%subplot(nr,nc,4); hintonScale(Xfull, missing);
-%title('hidden truth');
 
+hintonScale({Xfull}, {'-map', 'gray', '-title', 'full data'}, ...
+  {Xfull, 1-missing}, {'-map', 'Jet', '-title', 'observed'}, ...
+  {Ximpute, V}, {'-title', 'imputed mean'}, ...
+  {Xfull, missing}, {'-title', 'hidden truth'});
+
+%{
+figure;
+subplot(nr,nc,1); hintonScale(Xfull, ones(n,d));
+title('full data');
+ubplot(nr,nc,2); hintonScale(Xfull, 1-missing);
+title('observed data');
+subplot(nr,nc,3); hintonScale(Ximpute, V); 
+title('imputed mean (color)/ variance (size)');
+subplot(nr,nc,4); hintonScale(Xfull, missing);
+title('hidden truth');
+%}
 
 
 %{

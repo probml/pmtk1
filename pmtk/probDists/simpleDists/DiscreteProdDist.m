@@ -10,7 +10,7 @@ classdef DiscreteProdDist  < ParamJointDist
     support;
     
     % for inference
-    visVars; visVals;
+    %visVars; visVals;
   end
   
   
@@ -28,27 +28,28 @@ classdef DiscreteProdDist  < ParamJointDist
       % 'prior' - NoPrior or 'dirichlet' or DirichletDist.
       % Same prior is used for each distribution.
       if nargin == 0; return ; end % must be able to call the constructor with no args...
-      [T, nstates, ndims, support, prior, obj.priorStrength, obj.productDist] = ...
+      [T, nstates, ndims, support, prior, obj.priorStrength] = ...
         processArgs(varargin, ...
-        '-T', [], '-nstates', [], '-support', [], '-ndims', [], ...
-        '-prior', NoPrior, ...
-        '-priorStrength', 0, '-productDist', false);
+        '-T', [], '-nstates', [], '-ndims', [], '-support', [],  ...
+        '-prior', NoPrior,'-priorStrength', 1);
       if isempty(T)
         d = ndims; K = nstates;
         if isempty(d) || isempty(K)
           error('must specify d,K or T')
         end
-        obj = mkRndParams(obj, d, K);
+        obj = mkRndParams(obj, K, d);
+      else
+        obj.params.T = T;
       end
       if isempty(support) 
-        [nstates] = size(T,1);
+        [nstates] = size(obj.params.T,1);
         support = 1:nstates;
       end
       %if isempty(support), error('must specify support or nstates or T'); end
       if(~approxeq(normalize(T,1),T))
          error('Each column must sum to one'); 
       end
-      obj.params.T = T;
+      %obj.params.T = T;
       obj.support = support;
       obj.prior = prior;
     end
@@ -72,12 +73,12 @@ classdef DiscreteProdDist  < ParamJointDist
     end
     
     
-    function obj = mkRndParams(obj,d,K)
+    function obj = mkRndParams(obj,K,d)
       if nargin < 2
         T = obj.params.T;
-        [d,K]  = size(T);
+        [K,d]  = size(T);
       end
-      obj.T = normalize(rand(K,d),1);
+      obj.params.T = normalize(rand(K,d),1);
     end
     
     
@@ -91,11 +92,14 @@ classdef DiscreteProdDist  < ParamJointDist
         '-data', [], ...
         '-suffStat', []);
       if isa(X,'DataTable'), X = X.X; end
-      if ~isempty(X) && any(isnan(X))
+      if ~isempty(X) && any(isnan(X(:)))
         model = fitMissingData(model,X);
         return;
       end
-      if isempty(SS), SS = mkSuffStat(model, X); end
+      if isempty(SS)
+        model.support = mkSupport(model, X);
+        SS = mkSuffStat(model, X);
+      end
       d = size(SS.counts,2);
       if ~isa(model.prior, 'ProbDist'), model = initPrior(model); end
       switch class(model.prior)
@@ -143,7 +147,11 @@ classdef DiscreteProdDist  < ParamJointDist
           % prior distribution for this dimension
         end
       end
-      postQuery = DiscreteProdDist('-T',TQ);
+      if length(Q)==1
+        postQuery = DiscreteDist('-T',TQ);
+      else
+        postQuery = DiscreteProdDist('-T',TQ);
+      end
     end
     
     function X = sample(obj, n)
@@ -257,13 +265,25 @@ classdef DiscreteProdDist  < ParamJointDist
       SS.counts = counts;
    end
     
+    function support = mkSupport(model, X)
+        assert(~isempty(X))
+        X = full(double(X));
+        d = size(X,2);
+        support = [];
+        for j=1:d
+          support = union(support, unique(X(:,j)));
+        end
+        model.support = support;
+      end
+    
     
  end % protected methods
   
  methods(Static = true)
    function testClass()
      d = 4; K = 3;
-     m = DiscreteProdDist('-d', d,'-K',K);
+     m = DiscreteProdDist('-ndims', d,'-nstates',K);
+     X = sample(m, 100);
    end
    
  end % static methods

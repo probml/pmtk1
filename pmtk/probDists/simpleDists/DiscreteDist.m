@@ -72,7 +72,11 @@ classdef DiscreteDist  < ProbDist
         v = obj.T.*(1-obj.T);
     end
   
-  
+    function h = entropy(obj)
+      T = obj.T;
+      safeT = T; safe(T==0)=1;
+      h = sum(T .* log(safeT),1);
+    end
     
     function L = logprob(obj,X)
       % Return column vector of log probabilities for each row of X
@@ -144,6 +148,11 @@ classdef DiscreteDist  < ProbDist
       [X, SS] = processArgs(varargin, ...
         '-data', [], ...
         '-suffStat', []);
+      if isempty(model.support)
+        model.support = mkSupport(model, X);
+      end
+      
+    
       if isempty(SS), SS = mkSuffStat(model, X); end
       %K = nstates(model);
       d = size(SS.counts,2);
@@ -216,7 +225,16 @@ classdef DiscreteDist  < ProbDist
     end
     %}
     
-   
+     function support = mkSupport(model, X)
+        assert(~isempty(X))
+        X = full(double(X));
+        d = size(X,2);
+        support = [];
+        for j=1:d
+          support = union(support, unique(X(:,j)));
+        end
+        model.support = support;
+      end
     
   end % methods
 

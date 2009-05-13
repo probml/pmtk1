@@ -28,26 +28,34 @@ function [canonized,support] = canonizeLabels(labels,support)
 % canonizeLabels([10,11,19,20],10:20)        - with specifying support
 % ans =  1     2    10    11
 % 
-    [nrows,ncols] = size(labels);
-    labels = labels(:);
 
-    if(nargin == 2)
-        labels = [labels;support(:)];
-    end
-    
-    if(ischar(labels))
-        [s,j,canonized] = unique(labels,'rows');
-       
-    else
-        [s,j,canonized] = unique(labels);
-    end
-    
-    if(nargin == 2)
-       if(~isequal(support(:),s(:)))
-          error('Some of the data lies outside of the support.'); 
-       end
-       canonized(end:-1:end-numel(support)+1) = []; 
-    end
-    support = s;
-    canonized = reshape(canonized,nrows,ncols);
+%{
+if nargin < 2 || isempty(support)
+  canonized = labels;
+  return;
+end
+%}
+
+[nrows,ncols] = size(labels);
+labels = labels(:);
+
+if(nargin == 2)
+  labels = [labels;support(:)];
+end
+
+if(ischar(labels))
+  [s,j,canonized] = unique(labels,'rows');
+else
+  labels = double(full(labels));
+  [s,j,canonized] = unique(labels);
+end
+
+if(nargin == 2)
+  if(~isequal(support(:),s(:)))
+    error('Some of the data lies outside of the support.');
+  end
+  canonized(end:-1:end-numel(support)+1) = [];
+end
+support = s;
+canonized = reshape(canonized,nrows,ncols);
 end

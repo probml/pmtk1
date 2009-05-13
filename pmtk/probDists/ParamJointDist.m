@@ -128,11 +128,12 @@ classdef ParamJointDist < ProbDist
             C = var(model.infEng);
         end
         
-        function Xc = impute(model, X)
+        function [Xc,H] = impute(model, X)
           %error('deprecated')
             % Fill in NaN entries of X using posterior mode on each row
             [n] = size(X,1);
             Xc = X;
+            H = zeros(size(X));
             for i=1:n
                 hidNodes = find(isnan(X(i,:)));
                 if isempty(hidNodes), continue, end;
@@ -142,6 +143,11 @@ classdef ParamJointDist < ProbDist
                 postH = marginal(tmp, hidNodes);
                 %postH = predict(obj, visNodes, visValues);
                 Xc(i,hidNodes) = rowvec(mode(postH));
+                for j=1:length(hidNodes)
+                  h = hidNodes(j);
+                  pp = marginal(tmp, h);
+                  H(i,h) = entropy(pp);
+                end
             end
         end
         
