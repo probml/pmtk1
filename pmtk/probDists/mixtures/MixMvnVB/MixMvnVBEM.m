@@ -9,7 +9,16 @@ classdef MixMvnVBEM < ProbDist
     % as hyper params - see Bishop ch 10
     % The parameter defining the Dirichlet for the mixingDistrib
     alpha;
-    % The following are the parameters for a MvnInvWishartDist() / MvnInvGammaDist()
+    % The following are the parameters for a MvnInvWishartDist() / MvnInvGammaDist().
+    % We adopt the following notational convention
+    % For MvnInvWishartDist() / MvnInvGammaDist()
+    % p(mu | Sigma) \propto exp{-1/2*(x-mu)'k*Sigma^{-1}(x-mu)}
+    % For MvnInvWishartDist()
+    % p(Sigma) \propto |T|^{-(dof+d+1)/2} exp{-1/2*trace(Sigma*T^{-1})}
+    % For MvnInvGammaDist()
+    % p(sigma_j) \propto (1/sigma_j)^{-(dof+1)} exp{-(T(j,j) / sigma_j)}
+    % Note that this choice of definition does not agree (in variable name) with
+    % that given in MvnInvGammaDist(), but allows us to more compactly write code
     mu;
     T;
     dof;

@@ -60,7 +60,7 @@ while(iter <= maxIter && ~converged)
       case 'full' % Wishart Dist on precision
         logLambdaTilde(k) = sum(digamma(1/2*(vn(k) + 1 - [1:d]))) + d*log(2)  + logdet(Tn(:,:,k));
       case {'diagonal', 'spherical'} % Gamma dist on precision
-        logLambdaTilde(k) = sum(digamma(vn(k)) - log(diag(Tn(:,:,k))));
+        logLambdaTilde(k) = digamma(vn(k)) - logdet(Tn(:,:,k));
     end
     XC = bsxfun(@minus, X, mn(k,:));
     E(:,k) = d./kn(k) + vn(k)*sum((XC*Tn(:,:,k)).*XC,2);
@@ -93,7 +93,7 @@ while(iter <= maxIter && ~converged)
         ElogpmuSigma(k) = ElogpmuSigma(k) - vn(k)*trace(invT0(:,:,k)*Tn(:,:,k)) + (v0(k) - d - 1)*logLambdaTilde(k) + 2*logWishartConst(invT0(:,:,k), v0(k));
       % Factor of 2 on the last term as we then sum and then divide by 2 in the next line
       case {'diagonal', 'spherical'}
-        ElogpmuSigma(k) = ElogpmuSigma(k) + 2*sum(vn(k)*log(diag(Tn(:,:,k))) - gammaln(vn(k)) + (vn(k)-1)*logLambdaTilde(k) - vn(k));
+        ElogpmuSigma(k) = ElogpmuSigma(k) + 2*(vn(k)*logdet(Tn(:,:,k)) - gammaln(vn(k)) + (vn(k)-1)*logLambdaTilde(k) - vn(k));
     end
   end
     ElogpmuSigma = 1/2*sum(ElogpmuSigma);
@@ -104,13 +104,15 @@ while(iter <= maxIter && ~converged)
   %10.77
   ElogqmuSigma = zeros(1,K);
   for k=1:K
-    ElogqmuSigma(k) = 1/2*logLambdaTilde(k) + d/2*log(kn(k)/(2*pi)) - d/2 - WishartEntropy(logLambdaTilde(k), Tn(:,:,k), vn(k));
+    ElogqmuSigma(k) = 1/2*logLambdaTilde(k) + d/2*log(kn(k)/(2*pi)) - d/2;% - WishartEntropy(logLambdaTilde(k), Tn(:,:,k), vn(k));
     switch lower(covtype{k})
       case 'full'
         H = vn(k)/2*logdet(Tn(:,:,k)) + vn(k)*d/2*log(2) + mvtGammaln(d,vn(k)/2) - (vn(k) - d - 1)/2*logLambdaTilde(k) + vn(k)*d/2;
       case {'diagonal', 'spherical'}
-        H = sum(gammaln(vn(k)) - (vn(k)-1)*digamma(vn(k)) - log(diag(Tn(:,:,k))) + vn(k));
+        %H = sum(gammaln(vn(k)) - (vn(k)-1)*digamma(vn(k)) - log(diag(Tn(:,:,k))) + vn(k));
+        H = vn(k)*logdet(Tn(:,:,k)) - log(gammaln(vn(k))) + (vn(k)-1)*logLambdaTilde(k) - vn(k);
     end
+   ElogqmuSigma(k) = ElogqmuSigma(k) - H;
   end
   ElogqmuSigma = sum(ElogqmuSigma);
   
