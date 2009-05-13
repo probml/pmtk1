@@ -70,24 +70,24 @@ function varargout = processArgs(args,varargin)
     REQ    = '*';   % require the argument
     TYPE   = '+';   % check the type of the arg against the default type
 %% PROCESS VARARGIN - PASSED BY PROGRAMMER
-    if ~iscell(args)                                                               ,error('PROGRAMMER ERROR - you must pass in the user''s arguments in a cell array as in processArgs(varargin,''-name'',val,...)');end
-    if isempty(varargin)                                                           ,error('PROGRAMMER ERROR - you have not passed in any name/default pairs to processArgs');  end
+    if ~iscell(args)                                                               ,throwAsCaller(MException('PROCESSARGS:noUserArgs','PROGRAMMER ERROR - you must pass in the user''s arguments in a cell array as in processArgs(varargin,''-name'',val,...)'));end
+    if isempty(varargin)                                                           ,throwAsCaller(MException('PROCESSARGS:emptyVarargin','PROGRAMMER ERROR - you have not passed in any name/default pairs to processArgs'));  end
     argnames  = varargin(1:2:end);
     maxNargs  = numel(argnames);
     required  = cellfun(@(c)any(REQ==c(1:min(3,end))),argnames);
     typecheck = cellfun(@(c)any(TYPE==c(1:min(3,end))),argnames); 
-    if ~iscellstr(argnames)                                                        ,error('PROGRAMMER ERROR - you must pass to processArgs name/default pairs'); end
+    if ~iscellstr(argnames)                                                        ,throwAsCaller(MException('PROCESSARGS:notCellStr ',sprintf('PROGRAMMER ERROR - you must pass to processArgs name/default pairs'))); end
     argnames(required | typecheck)  = cellfuncell(@(c)c(c~=REQ & c~=TYPE),argnames(required | typecheck));
     defaults = varargin(2:2:end);
     varargout = defaults;
-    if mod(numel(varargin),2)                                                      ,error('PROGRAMMER ERROR - you have passed in an odd number of arguments to processArgs, which requires name/default pairs');  end
-    if any(cellfun(@isempty,argnames))                                             ,error('PROGRAMMER ERROR - empty-string names are not allowed');end
-    if nargout >= 0 && nargout ~= maxNargs                                         ,error('PROGRAMMER ERROR - processArgs requires the same number of output arguments as named/default input pairs'); end
-    if ~isempty(PREFIX) && ~all(cellfun(@(c)~isempty(c) && c(1)==PREFIX,argnames)) ,error('PROGRAMMER ERROR - processArgs requires that each argument name begin with the prefix %s',PREFIX); end
-    %if numel(unique(argnames)) ~= numel(argnames)                                  ,error('PROGRAMMER ERROR - you can not use the same argument name twice');end
+    if mod(numel(varargin),2)                                                      ,throwAsCaller(MException('PROCESSARGS:oddNumArgs',sprintf('PROGRAMMER ERROR - you have passed in an odd number of arguments to processArgs, which requires name/default pairs')));  end
+    if any(cellfun(@isempty,argnames))                                             ,throwAsCaller(MException('PROCESSARGS:emptyStrName ',sprintf('PROGRAMMER ERROR - empty-string names are not allowed')));end
+    if nargout >= 0 && nargout ~= maxNargs                                         ,throwAsCaller(MException('PROCESSARGS:wrongNumOutputs',sprintf('PROGRAMMER ERROR - processArgs requires the same number of output arguments as named/default input pairs'))); end
+    if ~isempty(PREFIX) && ~all(cellfun(@(c)~isempty(c) && c(1)==PREFIX,argnames)) ,throwAsCaller(MException('PROCESSARGS:missingPrefix',sprintf('PROGRAMMER ERROR - processArgs requires that each argument name begin with the prefix %s',PREFIX))); end
+    %if numel(unique(argnames)) ~= numel(argnames)                                  ,throwAsCaller(MException('PROCESSARGS:duplicateName',sprintf('PROGRAMMER ERROR - you can not use the same argument name twice')));end
 %% PROCESS ARGS - PASSED BY USER    
     if numel(args) == 0 
-        if any(required)                                                           ,error('The following required arguments were not specified:\n%s',cellString(argnames(required))); 
+        if any(required)                                                           ,throwAsCaller(MException('PROCESSARGS:missingReqArgs',sprintf('The following required arguments were not specified:\n%s',cellString(argnames(required))))); 
         else  return;
         end
     end
@@ -107,13 +107,13 @@ function varargout = processArgs(args,varargin)
     userArgNamesNDX = find(cellfun(@(c)ischar(c) && ~isempty(c) && c(1)==PREFIX,args));
     if ~isempty(userArgNamesNDX) && ~isequal(userArgNamesNDX,userArgNamesNDX(1):2:numel(args)-1)
         if isempty(PREFIX)
-            error('\n(1) every named argument must be followed by its value\n(2) no positional argument may be used after the first named argument\n');
+            throwAsCaller(MException('PROCESSARGS:missingVal',sprintf('\n(1) every named argument must be followed by its value\n(2) no positional argument may be used after the first named argument\n')));
         else
-            error('\n(1) every named argument must be followed by its value\n(2) no positional argument may be used after the first named argument\n(3) every argument name must begin with the ''%s'' character\n(4) values cannot be strings beginning with the %s character\n',PREFIX,PREFIX); 
+            throwAsCaller(MException('PROCESSARGS:posArgAfterNamedArg',sprintf('\n(1) every named argument must be followed by its value\n(2) no positional argument may be used after the first named argument\n(3) every argument name must begin with the ''%s'' character\n(4) values cannot be strings beginning with the %s character\n',PREFIX,PREFIX))); 
         end
     end
 %     if ~isempty(userArgNamesNDX) && numel(unique(args(userArgNamesNDX))) ~= numel(userArgNamesNDX)
-%        error('You have specified the same argument name twice');
+%        throwAsCaller(MException('PROCESSARGS:duplicateUserArg',sprintf('You have specified the same argument name twice')));
 %     end
     argsProvided = false(1,maxNargs);
     if isempty(userArgNamesNDX)
@@ -123,12 +123,12 @@ function varargout = processArgs(args,varargin)
     else
         positionalArgs = args(1:userArgNamesNDX(1)-1); 
     end
-    if numel(positionalArgs) + numel(userArgNamesNDX) > maxNargs                                , error('You have specified %d too many arguments to the function',numel(positionalArgs)+numel(userArgNamesNDX)- maxNargs);end
+    if numel(positionalArgs) + numel(userArgNamesNDX) > maxNargs                                , throwAsCaller(MException('PROCESSARGS:tooManyInputs',sprintf('You have specified %d too many arguments to the function',numel(positionalArgs)+numel(userArgNamesNDX)- maxNargs)));end
     
     for i=1:numel(positionalArgs)
         if ~isempty(args{i})  % don't overwrite default value if positional arg is empty, i.e. '',{},[]
            argsProvided(i) = true;
-           if typecheck(i) && ~isa(args{i},class(defaults{i}))                                  , error('Argument %d must be of type %s',i,class(defaults{i}));  end
+           if typecheck(i) && ~isa(args{i},class(defaults{i}))                                  , throwAsCaller(MException('PROCESSARGS:argWrongType',sprintf('Argument %d must be of type %s',i,class(defaults{i}))));  end
            varargout{i} = args{i};
         end
     end
@@ -148,15 +148,15 @@ function varargout = processArgs(args,varargin)
     end
     
     if any(~positions)
-       error('The following argument names are invalid: %s',cellstring(userArgNames(positions == 0),' , '));
+       throwAsCaller(MException('PROCESSARGS:invalidArgNames',sprintf('The following argument names are invalid: %s',cellString(userArgNames(positions == 0),' , '))));
     end
-    if any(positions  <= numel(positionalArgs))                                                  , error('You cannot specify an argument positionally, and by name in the same function call.');end
+    if any(positions  <= numel(positionalArgs))                                                 , throwAsCaller(MException('PROCESSARGS:bothPosAndName',sprintf('You cannot specify an argument positionally, and by name in the same function call.')));end
     values = args(userArgNamesNDX + 1);
     if any(typecheck)
        for i=1:numel(userArgNamesNDX)
-          if typecheck(positions(i)) && ~isa(args{userArgNamesNDX(i)+1},class(defaults{positions(i)})), error('Argument %s must be of type %s',args{userArgNamesNDX(i)},class(defaults{positions(i)})); end
+          if typecheck(positions(i)) && ~isa(args{userArgNamesNDX(i)+1},class(defaults{positions(i)})), throwAsCaller(MException('PROCESSARGS:wrongType',sprintf('Argument %s must be of type %s',args{userArgNamesNDX(i)},class(defaults{positions(i)})))); end
        end
     end    
     varargout(positions) = values;
     argsProvided(positions) = true;
-    if any(~argsProvided & required)                                                           , error('The following required arguments were either not specified, or were given empty values:\n%s',cellString(argnames(~argsProvided & required))); end
+    if any(~argsProvided & required)                                                           , throwAsCaller(MException('PROCESSARGS:emptyVals',sprintf('The following required arguments were either not specified, or were given empty values:\n%s',cellString(argnames(~argsProvided & required))))); end
