@@ -19,13 +19,6 @@ classdef MvnInvWishartDist < ProbDist
       if dof < d, warning('MvnInvWishartDist:dofSize','dof should be bigger than dimensionality'); end
     end
     
-    function m = setParam(m, param)
-      m.mu = param.mu;
-      m.Sigma = param.Sigma;
-      m.dof = param.dof;
-      m.k = param.k;
-    end
-
     function d = ndimensions(obj)
       % for the purposes of plotting etc, the dimensionality is |m|+|S|
       d = length(obj.mu) + length(obj.Sigma(:));

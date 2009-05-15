@@ -12,18 +12,31 @@ setSeed(0);
 load oldFaith;
 % standardize the data
 X = bsxfun(@minus, X, mean(X));
-X = bsxfun(@rdivide, X, var(X));
+X = bsxfun(@rdivide, X, sqrt(var(X)));
 [n,d] = size(X);
 K = 15;
 covtype = cell(1,K);
 for k=1:K
   covtype{k} = 'full';
 end
+alpha0 = 1e-3;
 model = MixMvnVBEM(...
-  '-alpha', 10e-3*ones(1,K), ...
+  '-alpha', alpha0*ones(1,K), ...
   '-mu', zeros(K,d), ...
   '-k', ones(1,K), ...
-  '-T', 200*repmat(eye(d), [1,1,K]), ...
-  '-dof', 20*ones(1,K), ...
+  '-T', 0.5*repmat(eye(d), [1,1,K]), ...
+  '-dof', 3*ones(1,K), ...
   '-covtype', covtype);
-fitted = fit(model, X, '-verbose', true, '-maxIter', 200);
+fitted = fit(model, X, '-verbose', true, '-maxIter', 500, '-tol', 1e-10);
+
+[mix, marg] = marginal(fitted);
+
+figure(); hold on; plot(X(:,1), X(:,2), 'ro');
+normAlpha = normalize(fitted.alpha);
+for k=1:K
+  % Only plot those distributions that have non-negligable contribution 
+  if(normAlpha(k) > 1e-2)
+    plot(marg{k});
+  end
+end
+title(sprintf('Variational Bayesian mixture of %d Gaussians applied to Standardized old faithful dataset. \n Only mixtures with non-negligable contributions are plotted (%d).', K, sum(normAlpha > 1e-2)))

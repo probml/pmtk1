@@ -1,4 +1,4 @@
-function [param, Lfinal] = VBforMixMvn(alpha0, m0, k0, T0, v0, covtype, X, varargin)
+function [param, Lfinal] = VBforMixMvn(alpha0, m0, k0, invT0, v0, covtype, X, varargin)
 % Variational Bayes EM algorithm for Gaussian Mixture Model
 % This implementation is based on Bishop's Book
 % Refer to Bishop's book for notation and details 
@@ -21,11 +21,6 @@ converged = false;
 [n,d] = size(X);
 K = numel(alpha0);
 E = zeros(n,K);
-
-% First convert notation: Inverse Wishart to Wishart Notation
-for k=1:K
-  invT0(:,:,k) = inv(T0(:,:,k));
-end
 
 %likIncr = options.threshold + eps;
 logLambdaTilde = zeros(1,K);
@@ -129,9 +124,15 @@ while(iter <= maxIter && ~converged)
 
   % check if the  likelihood increase is less than threshold
   if iter>1, converged = convergenceTest(L(iter), L(iter-1), tol); end;
-  if converged
+  if (converged || iter == maxIter)
     Lfinal = L(end); 
-    param = struct('alpha', alphan, 'mu', mn, 'k', kn, 'T', Tn, 'dof', vn);
+    if(iter == maxIter && ~ converged), warning('VBforMixMvn:failed2Converge', 'Warning: failed to converge'); end;
+    % Convert notation: Inverse Wishart |--> Wishart Notation
+    invTn = zeros(size(Tn));
+    for k=1:K
+      invTn(:,:,k) = inv(Tn(:,:,k));
+    end
+    param = struct('alpha', alphan, 'mu', mn, 'k', kn, 'T', invTn, 'dof', vn);
   end;
   iter = iter + 1;
 end

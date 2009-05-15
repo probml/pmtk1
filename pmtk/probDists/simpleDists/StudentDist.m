@@ -114,15 +114,32 @@ classdef StudentDist < ProbDist
       
     function h=plot(obj, varargin)
       sf = 2;
-      m = mean(obj); v = sqrt(var(obj));
-      xrange = [m-sf*v, m+sf*v];
-      [plotArgs, npoints, xrange, useLog] = processArgs(...
-        varargin, '-plotArgs' ,{}, '-npoints', 100, ...
-        '-xrange', xrange, '-useLog', false);
-      xs = linspace(xrange(1), xrange(2), npoints);
-      p = logprob(obj, xs(:));
+      if(~obj.productDist)
+        m = mean(obj); v = sqrt(var(obj));
+        xrange = [m-sf*v, m+sf*v];
+        [plotArgs, npoints, xrange, useLog] = processArgs(...
+          varargin, '-plotArgs' ,{}, '-npoints', 100, ...
+          '-xrange', xrange, '-useLog', false);
+        xs = linspace(xrange(1), xrange(2), npoints);
+        p = logprob(obj, xs(:));
       if ~useLog, p = exp(p); end
       h = plot(colvec(xs), colvec(p), plotArgs{:});
+      else
+        m = mean(obj); v = sqrt(var(obj))';
+        xrange = [m-sf*v, m+sf*v];
+        [plotArgs, npoints, xrange, useLog] = processArgs(...
+          varargin, '-plotArgs' ,{}, '-npoints', 100, ...
+          '-xrange', xrange, '-useLog', false);
+        [X1,X2] = meshgrid(linspace(xrange(1,1), xrange(1,2), npoints)',...
+                    linspace(xrange(2,1), xrange(2,2), npoints)');
+        X = [X1(:) X2(:)];
+        p = logprob(obj, X);
+      if ~useLog, p = exp(p); end
+      [nr] = size(X1,1); nc = size(X2,1);
+      p = reshape(p, nr, nc);
+      %h = plot(X1, X2, colvec(p), plotArgs{:});
+      [c,h] = contour(X1, X2, p, plotArgs{:});
+      end
     end
     
   end % methods

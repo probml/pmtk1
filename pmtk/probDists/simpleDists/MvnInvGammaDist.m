@@ -18,22 +18,6 @@ classdef MvnInvGammaDist < ProbDist
             %if(length(b) ~= length(a)), a = a*ones(1,length(b)); end;
             m.mu = mu; m.Sigma = Sigma; m.a = a; m.b = b;
         end
-
-        %{
-        function m = setParam(m, param)
-          m.mu = param.mu;
-          m.Sigma = param.Sigma;
-          m.a = param.a;
-          m.b = param.b;
-        end
-
-        function m = updateParam(m, param)
-          m.mu = param.mu;
-          m.Sigma = param.Sigma;
-          m.a = param.a;
-          m.b = param.b;
-        end
-%}
         
     		function m = mode(obj, varargin)
           [covtype] = processArgs(varargin, '-covtype', 'spherical');

@@ -53,7 +53,7 @@ classdef Mvn_MvnInvGammaDist < CompoundDist
   
      function m = marginal(obj)
        a = obj.muSigmaDist.a; b = obj.muSigmaDist.b; m = obj.muSigmaDist.mu; k = obj.muSigmaDist.Sigma;
-       m = StudentDist(2*a, m, b.*(1+k)./(a*k)); 
+       m = StudentDist(2*a, m, b.*(1+k)./(a*k), '-productDist', true); 
      end
      
   end

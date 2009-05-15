@@ -1,3 +1,2 @@
 % Turn off printing of figures
-filepath = which('printPmtk');
-writeText({'0'}, filepath);
+writeText({'0'}, which('printPmtk'));
