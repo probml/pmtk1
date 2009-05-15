@@ -21,8 +21,6 @@ converged = false;
 [n,d] = size(X);
 K = numel(alpha0);
 E = zeros(n,K);
-
-%likIncr = options.threshold + eps;
 logLambdaTilde = zeros(1,K);
 
 % initialization of responsibilities
@@ -36,10 +34,6 @@ for k=1:K
   C = cov(X(assign == k,:));
   S(:,:,k) =  C + 0.01*diag(diag(C));
 end
-
-% E-step
-% CB 10.51-10.53.
-%[Nk, xbar, S] = emSS(X, K, rnk);
 
 % M-step
 % CB 10.58,10.60-10.63. 
