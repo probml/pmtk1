@@ -1,6 +1,6 @@
 %% MVN Height Weight Demo
 plotName = {'heightWeightScatter', 'heightWeightScatterCov'};
-for i=1:2
+for i=2 % 1:2
     if(i==1)
         plotCov = false;
     else
@@ -25,6 +25,11 @@ for i=1:2
             pgauss = fit(MvnDist(), 'data',X);
             gaussPlot2d(pgauss.mu, pgauss.Sigma);
             L = logprob(pgauss, X);
+            range1 = [min(data.X(:,1)), max(data.X(:,1))];
+            range2 = [min(data.X(:,2)), max(data.X(:,2))];
+            %figure;
+            %ezsurf(@(x,y)exp(logprob(pgauss,[x y])), range1, range2);
+            %ezcontour(@(x,y)exp(logprob(pgauss,[x y])), range1, range2);
         end
     end
     xlabel('height')

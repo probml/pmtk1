@@ -1,6 +1,7 @@
-function outIndex = residualR(inIndex,q);
+function outIndex = deterministicR(inIndex,q);
 % PURPOSE : Performs the resampling stage of the SIR
-%           in order(number of samples) steps.
+%           in order(number of samples) steps. It uses Kitagawa's
+%           deterministic resampling algorithm.
 % INPUTS  : - inIndex = Input particle indices.
 %           - q = Normalised importance ratios.
 % OUTPUTS : - outIndex = Resampled indices.
@@ -13,25 +14,22 @@ if nargin < 2, error('Not enough input arguments.'); end
 
 % RESIDUAL RESAMPLING:
 % ====================
+
 N_babies= zeros(1,S);
-% first integer part
-q_res = S.*q'; %'
-N_babies = fix(q_res);
-% residual number of particles to sample
-N_res=S-sum(N_babies);
-if (N_res~=0)
-  q_res=(q_res-N_babies)/N_res;
-  cumDist= cumsum(q_res);   
-  % generate N_res ordered random variables uniformly distributed in [0,1]
-  u = fliplr(cumprod(rand(1,N_res).^(1./(N_res:-1:1))));
-  j=1;
-  for i=1:N_res
-    while (u(1,i)>cumDist(1,j))
+u=zeros(1,S);
+
+% generate the cumulative distribution
+cumDist = cumsum(q');
+aux=rand(1);
+u=aux:1:(S-1+aux);
+u=u./S;
+j=1;
+for i=1:S
+   while (u(1,i)>cumDist(1,j))
       j=j+1;
-    end
-    N_babies(1,j)=N_babies(1,j)+1;
-  end;
-end;
+   end
+   N_babies(1,j)=N_babies(1,j)+1;
+end
 
 % COPY RESAMPLED TRAJECTORIES:  
 % ============================
@@ -44,15 +42,5 @@ for i=1:S
   end;   
   index= index+N_babies(1,i);   
 end
-
-
-
-
-
-
-
-
-
-
 
 

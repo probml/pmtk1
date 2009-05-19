@@ -7,7 +7,13 @@ function count = compute_counts(data, sz)
 %
 % Example: to compute a transition matrix for an HMM from a sequence of labeled states:
 % transmat = mk_stochastic(compute_counts([seq(1:end-1); seq(2:end)], [nstates nstates]));
-
+%
+% Example: gs = [1 2 3 1]; os = [1 2 3 1]; D = [gs;os]; C=compute_counts(D,[ 3 3])
+% C =
+%     2     0     0
+%     0     1     0
+%     0     0     1
+     
 D = data'; % each row of data is a case
 [ncases, nvars] = size(D); %#ok
 assertKPM(length(sz) == nvars);
