@@ -17,13 +17,14 @@ D = DataTable(X, y);
 %m = LogregBinaryMc('-transformer', T, '-lambda', 1e-3);
 lambda = 1e-3;
 models = { LogregBinaryMc('-lambda', lambda, '-fitEng', LogregBinaryImptceSampleFitEng()), ...
-  LogregBinaryLaplace('-lambda', lambda, '-predMethod', 'mc'),...
-  LogregBinaryMc('-lambda', lambda, '-fitEng', LogregBinaryMhFitEng())};
+  LogregBinaryMc('-lambda', lambda, '-fitEng', LogregBinaryMhFitEng()), ...
+  LogregBinaryLaplace('-lambda', lambda, '-predMethod', 'mc')};
 
 for mi=1:length(models)
   m = models{mi};
   m = fit(m,D);
   L = sum(logprob(m,D))
+  if mi<=2, L2 = sum(logprob(m,D,2)), end % debugging
   
   pw = getParamPost(m);
   figure; 
@@ -41,6 +42,5 @@ for mi=1:length(models)
     line([X(i) X(i)], [Q5(i) Q95(i)],   'linewidth', 3);
     plot(X(i), med(i), 'rx', 'linewidth', 3, 'markersize', 12);
   end
-  
 end
 

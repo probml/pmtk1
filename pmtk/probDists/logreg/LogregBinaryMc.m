@@ -60,28 +60,35 @@ methods
     yhat = convertLabelsToUserFormat(D, yhat, '01');
   end
   
-  function p = logprob(obj, D)
+  function p = logprob(obj, D, method)
     % p(i) = log sum_s p(y(i) | D.X(i,:), beta(s)) w(s)
     % where w(s) is weight for sample s
+    if nargin < 3, method = 1; end
     X = D.X; y = getLabels(D, '01');
     n = size(X,1);
     [yhat, pred] = predict(obj,D); % pred is n*S 
     p1 = pred.samples;
     p0 = 1-p1;
-    W = repmat(pred.weights, n, 1); 
     nS = size(p1,2);
+    %W = repmat(pred.weights, n, 1);
+    W = ones(n, nS);
     mask1 = repmat((y==1), 1, nS);
     mask0 = repmat((y==0), 1, nS);
     pp = (mask1 .* p1 + mask0 .* p0) .* W;
-    p = log(sum(pp,2));
-    
-    %{
-    %plug in posterior mean
+    p1 = log(mean(pp,2)); % unweighted average
+    %p = log(sum(pp,2));
+   
+    %plug in posterior mean - gives closer result to laplace
     mu1 = mean(pred); 
     Y = oneOfK(y, 2);
     P = [mu1(:) 1-mu1(:)];
-    p2 =  sum(Y.*log(P), 2)
-   %}
+    p2 =  sum(Y.*log(P), 2);
+    
+    if method==1
+      p = p1;
+    else
+      p = p2;
+    end
  
   end
   

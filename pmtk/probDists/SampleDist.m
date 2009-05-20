@@ -137,11 +137,13 @@ classdef SampleDist < ProbDist
   methods(Access = protected)
     
   function mu = moments(obj, fn)
-      %nd = ndimsPMTK(obj.samples);
+      nd = ndimsPMTK(obj.samples);
       %mu = mean(obj.samples, nd); % take mean across last dim
-      w = obj.weights(:)';
+      %w = obj.weights(:)';
       sz = size(obj.samples);
-      ns = length(w);
+      ns = sz(nd);
+      %ns = length(w);
+      w = ones(1,ns);
       switch ndimsPMTK(obj.samples)
         case 1, mu = fn(w .* obj.samples,2);
         case 2, mu = fn(repmat(w, sz(1), 1) .* obj.samples,2);
