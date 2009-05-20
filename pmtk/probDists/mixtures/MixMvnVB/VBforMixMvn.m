@@ -1,4 +1,3 @@
-%function [param, Lfinal] = VBforMixMvn(alpha0, m0, k0, invT0, v0, covtype, X, varargin)
 function [fittedDistrib, fittedMix, Lfinal] = VBforMixMvn(distributions, mixingPrior, covtype, X, varargin)
 % Variational Bayes EM algorithm for Gaussian Mixture Model
 % This implementation is based on Bishop's Book
