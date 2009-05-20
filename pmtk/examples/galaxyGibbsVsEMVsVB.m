@@ -57,10 +57,7 @@ s{1,:} = sprintf('%s \t %s \t %s \t %s \t\t %s \n', 'Cluster', method{:});
 for k=1:K
   s{k+1,:} = sprintf('%d \t\t %3.2f \t\t %3.2f \t\t\t %3.2f \t\t %3.2f \n', k, meanEst(k,:));
 end
-% PMTK1
-disp(cellString(s,''))
-% PMTK2
-%disp(catString(s,''))
+disp(catString(s,''))
 
 disp(sprintf('Gibbs methods based on model averaging (%d samples)\n', Nsamples - Nburnin));
 disp('(VB) EM based on posterior parameters with a Normal Inverse Wishart Prior')
