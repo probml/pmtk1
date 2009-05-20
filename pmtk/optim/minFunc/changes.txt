@@ -1,0 +1,16 @@
+- lower optimality tolerance
+- cyclic steepest descent
+- conic BB
+- conjugate gradient steps accepted whenever sufficient decrease condition satisfied, uses Hestenes-Steifel update by default
+- Gilbert-Nocedal conjugate gradient
+- scaled conjugate gradient
+- damped L-BFGS
+- LBL factorization in Newton (for new versions of matlab)
+- negative curvature direction in newton
+- directions of negative curvature in newton0
+- preconditionnd conjugate gradient
+- allow user-specified preconditioners
+- changed 'bfgs' to 'qnewton'
+- added different types of updates to 'qnewton': BFGS, SR1, Hoshino, McCormick-Huang, Pearson-Huang, Self-Scaling BFGS, Oren's Self-Scaling Method
+
+*update readme
