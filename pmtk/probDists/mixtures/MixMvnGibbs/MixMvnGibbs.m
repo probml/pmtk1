@@ -102,7 +102,7 @@ classdef MixMvnGibbs < MixMvn
       model.samples.Sigma = sigmaS;
       model.samples.mixingWeights = mixS;
     end
-
+%{
     function m = convertToMixMvn(model)
       m = MixMvn();
       m.distributions = model.distributions;
@@ -113,7 +113,7 @@ classdef MixMvnGibbs < MixMvn
       end
       model.mixingDistrib.T = mean(model.samples.mixingWeights);
     end
-
+%}
     function [] = traceplot(model)
       if(isempty(model.samples)), error('MixMvnGibbs:traceplot:notFit', 'Must first fit Mixture to data'); end;
       mu = model.samples.mu;
@@ -125,6 +125,27 @@ classdef MixMvnGibbs < MixMvn
         plot(mu{k}.samples);
         xlabel(sprintf('Distribution %d', k));
       end
+    end
+
+    function [] =  convergencePlot(model,X)
+      if(isempty(model.samples)), error('MixMvnGibbs:traceplot:notFit', 'Must first fit Mixture to data'); end;
+      mu = model.samples.mu;
+      Sigma = model.samples.Sigma;
+      mixW = model.samples.mixingWeights;
+      S = size(model.samples.mu{1}.samples,2);
+      K = numel(model.distributions);
+      lognormconst = zeros(S,1); logp = zeros(S,1);
+      for s=1:S
+        for k=1:K
+          XC = bsxfun(@minus, X, mu{k}.samples(:,s)');
+          l(:,k,s) = log(mixW.samples(k,s)) - 1/2*logdet(2*pi*Sigma{k}.samples(:,:,s)) - 1/2*sum((XC*inv(Sigma{k}.samples(:,:,s))).*XC,2);
+        end
+      lognormconst(s) = logsumexp(logsumexp(l(:,:,s),2));
+      end
+      logp = squeeze(logsumexp(sum(l,1),2));
+      figure(); hold on;
+      subplot(2,1,1); plot(logp); title('Log probability of data');
+      subplot(2,1,2); plot(lognormconst); title('Log normalization constant');
     end
   
   end % methods

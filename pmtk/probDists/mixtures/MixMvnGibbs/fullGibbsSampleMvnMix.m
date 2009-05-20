@@ -84,7 +84,7 @@ function [muS, SigmaS, mixS, latentS] = latentGibbsSampleMvnMix(distributions, m
             Sigma(:,:,k) = invchi2rnd(2*(v0(k) + nclust(k)*d/2), Sn(1,1) ./ (v0(k) + nclust(k)*d/2)) * eye(d); % first element suffices
         end
       else
-        xbar = mu0(k,:);
+        xbar = mu0(k,:); sampledMu = xbar;
         switch lower(covtype{k})
           case 'full'
             Sigma(:,:,k) = iwishrnd(S0(:,:,k), v0(k));
