@@ -14,15 +14,17 @@ classdef LogregBinaryL2 < LogregBinary
       % optMethod can be any minFunc method (default lbfgs)
       % or 'irls' (Newton) or 'sgd' (stochastic gradient descent)
       % or 'perceptron'
-      [m.lambda, m.transformer,  m.verbose,  m.w, m.w0,  m.optMethod, m.labelSpace] = ...
+      [m.lambda, m.transformer,  m.verbose,  m.w, m.w0,  m.optMethod, ...
+        m.labelSpace, m.addOffset] = ...
         processArgs( varargin ,...
         '-lambda', [], ...
         '-transformer', [], ...
         '-verbose', false, ...
         '-w'          , [], ...
         '-w0', [], ...
-        '-optMethod', 'lbfgs', ...
-        '-labelSpace', []);
+        '-optMethod', 'newton', ... % lbfgs gives problems
+        '-labelSpace', [], ...
+        '-addOffset', true);
      end
     
      
@@ -37,9 +39,10 @@ classdef LogregBinaryL2 < LogregBinary
          if addOffset(model.transformer), error('don''t add column of 1s'); end
        end
        n = size(X,1);
-       X = [ones(n,1) X];
+       if model.addOffset
+         X = [ones(n,1) X];
+       end
        [n,d] = size(X);
-       offsetAdded = true;
        U = unique(y);
        if isempty(model.labelSpace), model.labelSpace = U; end
        y12 = canonizeLabels(y, model.labelSpace); %1,2
@@ -48,19 +51,24 @@ classdef LogregBinaryL2 < LogregBinary
        winit = zeros(d,1);
        switch model.optMethod
          case 'irls',
-           [w, output] = LogregBinaryL2.logregFitNewton(X, y01, model.lambda, offsetAdded);
+           [w, output] = LogregBinaryL2.logregFitNewton(X, y01, model.lambda, model.addOffset);
          case 'sgd',
            [w, output] = LogregBinaryL2.logregSGD(X, y01, model.lambda);
          case 'perceptron',
            [w, output] = LogregBinaryL2.perceptron(X, ypm1, model.lambda);
          otherwise
-           objective = @(w,junk) LogregBinaryL2.logregNLLgradHess(w, X, y01, model.lambda, offsetAdded);
+           objective = @(w,junk) LogregBinaryL2.logregNLLgradHess(w, X, y01, model.lambda, model.addOffset);
            options.Method = model.optMethod;
            options.Display = model.verbose;
            [w, f, exitflag, output] = minFunc(objective, winit, options);
        end
-       model.w0 = w(1);
-       model.w = w(2:end);
+       if model.addOffset
+         model.w0 = w(1);
+         model.w = w(2:end);
+       else
+         model.w0 = 0;
+         model.w = w;
+       end
      end
       
 
@@ -69,7 +77,7 @@ classdef LogregBinaryL2 < LogregBinary
     methods(Static = true)
       function [f,g,H] = logregNLLgradHess(beta, X, y, lambda, offsetAdded)
         % gradient and hessian of negative log likelihood for logistic regression
-        %
+        % beta should be column vector
         % Rows of X contain data
         % y(i) = 0 or 1
         % lambda is optional strength of L2 regularizer

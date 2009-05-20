@@ -24,9 +24,24 @@ classdef SampleDist < ProbDist
       if isempty(weights)
         weights = (1/ns)*ones(1, ns);
       end
-      m.weights = weights;
+      m.weights = weights(:)';
     end
     
+    
+    
+    function mu = mean(obj)
+      mu = moments(obj, @(w,d) mean(w,d));
+    end
+    
+     function mu = median(obj)
+      mu = moments(obj, @(w,d) median(w,d));
+     end
+    
+     function mu = var(obj)
+      mu = moments(obj, @(w,d) var(w,[],d));
+    end
+    
+    %{
     function mu = mean(obj)
       %nd = ndimsPMTK(obj.samples);
       %mu = mean(obj.samples, nd); % take mean across last dim
@@ -41,6 +56,8 @@ classdef SampleDist < ProbDist
           error('too many dims')
       end
     end
+    %}
+    
     
     
     function s = sample(obj,n)
@@ -69,7 +86,72 @@ classdef SampleDist < ProbDist
       end
     end
   
+     function mm = marginal(m, queryVars)
+       nd = ndimsPMTK(m.samples);
+      if nd ~= 2
+        error('can only compute marginal on vector-valued samples')
+      end
+      mm = SampleDist(m.samples(queryVars, :));
+     end
+     
+      function [l,u] = credibleInterval(m, p)
+        % [l(j), u(j)] = lower and upper p% cred interval for
+        % m.samples(j,:). p defaults to 95%
+      if nargin < 2, p = 0.95; end
+      q= (1-p)/2;
+      sz = sizePMTK(m.samples);
+      nd = length(sz);
+      if nd > 2
+        error('can only compute credible interval on scalars or vectors')
+      end
+      d = sz(1); Nsamples = sz(2);
+      l = zeros(d,1); u = zeros(d,1);
+      for j=1:d
+        tmp = sort(m.samples(j,:), 'ascend');     
+        u(j) = tmp(floor((1-q)*Nsamples));
+        l(j) = tmp(floor(q*Nsamples));
+      end
+      end
+    
+     function [h] = plot(obj, varargin)
+      [useHisto] = processArgs(varargin, '-useHisto', false);
+      nd = ndimsPMTK(obj.samples);
+      if nd > 1
+        error('can only plot scalar distributions')
+      end
+      if useHisto
+        [bin_counts, bin_locations] = hist(obj.samples, 20);
+        bin_width = bin_locations(2) - bin_locations(1);
+        hist_area = (bin_width)*(sum(bin_counts));
+        %counts = scaleFactor * normalize(counts);
+        %counts = counts / hist_area;
+        h=bar(bin_locations, bin_counts);
+      else
+        [f,xi] = ksdensity(obj.samples);            
+        plot(xi,f);
+      end
+     end
+    
   end % methods
+  
+  methods(Access = protected)
+    
+  function mu = moments(obj, fn)
+      %nd = ndimsPMTK(obj.samples);
+      %mu = mean(obj.samples, nd); % take mean across last dim
+      w = obj.weights(:)';
+      sz = size(obj.samples);
+      ns = length(w);
+      switch ndimsPMTK(obj.samples)
+        case 1, mu = fn(w .* obj.samples,2);
+        case 2, mu = fn(repmat(w, sz(1), 1) .* obj.samples,2);
+        case 3, mu = fn(repmat(reshape(w,[1,1,ns]), [sz(1) sz(2) 1]) .* obj.samples,3);
+        otherwise
+          error('too many dims')
+      end
+  end
+  
+  end
   
   methods(Static = true)
     function test()

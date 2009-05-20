@@ -5,6 +5,8 @@ classdef DataTable
   % D = DataTable(X,Y);
   % D(1:n).X or D(1:n).Y extracts first n cases of X and Y
   % Concatenating D's is like concatentating the X's and Y's.
+  % D.labelSpace specifies the kinds of labels in Y.
+  % Options are: '01', 'pm1' (+1,-1), '1toK' (default)
   
   %{
  Examples
@@ -69,6 +71,7 @@ properties:
     Y;
     Xnames;
     Ynames;
+    labelSpace;
   end
   
   methods
@@ -107,6 +110,21 @@ properties:
       n =  max(size(D.Y,1), size(D.X,1));
     end
     
+    function y = getLabels(D, desiredSpace)
+      if nargin < 2, desiredSpace = '1toK'; end
+      y = D.Y;
+      currentSpace = inferLabelSpace(D);
+      if isequal(currentSpace, desiredSpace), return; end
+      y1toK = DataTable.convertLabelsTo1ToK(y, currentSpace);
+      y = DataTable.convertLabelsFrom1ToK(y1toK, desiredSpace);
+    end   
+        
+    function y = convertLabelsToUserFormat(D, y, currentSpace)
+      desiredSpace = inferLabelSpace(D);
+       y1toK = DataTable.convertLabelsTo1ToK(y, currentSpace);
+       y = DataTable.convertLabelsFrom1ToK(y1toK, desiredSpace);
+    end
+      
     function C = horzcat(A,B)
       C = DataTable([A.X B.X],[A.Y B.Y], [A.Xnames, B.Xnames], [A.Ynames, B.Ynames]);
       %C = [A;B];
@@ -202,6 +220,49 @@ properties:
       end
     end
 
+    
+  end
+  
+  
+  methods(Access = protected)
+    
+    function labelSpace = inferLabelSpace(D)
+      if ~isempty(D.labelSpace)
+        labelSpace = D.labelSpace;
+        return;
+      end
+      U = unique(D.Y);
+      if isequal(U, [0 1]')
+        labelSpace = '01';
+      elseif isequal(U, [-1 1]')
+        labelSpace = 'pm1';
+      else
+        labelSpace = '1toK';
+      end
+     end
+    
+    
+  end
+  
+  
+  methods(Static = true)
+    
+    function y = convertLabelsFrom1ToK(y1toK, desiredSpace)
+      switch desiredSpace
+        case '01', y = y1toK - 1;
+        case 'pm1', y = 2*(y1toK-1)-1;
+        case '1toK', y = y1toK;
+      end
+    end
+    
+    function y1toK = convertLabelsTo1ToK(y, currentSpace)
+      switch currentSpace
+        case '01', y1toK = y+1;
+        case 'pm1', y1toK = (y+1)/2 + 2;
+        case '1toK', y1toK = y;
+      end
+    end
+    
   end
   
  

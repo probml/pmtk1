@@ -11,7 +11,7 @@ function [beta, C, nll] = logregFitFminunc(y, X, lambda)
 if nargin < 3, lambda = 0; end
 [N p] = size(X);
 beta = zeros(p,1);
-options = optimset('Display','none','Diagnostics','off','GradObj','on','Hessian','on');
+options = optimset('Display','iter','Diagnostics','off','GradObj','on','Hessian','on');
 [beta, err] = fminunc(@logregNLLgradHess, beta, options, X, y, lambda);
 [nll, g, H] = logregNLLgradHess(beta, X, y, lambda); % H = hessian of neg log lik
 C = inv(H); 

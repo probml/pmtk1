@@ -30,12 +30,16 @@ end
         '-lambda', [], ...
         '-transformer', [], ...
         '-verbose', false, ...
-        '-optMethod', 'lbfgs', ...
+        '-optMethod', 'newton', ...
         '-labelSpace', [], ...
         '-predMethod', 'sigmoidTimesGauss', ...
-        '-nsamples', []);
+        '-nsamples', 100);
        end
         
+       function wDist = getParamPost(model) % Mvn
+         wDist = model.wDist;
+       end
+       
        function [model,output] = fit(model,D)
          % m = fit(m, D) Compute posterior estimate
          % D is DataTable containing:
@@ -69,9 +73,10 @@ end
        end
        
        
-       function [yhat, pred] = predict(model,X)
+       function [yhat, pred] = predict(model,D)
          % yhat(i) = most probable label for X(i,:)
          % pred(i) = p(y|X(i,:), w) a BernoulliDist
+         X = D.X;
          if ~isempty(model.transformer)
            X = test(model.transformer, X);
          end
@@ -101,10 +106,16 @@ end
       % p(i) = log p(y(i) | D.X(i,:), obj.w), D.y(i) in 1...C
        X = D.X; y = D.Y; 
        y = canonizeLabels(y, obj.labelSpace);
-      [yhat, pred] = predict(obj,X);
-      P = pmf(pred)'; % n by C
-      Y = oneOfK(y, obj.nclasses);
+       obj.predMethod = 'sigmoidTimesGauss'; % get table out
+      [yhat, pred] = predict(obj,D);
+      p = pmf(pred)'; % n by 1
+      %n = size(X,1); 
+      %X = [ones(n,1) X];
+      %p = LogregBinaryLaplace.sigmoidTimesGauss(X, model.wDist.mu(:), model.wDist.Sigma);
+      %P = [p 1-p];       
+      Y = oneOfK(y, 2); %obj.nclasses);
       %p =  sum(sum(Y.*log(P)));
+      P = [p(:) 1-p(:)];
       p =  sum(Y.*log(P), 2);
     end
      

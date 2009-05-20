@@ -1,1 +1,0 @@
-function [f,g] = SPSA(x,funObj,varargin)% [f,g] = autoGrad(x,useComplex,funObj,varargin)%% Numerically compute gradient of objective function from function valuesp = length(x);f = funObj(x,varargin{:});mu = 2*sqrt(1e-12)*(1+norm(x))/norm(p);c = sign(rand(p,1)-.5);fPlus = funObj(x+mu*c,varargin{:});fMinus = funObj(x-mu*c,varargin{:});g = (fPlus-fMinus)*c/(2*mu);

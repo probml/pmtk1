@@ -24,3 +24,4 @@ while 1
 end;
 [nll, g, H] = logregNLLgradHess(beta, X, y, lambda); % Hessian of neg log lik
 C = inv(H);
+end

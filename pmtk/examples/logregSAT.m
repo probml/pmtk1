@@ -50,6 +50,14 @@ if doPrintPmtk, printPmtkFigures('logregGradeFitted'); end;
 mBayes = LogregBinaryLaplace('-transformer',T, '-lambda', 1e-3, ...
   '-predMethod', 'mc', '-nsamples', 100);
 mBayes = fit(mBayes,D);
+
+pw = getParamPost(mBayes);
+for i=1:2
+  pwi = marginal(pw, i);
+  figure; plot(pwi); title(sprintf('w%d',i));
+end
+
+
 %% Predict using Monte Carlo sampling of the Posterior Predictive
 [yhat, pred] = predict(mBayes,X);
 % Here we obtain error bars on our predictions by looking at the

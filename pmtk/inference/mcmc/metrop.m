@@ -1,4 +1,4 @@
-function [samples, naccept] = MH(target, proposal, xinit, Nsamples, targetArgs, proposalArgs, proposalProb)
+function [samples, naccept] = metrop(target, proposal, xinit, Nsamples, targetArgs, proposalArgs, proposalProb)
 % Metropolis-Hastings algorithm
 % 
 % Inputs
