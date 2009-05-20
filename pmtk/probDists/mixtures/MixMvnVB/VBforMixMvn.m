@@ -159,17 +159,17 @@ while(iter <= maxIter && ~converged)
       fittedDistrib{k}.mu = mn(k,:)';
       switch covtype{k}
         case 'full'
-          distributions{k}.k = kn(k);
-          distributions{k}.dof = vn(k);
-          distributions{k}.Sigma = invTn(:,:,k);
+          fittedDistrib{k}.k = kn(k);
+          fittedDistrib{k}.dof = vn(k);
+          fittedDistrib{k}.Sigma = invTn(:,:,k);
         case 'diagonal'
-          distributions{k}.Sigma = kn(k);
-          distributions{k}.a = vn(k)*ones(1,d);
-          distributions{k}.b = diag(invTn(:,:,k));
+          fittedDistrib{k}.Sigma = kn(k);
+          fittedDistrib{k}.a = vn(k)*ones(1,d);
+          fittedDistrib{k}.b = diag(invTn(:,:,k));
         case 'spherical'
-          distributions{k}.Sigma = kn(k);
-          distributions{k}.a = vn(k);
-          distributions{k}.b = invTn(1,1,k);
+          fittedDistrib{k}.Sigma = kn(k);
+          fittedDistrib{k}.a = vn(k);
+          fittedDistrib{k}.b = invTn(1,1,k);
       end
     end
   end;
