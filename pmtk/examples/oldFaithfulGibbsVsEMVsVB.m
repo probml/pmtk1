@@ -25,7 +25,7 @@ fitted{3} = fit(model{3}, '-data', X);
 
 model{4} = MixMvnVBEM('-distributions', copy(chosenPrior, K, 1), '-mixingPrior', mixPrior);
 fitted{4} = fit(model{4}, X, '-verbose', true, '-maxIter', 500, '-tol', 1e-10);
-marginalDist{4} = marginal(fitted{4});
+marginalDist{4} = marginalizeOutParams(fitted{4});
 
 for m=1:numel(method)
   for k=1:K

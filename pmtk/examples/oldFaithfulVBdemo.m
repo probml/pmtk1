@@ -32,7 +32,7 @@ model = MixMvnVBEM(...
 model = MixMvnVBEM('-distributions', copy(MvnInvWishartDist('mu', zeros(d,1), 'Sigma', 0.5*eye(d), 'dof', 3, 'k', 1), K, 1), '-mixingPrior', DirichletDist(alpha0*ones(K,1)));
 fitted = fit(model, X, '-verbose', true, '-maxIter', 500, '-tol', 1e-10);
 
-marg = marginal(fitted);
+marg = marginalizeOutParams(fitted);
 
 figure(); hold on; plot(X(:,1), X(:,2), 'ro');
 normAlpha = normalize(fitted.mixingPrior.alpha);

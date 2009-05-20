@@ -84,7 +84,7 @@ classdef MixMvnVBEM < ProbDist
     end
 %}
 
-    function marginalDist = marginal(model)
+    function marginalDist = marginalizeOutParams(model)
       % Same are convertToDist, but instead returns the marginal distributibutions
       % in place of the posterior distributions.
       % This is usefule for the conditional() and logprob() functions

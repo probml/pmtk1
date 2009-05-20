@@ -15,30 +15,62 @@ classdef SampleDist < ProbDist
     function m = SampleDist(X, weights)
       if nargin < 1, X = []; end
       if nargin < 2, weights = []; end
+      weights = rowvec(weights);
       nd = ndimsPMTK(X);
       switch nd
         case 1, m.samples = X(:)'; ns = length(X);
         otherwise, m.samples = X; ns = size(X,nd);
       end
+      % Change: now if no weights are supplied, then we assume there are none (unweighted)
       %m.samples = X;
-      if isempty(weights)
-        weights = (1/ns)*ones(1, ns);
-      end
-      m.weights = weights(:)';
+%      if isempty(weights)
+%        weights = [](1/ns)*ones(1, ns);
+%      end
+%      m.weights = weights(:)';
     end
     
     
     
     function mu = mean(obj)
-      mu = moments(obj, @(w,d) sum(w,d));
+      if(isempty(obj.weights))
+        mu = mean(obj.samples, ndimsPMTK(obj.samples));
+      else
+        mu = sum(bsxfun(@times, obj.samples, obj.weights), ndimsPMTK(obj.samples));
+      end
     end
-    
-     function mu = median(obj)
-      mu = moments(obj, @(w,d) median(w,d));
-     end
-    
-     function mu = var(obj)
-      mu = moments(obj, @(w,d) var(w,[],d));
+
+    function mu = median(obj)
+      if(isempty(obj.weights))
+        mu = median(obj.samples, ndimsPMTK(obj.samples));
+      else
+        % Find those that satisfy P(X <= m) >= 1/2 && P(X >= m) >= 1/2
+        cdf = cumsum(obj.weights);
+        criteria1 = find(cdf >= 1/2);
+        cdf = cdf(end:-1:1);
+        criteria2 = find(cdf >= 1/2);
+        idx = intersectPMTK(criteria1, criteria2);
+        obj.samples();
+        switch ndimsPMTK(obj.samples)
+          case 1, mu = obj.samples(idx);
+          case 2, mu = obj.samples(:,idx);
+          case 3, mu = sum(repmat(reshape(w,[1,1,ns]), [sz(1) sz(2) 1]) .* obj.samples,3);
+          otherwise
+            error('too many dims')
+        end
+      end
+    end
+
+    function mu = var(obj)
+      if(isempty(obj.weights))
+        mu = var(obj.samples, ndimsPMTK(obj.samples));
+      else
+      mu = var(obj.samples, obj.weights, ndimsPMTK(obj.samples));
+%        switch ndimsPMTK(obj.samples)
+%          case 1, mu = sum(obj.weights.*(obj.samples - mean(obj)).^2);
+%          case 2, mu = sum(bsxfun(@times, obj.weights,bsxfun(@minus, obj.samples, mean(obj)).^2),2);
+%          case 3, mu = sum(bsxfun(@times, obj.weights,bsxfun(@minus, obj.samples, mean(obj)).^2),3);
+%        end
+      end
     end
     
     %{
@@ -174,4 +206,3 @@ classdef SampleDist < ProbDist
   end
     
 end
-
