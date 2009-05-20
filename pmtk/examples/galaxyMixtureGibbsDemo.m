@@ -5,10 +5,6 @@
   doPlot = true;
   doPrint = false;
 
-  method = 'collapsed';
-  Nsamples = 2500;
-  Nburnin = 500;
-
   setSeed(0);
   % Set the number of clusters K
   % the number of observations n to generate in d dimensions,
@@ -17,21 +13,23 @@
   load('galaxies.csv'); [n,d] = size(galaxies);
   % scale the data in units of 1000, then permute
   galaxies = galaxies / 1000; galaxies = galaxies(randperm(n));
+
   % specify the prior distribution to use.
-  chosenPrior = MvnInvWishartDist('mu', mean(galaxies)', 'Sigma', diag(var((galaxies))) / K^(2/d), 'dof', d + 2, 'k', 0.01);
+%  chosenPrior = MvnInvWishartDist('mu', mean(galaxies)', 'Sigma', diag(var((galaxies))) / K^(2/d), 'dof', d + 2, 'k', 0.01);
+  chosenPrior = MvnInvWishartDist('mu', 20, 'Sigma', 4, 'dof', 4, 'k', 1/15^2);
   model = MixMvnGibbs('distributions',copy( MvnDist('-mu', zeros(d,1),'-Sigma', diag(ones(d,1)), '-prior', chosenPrior), K,1) ) ;
 
   % Set the prior distribution on the mixing weights to be Dirichlet(1,..., 1)
   model.mixingDistrib.prior = DirichletDist(ones(K,1));
-
+profile off; profile on;
   % Initiate the sampler
-  [model, latent] = gibbssample(model, galaxies, '-method', method, '-Nsamples', Nsamples, '-Nburnin', Nburnin, '-verbose', true);
-
+  [model, latent] = fit(model, galaxies, '-method', 'collapsed', '-Nsamples', 500, '-Nburnin', 250, '-verbose', true);
+profile viewer
   % Perform postprocessing on the labels
-  [distsout, permOut] = processLabelSwitching(dists, galaxies);
+  %[distsout, permOut] = processLabelSwitching(dists, galaxies);
 
   % New stuff here
-  modelAvg = mean(model, distsout);
+  %modelAvg = mean(model, distsout);
 
 
   

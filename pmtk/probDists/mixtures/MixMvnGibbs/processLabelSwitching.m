@@ -14,24 +14,22 @@
       %mixDist = dists.mixDist;
       %latentDist = dists.latentDist;
 
-      N = size(latentDist.samples, 1);
-      [n,d] = size(X);
-      K = ndimensions(mixDist);
+      nSamples = size(latentDist.samples, 2);
+      [nObs,d] = size(X);
+      K = size(mixDist.samples,1);
 
-      latent = latentDist.samples;
-      mix = mixDist.samples;
-      mu = zeros(N,d,K);
-      Sigmatmp = zeros(N,d*d,K);
+      latent = latentDist.samples';
+      mix = mixDist.samples';
+      mu = zeros(nSamples,d,K);
+      Sigma = zeros(d,d,nSamples,K);
       for k=1:K
-        mu(:,:,k) = muDist{k}.samples;
-        Sigmatmp(:,:,k) = SigmaDist{k}.samples;
+        mu(:,:,k) = muDist{k}.samples';
+        Sigma(:,:,:,k) = SigmaDist{k}.samples;
       end
-
-      % Need to post-process Sigma
-      Sigma = zeros(d,d,N,K); invS = zeros(d,d,N,K);
-      for s=1:N
+      % Save lognormconst
+      invS = zeros(d,d,nSamples,K);
+      for s=1:nSamples
         for k=1:K
-          Sigma(:,:,s,k) = reshape(Sigmatmp(s,:,k),d,d);
           invS(:,:,s,k) = inv(Sigma(:,:,s,k));
           logconst(s,k) = 1/2*logdet(2*pi*Sigma(:,:,s,k));
         end
@@ -39,9 +37,9 @@
 
       % perm will contain the permutation that minimizes step two of the algorithm
       % The permutations are as indices, is perm(1,1) indicates how we permute label 1 for iteration 1
-      perm = bsxfun(@times,1:K,ones(N,K));
-      ident = bsxfun(@times, 1:K, ones(N,K));
-      oldPerm = bsxfun(@times,-inf,ones(N,K));
+      perm = bsxfun(@times,1:K,ones(nSamples,K));
+      ident = bsxfun(@times, 1:K, ones(nSamples,K));
+      oldPerm = bsxfun(@times,-inf,ones(nSamples,K));
       fixedPoint = false;
       % For tracking purposes; value is how many times we have done the algorithm (itr and k already taken)
       klscore = 0;
@@ -50,14 +48,14 @@
       fprintf('Attempting to resolve label switching \n')
       while( ~fixedPoint )
         if(verbose), fprintf('(Run %d). Computing Q for iteration  ', value);end;
-        Q = zeros(n,K); logpdata = zeros(n,N,K);
+        Q = zeros(nObs,K); logpdata = zeros(nObs,nSamples,K);
         %oldPerm = perm;
         % Note that doing both qmodel and pmodel in the same loop is more efficient in terms of runtime
         % but we need to store pij for each iteration.  This can cause memory to run out if 
         % either nobs or iter is large.
         % Hence, we first compute Q and then pij.
-        for itr = 1:N
-          logqRik = zeros(n,K);
+        for itr = 1:nSamples
+          logqRik = zeros(nObs,K);
           for k=1:K
             %XC = bsxfun(@minus, X, mu(itr,:,oldPerm(itr,k)));
             %logpdata(:,itr,k) = -logconst(itr,oldPerm(itr,k)) - 1/2*sum((XC*invS(:,:,itr,oldPerm(itr,k))).*XC,2);
@@ -68,14 +66,14 @@
           end
           Q = Q + exp(normalizeLogspace(logqRik));
         end
-        Q = Q / N;
+        Q = Q / nSamples;
         if(verbose)
           fprintf('computed.  Optimizing over permutations.  ')
         end
         % Loss for each individual iteration
-        loss = zeros(N,1);
-        for itr = 1:N
-          logpij = zeros(n,K);
+        loss = zeros(nSamples,1);
+        for itr = 1:nSamples
+          logpij = zeros(nObs,K);
           for k=1:K
             %logpij(:,k) = log(mix(itr,oldPerm(itr,k))+eps) + logpdata(:,itr,oldPerm(itr,k));
             logpij(:,k) = log(mix(itr,k)) + logpdata(:,itr,k);
@@ -93,6 +91,7 @@
           end
         % find the optimal permutation for this iteration, and then store in loss vector
         [perm(itr,:), loss(itr)] = assignmentoptimal(kl);
+        if(any(perm(itr,:) == 0)), keyboard, end;
         end
         % KL loss is the sum of all the losses over all the iterations
         klscore(value) = mean(loss);
@@ -129,27 +128,24 @@
         value = value + 1;   
       end
       permOut = perm;
-      Sigmasamples = zeros(N,d*d,K);
-      latentout = zeros(N,n);
-      mixout = zeros(N,K);
-      muout = zeros(N,d,K);
-      Sigmaout = zeros(d,d,N,K);
-      Sigmasamplesout = zeros(N,d*d,K);
-      for itr=1:N
+      latentout = zeros(nSamples,nObs);
+      mixout = zeros(nSamples,K);
+      muout = zeros(nSamples,d,K);
+      Sigmaout = zeros(d,d,nSamples,K);
+      for itr=1:nSamples
         latentout(itr,:) = permOut(itr,latent(itr,:));
         mixout(itr,:) = mix(itr,permOut(itr,:));
         for k=1:K
           muout(itr,:,k) = mu(itr,:,permOut(itr,k));
           Sigmaout(:,:,itr,k) = Sigma(:,:,itr,permOut(itr,k));
-          Sigmasamplesout(itr,:,k) = rowvec(cholcov(Sigma(:,:,itr,k)));
         end
       end
-      latentoutDist = SampleBasedDist(latentout, 1:K);
-      mixoutDist = SampleBasedDist(mixout, 1:K);
+      latentoutDist = SampleDist(latentout');
+      mixoutDist = SampleDist(mixout');
       muoutDist = cell(K,1); SigmaoutDist = cell(K,1);
       for k=1:K
-        muoutDist{k} = SampleBasedDist(muout(:,:,k), 1:d);
-        SigmaoutDist{k} = SampleBasedDist(Sigmasamplesout(:,:,k)); 
+        muoutDist{k} = SampleDist(muout(:,:,k)');
+        SigmaoutDist{k} = SampleDist(Sigmaout(:,:,:,k)); 
       end 
       distsout = struct;%('muDist', muoutDist, 'SigmaDist', SigmaoutDist, 'mixDist', mixoutDist, 'latentDist', latentoutDist);
       distsout.muDist = muoutDist;

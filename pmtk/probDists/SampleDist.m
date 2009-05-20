@@ -49,9 +49,9 @@ classdef SampleDist < ProbDist
       sz = size(obj.samples);
       ns = length(w);
       switch ndimsPMTK(obj.samples)
-        case 1, mu = mean(w .* obj.samples);
-        case 2, mu = mean(repmat(w, sz(1), 1) .* obj.samples,2);
-        case 3, mu = mean(repmat(reshape(w,[1,1,ns]), [sz(1) sz(2) 1]) .* obj.samples,3);
+        case 1, mu = sum(w .* obj.samples);
+        case 2, mu = sum(repmat(w, sz(1), 1) .* obj.samples,2);
+        case 3, mu = sum(repmat(reshape(w,[1,1,ns]), [sz(1) sz(2) 1]) .* obj.samples,3);
         otherwise
           error('too many dims')
       end
@@ -133,11 +133,11 @@ classdef SampleDist < ProbDist
   function mu = moments(obj, fn)
       nd = ndimsPMTK(obj.samples);
       %mu = mean(obj.samples, nd); % take mean across last dim
-      %w = obj.weights(:)';
+      w = obj.weights(:)';
       sz = size(obj.samples);
-      ns = sz(nd);
-      %ns = length(w);
-      w = ones(1,ns);
+      %ns = sz(nd);
+      ns = length(w);
+      %w = ones(1,ns);
       switch ndimsPMTK(obj.samples)
         case 1, mu = fn(w .* obj.samples,2);
         case 2, mu = fn(repmat(w, sz(1), 1) .* obj.samples,2);

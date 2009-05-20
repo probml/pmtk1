@@ -117,7 +117,7 @@ classdef MixMvnVBEM < ProbDist
       for k=1:K
         logp(:,k) = log(mixWeights(k)+eps) + logprob(marginalDist{k},data);
       end
-        logp = sum(logp,2);
+        logp = logsumexp(logp,2);
     end
     
 

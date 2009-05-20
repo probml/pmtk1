@@ -4,11 +4,12 @@
 setSeed(1);
 load oldFaith;
 [n d] = size(X);
+K = 2;
 %meantrue = mean(X);
 
 % Gibbs
-m = MixMvnGibbs('nmixtures',2);
-dists = latentGibbsSample(m, X, 'verbose', true);
+m = MixMvnGibbs('-distributions', copy(MvnDist('-mu', mean(X)', '-Sigma', cov(X), '-prior', 'niw'), K,1));
+[m, latent] = gibbssample(m, X, '-verbose', true);
 %meansample = mean(dists.muDist);
 predictGibbs = predict(dists.latentDist);
 postGibbs = mode(predictGibbs);
