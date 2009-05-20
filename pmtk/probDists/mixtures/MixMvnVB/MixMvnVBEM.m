@@ -112,10 +112,11 @@ classdef MixMvnVBEM < ProbDist
       % LL(i) = log p(data(i,:) | params)  is the log normalization const
       %[mixingDistrib, marginalDist] = marginal(model);
       marginalDist = marginal(model);
+      mixWeights = pmf(DiscreteDist(normalize(colvec(mixingDistrib.alpha))));
       K = numel(marginalDist);
       T = zeros([size(data,1), K]);
       for k=1:K
-        T(:,k) = logprob(marginalDist{k}, data);
+        T(:,k) = log(mixWeights(k) + eps) + logprob(marginalDist{k}, data);
       end % for
       ph = DiscreteDist(exp(normalizeLogspace(T))');
     end
