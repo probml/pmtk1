@@ -1,4 +1,5 @@
-function [param, Lfinal] = VBforMixMvn(alpha0, m0, k0, invT0, v0, covtype, X, varargin)
+%function [param, Lfinal] = VBforMixMvn(alpha0, m0, k0, invT0, v0, covtype, X, varargin)
+function [fittedDistrib, fittedMix, Lfinal] = VBforMixMvn(distributions, mixingPrior, covtype, X, varargin)
 % Variational Bayes EM algorithm for Gaussian Mixture Model
 % This implementation is based on Bishop's Book
 % Refer to Bishop's book for notation and details 
@@ -16,10 +17,34 @@ function [param, Lfinal] = VBforMixMvn(alpha0, m0, k0, invT0, v0, covtype, X, va
     '-tol',       1e-3, ...
     '-maxIter',   100, ...
     '-verbose',   false);
+% extract values of interest
+alpha0 = mixingPrior.alpha';
+K = numel(alpha0);
+[n,d] = size(X);
+m0 = zeros(K,d);
+k0 = zeros(1,K);
+invT0 = zeros(d,d,K);
+v0 = zeros(1,K);
+for k=1:K
+  m0(k,:) = distributions{k}.mu';
+  switch covtype{k}
+    case 'full'
+      k0(k) = distributions{k}.k;
+      v0(k) = distributions{k}.dof;
+      invT0(:,:,k) = distributions{k}.Sigma;
+    case 'diagonal'
+      k0(k) = distributions{k}.Sigma;
+      v0(k) = distributions{k}.a(1);
+      invT0(:,:,k) = diag(distributions{k}.b);
+    case 'spherical'
+      k0(k) = distributions{k}.Sigma;
+      v0(k) = distributions{k}.a;
+      invT0(:,:,k) = distributions{k}.b * eye(d);
+  end
+end
+
 % initialize variables
 converged = false;
-[n,d] = size(X);
-K = numel(alpha0);
 E = zeros(n,K);
 logLambdaTilde = zeros(1,K);
 
@@ -127,6 +152,26 @@ while(iter <= maxIter && ~converged)
       invTn(:,:,k) = inv(Tn(:,:,k));
     end
     param = struct('alpha', alphan, 'mu', mn, 'k', kn, 'T', invTn, 'dof', vn);
+    fittedDistrib = distributions;
+    fittedMix = mixingPrior;
+    fittedMix.alpha = colvec(alphan);
+    for k=1:K
+      fittedDistrib{k}.mu = mn(k,:)';
+      switch covtype{k}
+        case 'full'
+          distributions{k}.k = kn(k);
+          distributions{k}.dof = vn(k);
+          distributions{k}.Sigma = invTn(:,:,k);
+        case 'diagonal'
+          distributions{k}.Sigma = kn(k);
+          distributions{k}.a = vn(k)*ones(1,d);
+          distributions{k}.b = diag(invTn(:,:,k));
+        case 'spherical'
+          distributions{k}.Sigma = kn(k);
+          distributions{k}.a = vn(k);
+          distributions{k}.b = invTn(1,1,k);
+      end
+    end
   end;
   iter = iter + 1;
 end

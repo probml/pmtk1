@@ -20,6 +20,7 @@ for k=1:K
   covtype{k} = 'full';
 end
 alpha0 = 1e-3;
+%{ old constructor
 model = MixMvnVBEM(...
   '-alpha', alpha0*ones(1,K), ...
   '-mu', zeros(K,d), ...
@@ -27,12 +28,14 @@ model = MixMvnVBEM(...
   '-T', 0.5*repmat(eye(d), [1,1,K]), ...
   '-dof', 3*ones(1,K), ...
   '-covtype', covtype);
+%}
+model = MixMvnVBEM('-distributions', copy(MvnInvWishartDist('mu', zeros(d,1), 'Sigma', 0.5*eye(d), 'dof', 3, 'k', 1), K, 1), '-mixingPrior', DirichletDist(alpha0*ones(K,1)));
 fitted = fit(model, X, '-verbose', true, '-maxIter', 500, '-tol', 1e-10);
 
-[mix, marg] = marginal(fitted);
+marg = marginal(fitted);
 
 figure(); hold on; plot(X(:,1), X(:,2), 'ro');
-normAlpha = normalize(fitted.alpha);
+normAlpha = normalize(fitted.mixingPrior.alpha);
 for k=1:K
   % Only plot those distributions that have non-negligable contribution 
   if(normAlpha(k) > 1e-2)

@@ -23,8 +23,28 @@ classdef MixMvnGibbs < MixMvn
       model.distributions = distributions;
     end
     
-    function pred = predict(model,data) % old name
-      pred = inferLatent(model,data);
+    function pred = inferLatent(model,data)
+      % ph(i,k) = p(H=k | data(i,:),params) a DiscreteDist
+      % This is the posterior responsibility of component k for data i
+      % LL(i) = log p(data(i,:) | params)  is the log normalization constant
+      if(isempty(model.samples)), error('MixMvnGibbs', 'You must call fit first'); end;
+      K = numel(model.distributions);
+      S = size(model.samples.mu{1}.samples,2);
+      [n,d] = size(X);
+      logRik = zeros(n,K,S);
+      Sigma = model.samples.Sigma;
+      mu = model.samples.mu;
+      mixW = model.samples.mixingWeights;
+      for s=1:S
+        for k=1:K
+          XC = bsxfun(@minus, X, mu{k}.samples(:,s)');
+          logRik(:,k,s) = log(mixW.samples(k,s)) - 1/2*logdet(2*pi*Sigma{k}.samples(:,:,s)) - 1/2*sum((XC*inv(Sigma{k}.samples(:,:,s))).*XC,2);
+        end
+      end
+      logRik = mean(l,3);
+      [Rik, LL] = normalizeLogspace(logRik);
+      Rik = exp(Rik);
+      ph = DiscreteDist('-T', Rik');
     end
 
     function x = sample(model, n)

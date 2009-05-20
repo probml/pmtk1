@@ -1,6 +1,5 @@
 %% Gibbs sampling from a Galaxy data fitted to a mixture of six normal distributions.
 %#author Cody Severinski
-%#broken
 
   doPlot = true;
   doPrint = false;
