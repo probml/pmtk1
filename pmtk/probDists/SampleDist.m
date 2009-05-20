@@ -114,21 +114,15 @@ classdef SampleDist < ProbDist
       end
     
      function [h] = plot(obj, varargin)
-      [useHisto] = processArgs(varargin, '-useHisto', false);
       nd = ndimsPMTK(obj.samples);
-      if nd > 1
-        error('can only plot scalar distributions')
-      end
-      if useHisto
-        [bin_counts, bin_locations] = hist(obj.samples, 20);
-        bin_width = bin_locations(2) - bin_locations(1);
-        hist_area = (bin_width)*(sum(bin_counts));
-        %counts = scaleFactor * normalize(counts);
-        %counts = counts / hist_area;
-        h=bar(bin_locations, bin_counts);
-      else
-        [f,xi] = ksdensity(obj.samples);            
-        plot(xi,f);
+      switch nd
+        case 2,
+          h=scatter(obj.samples(1,:), obj.samples(2,:), '.');
+        case 1,
+            [f,xi] = ksdensity(obj.samples);
+            h=plot(xi,f);
+        otherwise
+          error('can only plot in 1d or 2d')
       end
      end
     

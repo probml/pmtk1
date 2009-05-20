@@ -1,20 +1,21 @@
-function imputationDemo(varargin)
+function imputationDemo()
 %% Imputation on random data using specified model
 
 d = 10;
 helper(MvnDist('-ndims', d), d, false);
 helper(DiscreteProdDist('-ndims', 10, '-nstates', 3), d, true);
 
-function helper(varargin)
-  
-[baseModel, ndims, discrete,  pcMissingTrain, pcMissingTest, Ntrain, Ntest] = ...
-  processArgs(varargin, ...
-  '-baseModel', MvnDist(), '-ndims', 10, '-discrete', false,  ...
-  '-pcMissingTrain', 0, '-pcMissingTest', 0.3, ...
-  '-Ntrain', 1000, '-Ntest', 5);
-  
+end
 
-model = mkRndParams(model);
+
+function helper(baseModel, ndims, discrete)
+  
+pcMissingTrain = 0;
+pcMissingTest = 0.3;
+Ntrain = 1000;
+Ntest = 5;
+
+model = mkRndParamsb(baseModel);
 
 %model = mkRndParams(MvnDist(), d);
 Xtrain = sample(model, Ntrain);
@@ -37,8 +38,6 @@ XhidImg(~missing) = 0;
 [Ximpute,V] = impute(model, Xmiss); % all the work happens here
 
 nr = 2; nc = 2;
-
-
 figure; 
 subplot(nr,nc,1); imagesc(Xfull); title('full data'); colorbar
 %subplot(nr,nc,2); imagesc(missing); title('missing pattern'); colorbar

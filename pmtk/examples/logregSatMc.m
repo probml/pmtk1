@@ -20,6 +20,8 @@ models = { LogregBinaryMc('-lambda', lambda, '-fitEng', LogregBinaryImptceSample
   LogregBinaryMc('-lambda', lambda, '-fitEng', LogregBinaryMhFitEng()), ...
   LogregBinaryLaplace('-lambda', lambda, '-predMethod', 'mc')};
 
+names = {'IS', 'MH', 'Laplace'};
+
 for mi=1:length(models)
   m = models{mi};
   m = fit(m,D);
@@ -27,20 +29,22 @@ for mi=1:length(models)
   if mi<=2, L2 = sum(logprob(m,D,2)), end % debugging
   
   pw = getParamPost(m);
-  figure; 
+  figure;
   for i=1:2
     pwi = marginal(pw, i);
     subplot(2,2,i); plot(pwi); title(sprintf('w%d',i));
   end
+  subplot(2,2,3); plot(pw);
   
   [yhat, pred] = predict(m,D);
   [Q5,Q95] = credibleInterval(pred);
   med = median(pred);
-  subplot(2,2,3); hold on
+  subplot(2,2,4); hold on
   plot(X, y, 'ko', 'linewidth', 3, 'markersize', 12);
   for i=1:length(y)
     line([X(i) X(i)], [Q5(i) Q95(i)],   'linewidth', 3);
     plot(X(i), med(i), 'rx', 'linewidth', 3, 'markersize', 12);
   end
+  suptitle(names{mi});
 end
 
