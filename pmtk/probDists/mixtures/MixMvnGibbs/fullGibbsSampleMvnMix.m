@@ -115,7 +115,7 @@ function [muS, SigmaS, mixS, latentS] = latentGibbsSampleMvnMix(distributions, m
   muS = cell(K,1); SigmaS = cell(K,1);
   for k=1:K
     muS{k} = SampleDist(musamples(:,:,k));
-    SigmaS{k} = SampleDist(Sigmasamples(:,:,k));
+    SigmaS{k} = SampleDist(Sigmasamples(:,:,:,k));
   end
 
 end

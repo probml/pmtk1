@@ -10,12 +10,12 @@ binomialPlotDemo;                        pclear(2);
 binomial_betaPosteriorDemo;              pclear(2);
 cancerRatesEb;                           pclear(2);
 cancerRatesMh;                           pclear(2);
-%casinoDemo;                             pclear(2); % broken
+casinoDemo;                              pclear(2);
 chainLengthUgmDgmDemo;                   pclear(2);
 chainTransformerTest;                    pclear(2);
 chordalGraphDemo;                        pclear(2);
 chowliuDemo;                             pclear(2);
-%classifySpamDemo;                       pclear(2); % broken
+%classifySpamDemo;                       pclear(2); % inprogress
 clusterMnistDigits;                      pclear(2);
 compareVarElimToEnum;                    pclear(2);
 %compareVarElimToFwdBack;                pclear(2); % broken

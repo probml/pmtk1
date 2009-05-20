@@ -30,7 +30,7 @@ classdef SampleDist < ProbDist
     
     
     function mu = mean(obj)
-      mu = moments(obj, @(w,d) mean(w,d));
+      mu = moments(obj, @(w,d) sum(w,d));
     end
     
      function mu = median(obj)
