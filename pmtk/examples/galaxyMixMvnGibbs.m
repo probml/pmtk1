@@ -36,7 +36,7 @@
 
   for m=1:length(method)
     traceplot(fitted{m}); suptitle(sprintf('%s Gibbs sampling', method{m}));
-    convergencePlot(fitted{m}); suptitle(sprintf('%s Gibbs sampling', method{m}));
+    convergencePlot(fitted{m}, galaxies); suptitle(sprintf('%s Gibbs sampling', method{m}));
   end
 
 
