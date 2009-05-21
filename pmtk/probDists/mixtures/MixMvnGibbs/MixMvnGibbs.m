@@ -128,18 +128,7 @@ classdef MixMvnGibbs < MixMvn
       end
       model.mixingDistrib.T = colvec(mean(mixS));
     end
-%{
-    function m = convertToMixMvn(model)
-      m = MixMvn();
-      m.distributions = model.distributions;
-      m.mixingDistrib = model.mixingDistrib;
-      for k=1:K
-        m.distributions{k}.mu = mean(model.samples.mu{k});
-        m.distributions{k}.Sigma = mean(model.samples.Sigma{k});
-      end
-      model.mixingDistrib.T = mean(model.samples.mixingWeights);
-    end
-%}
+
     function [] = traceplot(model)
       if(isempty(model.samples)), error('MixMvnGibbs:traceplot:notFit', 'Must first fit Mixture to data'); end;
       mu = model.samples.mu;

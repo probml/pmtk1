@@ -47,7 +47,7 @@ disp(catString(s,''))
 
 disp(sprintf('Gibbs methods based on model averaging (%d samples)\n', Nsamples - Nburnin))
 disp('(VB) EM based on posterior parameters with a Normal Inverse Wishart Prior')
-%{
+
 % Visualizations
 figure();
 for m=1:numel(method)
@@ -59,4 +59,3 @@ end
 suptitle(sprintf('Fitting the Old Faithful Dataset to %d mixtures', K));
 printTitle = 'oldFaithfulGibbsVsEMVsVB';
 if printPmtk, printPmtkFigures(printTitle); end;
-%}
