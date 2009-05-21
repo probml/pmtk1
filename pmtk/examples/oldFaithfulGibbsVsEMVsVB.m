@@ -47,3 +47,16 @@ disp(catString(s,''))
 
 disp(sprintf('Gibbs methods based on model averaging (%d samples)\n', Nsamples - Nburnin))
 disp('(VB) EM based on posterior parameters with a Normal Inverse Wishart Prior')
+%{
+% Visualizations
+figure();
+for m=1:numel(method)
+  subplot(2,2,m); hold on;
+  plot(fitted{m}, 'xrange', [1, 5.5, 40, 100], 'plotArgs', {'linewidth', 3});
+  plot(X(:,1), X(:,2), 'ro', 'MarkerSize', 5);
+  title(method{m});
+end
+suptitle(sprintf('Fitting the Old Faithful Dataset to %d mixtures', K));
+printTitle = 'oldFaithfulGibbsVsEMVsVB';
+if printPmtk, printPmtkFigures(printTitle); end;
+%}

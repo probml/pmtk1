@@ -125,7 +125,7 @@ classdef MixMvnVBEM < ProbDist
       % logp(i) = log int_{params} p(data(i,:), params)
       %  = log sum_k int_{params}p(data(i,:), h=k, params)
       %[mixingDistrib, marginalDist] = marginal(model);
-      marginalDist = marginal(model); mixingDistrib = model.mixingPrior;
+      marginalDist = marginalizeOutParams(model); mixingDistrib = model.mixingPrior;
       mixWeights = pmf(DiscreteDist(normalize(colvec(mixingDistrib.alpha))));
       [n,d] = size(data); K = numel(marginalDist);
       logp = zeros(n,K);
@@ -134,13 +134,47 @@ classdef MixMvnVBEM < ProbDist
       end
         logp = logsumexp(logp,2);
     end
-    
+
+        function [h,p] = plot(obj, varargin)
+          plot(MixModel('-distributions', marginalizeOutParams(obj), '-mixingDistrib', DiscreteDist('-T', normalize(colvec(obj.mixingPrior.alpha)))), varargin{:});
+        end
+
+    function [xrange] = plotRange(model)
+      K = numel(model.distributions);
+      marginalDist = marginalizeOutParams(model);
+      d = ndimensions(marginalDist{1});
+      % This is why we override the code for this class -- need to marginalize out mu, Sigma
+      switch d
+        case 1
+          xrange = zeros(K,2);
+          for k=1:K
+            xrange(k,:) = plotRange(marginalDist{k});
+          end
+          xrange = [min(xrange(:,1)), max(xrange(:,2))];
+        case 2
+          for k=1:K
+            xrange(k,:) = plotRange(marginalDist{k});
+          end
+          xrange = [min(xrange(:,1)), max(xrange(:,2)), min(xrange(:,3)), max(xrange(:,4))];
+      end
+    end
+
+    function d = ndimensions(model)
+      if(numel(model.distributions) > 0)
+        d = ndimensions(model.distributions{1});
+      else
+        d = 0;
+      end
+    end
+
 
   end % methods
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % special purpose code at this point
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [fittedDistrib, fittedMix, Lfinal] = VBforMixMvn(distributions, mixingPrior, covtype, X, varargin)
 % Variational Bayes EM algorithm for Gaussian Mixture Model

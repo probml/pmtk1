@@ -21,22 +21,20 @@ classdef SampleDist < ProbDist
         case 1, m.samples = X(:)'; ns = length(X);
         otherwise, m.samples = X; ns = size(X,nd);
       end
-      % Change: now if no weights are supplied, then we assume there are none (unweighted)
-      %m.samples = X;
-%      if isempty(weights)
-%        weights = [](1/ns)*ones(1, ns);
-%      end
-%      m.weights = weights(:)';
+      m.samples = X;
+      if isempty(weights)
+        weights = (1/ns)*ones(1, ns);
+      end
+      m.weights = weights(:)';
     end
     
     
     
     function mu = mean(obj)
-      if(isempty(obj.weights))
-        mu = mean(obj.samples, ndimsPMTK(obj.samples));
-      else
-        mu = sum(bsxfun(@times, obj.samples, obj.weights), ndimsPMTK(obj.samples));
-      end
+        switch ndimsPMTK(obj.samples)
+          case {1,2}, mu = sum(bsxfun(@times, obj.samples, obj.weights), 2);
+          case 3, mu = sum(bsxfun(@times, obj.samples, shiftdim(obj.weights,-1)));
+        end
     end
 
     function mu = median(obj)
@@ -53,23 +51,20 @@ classdef SampleDist < ProbDist
         switch ndimsPMTK(obj.samples)
           case 1, mu = obj.samples(idx);
           case 2, mu = obj.samples(:,idx);
-          case 3, mu = sum(repmat(reshape(w,[1,1,ns]), [sz(1) sz(2) 1]) .* obj.samples,3);
+          case 3, mu = obj.samples(:,:,idx);
           otherwise
             error('too many dims')
         end
+        % In case there is more than one median, take the average
+        if(idx > 1), mu = mean(mu, numel(size(mu))); end;
       end
     end
 
     function mu = var(obj)
-      if(isempty(obj.weights))
-        mu = var(obj.samples, ndimsPMTK(obj.samples));
-      else
-      mu = var(obj.samples, obj.weights, ndimsPMTK(obj.samples));
-%        switch ndimsPMTK(obj.samples)
-%          case 1, mu = sum(obj.weights.*(obj.samples - mean(obj)).^2);
-%          case 2, mu = sum(bsxfun(@times, obj.weights,bsxfun(@minus, obj.samples, mean(obj)).^2),2);
-%          case 3, mu = sum(bsxfun(@times, obj.weights,bsxfun(@minus, obj.samples, mean(obj)).^2),3);
-%        end
+      % May be buggy
+      switch ndimsPMTK(obj.samples)
+        case {1,2}, mu = var(obj.samples, obj.weights, 2);
+        case 3, mu = var(obj.samples, obj.weights, 3);
       end
     end
     

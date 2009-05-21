@@ -177,7 +177,24 @@ classdef MixModel < ProbDist
     end
     
    
-    
+    function [xrange] = plotRange(model)
+      K = numel(model.distributions);
+      d = ndimensions(model.distributions{1});
+      switch d
+        case 1
+          xrange = zeros(K,2);
+          for k=1:K
+            xrange(k,:) = plotRange(model.distributions{k});
+          end
+          xrange = [min(xrange(:,1)), max(xrange(:,2))];
+        case 2
+          for k=1:K
+            xrange(k,:) = plotRange(model.distributions{k});
+          end
+          xrange = [min(xrange(:,1)), max(xrange(:,2)), min(xrange(:,3)), max(xrange(:,4))];
+      end
+    end
+ 
   end % methods
 
   methods(Access = 'protected')

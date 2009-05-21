@@ -23,7 +23,7 @@ classdef MixMvnGibbs < MixMvn
       model.distributions = distributions;
     end
     
-    function pred = inferLatent(model,data)
+    function ph = inferLatent(model,X)
       % ph(i,k) = p(H=k | data(i,:),params) a DiscreteDist
       % This is the posterior responsibility of component k for data i
       % LL(i) = log p(data(i,:) | params)  is the log normalization constant
@@ -41,7 +41,7 @@ classdef MixMvnGibbs < MixMvn
           logRik(:,k,s) = log(mixW.samples(k,s)) - 1/2*logdet(2*pi*Sigma{k}.samples(:,:,s)) - 1/2*sum((XC*inv(Sigma{k}.samples(:,:,s))).*XC,2);
         end
       end
-      logRik = mean(l,3);
+      logRik = mean(logRik,3);
       [Rik, LL] = normalizeLogspace(logRik);
       Rik = exp(Rik);
       ph = DiscreteDist('-T', Rik');
@@ -121,6 +121,12 @@ classdef MixMvnGibbs < MixMvn
       model.samples.mu = muS;
       model.samples.Sigma = sigmaS;
       model.samples.mixingWeights = mixS;
+      K = numel(muS);
+      for k=1:K
+        model.distributions{k}.mu = colvec(mean(muS{k}));
+        model.distributions{k}.Sigma = mean(sigmaS{k});
+      end
+      model.mixingDistrib.T = colvec(mean(mixS));
     end
 %{
     function m = convertToMixMvn(model)
@@ -167,10 +173,32 @@ classdef MixMvnGibbs < MixMvn
       subplot(2,1,1); plot(logp); title('Log probability of data');
       subplot(2,1,2); plot(lognormconst); title('Log normalization constant');
     end
+
+    function [xrange] = plotRange(model)
+      K = numel(model.distributions);
+      d = ndimensions(model.distributions{1});
+      switch d
+        case 1
+          xrange = zeros(K,2);
+          for k=1:K
+            xrange(k,:) = plotRange(model.distributions{k});
+          end
+          xrange = [min(xrange(:,1)), max(xrange(:,2))];
+        case 2
+          for k=1:K
+            xrange(k,:) = plotRange(model.distributions{k});
+          end
+          xrange = [min(xrange(:,1)), max(xrange(:,2)), min(xrange(:,3)), max(xrange(:,4))];
+      end
+    end
   
   end % methods
   
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% special purpose code after this point
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [muS, SigmaS, mixS, latentS] = fullGibbsSampleMvnMix(distributions, mixingWeights, data, varargin)
   [Nsamples, Nburnin, thin, verbose] = processArgs(varargin, ...
