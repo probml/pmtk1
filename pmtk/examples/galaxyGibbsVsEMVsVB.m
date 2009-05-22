@@ -45,14 +45,18 @@ for m=1:numel(method)
   for k=1:K
     if(m == 1 || m == 2)
       meanEst(k,m) = mean(fitted{m}.samples.mu{k});
+      varEst(k,m) = mean(fitted{m}.samples.Sigma{k});
     elseif(m == 3)
       meanEst(k,m) = mean(fitted{m}.distributions{k});
+      varEst(k,m) = var(fitted{m}.distributions{k});
     else
       meanEst(k,m) = mean(marginalDist{4}{k});
+      varEst(k,m) = cov(marginalDist{4}{k});
     end
   end
 end
-meanEst = sort(meanEst);
+[meanEst, idx] = sort(meanEst);
+varEst = varEst(idx);
 s{1,:} = sprintf('%s \t %s \t %s \t %s \t\t %s \n', 'Cluster', method{:});
 for k=1:K
   s{k+1,:} = sprintf('%d \t\t %3.2f \t\t %3.2f \t\t\t %3.2f \t\t %3.2f \n', k, meanEst(k,:));
@@ -67,9 +71,18 @@ figure();
 for m=1:numel(method)
   subplot(2,2,m); hold on;
   plot(fitted{m},'plotArgs', {'linewidth', 3});
-  line([galaxies';galaxies'], [zeros(1,n);exp(logprob(fitted{m}, galaxies))'], 'color', 'red');
+  prob = exp(logprob(fitted{m}, galaxies));
+  line([galaxies';galaxies'], [zeros(1,n);prob'], 'color', 'red');
+  plot(galaxies', prob', 'ro', 'linewidth', 3);
+  % Makes plot more informative, but also more cluttered
+  %for k=1:K
+  %  str = sprintf('%3.2f / %3.2f', meanEst(k,m), varEst(k,m));
+  %  loc = [meanEst(k,m), exp(logprob(fitted{m}, meanEst(k,m))) + 0.005];
+  %  text('Position', loc, 'String', str);
+  %end
   title(method{m});
 end
 suptitle(sprintf('Fitting the Galaxy Dataset to %d mixtures \n (red lines indicate the location of the actual (scaled) data)', K));
+maximizeFigure;
 printTitle = 'galaxyGibbsVsEMVsVB';
-if printPmtk, printPmtkFigures(printTitle); end;
+if doPrintPmtk, printPmtkFigures(printTitle); end;

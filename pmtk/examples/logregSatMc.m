@@ -47,5 +47,6 @@ for mi=1:length(models)
     plot(X(i), med(i), 'rx', 'linewidth', 3, 'markersize', 12);
   end
   suptitle(names{mi});
+  if doPrintPmtk, printPmtkFigures(sprintf('logregSatMc-%s', names{mi})); end;
 end
 

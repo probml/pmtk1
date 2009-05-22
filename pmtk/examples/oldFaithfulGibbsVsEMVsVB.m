@@ -54,8 +54,15 @@ for m=1:numel(method)
   subplot(2,2,m); hold on;
   plot(fitted{m}, 'xrange', [1, 5.5, 40, 100], 'plotArgs', {'linewidth', 3});
   plot(X(:,1), X(:,2), 'ro', 'MarkerSize', 5);
+  for k=1:K
+    str = sprintf('[%3.2f, %3.2f]', meanEst(k,2*m-1), meanEst(k,2*m));
+    loc = [meanEst(k,2*m-1) + 1, meanEst(k,2*m)];
+    text('Position', loc, 'String', str);
+    line([meanEst(k,2*m-1) + 1; meanEst(k,2*m-1)], [meanEst(k,2*m);meanEst(k,2*m)], 'Color', 'green', 'LineWidth', 3);
+  end
   title(method{m});
 end
 suptitle(sprintf('Fitting the Old Faithful Dataset to %d mixtures', K));
+maximizeFigure;
 printTitle = 'oldFaithfulGibbsVsEMVsVB';
-if printPmtk, printPmtkFigures(printTitle); end;
+if doPrintPmtk, printPmtkFigures(printTitle); end;

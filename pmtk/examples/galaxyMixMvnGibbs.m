@@ -32,7 +32,7 @@
 
   for m=1:length(method)
     traceplot(fitted{m}); suptitle(sprintf('%s Gibbs sampling', method{m}));
-    if printPmtk, printPmtkFigures(sprintf('galaxyMixMvn%sTraceplot', method{m})); end;
+    if doPrintPmtk, printPmtkFigures(sprintf('galaxyMixMvn%sTraceplot', method{m})); end;
     convergencePlot(fitted{m}, galaxies); suptitle(sprintf('%s Gibbs sampling', method{m}));
-    if printPmtk, printPmtkFigures(sprintf('galaxyMixMvn%sConvergence', method{m})); end;
+    if doPrintPmtk, printPmtkFigures(sprintf('galaxyMixMvn%sConvergence', method{m})); end;
   end

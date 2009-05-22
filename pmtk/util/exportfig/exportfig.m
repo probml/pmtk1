@@ -446,7 +446,9 @@ try
   set(H, 'PaperPositionMode', 'auto');
   newPos = [figPos(1) figPos(2)+figPos(4)*(1-hscale) ...
 	    wscale*figPos(3) hscale*figPos(4)];
+  set(H, 'PaperSize', [figPos(3), figPos(4)]); % added: Cody
   set(H, 'Position', newPos);
+  set(H, 'PaperPosition', [0 0 newPos(3:4)]); % added: Cody
   set(H, 'Units', oldFigureUnits);
 
   old = LocalPushOldData(old,H,'Color', ...

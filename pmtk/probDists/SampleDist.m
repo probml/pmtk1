@@ -33,7 +33,7 @@ classdef SampleDist < ProbDist
     function mu = mean(obj)
         switch ndimsPMTK(obj.samples)
           case {1,2}, mu = sum(bsxfun(@times, obj.samples, obj.weights), 2);
-          case 3, mu = sum(bsxfun(@times, obj.samples, shiftdim(obj.weights,-1)));
+          case 3, mu = sum(bsxfun(@times, obj.samples, shiftdim(obj.weights,-1)), 3);
         end
     end
 

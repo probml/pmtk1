@@ -155,7 +155,7 @@ classdef MixMvnGibbs < MixMvn
           XC = bsxfun(@minus, X, mu{k}.samples(:,s)');
           l(:,k,s) = log(mixW.samples(k,s)) - 1/2*logdet(2*pi*Sigma{k}.samples(:,:,s)) - 1/2*sum((XC*inv(Sigma{k}.samples(:,:,s))).*XC,2);
         end
-      lognormconst(s) = logsumexp(logsumexp(l(:,:,s),2));
+      lognormconst(s) = logsumexp(logsumexp(l(:,:,s),2),1);
       end
       logp = squeeze(logsumexp(sum(l,1),2));
       figure(); hold on;
