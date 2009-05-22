@@ -23,7 +23,7 @@ classdef MixMvnGibbs < MixMvn
       model.distributions = distributions;
     end
     
-    function ph = inferLatent(model,X)
+    function [ph, LL] = inferLatent(model,X)
       % ph(i,k) = p(H=k | data(i,:),params) a DiscreteDist
       % This is the posterior responsibility of component k for data i
       % LL(i) = log p(data(i,:) | params)  is the log normalization constant
@@ -32,13 +32,17 @@ classdef MixMvnGibbs < MixMvn
       S = size(model.samples.mu{1}.samples,2);
       [n,d] = size(X);
       logRik = zeros(n,K,S);
-      Sigma = model.samples.Sigma;
-      mu = model.samples.mu;
-      mixW = model.samples.mixingWeights;
+      Sigma = zeros(d,d,S,K);
+      mu = zeros(d,S,K);
+      for k=1:K
+        Sigma(:,:,:,k) = model.samples.Sigma{k}.samples;
+        mu(:,:,k) = model.samples.mu{k}.samples;
+      end
+      mixW = model.samples.mixingWeights.samples;
       for s=1:S
         for k=1:K
-          XC = bsxfun(@minus, X, mu{k}.samples(:,s)');
-          logRik(:,k,s) = log(mixW.samples(k,s)) - 1/2*logdet(2*pi*Sigma{k}.samples(:,:,s)) - 1/2*sum((XC*inv(Sigma{k}.samples(:,:,s))).*XC,2);
+          XC = bsxfun(@minus, X, mu(:,s,k)');
+          l(:,k,s) = log(mixW(k,s)) - 1/2*logdet(2*pi*Sigma(:,:,s,k)) - 1/2*sum((XC*inv(Sigma(:,:,s,k))).*XC,2);
         end
       end
       logRik = mean(logRik,3);
@@ -65,40 +69,22 @@ classdef MixMvnGibbs < MixMvn
       S = size(model.samples.mu{1}.samples,2);
       [n,d] = size(X);
       l = zeros(n,K,S);
-      Sigma = model.samples.Sigma;
-      mu = model.samples.mu;
-      mixW = model.samples.mixingWeights;
+      Sigma = zeros(d,d,S,K);
+      mu = zeros(d,S,K);
+      for k=1:K
+        Sigma(:,:,:,k) = model.samples.Sigma{k}.samples;
+        mu(:,:,k) = model.samples.mu{k}.samples;
+      end
+      mixW = model.samples.mixingWeights.samples;
       for s=1:S
         for k=1:K
-          XC = bsxfun(@minus, X, mu{k}.samples(:,s)');
-          l(:,k,s) = log(mixW.samples(k,s)) - 1/2*logdet(2*pi*Sigma{k}.samples(:,:,s)) - 1/2*sum((XC*inv(Sigma{k}.samples(:,:,s))).*XC,2);
+          XC = bsxfun(@minus, X, mu(:,s,k)');
+          l(:,k,s) = log(mixW(k,s)) - 1/2*logdet(2*pi*Sigma(:,:,s,k)) - 1/2*sum((XC*inv(Sigma(:,:,s,k))).*XC,2);
         end
       end
       l = mean(l,3);
       l = logsumexp(l,2);
     end
-
-
-% We don't want this
-%{
-    function model = mean(model)
-      sampleDists = model.samples;
-      % Performs full Bayes Model averaging by averaging over each sampled mu, Sigma, and mixing weights
-      mu = sampleDists.mu;
-      Sigmatmp = sampleDists.Sigma;
-      mix = sampleDists.mixingWeights;
-      [N, d, K] = size(mu);
-      Sigma = recoversigma(model);
-      % perform model averaging
-      SigmaAvg = mean(Sigma,3);
-      mixAvg = mean(sampleDists.mixingWeights);
-      for k=1:K
-        model.distributions{k}.mu = colvec(mean(sampleDists.mu{k}));
-        model.distributions{k}.Sigma = SigmaAvg(:,:,:,k);
-      end
-      model.mixingDistrib.T = colvec(mixAvg);
-    end
-%}
 
     function [model, latent] = fit(model,X,varargin)
       [method, fixlatent, Nsamples, Nburnin, thin, verbose] = processArgs(varargin, ...
@@ -118,6 +104,9 @@ classdef MixMvnGibbs < MixMvn
       if(fixlatent)
         [muS, sigmaS, mixS, latent] = processLabelSwitching(muS, sigmaS, mixS, latent, X);
       end
+
+      % fill in model.distributions and model.mixingDistrib with plug-in estimates
+      % This helps the plotRange function be more accurate
       model.samples.mu = muS;
       model.samples.Sigma = sigmaS;
       model.samples.mixingWeights = mixS;
@@ -202,10 +191,7 @@ function [muS, SigmaS, mixS, latentS] = fullGibbsSampleMvnMix(distributions, mix
   prior = cell(K,1);
   Sigma = zeros(d,d,K);
   mu0 = zeros(d,K); v0 = zeros(K,1); k0 = zeros(K,1); S0 = zeros(d,d,K);
-  %[mu, assign] = kmeansSimple(data, K);
   for k=1:K
-    %C = cov(data(assign == k,:));
-    %Sigma(:,:,k) = C + 0.01*diag(diag(C));
     if(isa(distributions{k}.prior, 'char'))
       distributions{k} = initPrior(distributions{k}, data);
     end
@@ -328,7 +314,6 @@ function [muS, sigmaS, mixS, latentS] = collapsedGibbsSampleMvnMix(distributions
   SSn = zeros(K,1); SSxbar = zeros(d,K); SSXX = zeros(d,d,K); SSXX2 = zeros(d,d,K);
   covtype = cell(1,K);
 
-  % since each MVN could have a different covariance structure, we need to do this.
   for k=1:K
     if(isa(distributions{k}.prior,'char'))
       distributions{k} = initPrior(distributions{k},data);
@@ -358,8 +343,6 @@ function [muS, sigmaS, mixS, latentS] = collapsedGibbsSampleMvnMix(distributions
         Sp(:,:,k) = distributions{k}.prior.b*eye(d);
     end
   end
-  % Later we will need these in map estimation
-  %kp = k0; vp = v0; Sp = S0; mup = mu0;
 
   curlatent = latent(1,:);
 
@@ -518,10 +501,6 @@ end
       % publisher = "Blackwell Publishers"
       %}
       [verbose, maxitr] = processArgs(varargin, '-verbose', true, '-maxitr', inf);
-      %muDist = dists.muDist;
-      %SigmaDist = dists.SigmaDist;
-      %mixDist = dists.mixDist;
-      %latentDist = dists.latentDist;
 
       nSamples = size(latentDist.samples, 2);
       [nObs,d] = size(X);
@@ -566,9 +545,6 @@ end
         for itr = 1:nSamples
           logqRik = zeros(nObs,K);
           for k=1:K
-            %XC = bsxfun(@minus, X, mu(itr,:,oldPerm(itr,k)));
-            %logpdata(:,itr,k) = -logconst(itr,oldPerm(itr,k)) - 1/2*sum((XC*invS(:,:,itr,oldPerm(itr,k))).*XC,2);
-            %logqRik(:,k) = log(mix(itr,oldPerm(itr,k))+eps)+ logpdata(:,itr,k);
             XC = bsxfun(@minus, X, mu(itr,:,k));
             logpdata(:,itr,k) = -logconst(itr,k) - 1/2*sum((XC*invS(:,:,itr,k)).*XC,2);
             logqRik(:,k) = log(mix(itr,k))+ logpdata(:,itr,k);
@@ -584,7 +560,6 @@ end
         for itr = 1:nSamples
           logpij = zeros(nObs,K);
           for k=1:K
-            %logpij(:,k) = log(mix(itr,oldPerm(itr,k))+eps) + logpdata(:,itr,oldPerm(itr,k));
             logpij(:,k) = log(mix(itr,k)) + logpdata(:,itr,k);
           end
           logpij = normalizeLogspace(logpij);
@@ -610,16 +585,10 @@ end
         else
           deltakl = klscore(value) - klscore(value - 1);
         end
+
         if(verbose),fprintf('KL Loss = %g.  Delta = %g \n',klscore(value), deltakl); end;
-        % Stopping criteria - what would be ideal is to have a vector of stopping criteria
-        % and have the user select the stopping criteria
-        % I'm thinking that we could pass this in as varargin, and then evaluate the chosen
-        % criteria after each run
-        %if( value > 2 && (all(all(perm == oldPerm)) || approxeq(klscore(value), klscore(value-1), 1/klscore(value), 1) || approxeq(klscore(value), klscore(value-2), 1/klscore(value), 1) ) )
-        %if(value > 2 && (all(all(perm == ident)) || value >= maxitr || convergenceTest(klscore(value), klscore(value - 1))))
-        if(value > 2 && (all(all(perm == oldPerm)) || value >= maxitr || convergenceTest(klscore(value), klscore(value - 1))))
-          fixedPoint = true;
-        end
+        if(value > 2 && (all(all(perm == oldPerm))) || value >= maxitr), fixedPoint = true; end;
+
         if(deltakl > 0)
           warning('Objective did not decrease.  Returning with last good permutation');
           permOut = oldPerm;
@@ -634,13 +603,16 @@ end
             invS(:,:,itr,k) = invS(:,:,itr,perm(itr,k));
           end
         end
-        value = value + 1;   
+        value = value + 1; oldPerm = perm;
       end
+
+      if(verbose && fail ~= true), fprintf('Converged to stationary point\n'); end
       permOut = perm;
       latentout = zeros(nSamples,nObs);
       mixout = zeros(nSamples,K);
       muout = zeros(nSamples,d,K);
       Sigmaout = zeros(d,d,nSamples,K);
+
       for itr=1:nSamples
         latentout(itr,:) = permOut(itr,latent(itr,:));
         mixout(itr,:) = mix(itr,permOut(itr,:));
@@ -656,7 +628,7 @@ end
         muoutDist{k} = SampleDist(muout(:,:,k)');
         SigmaoutDist{k} = SampleDist(Sigmaout(:,:,:,k)); 
       end 
-      distsout = struct;%('muDist', muoutDist, 'SigmaDist', SigmaoutDist, 'mixDist', mixoutDist, 'latentDist', latentoutDist);
+      distsout = struct;
       distsout.muDist = muoutDist;
       distsout.SigmaDist = SigmaoutDist;
       distsout.mixoutDist = mixoutDist;

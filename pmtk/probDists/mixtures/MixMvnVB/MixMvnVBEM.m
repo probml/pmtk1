@@ -41,7 +41,12 @@ classdef MixMvnVBEM < ProbDist
       if(isempty(model.covtype) && ~isempty(model.distributions))
         model.covtype = cell(numel(model.distributions),1);
         for k=1:numel(model.distributions)
-          model.covtype{k} = 'full';
+          switch class(model.distributions{k})
+            case 'MvnInvWishartDist'
+              model.covtype{k} = 'full';
+            case 'MvnInvGammaDist'
+              model.covtype{k} = 'diagonal';
+          end
         end
       end
     end
@@ -54,63 +59,31 @@ classdef MixMvnVBEM < ProbDist
         warning('Restricted covariances not rigourously tested yet');
       end
       for r=1:nrestarts
-        %[param{r}, L(r)] = VBforMixMvn(model.alpha, model.mu, model.k, model.T, model.dof, model.covtype, data, varargin{:});
         [fittedDistrib{r}, fittedMix{r}, L(r)] = VBforMixMvn(model.distributions, model.mixingPrior, model.covtype, data);
       end
       best = argmax(L);
       model.distributions = fittedDistrib{best};
       model.mixingPrior = fittedMix{best};
-      %model.alpha = param{best}.alpha;
-      %model.mu = param{best}.mu;
-      %model.T = param{best}.T;
-      %model.dof = param{best}.dof;
-      %model.k = param{best}.k;
     end
-
-%{
-    function [mixingDistrib, distributions] = convertToDist(model)
-      % This function returns as dists the posterior distributions
-      mixingDistrib = DirichletDist(colvec(model.alpha));
-      K = numel(model.alpha); d = size(model.mu,2);
-      distributions = cell(K,1);
-      for k=1:K
-        switch lower(model.covtype{k})
-          case 'full'
-            distributions{k} = MvnInvWishartDist('mu', model.mu(k,:)', 'Sigma', model.T(:,:,k), 'dof', model.dof(k), 'k', model.k(k));
-          case {'diagonal', 'spherical'}
-            distributions{k} = MvnInvGammaDist('mu', model.mu(k,:)', 'Sigma', model.k(k), 'a', model.dof(k)*ones(1,d), 'b', rowvec(diag(model.T(:,:,k))));
-        end
-      end
-    end
-%}
 
     function marginalDist = marginalizeOutParams(model)
-      % Same are convertToDist, but instead returns the marginal distributibutions
-      % in place of the posterior distributions.
-      % This is usefule for the conditional() and logprob() functions
-%      [mixingDistrib, distributions] = convertToDist(model);
       distributions = model.distributions;
       K = numel(distributions);
       conjugateDist = cell(K,1); marginalDist = cell(K,1);
       for k=1:K
-        % Marginalize out the parameters
         switch class(distributions{k})
           case 'MvnInvWishartDist'
             conjugateDist{k} = Mvn_MvnInvWishartDist(distributions{k});
           case 'MvnInvGammaDist'
             conjugateDist{k} = Mvn_MvnInvGammaDist(distributions{k});
-        end %switch
+        end
       marginalDist{k} = marginal(conjugateDist{k});
       end
-      %mixMarg = MixModel('-distributions', marginalDist, '-mixingDistrib', mixingDistrib);
     end
     
-%    function [ph, LL] = conditional(model,data)
     function ph = inferLatent(model,data)
       % ph(i,k) = (1/S) sum_s p(H=k | data(i,:),params(s)), a DiscreteDist
       % This is the posterior responsibility of component k for data i
-      % LL(i) = log p(data(i,:) | params)  is the log normalization const
-      %[mixingDistrib, marginalDist] = marginal(model);
       marginalDist = marginal(model);
       mixWeights = pmf(DiscreteDist(normalize(colvec(mixingDistrib.alpha))));
       K = numel(marginalDist);
@@ -124,7 +97,6 @@ classdef MixMvnVBEM < ProbDist
     function logp = logprob(model,data)
       % logp(i) = log int_{params} p(data(i,:), params)
       %  = log sum_k int_{params}p(data(i,:), h=k, params)
-      %[mixingDistrib, marginalDist] = marginal(model);
       marginalDist = marginalizeOutParams(model); mixingDistrib = model.mixingPrior;
       mixWeights = pmf(DiscreteDist(normalize(colvec(mixingDistrib.alpha))));
       [n,d] = size(data); K = numel(marginalDist);
