@@ -3,7 +3,7 @@ function [] = hintonScale(varargin)
 % X, W; where X determines the color and W determines the size
 % The user can specify two optional arguments
 % 'map'   which colormap to use
-% We make use of rel2absX and rel2absY from pmtk/bookCode
+
   if nargin <= 2
     X = varargin{1}{1};
     if(numel(varargin{1}) > 1)
@@ -14,10 +14,15 @@ function [] = hintonScale(varargin)
     nplots = 1;
     Xmin = min(X(:)); Xmax = max(X(:));
     Smin = min(W(:))*0.95; Smax = max(W(:))*1.05;
+    if(numel(varargin) > 1)
     if(numel(varargin{2}) == 2)
       [imap, ititle] = processArgs(varargin{2}, '-map', 'Jet', '-title', '');
       map{1,:} = imap; plotTitle{1,:} = ititle;
     end
+    hintonScaleSingle(X, W, varargin{2});
+    end
+    hintonScaleSingle(X, W);
+    return
   end
   %[map] = processArgs(varargin, '-map', 'Jet');
   if(nargin > 2)
