@@ -15,14 +15,16 @@ function [] = hintonScale(varargin)
     Xmin = min(X(:)); Xmax = max(X(:));
     Smin = min(W(:))*0.95; Smax = max(W(:))*1.05;
     if(numel(varargin) > 1)
-    if(numel(varargin{2}) == 2)
-      [imap, ititle] = processArgs(varargin{2}, '-map', 'Jet', '-title', '');
-      map{1,:} = imap; plotTitle{1,:} = ititle;
+      if(numel(varargin{2}) == 2)
+        [imap, ititle] = processArgs(varargin{2}, '-map', 'Jet', '-title', '');
+        map{1,:} = imap; plotTitle{1,:} = ititle;
+      end
+      passargs = varargin{2};
+      hintonScaleSingle(X, W, passargs{:});
+    else
+      hintonScaleSingle(X, W);
     end
-    hintonScaleSingle(X, W, varargin{2});
-    end
-    hintonScaleSingle(X, W);
-    return
+    return;
   end
   %[map] = processArgs(varargin, '-map', 'Jet');
   if(nargin > 2)
