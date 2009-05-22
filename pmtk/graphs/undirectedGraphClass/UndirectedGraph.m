@@ -64,19 +64,7 @@ classdef UndirectedGraph < Graph
       obj = initEdgeStruct(obj);
     end
 
-     function objs = mkAllUG(dummy, nnodes, loadFromFile)
-      % Returns cell array of all UGs on nnodes.
-      % eg. UGs = mkAllUG(UndirectedGraph(), 5);
-      % Warning: the number of UGs on d nodes is O(2^(d choose 2))
-      % which is just the number of ways to label every possible edge.
-      % Nnodes  2   3   4  5       6       7        8      9     10  
-      % Nug     2   8  64  1024  32,678 2.1e6   2.7e8 6.9e10 3.5e13
-      if nargin < 3, loadFromFile = true; end
-      Gs = mk_all_ugs(nnodes, loadFromFile);
-      for i=1:length(Gs)
-        objs{i} = UndirectedGraph(Gs{i});
-      end
-    end
+    
 
     function e = nedges(obj)
       e = obj.edgeStruct.nEdges;
@@ -182,6 +170,22 @@ classdef UndirectedGraph < Graph
     function obj = initEdgeStruct(obj)
       obj.edgeStruct = makeEdgeStruct(double(obj.adjMat));
     end
+  end
+  
+  methods(Static = true)
+   function objs = mkAllUG(nnodes, loadFromFile)
+      % Returns cell array of all UGs on nnodes.
+      % eg. UGs = mkAllUG(UndirectedGraph(), 5);
+      % Warning: the number of UGs on d nodes is O(2^(d choose 2))
+      % which is just the number of ways to label every possible edge.
+      % Nnodes  2   3   4  5       6       7        8      
+      % #UG    2    8  64 1024  32,768  2,097,152   268,435,456
+      if nargin < 2, loadFromFile = true; end
+      Gs = mk_all_ugs(nnodes, loadFromFile);
+      for i=1:length(Gs)
+        objs{i} = UndirectedGraph(Gs{i});
+      end
+   end
   end
   
 end

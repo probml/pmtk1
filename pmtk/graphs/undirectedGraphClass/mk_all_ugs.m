@@ -1,7 +1,7 @@
 function Gs = mk_all_ugs(N, use_file)
 % Generate all undirected graphs on N variables
 
-% eg for N=4, there are 4.3/2 = 6 edges
+% eg for N=4, there are 4*3/2 = 6 edges
 % We reshape the bit vector as follows
 % . . . .
 % 1 . . .

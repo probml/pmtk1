@@ -46,6 +46,8 @@ classdef UgmGaussDist < UgmDist
         A = obj.G.adjMat;
         prec = randpd(d) .* A;
         obj.precMat = mkDiagDominant(prec);
+        % density = 0.8; reciprocal_condition = 0.9;
+        %Prc_true = full(sprandsym(D,density,reciprocal_condition,2));
         obj.Sigma = inv(obj.precMat);
       end
 

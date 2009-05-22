@@ -707,12 +707,12 @@ try
     line = fgetl(fid2);
     while ischar(line)
       if strncmp(line,'%%Title',7)
-	fprintf(fid1,'%s\n',['%%Title: ', tfile]);
-      elseif (length(line) < 3) 
-	fprintf(fid1,'%s\n',line);
+        fprintf(fid1,'%s\n',['%%Title: ', tfile]);
+      elseif (length(line) < 3)
+        fprintf(fid1,'%s\n',line);
       elseif ~strcmp(line(end-2:end),' PR') & ...
-	    ~strcmp(line(end-1:end),' L')
-	fprintf(fid1,'%s\n',line);
+          ~strcmp(line(end-1:end),' L')
+        fprintf(fid1,'%s\n',line);
       end
       line = fgetl(fid2);
     end
