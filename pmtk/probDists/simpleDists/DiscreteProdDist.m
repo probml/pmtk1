@@ -31,7 +31,7 @@ classdef DiscreteProdDist  < ParamJointDist
       [T, nstates, ndims, support, prior, obj.priorStrength] = ...
         processArgs(varargin, ...
         '-T', [], '-nstates', [], '-ndims', [], '-support', [],  ...
-        '-prior', NoPrior,'-priorStrength', 1);
+        '-prior', 'none','-priorStrength', 1);
       if isempty(T)
         d = ndims; K = nstates;
         if isempty(d) || isempty(K)
@@ -88,9 +88,9 @@ classdef DiscreteProdDist  < ParamJointDist
       % model = fit(model, data, suffStat)
       % data(i,j) is value of case i, variable j (an integer in model.support)
       % suffStat.counts is a K*d matrix
-      [X, SS] = processArgs(varargin, ...
-        '-data', [], ...
-        '-suffStat', []);
+      [X, SS] = process_options(varargin, ...
+        'data', [], ...
+        'suffStat', []);
       if isa(X,'DataTable'), X = X.X; end
       if ~isempty(X) && any(isnan(X(:)))
         model = fitMissingData(model,X);
@@ -105,7 +105,7 @@ classdef DiscreteProdDist  < ParamJointDist
       switch class(model.prior)
         case 'DirichletDist'
           pseudoCounts = repmat(model.prior.alpha(:),1,d);
-          model.T = normalize(SS.counts + pseudoCounts -1, 1);
+          model.params.T = normalize(SS.counts + pseudoCounts -1, 1);
         otherwise
           error('unknown prior ')
       end % switch prior
@@ -242,7 +242,9 @@ classdef DiscreteProdDist  < ParamJointDist
    
      
    function SS = mkSuffStat(obj, X,weights)
-      K = nstates(obj);
+      %K = nstates(obj);
+      T = obj.params.T;
+     [K] = size(T,1);
       d = size(X,2);
       counts = zeros(K, d);
       X = double(full(X));

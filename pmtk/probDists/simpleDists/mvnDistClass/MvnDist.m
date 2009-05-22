@@ -28,7 +28,7 @@ classdef MvnDist < ProbDist
         '-domain', [], '-prior', 'none', '-fitMethod', 'mle', ...
         '-fitArgs', {}, '-covtype', 'full', '-infEng', GaussInfEng());
       if m.ndims==0, m.ndims = length(m.mu); end;
-      if m.ndims==0, error('must specify ndims and/or mu'); end
+      %if m.ndims==0, error('must specify ndims and/or mu'); end
       m.domain = 1:m.ndims;
     end
 
@@ -240,10 +240,14 @@ classdef MvnDist < ProbDist
       end
       %obj = MvnDist();
       obj.covtype = covtype;
+      if isempty(X) && isempty(SS)
+        error('must call fit(model,''data'',data)')
+      end
       if isempty(SS), SS = MvnDist().mkSuffStat(X); end
       if isa(prior, 'char'),  prior = mkPrior(obj, '-suffStat', SS, '-prior', obj.prior, '-covtype', obj.covtype); end      
       if isempty(prior), prior = NoPrior; end
       obj.prior = prior; % replace string with object so logprior(model) works
+  
       switch class(prior)
         case 'NoPrior',
            obj.mu = SS.xbar;

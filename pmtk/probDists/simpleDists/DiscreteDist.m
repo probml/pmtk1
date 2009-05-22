@@ -75,7 +75,7 @@ classdef DiscreteDist  < ProbDist
     function h = entropy(obj)
       T = obj.T;
       safeT = T; safe(T==0)=1;
-      h = sum(T .* log(safeT),1);
+      h = -sum(T .* log(safeT),1);
     end
     
     function L = logprob(obj,X)

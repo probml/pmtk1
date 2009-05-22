@@ -8,49 +8,70 @@ helper(DiscreteProdDist('-ndims', 10, '-nstates', 3), d, true);
 end
 
 
-function helper(baseModel, ndims, discrete)
+function helper(baseModel, d, discrete)
   
 pcMissingTrain = 0;
 pcMissingTest = 0.3;
 Ntrain = 1000;
 Ntest = 5;
+setSeed(0);
 
-model = mkRndParamsb(baseModel);
+% Random missing pattern
+missingTrain = rand(Ntrain,d) < pcMissingTrain;
+missingTest = rand(Ntest,d) < pcMissingTest;
 
-%model = mkRndParams(MvnDist(), d);
+
+model = mkRndParams(baseModel);
+
 Xtrain = sample(model, Ntrain);
+Xtest = sample(model, Ntest);
 
-if r
-  % Random missing pattern
-  missing = rand(n,d) < pcMissing;
+
+XtrainMiss = Xtrain;
+XtrainMiss(missingTrain) = NaN;
+XtestMiss = Xtest;
+XtestMiss(missingTest) = NaN;
+
+model = fit(model, 'data', XtrainMiss);
+[XimputeTrain,Vtrain] = impute(model, XtrainMiss);
+[XimputeTest,Vtest] = impute(model, XtestMiss);
+
+if discrete
+  errTrain = sum(sum(XimputeTrain ~= Xtrain));
+  errTest = sum(sum(XimputeTest ~= Xtest));
 else
-  % Make the first 3 stripes (features) be completely missing
-  missing = false(n,d);
-  missing(:, 1:floor(pcMissing*d)) = true;
+  errTrain = sum(sum((XimputeTrain - Xtrain).^2))/Ntrain;
+  errTest = sum(sum((XimputeTest - Xtest).^2))/Ntest;
 end
 
-Xmiss = Xfull;
-Xmiss(missing) = NaN;
-XmissImg = Xmiss;
-XmissImg(missing) = 0;
-XhidImg = Xfull;
-XhidImg(~missing) = 0;
-[Ximpute,V] = impute(model, Xmiss); % all the work happens here
+%figure;
+%hintonScale({Xtrain}, {'-map', 'gray', '-title', 'training'}, ...
+%  {Xtrain, 1-missingTrain}, {'-map', 'Jet', '-title', 'observed'}, ...
+%  {XimputeTrain, Vtrain}, {'-title', 'imputed mean'}, ...
+%  {Xtrain, missingTrain}, {'-title', 'hidden truth'});
+%ttl = sprintf('train err %3.2f', errTrain));
 
-nr = 2; nc = 2;
-figure; 
-subplot(nr,nc,1); imagesc(Xfull); title('full data'); colorbar
-%subplot(nr,nc,2); imagesc(missing); title('missing pattern'); colorbar
-subplot(nr,nc,2); imagesc(XmissImg); title('observed data'); colorbar
-subplot(nr,nc,3); imagesc(Ximpute); title('imputed mean'); colorbar
-subplot(nr,nc,4); imagesc(XhidImg); title('hidden truth'); colorbar
-%set(gcf,'position',[10 500 600 200])
+ttl = sprintf('test err %3.2f', errTest);
 
-
-hintonScale({Xfull}, {'-map', 'gray', '-title', 'full data'}, ...
-  {Xfull, 1-missing}, {'-map', 'Jet', '-title', 'observed'}, ...
-  {Ximpute, V}, {'-title', 'imputed mean'}, ...
-  {Xfull, missing}, {'-title', 'hidden truth'});
+if discrete
+  % V = entropy
+  conf = 1./Vtest;
+  conf(isinf(conf))=0;
+  mm = max(conf(:));
+  hintonScale({Xtest}, {'-map', 'jet', '-title', ttl}, ...
+  {Xtest, (1-missingTest)*mm}, { '-title', 'observed'}, ...
+  {XimputeTest, conf}, {'-title', 'imputed mode'}, ...
+  {Xtest, (missingTest)*mm}, {'-title', 'hidden truth'});
+else
+  % V = variance
+  conf = (1./Vtest);
+  conf(isinf(conf))=0;
+  mm = max(conf(:));
+  hintonScale({Xtest}, {'-map', 'jet', '-title',ttl}, ...
+  {Xtest, (1-missingTest)*mm}, { '-title', 'observed'}, ...
+  {XimputeTest, conf}, {'-title', 'imputed mean'}, ...
+  {Xtest, (missingTest)*mm}, {'-title', 'hidden truth'});
+end
 
 
 end
