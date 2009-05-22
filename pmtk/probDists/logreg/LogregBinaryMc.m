@@ -55,9 +55,9 @@ methods
     pred = SampleDist(psamples, model.paramDist.weights);
     p = mean(pred); 
     yhat = zeros(n,1);
-    ndx2 = (p < 0.5);
+    ndx2 = (p > 0.5);
     yhat(ndx2) = 1;
-    yhat = convertLabelsToUserFormat(D, yhat, '01');
+    %yhat = convertLabelsToUserFormat(D, yhat, '01'); Why do we need to do this in this case?  It is already '01'
   end
   
   function p = logprob(obj, D, method)
@@ -66,22 +66,20 @@ methods
     if nargin < 3, method = 1; end
     X = D.X; y = getLabels(D, '01');
     n = size(X,1);
-    [yhat, pred] = predict(obj,D); % pred is n*S 
+    [yhat, pred] = predict(obj,D); % pred is n*S
     p1 = pred.samples;
     p0 = 1-p1;
     nS = size(p1,2);
-    %W = repmat(pred.weights, n, 1);
-    W = ones(n, nS);
+    W = repmat(pred.weights, n, 1);
     mask1 = repmat((y==1), 1, nS);
     mask0 = repmat((y==0), 1, nS);
     pp = (mask1 .* p1 + mask0 .* p0) .* W;
-    p1 = log(mean(pp,2)); % unweighted average
-    %p = log(sum(pp,2));
+    p1 = log(sum(pp,2));
    
-    %plug in posterior mean - gives closer result to laplace
+    %plug in posterior mean
     mu1 = mean(pred); 
     Y = oneOfK(y, 2);
-    P = [mu1(:) 1-mu1(:)];
+    P = [1-mu1(:) mu1(:)];
     p2 =  sum(Y.*log(P), 2);
     
     if method==1

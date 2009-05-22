@@ -64,9 +64,10 @@ methods
      weights(s) = targetFn(samples(:,s)) ./ (mvnpdf(samples(:,s)', wMAP(:)', C)+eps);
    end
    weights = normalize(weights);
-   ndx = resamplingMultinomial(1:eng.nsamples, weights(:)); % no need for weights anymore
-   model.paramDist.wsamples = samples(:,ndx);
-   model.paramDist.weights = ones(1, eng.nsamples); %weights;
+   %ndx = resamplingMultinomial(1:eng.nsamples, weights(:)); % no need for weights anymore
+   %model.paramDist.wsamples = samples(:,ndx);
+   model.paramDist.wsamples = samples;
+   model.paramDist.weights = weights;
    out = [];
   end
   

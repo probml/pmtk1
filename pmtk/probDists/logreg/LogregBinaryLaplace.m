@@ -115,7 +115,7 @@ end
       %P = [p 1-p];       
       Y = oneOfK(y, 2); %obj.nclasses);
       %p =  sum(sum(Y.*log(P)));
-      P = [p(:) 1-p(:)];
+      P = [1-p(:) p(:)];
       p =  sum(Y.*log(P), 2);
     end
      

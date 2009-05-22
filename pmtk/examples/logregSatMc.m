@@ -30,9 +30,10 @@ for mi=1:length(models)
   
   pw = getParamPost(m);
   figure;
+  xlimW{1} = [-100, 50]; xlimW{2} = [-0.1, 0.3]; % to enforce common scale
   for i=1:2
     pwi = marginal(pw, i);
-    subplot(2,2,i); plot(pwi); title(sprintf('w%d',i));
+    subplot(2,2,i); plot(pwi); xlim(xlimW{i}); title(sprintf('w%d',i));
   end
   subplot(2,2,3); plot(pw);
   

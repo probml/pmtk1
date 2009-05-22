@@ -66,7 +66,7 @@ methods
    %samples = mhSample('symmetric', true, 'target', targetFn, 'xinit', xinit, ...
    %    'Nsamples', 1000, 'Nburnin', 100, 'proposal',  proposalFn);
    model.paramDist.wsamples = samples';
-   model.paramDist.weights = ones(1, eng.nsamples); % MH gives unweighted samples
+   model.paramDist.weights = normalize(ones(1, eng.nsamples)); % MH gives unweighted samples
    out = [];
    %figure;scatter(samples(:,1), samples(:,2))
    %hold on; plot(wMAP(1), wMAP(2), 'rx');
