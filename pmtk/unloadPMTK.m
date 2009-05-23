@@ -6,7 +6,7 @@ s = warning('query','all');
 warning off all
 rmpath(genpathPMTK(PMTKroot()))
 warning(s);
-fprintf('PMTK removed from the Matlab path\n');
+fprintf('PMTK1 removed from the Matlab path\n');
 else
     cd(fileparts(which('unloadPMTK.m')));   % Make sure the current directory is the root of PMTK
     addpath(fullfile(pwd,'util'));
