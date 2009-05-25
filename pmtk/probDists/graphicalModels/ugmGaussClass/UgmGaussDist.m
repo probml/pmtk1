@@ -68,12 +68,16 @@ classdef UgmGaussDist < UgmDist
         % 
         % X(i,:) = case i
         % SS - sufficient statistics, SS.S, SS.mu, SS.N
-        [X, SS] = processArgs(varargin, '-X', [], '-SS', []);
+        [X, SS, shrink] = processArgs(varargin, '-X', [], '-SS', [], '-shrink', false);
         if isa(X, 'DataTable'), X = X.X; end
         if isempty(SS)
           SS.mu = mean(X);
           SS.N = size(X,1);
-          SS.S = cov(X);
+          if shrink
+            SS.S = covshrink(X);
+          else
+            SS.S = cov(X);
+          end
         end
         if nnodes(obj.G)==0, obj = fitStructure(obj, '-SS', SS); end
         obj.mu = SS.mu;

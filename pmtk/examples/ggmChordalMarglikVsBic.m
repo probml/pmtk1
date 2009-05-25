@@ -2,7 +2,7 @@
 
 function ggmChordalMarglikVsBic()
 
-folder = 'C:\kmurphy\Students\Baback\qualityOfBic';
+folder = []; %'C:\kmurphy\Students\Baback\qualityOfBic';
 
 d = 4; graphType = 'chain';
 ns = [10 20 50];
@@ -17,7 +17,7 @@ for ni=1:length(ns)
   truth = mkRndParams(truth);
   Y = sample(truth, n); 
   v = var(Y(:))
-  %Y = standardize(Y);
+  Y = standardize(Y);
   %v = var(Y(:))
    
   for pi=1:length(priors)
@@ -51,7 +51,7 @@ for ni=1:length(ns)
   
   ll = zeros(1,NG); BIC = cell(1,2);
   for i=1:NG
-    tmp = fit(UgmGaussDist(GGMs{i}.G), Y);
+    tmp = fit(UgmGaussDist(GGMs{i}.G), Y, '-shrink', true);
     ll(i) = sum(logprob(tmp, Y),1);
     df = dof(tmp);
     BIC{1}(i) = ll(i) - df*log(n)/2;
