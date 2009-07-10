@@ -134,11 +134,11 @@ function [biclusterRows, biclusterCols] = biclusterMultiple(data, varargin)
 
 
     if(verbose && found)
-      fprintf('Expected rows in bicluster according to threshold level (%1.2f): %s \n', rowThres, expRowsText);
+      fprintf('\nExpected rows in bicluster according to threshold level (%1.2f): %s \n', rowThres, expRowsText);
 
       fprintf('Expected columns in bicluster according to threshold level (%1.2f): %s \n', colThres, expColsText);
     elseif(verbose && ~found)
-      fprintf('No bicluster found.  Either the row of column subset was empty based on the threshold levels (row = %1.2f, column = %1.2f\n', rowThres, colThres)
+      fprintf('\nNo bicluster found.  Either the row of column subset was empty based on the threshold levels (row = %1.2f, column = %1.2f\n', rowThres, colThres)
     end
 
     if(~found)
