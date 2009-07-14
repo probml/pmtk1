@@ -1,3 +1,5 @@
+cls; 
+setSeed(0);
 nRow = 100;
 nCol = 30;
 
@@ -10,9 +12,33 @@ patternRows = 5:5:size(data,1);
 patternCols = 5:5:size(data,2);
 
 %bicluster(data);
-[dummyBcRow, dummyBcCol] = biclusterMultiple(data);
-%% Now a more difficult example
+[dummyBcRow, dummyBcCol, traceDummyRow, traceDummyCol] = biclusterMultiple(data, '-trace', true);
+for c=1:size(traceDummyRow)
+  figure(); plot(traceDummyRow{c}'); legend();
+  figure(); plot(traceDummyCol{c}'); legend();
+end
+if(doPrintPmtk)
+  figure(1);
+  printPmtkFiguresKPM('dummyBiclusterData'); 
+  figure(2);
+  printPmtkFiguresKPM('dummyTraceRows');
+  figure(3);
+  printPmtkFiguresKPM('dummyTraceCols');
+end;
 
+% Produce the numbers for a contingency table (hint: add length() command around each)
+% intersect(patternRows, uniBcRow{1});
+% setdiff(patternRows, uniBcRow{1});
+% intersect(setdiff(1:nRow, patternRows), uniBcRow{1})
+% intersect(setdiff(1:nRow, patternRows), setdiff(1:nRow, uniBcRow{1}))
+
+% intersect(patternCols, uniBcCol{1});
+% setdiff(patternCols, uniBcCol{1});
+% intersect(setdiff(1:nCol, patternCols), uniBcCol{1})
+% intersect(setdiff(1:nCol, patternCols), setdiff(1:nCol, uniBcCol{1}))
+
+
+%% Now a more difficult example
 fprintf('\n\nNow we try a more difficult example, similar to the example from Fig. 2 in Shen et al (2003): Biclustering Microarray Data in Gibbs Sampling\n')
 
 clear data;
@@ -25,7 +51,7 @@ patternRows = randsample(nRow, patternRowSize);
 patternCols = randsample(nCol, patternColSize);
 fprintf('True rows: %s\n', mat2str(sort(patternRows')))
 fprintf('True columns: %s', mat2str(sort(patternCols')))
-sharp = 0.90;
+sharp = 0.80;
 p = [sharp, normalize(ones(1,nLevels-1))*(1-sharp)]; % a sharp multinomial distribution
 p = perms(p);
 p = p(unidrnd(size(p,1), patternColSize, 1),:);
@@ -34,7 +60,11 @@ for k=1:patternColSize
 end
 
 %bicluster(data);
-[simBcRow, simBcCol] = biclusterMultiple(data);
+[uniBcRow, uniBcCol] = biclusterMultiple(data);
+if(doPrintPmtk)
+  figure(1);
+  printPmtkFiguresKPM('uniBiclusterData'); 
+end;
 
 %{ Not working yet
 fprintf('\n\nNow multiple biclusters\n')

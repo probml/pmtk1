@@ -1,4 +1,4 @@
-function [biclusterRows, biclusterCols] = biclusterMultiple(data, varargin)
+function [biclusterRows, biclusterCols, traceRow, traceCol] = biclusterMultiple(data, varargin)
 % Performs biclustering using Gibbs Sampling.  Reference:
 %@misc{sheng2003biclustering,
 %  title={{Biclustering microarray data by Gibbs sampling}},
@@ -11,13 +11,14 @@ function [biclusterRows, biclusterCols] = biclusterMultiple(data, varargin)
 %  publisher={Oxford Univ Press}
 %}
 
-[rowThres, colThres, nSamples, nBurnin, plot, verbose, alpha, xiRow, xiCol, beta] = processArgs(varargin, ...
+[rowThres, colThres, nSamples, nBurnin, plot, verbose, trace, alpha, xiRow, xiCol, beta] = processArgs(varargin, ...
       '-rowThres', 0.8, ...
       '-colThres', 0.8, ...
       '-nSamples', 500, ...
       '-nBurnin', 50, ...
       '-plot', true, ...
       '-verbose', true, ...
+      '-trace', false, ...
       '-alpha', 1, ...
       '-xiRow', normalize(ones(1,2)), ...
       '-xiCol', normalize(ones(1,2)), ...
@@ -39,12 +40,20 @@ function [biclusterRows, biclusterCols] = biclusterMultiple(data, varargin)
   fprintf('\nStarting Gibbs sampler on data matrix \n')
 
   while(~done)
+
   if(verbose), fprintf('Bicluster search # %d\n', biclustIdx); end
     maskedRow = setdiff(1:nRow, activeRow); maskedCol = setdiff(1:nCol, activeCol);
     currRow = zeros(1, nRow); currCol = zeros(1, nCol);
     currRow(maskedRow) = NaN; currCol(maskedCol) = NaN;
     currRow(activeRow) = unidrnd(2,1,length(activeRow)) - 1; currCol(activeCol) = unidrnd(2,1,length(activeCol)) - 1;
     rowCount = currRow; colCount = currCol;
+
+    if(trace)
+      traceRow{biclustIdx} = zeros(nRow, nSamples);
+      traceRow{biclustIdx}(maskedRow, :) = NaN;
+      traceCol{biclustIdx} = zeros(nCol, nSamples);
+      traceCol{biclustIdx}(maskedCol, :) = NaN;
+    end
     
     if(verbose), fprintf('Samples collected: '), end
     for s=1:nSamples
@@ -71,6 +80,7 @@ function [biclusterRows, biclusterCols] = biclusterMultiple(data, varargin)
           currRow(i) = 1;
           if(s > nBurnin)
             rowCount(i) = rowCount(i) + 1;
+            traceRow{biclustIdx}(i, s) = 1;
           end
         else
           currRow(i) = 0;
@@ -99,6 +109,7 @@ function [biclusterRows, biclusterCols] = biclusterMultiple(data, varargin)
           currCol(j) = 1;
           if(s > nBurnin)
             colCount(j) = colCount(j) + 1;
+            traceCol{biclustIdx}(j, s) = 1;
           end
         else
           currCol(j) = 0;
@@ -117,18 +128,30 @@ function [biclusterRows, biclusterCols] = biclusterMultiple(data, varargin)
     found = ~(isempty(expRows) || isempty(expCols));
     
     if(plot && found)
-      figure();
+      h = figure();
       colormap('gray');
       axes('Position', [0.25, 0.25, 0.7, 0.7]);
       imagesc(data);
+      text(0.25+0.7/2, 0.30, 'Data Matrix');
       
       rowBar = axes('Position', [0.15, 0.25, 0.05, 0.7]);
       imagesc(colvec(rowPostProb * nLevels));
       set(rowBar, 'XTick', []); set(rowBar, 'YTick', []);
+
+      rowDec = axes('Position', [0.05, 0.25, 0.05, 0.7]);
+      imagesc(colvec(rowPostProb > rowThres));
+      set(rowDec, 'XTick', []); set(rowDec, 'YTick', []);
       
       colBar = axes('Position', [0.25, 0.15, 0.7, 0.05]);
       imagesc(rowvec(colPostProb * nLevels));
       set(colBar, 'XTick', []); set(colBar, 'YTick', []);
+
+      colDec = axes('Position', [0.25, 0.05, 0.7, 0.05]);
+      imagesc(rowvec(colPostProb > colThres));
+      set(colDec, 'XTick', []); set(colDec, 'YTick', []);
+
+      annotation('textbox', [0.03, 0.07, 0.02, 0.02], 'String', 'Decision', 'LineStyle', 'none');
+      annotation('textbox', [0.12, 0.20, 0.02, 0.02], 'String', 'Posterior Probability', 'LineStyle', 'none');
     end
 
 
@@ -142,6 +165,11 @@ function [biclusterRows, biclusterCols] = biclusterMultiple(data, varargin)
     end
 
     if(~found)
+      % Set done to true, remove the useless traces (if needed)
+      if(trace && biclustIdx > 1)
+        traceRow = traceRow(1:(biclustIdx-1));
+        traceCol = traceCol(1:(biclustIdx-1));
+      end
       done = true;
     else
       biclusterRows{biclustIdx} = expRows;
@@ -154,4 +182,13 @@ function [biclusterRows, biclusterCols] = biclusterMultiple(data, varargin)
 
   end
 
+  if(trace)
+    for c=1:size(traceRow)
+      traceRow{c} = cumsum(traceRow{c}, 2);
+      traceCol{c} = cumsum(traceCol{c}, 2);
+      
+      traceRow{c} = bsxfun(@rdivide, traceRow{c}, 1:nSamples);
+      traceCol{c} = bsxfun(@rdivide, traceCol{c}, 1:nSamples);
+    end
+  end
 end
