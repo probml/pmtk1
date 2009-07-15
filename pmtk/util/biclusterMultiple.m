@@ -167,8 +167,8 @@ function [biclusterRows, biclusterCols, traceRow, traceCol] = biclusterMultiple(
     if(~found)
       % Set done to true, remove the useless traces (if needed)
       if(trace && biclustIdx > 1)
-        traceRow = traceRow(1:(biclustIdx-1));
-        traceCol = traceCol(1:(biclustIdx-1));
+        %traceRow = traceRow(1:(biclustIdx-1));
+        %traceCol = traceCol(1:(biclustIdx-1));
       end
       done = true;
     else
