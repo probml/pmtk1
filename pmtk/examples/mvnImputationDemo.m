@@ -15,7 +15,7 @@ end
 
 function helper(r)
 
-d = 10;  pcMissing = 0.3;
+d = 10;  pcMissing = 0.7;
 model = mkRndParams(MvnDist(), d);
 %model = mkRndParams(DiscreteProdDist('-ndims', d, '-nstates', 3));
 n = 5;
@@ -42,7 +42,7 @@ XhidImg(~missing) = 0;
 
 nr = 2; nc = 2;
 
-
+%{
 figure; 
 subplot(nr,nc,1); imagesc(Xfull); title('full data'); colorbar
 %subplot(nr,nc,2); imagesc(missing); title('missing pattern'); colorbar
@@ -55,7 +55,16 @@ hintonScale({Xfull}, {'-map', 'gray', '-title', 'full data'}, ...
   {Xmiss}, {'-map', 'Jet', '-title', 'observed'}, ...
   {Ximpute, V}, {'-title', 'imputed mean'}, ...
   {Xhid}, {'-title', 'hidden truth'});
+%}
 
+conf = 1./V;
+conf(isinf(conf))=0;
+conf
+
+hintonScale({Xfull}, {'-map', 'jet', '-title', 'full data'}, ...
+  {Xmiss}, {'-map', 'Jet', '-title', 'observed'}, ...
+  {Ximpute, conf}, {'-title', 'imputed mean'}, ...
+  {Xhid}, {'-title', 'hidden truth'});
 %{
 figure;
 subplot(nr,nc,1); hintonScale(Xfull, ones(n,d));

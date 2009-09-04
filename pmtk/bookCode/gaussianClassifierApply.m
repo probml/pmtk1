@@ -25,7 +25,7 @@ for c=1:Nclasses
     if useNB
       tmp = zeros(N,d);
       for j = 1:d
-	tmp(:,j) = log(normpdf(Xtest(:,j), params.mu(j,c), params.sigma(j,c)) + eps);
+        tmp(:,j) = log(normpdf(Xtest(:,j), params.mu(j,c), params.sigma(j,c)) + eps);
       end
       loglik(:,c) = sum(tmp,2); % naive Bayes assumption
     else

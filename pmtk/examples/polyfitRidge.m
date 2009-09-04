@@ -5,13 +5,15 @@
 n = 21;
 [xtrain, ytrain, xtest, ytest] = polyDataMake('sampling', 'thibaux','n',n);
 deg = 14;
-%m = LinregDist();
-m = LinregL2;
-m.transformer =  ChainTransformer({RescaleTransformer, PolyBasisTransformer(deg,false)});
+T =  ChainTransformer({RescaleTransformer, PolyBasisTransformer(deg,false)});
+[xtrain, T] = train(T, xtrain);
+[xtest, T] = test(T, xest);
+
+model = LinregL2;
 lambdas = [0 0.00001 0.001];
 for k=1:length(lambdas)
     lambda = lambdas(k);
-    m.lambda = lambda;
+    model = fit;
     %m = fit(m, 'X', xtrain, 'y', ytrain, 'prior', 'L2', 'lambda', lambda);
     m = fit(m, DataTable(xtrain, ytrain));
     format bank

@@ -114,7 +114,7 @@ classdef ProbDist
     
     methods
         function xrange = plotRange(obj, sf)
-            if nargin < 2, sf = 3; end
+            if nargin < 2, sf = 1; end
             mu = mean(obj);
             if ndimensions(obj)==1
                 s1 = sqrt(var(obj));
