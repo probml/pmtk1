@@ -82,7 +82,7 @@ classdef DgmTreeTabular < DgmDist
         function plotGraph(model, varargin)
           [nodeLabels] = process_options(varargin, 'nodeLabels', 1:nnodes(model.G));
           Graphlayout('adjMatrix', full(model.G.adjMat), ...
-            'nodeLabels', nodeLabels, 'currentLayout', Treelayout());
+            'nodeLabels', nodeLabels); % 'currentLayout', Treelayout());
         end
 
         

@@ -3,6 +3,7 @@
 load newsgroups % documents, wordlist, newsgroups
 X = documents'; % 16,642 documents by 100 words  (sparse logical  matrix)
 
+disp('pmtk chowliu demo')
 M = fit(DgmTreeTabular, 'data', X);
 ll = logprob(M, X);
 plotGraph(M, 'nodeLabels', wordlist)
